@@ -8,6 +8,7 @@ import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
+import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { searchProducts, searchProductsMulti, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
