@@ -3,11 +3,12 @@ import { SearchBar } from "@/components/SearchBar";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { MarketingPanel } from "@/components/MarketingPanel";
+import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { searchProducts, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
-import { generateMarketingMessage, type MarketingOutput } from "@/lib/formatMessage";
+import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { Activity, BarChart3, Zap } from "lucide-react";
 
@@ -15,6 +16,7 @@ const Index = () => {
   const [product, setProduct] = useState<ProductData | null>(null);
   const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
   const [marketing, setMarketing] = useState<MarketingOutput | null>(null);
+  const [geoMessages, setGeoMessages] = useState<GeoMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,10 +39,12 @@ const Index = () => {
 
     const sentimentResult = analyzeSentiment(result.reviews);
     const marketingResult = generateMarketingMessage(result.name, sentimentResult);
+    const geoResult = generateGeoMarketingMessages(result.name, sentimentResult);
 
     setProduct(result);
     setSentiment(sentimentResult);
     setMarketing(marketingResult);
+    setGeoMessages(geoResult);
     setIsLoading(false);
   };
 
@@ -115,6 +119,7 @@ const Index = () => {
           </div>
 
           <MarketingPanel marketing={marketing} />
+          <GeoMarketingPanel geoMessages={geoMessages} productName={product.name} />
           <ReviewList reviews={product.reviews} />
         </div>
       )}
