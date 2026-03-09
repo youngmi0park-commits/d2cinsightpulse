@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useLang } from "@/contexts/LanguageContext";
 import {
   redditTrending, amazonTrending,
   redditKeywords, amazonKeywords,
@@ -36,18 +37,18 @@ function SentimentBar({ score }: { score: number }) {
   );
 }
 
-function ProductTable({ products, onProductClick }: { products: TrendingProduct[]; onProductClick?: (m: string) => void }) {
+function ProductTable({ products, onProductClick, t }: { products: TrendingProduct[]; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-left">
             <th className="py-2 px-2 text-xs text-muted-foreground font-medium w-8">#</th>
-            <th className="py-2 px-2 text-xs text-muted-foreground font-medium">제품</th>
-            <th className="py-2 px-2 text-xs text-muted-foreground font-medium hidden sm:table-cell">카테고리</th>
-            <th className="py-2 px-2 text-xs text-muted-foreground font-medium text-right">언급수</th>
-            <th className="py-2 px-2 text-xs text-muted-foreground font-medium hidden md:table-cell">감성점수</th>
-            <th className="py-2 px-2 text-xs text-muted-foreground font-medium text-right">변동</th>
+            <th className="py-2 px-2 text-xs text-muted-foreground font-medium">{t("Product", "제품")}</th>
+            <th className="py-2 px-2 text-xs text-muted-foreground font-medium hidden sm:table-cell">{t("Category", "카테고리")}</th>
+            <th className="py-2 px-2 text-xs text-muted-foreground font-medium text-right">{t("Mentions", "언급수")}</th>
+            <th className="py-2 px-2 text-xs text-muted-foreground font-medium hidden md:table-cell">{t("Sentiment", "감성점수")}</th>
+            <th className="py-2 px-2 text-xs text-muted-foreground font-medium text-right">{t("Change", "변동")}</th>
           </tr>
         </thead>
         <tbody>
@@ -100,7 +101,7 @@ function ProductTable({ products, onProductClick }: { products: TrendingProduct[
   );
 }
 
-function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
+function KeywordPanel({ keywords, t }: { keywords: TrendingKeyword[]; t: (en: string, ko: string) => string }) {
   const positive = keywords.filter((k) => k.sentiment === "positive");
   const negative = keywords.filter((k) => k.sentiment === "negative");
 
@@ -109,7 +110,7 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
       <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
         <div className="flex items-center gap-2 mb-3">
           <ThumbsUp className="h-4 w-4 text-green-600" />
-          <h4 className="text-sm font-semibold text-green-800">긍정 키워드</h4>
+          <h4 className="text-sm font-semibold text-green-800">{t("Positive Keywords", "긍정 키워드")}</h4>
         </div>
         <div className="space-y-2">
           {positive.map((kw) => (
@@ -131,7 +132,7 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
       <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
         <div className="flex items-center gap-2 mb-3">
           <ThumbsDown className="h-4 w-4 text-red-500" />
-          <h4 className="text-sm font-semibold text-red-800">부정 키워드</h4>
+          <h4 className="text-sm font-semibold text-red-800">{t("Negative Keywords", "부정 키워드")}</h4>
         </div>
         <div className="space-y-2">
           {negative.map((kw) => (
@@ -164,6 +165,8 @@ interface SourceTabConfig {
 }
 
 export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
+  const { t } = useLang();
+
   const sources: SourceTabConfig[] = [
     { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, products: redditTrending, keywords: redditKeywords, emoji: "🔥" },
     { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, products: amazonTrending, keywords: amazonKeywords, emoji: "🔥" },
@@ -193,24 +196,20 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
     return [...merged.entries()].sort((a, b) => b[1].totalMentions - a[1].totalMentions);
   }, []);
 
-  // keyword → associated top products (from same source)
   const keywordProductMap = useMemo(() => {
     const map = new Map<string, Map<string, number>>();
     sources.forEach((s) => {
-      const topProduct = s.products[0]; // top product per source
+      const topProduct = s.products[0];
       if (!topProduct) return;
       s.keywords.forEach((k) => {
         if (!map.has(k.keyword)) map.set(k.keyword, new Map());
         const prodMap = map.get(k.keyword)!;
-        // weight by keyword count
         prodMap.set(topProduct.displayName, (prodMap.get(topProduct.displayName) || 0) + k.count);
-        // also associate rank 2 product if exists
         if (s.products[1]) {
           prodMap.set(s.products[1].displayName, (prodMap.get(s.products[1].displayName) || 0) + Math.round(k.count * 0.5));
         }
       });
     });
-    // resolve to top 2 products per keyword
     const result = new Map<string, string[]>();
     map.forEach((prodMap, keyword) => {
       const sorted = [...prodMap.entries()].sort((a, b) => b[1] - a[1]);
@@ -249,28 +248,42 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
     }).join(", ");
 
   const insights = [
-    `📊 전체 ${sources.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`,
-    `🏆 주간 언급량 TOP 3: ${top3.map(([, v], i) => `${i + 1}위 ${v.displayName} (${v.totalMentions.toLocaleString()}건)`).join(", ")}`,
-    risingProduct ? `🚀 가장 급상승 제품: ${risingProduct[1].displayName} (주간 변동 +${risingProduct[1].maxChange}%) — 신규 출시 및 전문 리뷰 확산 영향` : "",
-    `👍 긍정 키워드 TOP 3: ${formatKwWithProducts(topPosKeywords)} — 화질·가성비·편의성 중심의 호평이 지속되고 있습니다.`,
-    `⚠️ 부정 키워드 TOP 3: ${formatKwWithProducts(topNegKeywords)} — CS 응대 및 소프트웨어 개선이 필요한 것으로 분석됩니다.`,
+    t(
+      `📊 A total of ${totalMentions.toLocaleString()} product mentions were collected across ${sources.length} channels, with an average sentiment score of ${avgSentiment}.`,
+      `📊 전체 ${sources.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`
+    ),
+    t(
+      `🏆 Weekly Mentions TOP 3: ${top3.map(([, v], i) => `#${i + 1} ${v.displayName} (${v.totalMentions.toLocaleString()})`).join(", ")}`,
+      `🏆 주간 언급량 TOP 3: ${top3.map(([, v], i) => `${i + 1}위 ${v.displayName} (${v.totalMentions.toLocaleString()}건)`).join(", ")}`
+    ),
+    risingProduct ? t(
+      `🚀 Fastest Rising Product: ${risingProduct[1].displayName} (weekly change +${risingProduct[1].maxChange}%) — driven by new launches and expert review coverage`,
+      `🚀 가장 급상승 제품: ${risingProduct[1].displayName} (주간 변동 +${risingProduct[1].maxChange}%) — 신규 출시 및 전문 리뷰 확산 영향`
+    ) : "",
+    t(
+      `👍 Positive Keywords TOP 3: ${formatKwWithProducts(topPosKeywords)} — Consistent praise around picture quality, value, and convenience.`,
+      `👍 긍정 키워드 TOP 3: ${formatKwWithProducts(topPosKeywords)} — 화질·가성비·편의성 중심의 호평이 지속되고 있습니다.`
+    ),
+    t(
+      `⚠️ Negative Keywords TOP 3: ${formatKwWithProducts(topNegKeywords)} — CS response and software improvements are needed.`,
+      `⚠️ 부정 키워드 TOP 3: ${formatKwWithProducts(topNegKeywords)} — CS 응대 및 소프트웨어 개선이 필요한 것으로 분석됩니다.`
+    ),
   ].filter(Boolean);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <BarChart3 className="h-6 w-6 text-primary" />
-        <h2 className="text-xl font-bold font-heading">📡 실시간 트렌딩 대시보드</h2>
+        <h2 className="text-xl font-bold font-heading">📡 {t("Real-time Trending Dashboard", "실시간 트렌딩 대시보드")}</h2>
         <Badge variant="secondary" className="text-xs">
-          Live · 주간 집계
+          {t("Live · Weekly", "Live · 주간 집계")}
         </Badge>
       </div>
 
-      {/* 전채널 트렌드 요약 인사이트 */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 전채널 주간 트렌드 인사이트 리포트</h3>
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t("Cross-Channel Weekly Trend Insight Report", "전채널 주간 트렌드 인사이트 리포트")}</h3>
         </div>
         {insights.map((line, i) => (
           <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
@@ -292,15 +305,15 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
           <TabsContent key={s.value} value={s.value} className="space-y-6 mt-4">
             <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-                {s.emoji} {s.label} 언급량 TOP {s.products.length}
+                {s.emoji} {s.label} {t(`Mentions TOP ${s.products.length}`, `언급량 TOP ${s.products.length}`)}
               </h3>
-              <ProductTable products={s.products} onProductClick={onProductClick} />
+              <ProductTable products={s.products} onProductClick={onProductClick} t={t} />
             </div>
             <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-                💬 {s.label} 주요 긍·부정 키워드
+                💬 {s.label} {t("Key Positive & Negative Keywords", "주요 긍·부정 키워드")}
               </h3>
-              <KeywordPanel keywords={s.keywords} />
+              <KeywordPanel keywords={s.keywords} t={t} />
             </div>
           </TabsContent>
         ))}

@@ -13,9 +13,10 @@ import { searchProducts, searchProductsMulti, type ProductData } from "@/data/du
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import heroBanner from "@/assets/hero-banner.jpg";
-import { Activity, BarChart3, Zap } from "lucide-react";
+import { Activity, BarChart3, Zap, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useLang } from "@/contexts/LanguageContext";
 
 interface AnalyzedProduct {
   product: ProductData;
@@ -29,6 +30,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { t, lang, toggleLang } = useLang();
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -39,7 +41,12 @@ const Index = () => {
 
     const multiResults = searchProductsMulti(query);
     if (multiResults.length === 0) {
-      setError(`"${query}"에 대한 데이터를 찾을 수 없습니다. 제품명 추천 버튼을 사용해 보세요.`);
+      setError(
+        t(
+          `No data found for "${query}". Try using the product suggestion buttons.`,
+          `"${query}"에 대한 데이터를 찾을 수 없습니다. 제품명 추천 버튼을 사용해 보세요.`
+        )
+      );
       setResults([]);
       setIsLoading(false);
       return;
@@ -59,7 +66,6 @@ const Index = () => {
   const hasResults = results.length > 0;
   const isMulti = results.length > 1;
 
-  // Group results by category
   const groupedResults = results.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
     const cat = item.product.category;
     if (!acc[cat]) acc[cat] = [];
@@ -81,12 +87,16 @@ const Index = () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
-                <span className="text-gradient">고객 보이스 리스닝</span>
+                <span className="text-gradient">
+                  {t("Customer Voice Listening", "고객 보이스 리스닝")}
+                </span>
               </h1>
             </div>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,<br className="hidden md:inline" />
-              마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다.
+              {t(
+                "A platform that collects and analyzes real user reviews from major communities like Reddit and Amazon, and provides marketing communication messages.",
+                "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여, 마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
+              )}
             </p>
           </div>
           <SearchBar onSearch={handleSearch} isLoading={isLoading} />
@@ -96,15 +106,13 @@ const Index = () => {
       {/* Stats Bar */}
       {!hasResults && !error && (
         <div className="container mx-auto px-4 py-12 space-y-10">
-          {/* Trending Dashboard */}
           <TrendingDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
 
-          {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: BarChart3, title: "감성 분석", desc: "긍정·부정·중립 자동 분류 및 점수화" },
-              { icon: Zap, title: "키워드 추출", desc: "장점·단점 핵심 키워드 자동 추출" },
-              { icon: Activity, title: "마케팅 변환", desc: "Q&A 및 리뷰 가이드 자동 생성" },
+              { icon: BarChart3, title: t("Sentiment Analysis", "감성 분석"), desc: t("Automatic positive/negative/neutral classification & scoring", "긍정·부정·중립 자동 분류 및 점수화") },
+              { icon: Zap, title: t("Keyword Extraction", "키워드 추출"), desc: t("Auto-extraction of key pros & cons keywords", "장점·단점 핵심 키워드 자동 추출") },
+              { icon: Activity, title: t("Marketing Conversion", "마케팅 변환"), desc: t("Auto-generation of Q&A and review guides", "Q&A 및 리뷰 가이드 자동 생성") },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="gradient-card rounded-xl border border-border p-6 text-center hover:border-primary/30 transition-colors">
                 <Icon className="h-10 w-10 text-primary mx-auto mb-3" />
@@ -136,17 +144,15 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8 space-y-6 animate-slide-up">
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-2xl font-bold font-heading">
-              📊 <span className="text-gradient">"{searchQuery}"</span> 검색 결과
+              📊 <span className="text-gradient">"{searchQuery}"</span> {t("Search Results", "검색 결과")}
             </h2>
             <Badge variant="secondary" className="text-sm">
-              {results.length}개 제품
+              {results.length}{t(" products", "개 제품")}
             </Badge>
           </div>
 
           {isMulti ? (
-            /* Multi-product: category tabs */
             <Tabs defaultValue={results[0].product.name} className="w-full">
-              {/* Category grouped tab list */}
               <div className="space-y-3 mb-6">
                 {Object.entries(groupedResults).map(([category, items]) => (
                   <div key={category} className="flex items-center gap-2 flex-wrap">
@@ -178,15 +184,28 @@ const Index = () => {
               ))}
             </Tabs>
           ) : (
-            /* Single product result */
             <ProductAnalysisView item={results[0]} />
           )}
         </div>
       )}
 
       {/* Footer */}
-      <footer className="border-t border-border mt-16 py-8 text-center text-sm text-muted-foreground">
-        <p>LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정</p>
+      <footer className="border-t border-border mt-16 py-8">
+        <div className="container mx-auto px-4 flex flex-col items-center gap-4">
+          <p className="text-sm text-muted-foreground text-center">
+            {t(
+              "LG Product Sentiment Monitor — Demo based on dummy data · Real-time API integration coming soon",
+              "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
+            )}
+          </p>
+          <button
+            onClick={toggleLang}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-sm font-medium hover:bg-primary/10 transition-colors"
+          >
+            <Globe className="h-4 w-4" />
+            {lang === "ko" ? "Switch to English (Original)" : "한국어로 전환 (번역)"}
+          </button>
+        </div>
       </footer>
     </div>
   );
