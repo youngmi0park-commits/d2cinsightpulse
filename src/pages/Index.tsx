@@ -7,6 +7,7 @@ import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { searchProducts, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
@@ -96,6 +97,7 @@ const Index = () => {
           <div className="mt-8 space-y-4">
             <CollectionCriteria />
             <RedditCountryInsights />
+            <NewsletterSubscribe />
           </div>
         </div>
       )}
