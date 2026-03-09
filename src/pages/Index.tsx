@@ -8,47 +8,63 @@ import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
-import { searchProducts, type ProductData } from "@/data/dummyData";
+import { searchProducts, searchProductsMulti, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { Activity, BarChart3, Zap } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+
+interface AnalyzedProduct {
+  product: ProductData;
+  sentiment: SentimentResult;
+  marketing: MarketingOutput;
+  geoMessages: GeoMessage[];
+}
 
 const Index = () => {
-  const [product, setProduct] = useState<ProductData | null>(null);
-  const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
-  const [marketing, setMarketing] = useState<MarketingOutput | null>(null);
-  const [geoMessages, setGeoMessages] = useState<GeoMessage[]>([]);
+  const [results, setResults] = useState<AnalyzedProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
     setError(null);
+    setSearchQuery(query);
 
-    // Simulate API delay
     await new Promise((r) => setTimeout(r, 800));
 
-    const result = searchProducts(query);
-    if (!result) {
+    const multiResults = searchProductsMulti(query);
+    if (multiResults.length === 0) {
       setError(`"${query}"에 대한 데이터를 찾을 수 없습니다. 제품명 추천 버튼을 사용해 보세요.`);
-      setProduct(null);
-      setSentiment(null);
-      setMarketing(null);
+      setResults([]);
       setIsLoading(false);
       return;
     }
 
-    const sentimentResult = analyzeSentiment(result.reviews);
-    const marketingResult = generateMarketingMessage(result.name, sentimentResult);
-    const geoResult = generateGeoMarketingMessages(result.name, sentimentResult);
+    const analyzed = multiResults.map((product) => {
+      const sentiment = analyzeSentiment(product.reviews);
+      const marketing = generateMarketingMessage(product.name, sentiment);
+      const geoMessages = generateGeoMarketingMessages(product.name, sentiment);
+      return { product, sentiment, marketing, geoMessages };
+    });
 
-    setProduct(result);
-    setSentiment(sentimentResult);
-    setMarketing(marketingResult);
-    setGeoMessages(geoResult);
+    setResults(analyzed);
     setIsLoading(false);
   };
+
+  const hasResults = results.length > 0;
+  const isMulti = results.length > 1;
+
+  // Group results by category
+  const groupedResults = results.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
+    const cat = item.product.category;
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,7 +93,7 @@ const Index = () => {
       </div>
 
       {/* Stats Bar */}
-      {!product && !error && (
+      {!hasResults && !error && (
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -93,7 +109,6 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Collection Criteria & Country Insights */}
           <div className="mt-8 space-y-4">
             <CollectionCriteria />
             <RedditCountryInsights />
@@ -112,20 +127,55 @@ const Index = () => {
       )}
 
       {/* Results */}
-      {product && sentiment && marketing && (
+      {hasResults && (
         <div className="container mx-auto px-4 py-8 space-y-6 animate-slide-up">
-          <h2 className="text-2xl font-bold font-heading">
-            📊 <span className="text-gradient">{product.name}</span> 분석 결과
-          </h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SentimentChart sentiment={sentiment} />
-            <KeywordCloud keywords={sentiment.keywords} />
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-2xl font-bold font-heading">
+              📊 <span className="text-gradient">"{searchQuery}"</span> 검색 결과
+            </h2>
+            <Badge variant="secondary" className="text-sm">
+              {results.length}개 제품
+            </Badge>
           </div>
 
-          <MarketingPanel marketing={marketing} />
-          <GeoMarketingPanel geoMessages={geoMessages} productName={product.name} />
-          <ReviewList reviews={product.reviews} />
+          {isMulti ? (
+            /* Multi-product: category tabs */
+            <Tabs defaultValue={results[0].product.name} className="w-full">
+              {/* Category grouped tab list */}
+              <div className="space-y-3 mb-6">
+                {Object.entries(groupedResults).map(([category, items]) => (
+                  <div key={category} className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary">
+                      {category}
+                    </Badge>
+                    <TabsList className="h-auto p-1 bg-secondary/50">
+                      {items.map((item) => (
+                        <TabsTrigger
+                          key={item.product.name}
+                          value={item.product.name}
+                          className="text-xs sm:text-sm px-3 py-1.5"
+                        >
+                          <span className="font-mono">{item.product.name}</span>
+                          <span className="hidden sm:inline ml-2 text-muted-foreground text-xs">
+                            {item.product.displayName}
+                          </span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+                ))}
+              </div>
+
+              {results.map((item) => (
+                <TabsContent key={item.product.name} value={item.product.name} className="space-y-6">
+                  <ProductAnalysisView item={item} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          ) : (
+            /* Single product result */
+            <ProductAnalysisView item={results[0]} />
+          )}
         </div>
       )}
 
@@ -136,5 +186,32 @@ const Index = () => {
     </div>
   );
 };
+
+function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+          {item.product.category}
+        </Badge>
+        <h3 className="text-xl font-bold font-heading">
+          <span className="font-mono">{item.product.name}</span>
+          <span className="text-muted-foreground text-base font-normal ml-2">
+            {item.product.displayName}
+          </span>
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SentimentChart sentiment={item.sentiment} />
+        <KeywordCloud keywords={item.sentiment.keywords} />
+      </div>
+
+      <MarketingPanel marketing={item.marketing} />
+      <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} />
+      <ReviewList reviews={item.product.reviews} />
+    </>
+  );
+}
 
 export default Index;
