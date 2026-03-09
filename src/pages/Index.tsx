@@ -4,6 +4,7 @@ import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { MarketingPanel } from "@/components/MarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
+import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { searchProducts, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, type MarketingOutput } from "@/lib/formatMessage";
@@ -83,6 +84,11 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">{desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* Collection Criteria */}
+          <div className="mt-8">
+            <CollectionCriteria />
           </div>
         </div>
       )}
