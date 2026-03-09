@@ -49,6 +49,8 @@ export const dummyProducts: Record<string, ProductData> = {
   },
   "17Z90TL-H.AUB9U1": {
     name: "17Z90TL-H.AUB9U1",
+    displayName: "LG gram 17\" Copilot+ PC",
+    category: "Laptop",
     reviews: [
       { id: "gr-1", source: "reddit", author: "u/ultralight_fan", text: "At 1.35kg for a 17-inch laptop, the gram 17 is engineering magic. I carry it everywhere and my back thanks me. Battery lasts all day too.", date: "2026-01-10", sentiment: "positive", score: 0.92 },
       { id: "gr-2", source: "amazon", author: "BusinessPro", text: "Perfect for productivity. The large 16:10 screen is great for spreadsheets. Keyboard feel is decent but trackpad could be better.", date: "2025-12-15", rating: 4, sentiment: "positive", score: 0.72 },
