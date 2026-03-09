@@ -90,12 +90,77 @@ export const dummyProducts: Record<string, ProductData> = {
 
 export const getProductNames = (): string[] => Object.keys(dummyProducts);
 
+export const getProductList = (): { name: string; displayName: string; category: ProductCategory }[] =>
+  Object.values(dummyProducts).map(({ name, displayName, category }) => ({ name, displayName, category }));
+
+export const getCategories = (): ProductCategory[] =>
+  [...new Set(Object.values(dummyProducts).map((p) => p.category))];
+
+// Search keywords mapping for category/brand name matching
+const searchAliases: Record<string, string[]> = {
+  "oled": ["OLED97G5WUA"],
+  "g5": ["OLED97G5WUA"],
+  "ultragear": ["52G930B-B"],
+  "g9": ["52G930B-B"],
+  "gram": ["17Z90TL-H.AUB9U1"],
+  "laptop": ["17Z90TL-H.AUB9U1"],
+  "washtower": ["WKHC252HBA"],
+  "wash tower": ["WKHC252HBA"],
+  "washer": ["WKHC252HBA"],
+  "laundry": ["WKHC252HBA"],
+  "cinebeam": ["PU615U"],
+  "projector": ["PU615U"],
+};
+
 export const searchProducts = (query: string): ProductData | null => {
   const normalizedQuery = query.toLowerCase().trim();
+  // Direct model number match
   for (const [key, value] of Object.entries(dummyProducts)) {
     if (key.toLowerCase().includes(normalizedQuery) || normalizedQuery.includes(key.toLowerCase())) {
       return value;
     }
   }
+  // Alias match (return first match)
+  for (const [alias, modelNumbers] of Object.entries(searchAliases)) {
+    if (normalizedQuery.includes(alias)) {
+      const modelKey = modelNumbers[0];
+      if (dummyProducts[modelKey]) return dummyProducts[modelKey];
+    }
+  }
   return null;
+};
+
+export const searchProductsMulti = (query: string): ProductData[] => {
+  const normalizedQuery = query.toLowerCase().trim();
+  const results: Set<string> = new Set();
+
+  // Direct model number match
+  for (const [key] of Object.entries(dummyProducts)) {
+    if (key.toLowerCase().includes(normalizedQuery) || normalizedQuery.includes(key.toLowerCase())) {
+      results.add(key);
+    }
+  }
+
+  // Alias match
+  for (const [alias, modelNumbers] of Object.entries(searchAliases)) {
+    if (normalizedQuery.includes(alias)) {
+      modelNumbers.forEach((m) => results.add(m));
+    }
+  }
+
+  // Display name match
+  for (const [key, value] of Object.entries(dummyProducts)) {
+    if (value.displayName.toLowerCase().includes(normalizedQuery)) {
+      results.add(key);
+    }
+  }
+
+  // Category match
+  for (const [key, value] of Object.entries(dummyProducts)) {
+    if (value.category.toLowerCase().includes(normalizedQuery)) {
+      results.add(key);
+    }
+  }
+
+  return [...results].map((k) => dummyProducts[k]).filter(Boolean);
 };
