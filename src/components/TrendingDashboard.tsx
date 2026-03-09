@@ -175,6 +175,55 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
     { value: "bestreviews", label: "BestReviews", icon: <BarChart3 className="h-4 w-4" />, products: bestreviewsTrending, keywords: bestreviewsKeywords, emoji: "🏆" },
   ];
 
+  const allProducts = useMemo(() => {
+    const merged = new Map<string, { displayName: string; category: string; totalMentions: number; avgSentiment: number; sourceCount: number; maxChange: number }>();
+    sources.forEach((s) => {
+      s.products.forEach((p) => {
+        const existing = merged.get(p.modelNumber);
+        if (existing) {
+          existing.totalMentions += p.mentions;
+          existing.avgSentiment = (existing.avgSentiment * existing.sourceCount + p.sentimentScore) / (existing.sourceCount + 1);
+          existing.sourceCount += 1;
+          if (Math.abs(p.changePercent) > Math.abs(existing.maxChange)) existing.maxChange = p.changePercent;
+        } else {
+          merged.set(p.modelNumber, { displayName: p.displayName, category: p.category, totalMentions: p.mentions, avgSentiment: p.sentimentScore, sourceCount: 1, maxChange: p.changePercent });
+        }
+      });
+    });
+    return [...merged.entries()].sort((a, b) => b[1].totalMentions - a[1].totalMentions);
+  }, []);
+
+  const allKeywords = useMemo(() => {
+    const merged = new Map<string, { count: number; sentiment: "positive" | "negative"; change: number }>();
+    sources.forEach((s) => {
+      s.keywords.forEach((k) => {
+        const existing = merged.get(k.keyword);
+        if (existing) {
+          existing.count += k.count;
+          existing.change = Math.max(existing.change, k.change);
+        } else {
+          merged.set(k.keyword, { ...k });
+        }
+      });
+    });
+    return [...merged.entries()].sort((a, b) => b[1].count - a[1].count);
+  }, []);
+
+  const top3 = allProducts.slice(0, 3);
+  const risingProduct = allProducts.filter(([, v]) => v.maxChange > 0).sort((a, b) => b[1].maxChange - a[1].maxChange)[0];
+  const topPosKeywords = allKeywords.filter(([, v]) => v.sentiment === "positive").slice(0, 3).map(([k]) => k);
+  const topNegKeywords = allKeywords.filter(([, v]) => v.sentiment === "negative").slice(0, 3).map(([k]) => k);
+  const totalMentions = allProducts.reduce((sum, [, v]) => sum + v.totalMentions, 0);
+  const avgSentiment = Math.round(allProducts.reduce((sum, [, v]) => sum + v.avgSentiment, 0) / allProducts.length);
+
+  const insights = [
+    `📊 전체 ${sources.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`,
+    `🏆 주간 언급량 TOP 3: ${top3.map(([, v], i) => `${i + 1}위 ${v.displayName} (${v.totalMentions.toLocaleString()}건)`).join(", ")}`,
+    risingProduct ? `🚀 가장 급상승 제품: ${risingProduct[1].displayName} (주간 변동 +${risingProduct[1].maxChange}%) — 신규 출시 및 전문 리뷰 확산 영향` : "",
+    `👍 긍정 키워드 TOP 3: ${topPosKeywords.join(", ")} — 화질·가성비·편의성 중심의 호평이 지속되고 있습니다.`,
+    `⚠️ 부정 키워드 TOP 3: ${topNegKeywords.join(", ")} — CS 응대 및 소프트웨어 개선이 필요한 것으로 분석됩니다.`,
+  ].filter(Boolean);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -183,6 +232,17 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
         <Badge variant="secondary" className="text-xs">
           Live · 주간 집계
         </Badge>
+      </div>
+
+      {/* 전채널 트렌드 요약 인사이트 */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 전채널 주간 트렌드 인사이트 리포트</h3>
+        </div>
+        {insights.map((line, i) => (
+          <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
+        ))}
       </div>
 
       <Tabs defaultValue="reddit" className="w-full">
