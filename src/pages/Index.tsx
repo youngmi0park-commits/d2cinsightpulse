@@ -85,6 +85,11 @@ const Index = () => {
               </div>
             ))}
           </div>
+
+          {/* Collection Criteria */}
+          <div className="mt-8">
+            <CollectionCriteria />
+          </div>
         </div>
       )}
 
