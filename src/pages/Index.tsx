@@ -199,11 +199,8 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <Badge variant="outline" className="text-xs border-primary/30 text-primary">
           {item.product.category}
         </Badge>
-        <h3 className="text-xl font-bold font-heading">
-          <span className="font-mono">{item.product.name}</span>
-          <span className="text-muted-foreground text-base font-normal ml-2">
-            {item.product.displayName}
-          </span>
+        <h3 className="text-xl font-bold font-heading font-mono">
+          {item.product.name}
         </h3>
       </div>
 
