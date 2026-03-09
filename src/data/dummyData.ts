@@ -21,6 +21,8 @@ export interface ProductData {
 export const dummyProducts: Record<string, ProductData> = {
   "OLED97G5WUA": {
     name: "OLED97G5WUA",
+    displayName: "LG OLED evo AI G5 97\"",
+    category: "TV",
     reviews: [
       { id: "g5-1", source: "reddit", author: "u/tv_enthusiast", text: "The LG OLED evo G5 is absolutely stunning. The picture quality with Hyper Radiant Color Tech is unreal. HDR content looks amazing and the blacks are truly infinite. Best TV I've ever owned!", date: "2026-02-15", sentiment: "positive", score: 0.95 },
       { id: "g5-2", source: "reddit", author: "u/home_theater_guy", text: "Gaming on the G5 is incredible. 4K 144Hz with VRR and near-zero input lag. The α11 AI processor upscaling is noticeably better than previous gen. Worth every penny.", date: "2026-01-20", sentiment: "positive", score: 0.91 },
