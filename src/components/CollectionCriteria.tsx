@@ -9,6 +9,12 @@ const criteria = [
     items: [
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram 등)",
       "Amazon — 제품별 리뷰 섹션 (US, UK, CA, DE, IN, FR 등 주요 마켓플레이스)",
+      "RTINGS — TV·모니터·프로젝터 전문 리뷰 및 측정 데이터",
+      "Trusted Reviews — TV·모니터·노트북 전문 에디터 리뷰 (UK 기반)",
+      "Consumer Reports — 가전·TV·노트북 소비자 평가 및 신뢰도 리포트 (US 기반)",
+      "CNET — 테크 미디어 에디터 리뷰 및 Editor's Choice 평가",
+      "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가",
+      "BestReviews — 가전·프로젝터 종합 추천 리뷰",
     ],
   },
   {
