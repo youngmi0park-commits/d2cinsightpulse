@@ -29,8 +29,8 @@ export function ReviewList({ reviews }: ReviewListProps) {
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded font-mono ${review.source === "reddit" ? "bg-accent/20 text-accent" : "bg-warning/20 text-warning"}`}>
-                  {review.source === "reddit" ? "Reddit" : "Amazon"}
+                <span className={`text-xs px-2 py-0.5 rounded font-mono ${sourceStyle(review.source)}`}>
+                  {sourceLabel(review.source)}
                 </span>
                 <span className="text-sm text-muted-foreground">{review.author}</span>
               </div>

@@ -95,6 +95,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "cb-4", source: "amazon", author: "BrightRoomUser", text: "Not great in bright rooms. You really need blackout curtains for the best experience. Colors wash out with ambient light.", date: "2025-10-18", rating: 3, sentiment: "negative", score: 0.25 },
       { id: "cb-5", source: "reddit", author: "u/audiophile_too", text: "Built-in speakers are surprisingly decent for casual viewing. But for movie night, pair it with a soundbar. The free soundbar bundle deal is amazing!", date: "2026-02-05", sentiment: "positive", score: 0.82 },
       { id: "cb-6", source: "amazon", author: "ValueHunter", text: "Expensive compared to competitors like Epson and BenQ. You're paying a premium for the LG brand and webOS. Worth it if you're in the LG ecosystem.", date: "2025-11-30", rating: 3, sentiment: "neutral", score: 0.42 },
+      { id: "cb-7", source: "rtings", author: "RTINGS.com", text: "Solid UST projector with excellent color accuracy and good HDR performance. Input lag is low enough for casual gaming. Fan noise is slightly above average.", date: "2026-02-14", rating: 4, sentiment: "positive", score: 0.85 },
+      { id: "cb-8", source: "cnet", author: "CNET", text: "The CineBeam S is a premium UST projector that delivers on picture quality. WebOS integration is a huge plus. Best suited for dedicated home theater rooms with light control.", date: "2026-01-18", rating: 4, sentiment: "positive", score: 0.83 },
     ],
   },
 };
