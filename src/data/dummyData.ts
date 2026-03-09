@@ -48,6 +48,9 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "ug-4", source: "amazon", author: "BudgetGamer", text: "Way too expensive for most people. The price is absolutely insane. Great monitor but hard to justify unless you're a hardcore enthusiast.", date: "2025-12-20", rating: 3, sentiment: "negative", score: 0.22 },
       { id: "ug-5", source: "reddit", author: "u/ultrawide_fan", text: "5K2K resolution gives you so much screen real estate for productivity too. I use it for coding during the day and gaming at night. Dual purpose perfection.", date: "2026-02-05", sentiment: "positive", score: 0.89 },
       { id: "ug-6", source: "amazon", author: "DigitalTrendsReader", text: "Digital Trends Readers' Choice winner for good reason. The curve is immersive without being disorienting. HDR gaming on this is next level.", date: "2026-01-08", rating: 5, sentiment: "positive", score: 0.93 },
+      { id: "ug-7", source: "rtings", author: "RTINGS.com", text: "Best gaming monitor we've tested. Exceptional motion handling at 240Hz, near-instant response times, and perfect blacks. The 52-inch size is ideal for immersive gaming from couch distance.", date: "2026-02-18", rating: 5, sentiment: "positive", score: 0.96 },
+      { id: "ug-8", source: "trusted_reviews", author: "Trusted Reviews", text: "A remarkable feat of engineering. The UltraGear G9 52\" delivers console-quality immersion with PC-grade performance. Only downside is the steep price tag.", date: "2026-01-30", rating: 4, sentiment: "positive", score: 0.88 },
+      { id: "ug-9", source: "cnet", author: "CNET", text: "LG's 52-inch OLED gaming monitor is a dream for enthusiasts. 240Hz refresh rate with HDMI 2.1 and DisplayPort 2.1 covers all bases. Editor's Choice award.", date: "2026-02-12", rating: 5, sentiment: "positive", score: 0.94 },
     ],
   },
   "17Z90TL-H.AUB9U1": {
