@@ -1,9 +1,15 @@
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   redditTrending, amazonTrending,
   redditKeywords, amazonKeywords,
+  rtingsTrending, rtingsKeywords,
+  trustedReviewsTrending, trustedReviewsKeywords,
+  consumerReportsTrending, consumerReportsKeywords,
+  cnetTrending, cnetKeywords,
+  trustpilotTrending, trustpilotKeywords,
+  bestreviewsTrending, bestreviewsKeywords,
   type TrendingProduct, type TrendingKeyword,
 } from "@/data/trendingData";
 
@@ -99,7 +105,6 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Positive */}
       <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
         <div className="flex items-center gap-2 mb-3">
           <ThumbsUp className="h-4 w-4 text-green-600" />
@@ -110,27 +115,18 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
             <div key={kw.keyword} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm">{kw.keyword}</span>
-                {kw.change > 20 && (
-                  <ArrowUpRight className="h-3 w-3 text-green-600" />
-                )}
+                {kw.change > 20 && <ArrowUpRight className="h-3 w-3 text-green-600" />}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-16 h-1.5 bg-green-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 rounded-full"
-                    style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }}
-                  />
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }} />
                 </div>
-                <span className="text-xs font-mono text-green-700 w-12 text-right">
-                  {kw.count.toLocaleString()}
-                </span>
+                <span className="text-xs font-mono text-green-700 w-12 text-right">{kw.count.toLocaleString()}</span>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Negative */}
       <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
         <div className="flex items-center gap-2 mb-3">
           <ThumbsDown className="h-4 w-4 text-red-500" />
@@ -141,20 +137,13 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
             <div key={kw.keyword} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm">{kw.keyword}</span>
-                {kw.change > 20 && (
-                  <ArrowDownRight className="h-3 w-3 text-red-500" />
-                )}
+                {kw.change > 20 && <ArrowDownRight className="h-3 w-3 text-red-500" />}
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-16 h-1.5 bg-red-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-red-500 rounded-full"
-                    style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }}
-                  />
+                  <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }} />
                 </div>
-                <span className="text-xs font-mono text-red-700 w-12 text-right">
-                  {kw.count.toLocaleString()}
-                </span>
+                <span className="text-xs font-mono text-red-700 w-12 text-right">{kw.count.toLocaleString()}</span>
               </div>
             </div>
           ))}
@@ -164,7 +153,27 @@ function KeywordPanel({ keywords }: { keywords: TrendingKeyword[] }) {
   );
 }
 
+interface SourceTabConfig {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+  products: TrendingProduct[];
+  keywords: TrendingKeyword[];
+  emoji: string;
+}
+
 export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
+  const sources: SourceTabConfig[] = [
+    { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, products: redditTrending, keywords: redditKeywords, emoji: "🔥" },
+    { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, products: amazonTrending, keywords: amazonKeywords, emoji: "🔥" },
+    { value: "rtings", label: "RTINGS", icon: <Monitor className="h-4 w-4" />, products: rtingsTrending, keywords: rtingsKeywords, emoji: "📊" },
+    { value: "trusted_reviews", label: "Trusted Reviews", icon: <Star className="h-4 w-4" />, products: trustedReviewsTrending, keywords: trustedReviewsKeywords, emoji: "⭐" },
+    { value: "consumer_reports", label: "Consumer Reports", icon: <Shield className="h-4 w-4" />, products: consumerReportsTrending, keywords: consumerReportsKeywords, emoji: "🛡️" },
+    { value: "cnet", label: "CNET", icon: <Tv className="h-4 w-4" />, products: cnetTrending, keywords: cnetKeywords, emoji: "📡" },
+    { value: "trustpilot", label: "Trustpilot", icon: <Award className="h-4 w-4" />, products: trustpilotTrending, keywords: trustpilotKeywords, emoji: "💬" },
+    { value: "bestreviews", label: "BestReviews", icon: <BarChart3 className="h-4 w-4" />, products: bestreviewsTrending, keywords: bestreviewsKeywords, emoji: "🏆" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -176,46 +185,32 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
       </div>
 
       <Tabs defaultValue="reddit" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-xs">
-          <TabsTrigger value="reddit" className="gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Reddit
-          </TabsTrigger>
-          <TabsTrigger value="amazon" className="gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            Amazon
-          </TabsTrigger>
+        <TabsList className="flex flex-wrap h-auto gap-1 p-1">
+          {sources.map((s) => (
+            <TabsTrigger key={s.value} value={s.value} className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+              {s.icon}
+              <span className="hidden sm:inline">{s.label}</span>
+              <span className="sm:hidden">{s.label.split(" ")[0]}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="reddit" className="space-y-6 mt-4">
-          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-              🔥 Reddit 언급량 TOP 10
-            </h3>
-            <ProductTable products={redditTrending} onProductClick={onProductClick} />
-          </div>
-          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-              💬 Reddit 주요 긍·부정 키워드
-            </h3>
-            <KeywordPanel keywords={redditKeywords} />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="amazon" className="space-y-6 mt-4">
-          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-              🔥 Amazon 언급량 TOP 10
-            </h3>
-            <ProductTable products={amazonTrending} onProductClick={onProductClick} />
-          </div>
-          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-              💬 Amazon 주요 긍·부정 키워드
-            </h3>
-            <KeywordPanel keywords={amazonKeywords} />
-          </div>
-        </TabsContent>
+        {sources.map((s) => (
+          <TabsContent key={s.value} value={s.value} className="space-y-6 mt-4">
+            <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+                {s.emoji} {s.label} 언급량 TOP {s.products.length}
+              </h3>
+              <ProductTable products={s.products} onProductClick={onProductClick} />
+            </div>
+            <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+                💬 {s.label} 주요 긍·부정 키워드
+              </h3>
+              <KeywordPanel keywords={s.keywords} />
+            </div>
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );

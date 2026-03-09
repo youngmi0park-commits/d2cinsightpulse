@@ -71,3 +71,111 @@ export const amazonKeywords: TrendingKeyword[] = [
   { keyword: "overheating", count: 876, sentiment: "negative", change: 42 },
   { keyword: "design", count: 812, sentiment: "positive", change: 14 },
 ];
+
+export const rtingsTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 156, sentimentScore: 95, trend: "up", changePercent: 12 },
+  { rank: 2, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 142, sentimentScore: 96, trend: "up", changePercent: 55 },
+  { rank: 3, modelNumber: "52G930B-B", displayName: "UltraGear evo G9 52\"", category: "Monitor", mentions: 134, sentimentScore: 94, trend: "up", changePercent: 38 },
+  { rank: 4, modelNumber: "34GS95QE-B", displayName: "UltraGear OLED 34\"", category: "Monitor", mentions: 121, sentimentScore: 92, trend: "up", changePercent: 20 },
+  { rank: 5, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 98, sentimentScore: 88, trend: "stable", changePercent: 3 },
+  { rank: 6, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 87, sentimentScore: 86, trend: "up", changePercent: 18 },
+  { rank: 7, modelNumber: "27GS95QE-B", displayName: "UltraGear OLED 27\"", category: "Monitor", mentions: 76, sentimentScore: 91, trend: "up", changePercent: 14 },
+];
+
+export const rtingsKeywords: TrendingKeyword[] = [
+  { keyword: "color accuracy", count: 412, sentiment: "positive", change: 18 },
+  { keyword: "HDR brightness", count: 387, sentiment: "positive", change: 25 },
+  { keyword: "response time", count: 354, sentiment: "positive", change: 12 },
+  { keyword: "reflection handling", count: 298, sentiment: "positive", change: 32 },
+  { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5 },
+  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8 },
+  { keyword: "input lag", count: 176, sentiment: "positive", change: 15 },
+  { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11 },
+];
+
+export const trustedReviewsTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 89, sentimentScore: 94, trend: "up", changePercent: 65 },
+  { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 76, sentimentScore: 91, trend: "up", changePercent: 15 },
+  { rank: 3, modelNumber: "52G930B-B", displayName: "UltraGear evo G9 52\"", category: "Monitor", mentions: 64, sentimentScore: 90, trend: "up", changePercent: 28 },
+  { rank: 4, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 52, sentimentScore: 83, trend: "stable", changePercent: 5 },
+  { rank: 5, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 41, sentimentScore: 84, trend: "up", changePercent: 22 },
+];
+
+export const trustedReviewsKeywords: TrendingKeyword[] = [
+  { keyword: "build quality", count: 234, sentiment: "positive", change: 12 },
+  { keyword: "value proposition", count: 198, sentiment: "positive", change: 8 },
+  { keyword: "software experience", count: 176, sentiment: "negative", change: 22 },
+  { keyword: "design premium", count: 165, sentiment: "positive", change: 18 },
+  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15 },
+  { keyword: "innovation", count: 132, sentiment: "positive", change: 30 },
+];
+
+export const consumerReportsTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 210, sentimentScore: 93, trend: "up", changePercent: 20 },
+  { rank: 2, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 187, sentimentScore: 82, trend: "up", changePercent: 14 },
+  { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 165, sentimentScore: 92, trend: "up", changePercent: 48 },
+  { rank: 4, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 132, sentimentScore: 74, trend: "down", changePercent: -6 },
+  { rank: 5, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 119, sentimentScore: 85, trend: "stable", changePercent: 2 },
+  { rank: 6, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 98, sentimentScore: 80, trend: "up", changePercent: 9 },
+];
+
+export const consumerReportsKeywords: TrendingKeyword[] = [
+  { keyword: "reliability", count: 543, sentiment: "positive", change: 8 },
+  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15 },
+  { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12 },
+  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5 },
+  { keyword: "noise output", count: 298, sentiment: "negative", change: 18 },
+  { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10 },
+];
+
+export const cnetTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 178, sentimentScore: 93, trend: "up", changePercent: 58 },
+  { rank: 2, modelNumber: "52G930B-B", displayName: "UltraGear evo G9 52\"", category: "Monitor", mentions: 156, sentimentScore: 92, trend: "up", changePercent: 40 },
+  { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 143, sentimentScore: 90, trend: "up", changePercent: 16 },
+  { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 112, sentimentScore: 85, trend: "up", changePercent: 25 },
+  { rank: 5, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 98, sentimentScore: 82, trend: "stable", changePercent: 4 },
+  { rank: 6, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 87, sentimentScore: 79, trend: "up", changePercent: 11 },
+];
+
+export const cnetKeywords: TrendingKeyword[] = [
+  { keyword: "editor's choice", count: 321, sentiment: "positive", change: 28 },
+  { keyword: "best in class", count: 287, sentiment: "positive", change: 22 },
+  { keyword: "price concern", count: 243, sentiment: "negative", change: 10 },
+  { keyword: "smart features", count: 212, sentiment: "positive", change: 35 },
+  { keyword: "software bloat", count: 187, sentiment: "negative", change: 18 },
+  { keyword: "future-proof", count: 165, sentiment: "positive", change: 14 },
+];
+
+export const trustpilotTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 432, sentimentScore: 71, trend: "stable", changePercent: 2 },
+  { rank: 2, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 321, sentimentScore: 65, trend: "down", changePercent: -8 },
+  { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 287, sentimentScore: 78, trend: "up", changePercent: 12 },
+  { rank: 4, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 198, sentimentScore: 74, trend: "stable", changePercent: -1 },
+  { rank: 5, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 165, sentimentScore: 76, trend: "up", changePercent: 8 },
+];
+
+export const trustpilotKeywords: TrendingKeyword[] = [
+  { keyword: "customer service", count: 876, sentiment: "negative", change: 20 },
+  { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5 },
+  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15 },
+  { keyword: "product quality", count: 487, sentiment: "positive", change: 8 },
+  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25 },
+  { keyword: "value for money", count: 354, sentiment: "positive", change: 12 },
+];
+
+export const bestreviewsTrending: TrendingProduct[] = [
+  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 98, sentimentScore: 84, trend: "up", changePercent: 18 },
+  { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 87, sentimentScore: 91, trend: "up", changePercent: 14 },
+  { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 76, sentimentScore: 93, trend: "up", changePercent: 52 },
+  { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 65, sentimentScore: 82, trend: "up", changePercent: 20 },
+  { rank: 5, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 54, sentimentScore: 73, trend: "down", changePercent: -5 },
+];
+
+export const bestreviewsKeywords: TrendingKeyword[] = [
+  { keyword: "top pick", count: 198, sentiment: "positive", change: 22 },
+  { keyword: "best value", count: 176, sentiment: "positive", change: 15 },
+  { keyword: "ease of use", count: 154, sentiment: "positive", change: 18 },
+  { keyword: "durability concern", count: 132, sentiment: "negative", change: 10 },
+  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8 },
+  { keyword: "recommended", count: 98, sentiment: "positive", change: 25 },
+];
