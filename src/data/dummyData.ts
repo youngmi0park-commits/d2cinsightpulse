@@ -28,7 +28,7 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "g5-8", source: "amazon", author: "EarlyAdopter", text: "Absolutely love this TV. Setup was easy, picture is breathtaking, and the ultra-thin Gallery design looks amazing on the wall. Five stars!", date: "2025-12-30", rating: 5, sentiment: "positive", score: 0.96 },
     ],
   },
-  "LG UltraGear evo G9 52"": {
+  "LG UltraGear evo G9": {
     name: "LG UltraGear evo G9 52\"",
     reviews: [
       { id: "ug-1", source: "reddit", author: "u/pcmr_elite", text: "The world's largest 5K2K gaming monitor lives up to the hype. 52 inches of curved immersion at 240Hz. This thing is absolutely incredible for sim racing and RPGs.", date: "2026-02-10", sentiment: "positive", score: 0.94 },
