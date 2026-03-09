@@ -6,6 +6,7 @@ import { MarketingPanel } from "@/components/MarketingPanel";
 import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
+import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { searchProducts, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
@@ -91,9 +92,10 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Collection Criteria */}
-          <div className="mt-8">
+          {/* Collection Criteria & Country Insights */}
+          <div className="mt-8 space-y-4">
             <CollectionCriteria />
+            <RedditCountryInsights />
           </div>
         </div>
       )}

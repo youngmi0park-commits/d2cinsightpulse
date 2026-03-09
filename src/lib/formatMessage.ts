@@ -21,7 +21,7 @@ export interface GeoMessage {
     body: string;
     cta: string;
     hashtags: string[];
-    schema?: Record<string, unknown>; // JSON-LD for AI crawlers
+    schema?: Record<string, unknown>;
   }[];
 }
 
@@ -39,7 +39,7 @@ export function generateGeoMarketingMessages(
   return [
     {
       geo: "us",
-      geoLabel: "North America",
+      geoLabel: "United States",
       flag: "🇺🇸",
       language: "English",
       messages: [
@@ -90,28 +90,173 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "eu",
-      geoLabel: "Europe",
-      flag: "🇪🇺",
-      language: "English (EU)",
+      geo: "uk",
+      geoLabel: "United Kingdom",
+      flag: "🇬🇧",
+      language: "English (UK)",
       messages: [
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
-          headline: `Trusted by users across Europe — the ${productName} scores ${score}/100.`,
-          body: `European consumers highlight ${pros.join(", ")} in their reviews. With energy efficiency and sustainability at its core, the ${productName} is designed for the modern European home.`,
-          cta: "Discover More at LG.com/eu →",
-          hashtags: ["#LGEurope", "#EnergyEfficient", "#SmartLiving", `#${productName.replace(/\s+/g, "")}`],
+          headline: `UK users rate the ${productName} ${score}/100 — see what they're saying.`,
+          body: `From HDR tone-mapping for Sky Sports to Freeview compatibility, British consumers praise ${pros.join(", ")}. Available at Currys, Richer Sounds, and LG.com/UK.`,
+          cta: "Shop at LG.com/UK →",
+          hashtags: ["#LGUK", `#${productName.replace(/\s+/g, "")}`, "#TechUK", "#SmartHome"],
         },
         {
           purpose: "pdp",
           purposeLabel: "Product Page Copy",
           icon: "🛒",
-          headline: `${productName} — Rated ${(averageScore * 5).toFixed(1)}/5 by verified European buyers`,
-          body: `Consumers across the EU praise ${pros.join(" and ")}. Compliant with EU energy standards and backed by LG's 2-year manufacturer warranty. ${cons.length > 0 ? `Note: some users mentioned ${cons.join(", ")}.` : ""}`,
-          cta: "Find a Retailer Near You",
+          headline: `${productName} — Rated ${(averageScore * 5).toFixed(1)}/5 by UK buyers`,
+          body: `UK consumers highlight ${pros.join(" and ")}. Energy-rated and backed by LG's manufacturer warranty. ${cons.length > 0 ? `Some users noted ${cons.join(", ")}.` : ""}`,
+          cta: "Find a UK Retailer",
           hashtags: [],
+        },
+      ],
+    },
+    {
+      geo: "ca",
+      geoLabel: "Canada",
+      flag: "🇨🇦",
+      language: "English (CA)",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `Canadian tech fans agree: the ${productName} delivers. ${score}/100 score.`,
+          body: `Cross-border price comparisons, Costco Canada warranty, and Best Buy price match — Canadian Reddit users love ${pros.join(", ")}. Built to perform in every season.`,
+          cta: "Shop at LG.com/CA →",
+          hashtags: ["#LGCanada", `#${productName.replace(/\s+/g, "")}`, "#TechCanada"],
+        },
+        {
+          purpose: "pdp",
+          purposeLabel: "Product Page Copy",
+          icon: "🛒",
+          headline: `${productName} — ${posPercent}% satisfaction from verified North American reviews`,
+          body: `Canadian buyers praise ${pros.join(" and ")}. ${cons.length > 0 ? `Feedback on ${cons.join(", ")} is being addressed.` : "No significant complaints."} Available with local warranty and coast-to-coast service.`,
+          cta: "Check Canadian Pricing",
+          hashtags: [],
+        },
+      ],
+    },
+    {
+      geo: "au",
+      geoLabel: "Australia",
+      flag: "🇦🇺",
+      language: "English (AU)",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `Aussies love the ${productName} — ${posPercent}% positive reviews.`,
+          body: `From AFL/NRL motion handling to bright-room performance, Australian users highlight ${pros.join(", ")}. Available at JB Hi-Fi, Harvey Norman, and LG.com AU.`,
+          cta: "Shop at LG.com/AU →",
+          hashtags: ["#LGAustralia", `#${productName.replace(/\s+/g, "")}`, "#TechAU"],
+        },
+      ],
+    },
+    {
+      geo: "de",
+      geoLabel: "Germany",
+      flag: "🇩🇪",
+      language: "Deutsch / English",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `German tech enthusiasts rate the ${productName} ${score}/100.`,
+          body: `DVB-T2/SAT compatibility, Dolby Atmos passthrough, and EU warranty included. German Reddit users praise ${pros.join(", ")} — a top pick for bright European living rooms.`,
+          cta: "Jetzt entdecken auf LG.com/DE →",
+          hashtags: ["#LGDeutschland", `#${productName.replace(/\s+/g, "")}`, "#TechDE"],
+        },
+      ],
+    },
+    {
+      geo: "in",
+      geoLabel: "India",
+      flag: "🇮🇳",
+      language: "English (IN)",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `${productName} scores ${score}/100 — India's growing Reddit community weighs in.`,
+          body: `Indian consumers compare OLED vs QLED value, peak brightness performance, and service center availability. Top praise: ${pros.join(", ")}.`,
+          cta: "Explore at LG.com/IN →",
+          hashtags: ["#LGIndia", `#${productName.replace(/\s+/g, "")}`, "#TechIndia"],
+        },
+      ],
+    },
+    {
+      geo: "fr",
+      geoLabel: "France",
+      flag: "🇫🇷",
+      language: "Français / English",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `Les utilisateurs français plébiscitent le ${productName}. Score: ${score}/100.`,
+          body: `HDR sur Canal+/Netflix FR, performance anti-reflet, et garantie étendue chez Darty/Boulanger. Points forts: ${pros.join(", ")}.`,
+          cta: "Découvrir sur LG.com/FR →",
+          hashtags: ["#LGFrance", `#${productName.replace(/\s+/g, "")}`, "#TechFR"],
+        },
+      ],
+    },
+    {
+      geo: "br",
+      geoLabel: "Brazil",
+      flag: "🇧🇷",
+      language: "Português / English",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `${productName} — ${posPercent}% positive. Brazil's Reddit community speaks.`,
+          body: `From football broadcast OLED quality to streaming stability, Brazilian users highlight ${pros.join(", ")}. Price comparisons US vs BR and promo seasons are hot topics.`,
+          cta: "Confira em LG.com/BR →",
+          hashtags: ["#LGBrasil", `#${productName.replace(/\s+/g, "")}`, "#TechBR"],
+        },
+      ],
+    },
+    {
+      geo: "nl",
+      geoLabel: "Netherlands",
+      flag: "🇳🇱",
+      language: "Nederlands / English",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `Dutch tech forums rate the ${productName} ${score}/100.`,
+          body: `Bright room handling, calibration sharing, VRR flicker discussions, and EU energy labels. Dutch Reddit users appreciate ${pros.join(", ")}.`,
+          cta: "Ontdek meer op LG.com/NL →",
+          hashtags: ["#LGNL", `#${productName.replace(/\s+/g, "")}`, "#TechNL"],
+        },
+      ],
+    },
+    {
+      geo: "mx",
+      geoLabel: "Mexico",
+      flag: "🇲🇽",
+      language: "Español / English",
+      messages: [
+        {
+          purpose: "sns",
+          purposeLabel: "Social Media Ad",
+          icon: "📱",
+          headline: `${productName} — valorado ${score}/100 por la comunidad Reddit.`,
+          body: `Comparaciones de precios US vs MX, garantías y consolas 4K120 con ALLM. Los usuarios mexicanos destacan ${pros.join(", ")}.`,
+          cta: "Descubre en LG.com/MX →",
+          hashtags: ["#LGMexico", `#${productName.replace(/\s+/g, "")}`, "#TechMX"],
         },
       ],
     },
@@ -146,32 +291,6 @@ export function generateGeoMarketingMessages(
           headline: `[LG 인사이트] ${productName} 글로벌 고객 반응 리포트`,
           body: `안녕하세요, [고객님]\n\nReddit과 Amazon에서 수집한 ${total}건의 ${productName} 리뷰를 분석했습니다.\n\n✅ 만족도: ${score}/100\n✅ 핵심 강점: ${pros.join(", ")}\n${cons.length > 0 ? `⚠️ 개선 요청: ${cons.join(", ")}` : ""}\n\n해외 소비자의 생생한 목소리를 확인해 보세요.`,
           cta: "리포트 전문 보기 →",
-          hashtags: [],
-        },
-      ],
-    },
-    {
-      geo: "sea",
-      geoLabel: "Southeast Asia",
-      flag: "🌏",
-      language: "English (SEA)",
-      messages: [
-        {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
-          icon: "📱",
-          headline: `${productName} — Loved by ${posPercent}% of global users. Now in your region.`,
-          body: `From ${pros.join(" to ")}, the ${productName} delivers what Southeast Asian consumers want: reliability, innovation, and value. Satisfaction score: ${score}/100 from ${total} reviews.`,
-          cta: "Shop LG in Your Country →",
-          hashtags: ["#LGSEA", "#TechForLife", `#${productName.replace(/\s+/g, "")}`],
-        },
-        {
-          purpose: "pdp",
-          purposeLabel: "Product Page Copy",
-          icon: "🛒",
-          headline: `Global reviews confirm: ${productName} scores ${(averageScore * 5).toFixed(1)}/5`,
-          body: `Tropical-ready and built to last. Users worldwide praise ${pros.join(", ")}. ${cons.length > 0 ? `Minor feedback on ${cons.join(", ")} is being addressed.` : "Virtually complaint-free."} Available with local warranty and service support.`,
-          cta: "Check Local Availability",
           hashtags: [],
         },
       ],
