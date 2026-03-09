@@ -75,6 +75,8 @@ export const dummyProducts: Record<string, ProductData> = {
   },
   "PU615U": {
     name: "PU615U",
+    displayName: "LG CineBeam S 4K UST Projector",
+    category: "Projector",
     reviews: [
       { id: "cb-1", source: "reddit", author: "u/home_cinema", text: "The LG CineBeam is a fantastic projector. 4K HDR with incredible color accuracy. Replaced my 75-inch TV and never looked back. 120-inch screen in my living room!", date: "2026-01-20", sentiment: "positive", score: 0.94 },
       { id: "cb-2", source: "amazon", author: "MovieNight", text: "Easy setup with auto keystone and screen fit. WebOS built in so no need for a streaming stick. Great image quality even in moderate ambient light.", date: "2025-12-10", rating: 5, sentiment: "positive", score: 0.91 },
