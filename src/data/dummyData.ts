@@ -15,8 +15,8 @@ export interface ProductData {
 }
 
 export const dummyProducts: Record<string, ProductData> = {
-  "LG OLED evo G5": {
-    name: "LG OLED evo G5",
+  "OLED97G5WUA": {
+    name: "OLED97G5WUA",
     reviews: [
       { id: "g5-1", source: "reddit", author: "u/tv_enthusiast", text: "The LG OLED evo G5 is absolutely stunning. The picture quality with Hyper Radiant Color Tech is unreal. HDR content looks amazing and the blacks are truly infinite. Best TV I've ever owned!", date: "2026-02-15", sentiment: "positive", score: 0.95 },
       { id: "g5-2", source: "reddit", author: "u/home_theater_guy", text: "Gaming on the G5 is incredible. 4K 144Hz with VRR and near-zero input lag. The α11 AI processor upscaling is noticeably better than previous gen. Worth every penny.", date: "2026-01-20", sentiment: "positive", score: 0.91 },
@@ -28,8 +28,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "g5-8", source: "amazon", author: "EarlyAdopter", text: "Absolutely love this TV. Setup was easy, picture is breathtaking, and the ultra-thin Gallery design looks amazing on the wall. Five stars!", date: "2025-12-30", rating: 5, sentiment: "positive", score: 0.96 },
     ],
   },
-  "LG UltraGear evo G9": {
-    name: "LG UltraGear evo G9 52\"",
+  "52G930B-B": {
+    name: "52G930B-B",
     reviews: [
       { id: "ug-1", source: "reddit", author: "u/pcmr_elite", text: "The world's largest 5K2K gaming monitor lives up to the hype. 52 inches of curved immersion at 240Hz. This thing is absolutely incredible for sim racing and RPGs.", date: "2026-02-10", sentiment: "positive", score: 0.94 },
       { id: "ug-2", source: "reddit", author: "u/fps_addict", text: "240Hz at this size is buttery smooth. Response time is excellent. The OLED panel delivers perfect blacks. Best gaming monitor I've ever used, period.", date: "2026-01-28", sentiment: "positive", score: 0.92 },
@@ -39,8 +39,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "ug-6", source: "amazon", author: "DigitalTrendsReader", text: "Digital Trends Readers' Choice winner for good reason. The curve is immersive without being disorienting. HDR gaming on this is next level.", date: "2026-01-08", rating: 5, sentiment: "positive", score: 0.93 },
     ],
   },
-  "LG gram 17": {
-    name: "LG gram 17",
+  "17Z90TL-H.AUB9U1": {
+    name: "17Z90TL-H.AUB9U1",
     reviews: [
       { id: "gr-1", source: "reddit", author: "u/ultralight_fan", text: "At 1.35kg for a 17-inch laptop, the gram 17 is engineering magic. I carry it everywhere and my back thanks me. Battery lasts all day too.", date: "2026-01-10", sentiment: "positive", score: 0.92 },
       { id: "gr-2", source: "amazon", author: "BusinessPro", text: "Perfect for productivity. The large 16:10 screen is great for spreadsheets. Keyboard feel is decent but trackpad could be better.", date: "2025-12-15", rating: 4, sentiment: "positive", score: 0.72 },
@@ -50,8 +50,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "gr-6", source: "amazon", author: "StudentUser", text: "Great laptop for school. Lightweight, long battery, nice screen. Only complaint is the speaker quality is quite poor.", date: "2025-12-22", rating: 4, sentiment: "positive", score: 0.78 },
     ],
   },
-  "LG WashTower": {
-    name: "LG WashTower",
+  "WKHC252HBA": {
+    name: "WKHC252HBA",
     reviews: [
       { id: "wt-1", source: "reddit", author: "u/laundry_pro", text: "The LG WashTower is a space saver and performs incredibly well. AI Wash and Dry actually works — it detects fabric type and adjusts automatically. Super quiet too.", date: "2026-01-05", sentiment: "positive", score: 0.93 },
       { id: "wt-2", source: "amazon", author: "ApartmentDweller", text: "Perfect for small spaces. The single-unit design fits where a traditional washer-dryer stack wouldn't. Wash quality is excellent.", date: "2025-12-20", rating: 5, sentiment: "positive", score: 0.9 },
@@ -61,8 +61,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "wt-6", source: "amazon", author: "RepairNightmare", text: "Broke down after 14 months. Service took 3 weeks to schedule. When it works it's great, but reliability is a concern.", date: "2025-10-10", rating: 2, sentiment: "negative", score: 0.12 },
     ],
   },
-  "LG CineBeam Projector": {
-    name: "LG CineBeam Projector",
+  "PU615U": {
+    name: "PU615U",
     reviews: [
       { id: "cb-1", source: "reddit", author: "u/home_cinema", text: "The LG CineBeam is a fantastic projector. 4K HDR with incredible color accuracy. Replaced my 75-inch TV and never looked back. 120-inch screen in my living room!", date: "2026-01-20", sentiment: "positive", score: 0.94 },
       { id: "cb-2", source: "amazon", author: "MovieNight", text: "Easy setup with auto keystone and screen fit. WebOS built in so no need for a streaming stick. Great image quality even in moderate ambient light.", date: "2025-12-10", rating: 5, sentiment: "positive", score: 0.91 },
