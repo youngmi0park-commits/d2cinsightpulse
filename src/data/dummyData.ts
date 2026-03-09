@@ -9,8 +9,12 @@ export interface Review {
   score?: number;
 }
 
+export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Home Appliance" | "Projector";
+
 export interface ProductData {
   name: string;
+  displayName: string;
+  category: ProductCategory;
   reviews: Review[];
 }
 
