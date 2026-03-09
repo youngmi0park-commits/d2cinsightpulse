@@ -65,8 +65,9 @@ const Index = () => {
                 <span className="text-gradient">고객 보이스 리스닝</span>
               </h1>
             </div>
-            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Reddit · Amazon 리뷰 수집 → 감성 분석 → 마케팅 메시지 자동 변환
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,<br className="hidden md:inline" />
+              마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다.
             </p>
           </div>
           <SearchBar onSearch={handleSearch} isLoading={isLoading} />
