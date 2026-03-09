@@ -36,6 +36,8 @@ export const dummyProducts: Record<string, ProductData> = {
   },
   "52G930B-B": {
     name: "52G930B-B",
+    displayName: "LG UltraGear evo G9 52\"",
+    category: "Monitor",
     reviews: [
       { id: "ug-1", source: "reddit", author: "u/pcmr_elite", text: "The world's largest 5K2K gaming monitor lives up to the hype. 52 inches of curved immersion at 240Hz. This thing is absolutely incredible for sim racing and RPGs.", date: "2026-02-10", sentiment: "positive", score: 0.94 },
       { id: "ug-2", source: "reddit", author: "u/fps_addict", text: "240Hz at this size is buttery smooth. Response time is excellent. The OLED panel delivers perfect blacks. Best gaming monitor I've ever used, period.", date: "2026-01-28", sentiment: "positive", score: 0.92 },
