@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getProductList } from "@/data/dummyData";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { useLang } from "@/contexts/LanguageContext";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -23,8 +24,8 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const productList = getProductList();
+  const { t } = useLang();
 
-  // Group by category
   const grouped = productList.reduce<Record<string, typeof productList>>((acc, p) => {
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
@@ -42,7 +43,6 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
     onSearch(name);
   };
 
-  // Quick search by category
   const handleCategorySearch = (category: string) => {
     setQuery(category);
     setOpen(false);
@@ -57,20 +57,20 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="모델번호 또는 카테고리 검색 (예: WashTower, OLED)"
+            placeholder={t("Search by model number or category (e.g. WashTower, OLED)", "모델번호 또는 카테고리 검색 (예: WashTower, OLED)")}
             className="pl-12 h-14 text-lg bg-secondary border-border focus:border-primary focus:ring-primary/30"
           />
         </div>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="h-14 px-4" title="제품 리스트 보기">
+            <Button variant="outline" className="h-14 px-4" title={t("View product list", "제품 리스트 보기")}>
               <List className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="end">
             <div className="p-3 border-b border-border">
-              <p className="text-sm font-semibold">제품 리스트</p>
-              <p className="text-xs text-muted-foreground">카테고리 또는 모델번호 클릭 시 검색</p>
+              <p className="text-sm font-semibold">{t("Product List", "제품 리스트")}</p>
+              <p className="text-xs text-muted-foreground">{t("Click a category or model to search", "카테고리 또는 모델번호 클릭 시 검색")}</p>
             </div>
             <div className="max-h-80 overflow-y-auto p-2 space-y-3">
               {Object.entries(grouped).map(([category, products]) => (
@@ -82,7 +82,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
                     <Badge variant="outline" className="text-xs border-primary/30 text-primary cursor-pointer">
                       {categoryLabels[category] || category}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">전체 검색 →</span>
+                    <span className="text-xs text-muted-foreground">{t("Search all →", "전체 검색 →")}</span>
                   </button>
                   {products.map((p) => (
                     <button
@@ -106,7 +106,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
           disabled={isLoading || !query.trim()}
           className="h-14 px-8 text-lg glow-primary"
         >
-          {isLoading ? "분석 중..." : "분석"}
+          {isLoading ? t("Analyzing...", "분석 중...") : t("Analyze", "분석")}
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">

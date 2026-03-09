@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type GeoMessage } from "@/lib/formatMessage";
 import { Globe, Copy, Check, Code } from "lucide-react";
 import { toast } from "sonner";
+import { useLang } from "@/contexts/LanguageContext";
 
 interface GeoMarketingPanelProps {
   geoMessages: GeoMessage[];
@@ -13,6 +14,7 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
   const [activePurpose, setActivePurpose] = useState("sns");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSchema, setShowSchema] = useState(false);
+  const { t } = useLang();
 
   const currentGeo = geoMessages.find((g) => g.geo === activeGeo);
   const currentMsg = currentGeo?.messages.find((m) => m.purpose === activePurpose)
@@ -21,7 +23,7 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
   const copyText = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
-    toast.success("클립보드에 복사되었습니다");
+    toast.success(t("Copied to clipboard", "클립보드에 복사되었습니다"));
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
@@ -29,7 +31,7 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
     <button
       onClick={() => copyText(text, id)}
       className="shrink-0 p-1.5 rounded-md hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary"
-      title="복사"
+      title={t("Copy", "복사")}
     >
       {copiedKey === id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
     </button>
@@ -39,11 +41,14 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
     <div className="gradient-card rounded-xl border border-border p-6">
       <div className="flex items-center gap-2 mb-5">
         <Globe className="h-6 w-6 text-primary" />
-        <h3 className="text-lg font-semibold font-heading">🌍 지역별 마케팅 메시지</h3>
+        <h3 className="text-lg font-semibold font-heading">🌍 {t("Regional Marketing Messages", "지역별 마케팅 메시지")}</h3>
       </div>
 
       <p className="text-sm text-muted-foreground mb-5">
-        수집된 리뷰 데이터를 기반으로 지역(Geo)과 목적에 맞춰 자동 생성된 마케팅 카피입니다. JSON-LD 구조화 데이터를 포함하여 AI 크롤러·검색엔진 최적화에 적합합니다.
+        {t(
+          "Auto-generated marketing copy tailored by region and purpose based on collected review data. Includes JSON-LD structured data optimized for AI crawlers and search engines.",
+          "수집된 리뷰 데이터를 기반으로 지역(Geo)과 목적에 맞춰 자동 생성된 마케팅 카피입니다. JSON-LD 구조화 데이터를 포함하여 AI 크롤러·검색엔진 최적화에 적합합니다."
+        )}
       </p>
 
       {/* Geo Tabs */}
@@ -85,7 +90,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
       {/* Message Card */}
       {currentMsg && (
         <div className="space-y-4">
-          {/* Headline */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
@@ -94,7 +98,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             <p className="text-lg font-bold font-heading leading-snug">{currentMsg.headline}</p>
           </div>
 
-          {/* Body */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
@@ -103,7 +106,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{currentMsg.body}</p>
           </div>
 
-          {/* CTA */}
           <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -114,7 +116,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             </div>
           </div>
 
-          {/* Hashtags */}
           {currentMsg.hashtags.length > 0 && (
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -131,7 +132,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             </div>
           )}
 
-          {/* JSON-LD Schema */}
           {currentMsg.schema && (
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
@@ -140,7 +140,7 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
                   className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wider hover:text-primary transition-colors"
                 >
                   <Code className="h-4 w-4" />
-                  JSON-LD 구조화 데이터 (AI 크롤러 최적화)
+                  {t("JSON-LD Structured Data (AI Crawler Optimized)", "JSON-LD 구조화 데이터 (AI 크롤러 최적화)")}
                   <span className="text-[10px]">{showSchema ? "▲" : "▼"}</span>
                 </button>
                 <CopyBtn text={JSON.stringify(currentMsg.schema, null, 2)} id="schema" />
@@ -153,7 +153,6 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             </div>
           )}
 
-          {/* Full copy button */}
           <button
             onClick={() =>
               copyText(
@@ -164,7 +163,7 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             className="w-full py-3 rounded-lg border border-primary/30 bg-primary/5 text-primary text-sm font-medium hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
           >
             {copiedKey === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            전체 메시지 복사
+            {t("Copy Full Message", "전체 메시지 복사")}
           </button>
         </div>
       )}
