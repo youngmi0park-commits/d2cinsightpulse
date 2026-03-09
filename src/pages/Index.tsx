@@ -97,6 +97,7 @@ const Index = () => {
           <div className="mt-8 space-y-4">
             <CollectionCriteria />
             <RedditCountryInsights />
+            <NewsletterSubscribe />
           </div>
         </div>
       )}
