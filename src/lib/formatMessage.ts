@@ -260,41 +260,6 @@ export function generateGeoMarketingMessages(
         },
       ],
     },
-    {
-      geo: "kr",
-      geoLabel: "한국",
-      flag: "🇰🇷",
-      language: "한국어",
-      messages: [
-        {
-          purpose: "sns",
-          purposeLabel: "SNS 광고",
-          icon: "📱",
-          headline: `해외 소비자 ${posPercent}%가 인정한 ${productName}, 그 이유는?`,
-          body: `Reddit·Amazon ${total}건의 실제 리뷰를 분석한 결과, 해외 소비자들은 ${pros.join(", ")}을(를) 가장 높이 평가했습니다. 글로벌 만족도 ${score}/100점.`,
-          cta: "LG.com에서 자세히 보기 →",
-          hashtags: ["#LG전자", `#${productName.replace(/\s+/g, "")}`, "#해외반응", "#글로벌리뷰"],
-        },
-        {
-          purpose: "pdp",
-          purposeLabel: "제품 상세페이지",
-          icon: "🛒",
-          headline: `글로벌 리뷰 ${total}건 분석 — ${productName} 만족도 ${score}점`,
-          body: `해외 실사용자들이 꼽은 강점: ${pros.join(", ")}. ${cons.length > 0 ? `일부 개선 요청: ${cons.join(", ")}. LG는 지속적인 업데이트로 대응 중입니다.` : "부정적 피드백은 거의 없는 수준입니다."}`,
-          cta: "전체 리뷰 분석 보기",
-          hashtags: [],
-        },
-        {
-          purpose: "email",
-          purposeLabel: "이메일 캠페인",
-          icon: "✉️",
-          headline: `[LG 인사이트] ${productName} 글로벌 고객 반응 리포트`,
-          body: `안녕하세요, [고객님]\n\nReddit과 Amazon에서 수집한 ${total}건의 ${productName} 리뷰를 분석했습니다.\n\n✅ 만족도: ${score}/100\n✅ 핵심 강점: ${pros.join(", ")}\n${cons.length > 0 ? `⚠️ 개선 요청: ${cons.join(", ")}` : ""}\n\n해외 소비자의 생생한 목소리를 확인해 보세요.`,
-          cta: "리포트 전문 보기 →",
-          hashtags: [],
-        },
-      ],
-    },
   ];
 }
 
