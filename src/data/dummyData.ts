@@ -1,6 +1,6 @@
 export interface Review {
   id: string;
-  source: "reddit" | "amazon";
+  source: "reddit" | "amazon" | "rtings" | "trusted_reviews" | "consumer_reports" | "cnet" | "trustpilot" | "bestreviews";
   author: string;
   text: string;
   date: string;
@@ -32,6 +32,9 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "g5-6", source: "amazon", author: "SoundLover", text: "Built-in speakers are disappointing for a TV at this price. Had to buy a separate soundbar. The TV itself is gorgeous though.", date: "2025-10-22", rating: 3, sentiment: "negative", score: 0.25 },
       { id: "g5-7", source: "reddit", author: "u/color_accurate", text: "Color accuracy out of the box is phenomenal. Filmmaker mode is perfect. The 3.9x brightness improvement over last gen really shows in HDR highlights.", date: "2026-02-01", sentiment: "positive", score: 0.93 },
       { id: "g5-8", source: "amazon", author: "EarlyAdopter", text: "Absolutely love this TV. Setup was easy, picture is breathtaking, and the ultra-thin Gallery design looks amazing on the wall. Five stars!", date: "2025-12-30", rating: 5, sentiment: "positive", score: 0.96 },
+      { id: "g5-9", source: "rtings", author: "RTINGS.com", text: "The LG G5 earns our highest score for an OLED TV. Outstanding HDR peak brightness, near-perfect color accuracy, and excellent reflection handling make it the best choice for most viewing environments.", date: "2026-02-20", rating: 5, sentiment: "positive", score: 0.97 },
+      { id: "g5-10", source: "trusted_reviews", author: "Trusted Reviews", text: "LG's G5 is the pinnacle of OLED technology. The Hyper Radiant Color Tech delivers stunning HDR highlights, though the webOS interface still feels cluttered with ads.", date: "2026-01-25", rating: 4, sentiment: "positive", score: 0.85 },
+      { id: "g5-11", source: "consumer_reports", author: "Consumer Reports", text: "Top-rated in our TV testing. Exceptional picture quality across all content types. The anti-reflection coating is the best we've tested. Loses points for mediocre built-in audio.", date: "2026-02-10", rating: 5, sentiment: "positive", score: 0.92 },
     ],
   },
   "52G930B-B": {
