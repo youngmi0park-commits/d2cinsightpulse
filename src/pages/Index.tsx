@@ -57,7 +57,7 @@ const Index = () => {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
-                LG 제품 <span className="text-gradient">감성 모니터</span>
+                <span className="text-gradient">고객 보이스 리스닝</span>
               </h1>
             </div>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
