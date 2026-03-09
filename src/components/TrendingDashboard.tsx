@@ -193,6 +193,32 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
     return [...merged.entries()].sort((a, b) => b[1].totalMentions - a[1].totalMentions);
   }, []);
 
+  // keyword → associated top products (from same source)
+  const keywordProductMap = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    sources.forEach((s) => {
+      const topProduct = s.products[0]; // top product per source
+      if (!topProduct) return;
+      s.keywords.forEach((k) => {
+        if (!map.has(k.keyword)) map.set(k.keyword, new Map());
+        const prodMap = map.get(k.keyword)!;
+        // weight by keyword count
+        prodMap.set(topProduct.displayName, (prodMap.get(topProduct.displayName) || 0) + k.count);
+        // also associate rank 2 product if exists
+        if (s.products[1]) {
+          prodMap.set(s.products[1].displayName, (prodMap.get(s.products[1].displayName) || 0) + Math.round(k.count * 0.5));
+        }
+      });
+    });
+    // resolve to top 2 products per keyword
+    const result = new Map<string, string[]>();
+    map.forEach((prodMap, keyword) => {
+      const sorted = [...prodMap.entries()].sort((a, b) => b[1] - a[1]);
+      result.set(keyword, sorted.slice(0, 2).map(([name]) => name));
+    });
+    return result;
+  }, []);
+
   const allKeywords = useMemo(() => {
     const merged = new Map<string, { count: number; sentiment: "positive" | "negative"; change: number }>();
     sources.forEach((s) => {
@@ -211,17 +237,23 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
 
   const top3 = allProducts.slice(0, 3);
   const risingProduct = allProducts.filter(([, v]) => v.maxChange > 0).sort((a, b) => b[1].maxChange - a[1].maxChange)[0];
-  const topPosKeywords = allKeywords.filter(([, v]) => v.sentiment === "positive").slice(0, 3).map(([k]) => k);
-  const topNegKeywords = allKeywords.filter(([, v]) => v.sentiment === "negative").slice(0, 3).map(([k]) => k);
+  const topPosKeywords = allKeywords.filter(([, v]) => v.sentiment === "positive").slice(0, 3);
+  const topNegKeywords = allKeywords.filter(([, v]) => v.sentiment === "negative").slice(0, 3);
   const totalMentions = allProducts.reduce((sum, [, v]) => sum + v.totalMentions, 0);
   const avgSentiment = Math.round(allProducts.reduce((sum, [, v]) => sum + v.avgSentiment, 0) / allProducts.length);
+
+  const formatKwWithProducts = (kws: [string, { count: number }][]) =>
+    kws.map(([kw]) => {
+      const prods = keywordProductMap.get(kw);
+      return prods?.length ? `"${kw}" (${prods.join(", ")})` : `"${kw}"`;
+    }).join(", ");
 
   const insights = [
     `📊 전체 ${sources.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`,
     `🏆 주간 언급량 TOP 3: ${top3.map(([, v], i) => `${i + 1}위 ${v.displayName} (${v.totalMentions.toLocaleString()}건)`).join(", ")}`,
     risingProduct ? `🚀 가장 급상승 제품: ${risingProduct[1].displayName} (주간 변동 +${risingProduct[1].maxChange}%) — 신규 출시 및 전문 리뷰 확산 영향` : "",
-    `👍 긍정 키워드 TOP 3: ${topPosKeywords.join(", ")} — 화질·가성비·편의성 중심의 호평이 지속되고 있습니다.`,
-    `⚠️ 부정 키워드 TOP 3: ${topNegKeywords.join(", ")} — CS 응대 및 소프트웨어 개선이 필요한 것으로 분석됩니다.`,
+    `👍 긍정 키워드 TOP 3: ${formatKwWithProducts(topPosKeywords)} — 화질·가성비·편의성 중심의 호평이 지속되고 있습니다.`,
+    `⚠️ 부정 키워드 TOP 3: ${formatKwWithProducts(topNegKeywords)} — CS 응대 및 소프트웨어 개선이 필요한 것으로 분석됩니다.`,
   ].filter(Boolean);
 
   return (
