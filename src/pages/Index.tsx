@@ -92,9 +92,10 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Collection Criteria */}
-          <div className="mt-8">
+          {/* Collection Criteria & Country Insights */}
+          <div className="mt-8 space-y-4">
             <CollectionCriteria />
+            <RedditCountryInsights />
           </div>
         </div>
       )}
