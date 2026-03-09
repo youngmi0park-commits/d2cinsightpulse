@@ -1,9 +1,32 @@
 import type { Review } from "@/data/dummyData";
-import { MessageSquare, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface ReviewListProps {
   reviews: Review[];
 }
+
+const sourceLabel = (s: string) => {
+  const map: Record<string, string> = {
+    reddit: "Reddit", amazon: "Amazon", rtings: "RTINGS",
+    trusted_reviews: "Trusted Reviews", consumer_reports: "Consumer Reports",
+    cnet: "CNET", trustpilot: "Trustpilot", bestreviews: "BestReviews",
+  };
+  return map[s] || s;
+};
+
+const sourceStyle = (s: string) => {
+  const map: Record<string, string> = {
+    reddit: "bg-accent/20 text-accent",
+    amazon: "bg-warning/20 text-warning",
+    rtings: "bg-blue-500/20 text-blue-400",
+    trusted_reviews: "bg-emerald-500/20 text-emerald-400",
+    consumer_reports: "bg-red-500/20 text-red-400",
+    cnet: "bg-rose-500/20 text-rose-400",
+    trustpilot: "bg-green-500/20 text-green-400",
+    bestreviews: "bg-violet-500/20 text-violet-400",
+  };
+  return map[s] || "bg-muted text-muted-foreground";
+};
 
 export function ReviewList({ reviews }: ReviewListProps) {
   const sentimentStyle = (s?: string) => {
