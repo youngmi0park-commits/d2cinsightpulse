@@ -95,7 +95,11 @@ const Index = () => {
 
       {/* Stats Bar */}
       {!hasResults && !error && (
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-12 space-y-10">
+          {/* Trending Dashboard */}
+          <TrendingDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
+
+          {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { icon: BarChart3, title: "감성 분석", desc: "긍정·부정·중립 자동 분류 및 점수화" },
@@ -110,7 +114,7 @@ const Index = () => {
             ))}
           </div>
 
-          <div className="mt-8 space-y-4">
+          <div className="space-y-4">
             <CollectionCriteria />
             <RedditCountryInsights />
             <NewsletterSubscribe />
