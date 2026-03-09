@@ -119,6 +119,7 @@ const Index = () => {
           </div>
 
           <MarketingPanel marketing={marketing} />
+          <GeoMarketingPanel geoMessages={geoMessages} productName={product.name} />
           <ReviewList reviews={product.reviews} />
         </div>
       )}
