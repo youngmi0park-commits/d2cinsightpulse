@@ -48,6 +48,9 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "ug-4", source: "amazon", author: "BudgetGamer", text: "Way too expensive for most people. The price is absolutely insane. Great monitor but hard to justify unless you're a hardcore enthusiast.", date: "2025-12-20", rating: 3, sentiment: "negative", score: 0.22 },
       { id: "ug-5", source: "reddit", author: "u/ultrawide_fan", text: "5K2K resolution gives you so much screen real estate for productivity too. I use it for coding during the day and gaming at night. Dual purpose perfection.", date: "2026-02-05", sentiment: "positive", score: 0.89 },
       { id: "ug-6", source: "amazon", author: "DigitalTrendsReader", text: "Digital Trends Readers' Choice winner for good reason. The curve is immersive without being disorienting. HDR gaming on this is next level.", date: "2026-01-08", rating: 5, sentiment: "positive", score: 0.93 },
+      { id: "ug-7", source: "rtings", author: "RTINGS.com", text: "Best gaming monitor we've tested. Exceptional motion handling at 240Hz, near-instant response times, and perfect blacks. The 52-inch size is ideal for immersive gaming from couch distance.", date: "2026-02-18", rating: 5, sentiment: "positive", score: 0.96 },
+      { id: "ug-8", source: "trusted_reviews", author: "Trusted Reviews", text: "A remarkable feat of engineering. The UltraGear G9 52\" delivers console-quality immersion with PC-grade performance. Only downside is the steep price tag.", date: "2026-01-30", rating: 4, sentiment: "positive", score: 0.88 },
+      { id: "ug-9", source: "cnet", author: "CNET", text: "LG's 52-inch OLED gaming monitor is a dream for enthusiasts. 240Hz refresh rate with HDMI 2.1 and DisplayPort 2.1 covers all bases. Editor's Choice award.", date: "2026-02-12", rating: 5, sentiment: "positive", score: 0.94 },
     ],
   },
   "17Z90TL-H.AUB9U1": {
@@ -74,6 +77,11 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "wt-4", source: "amazon", author: "DisappointedBuyer", text: "The dryer doesn't fully dry heavy loads. Need to run an extra cycle for towels and jeans. Frustrating for a machine at this price.", date: "2025-11-15", rating: 2, sentiment: "negative", score: 0.15 },
       { id: "wt-5", source: "reddit", author: "u/eco_warrior", text: "Energy efficient and uses significantly less water than our old machines. The steam cycle is great for allergen removal. Highly recommended for families.", date: "2026-01-28", sentiment: "positive", score: 0.91 },
       { id: "wt-6", source: "amazon", author: "RepairNightmare", text: "Broke down after 14 months. Service took 3 weeks to schedule. When it works it's great, but reliability is a concern.", date: "2025-10-10", rating: 2, sentiment: "negative", score: 0.12 },
+      { id: "wt-7", source: "consumer_reports", author: "Consumer Reports", text: "Top pick in our combo washer-dryer category. Excellent wash performance, good energy efficiency, and the single-unit design saves significant space. Drying performance is average for heavy loads.", date: "2026-02-15", rating: 4, sentiment: "positive", score: 0.86 },
+      { id: "wt-8", source: "trustpilot", author: "JaneDoe_Home", text: "Love the WashTower! Easy to use, quiet operation, and the AI features actually make a difference. Delivery and installation were smooth. 5 stars!", date: "2026-01-12", rating: 5, sentiment: "positive", score: 0.92 },
+      { id: "wt-9", source: "trustpilot", author: "FrustratedCustomer22", text: "Customer service is terrible. Machine started making loud noises after 6 months. Took forever to get a technician. Product itself is okay but support is awful.", date: "2025-11-20", rating: 2, sentiment: "negative", score: 0.15 },
+      { id: "wt-10", source: "bestreviews", author: "BestReviews", text: "The LG WashTower stands out for its space-saving design and smart features. AI-powered wash cycles adapt to fabric types effectively. A solid choice for apartments and small homes.", date: "2026-01-25", rating: 4, sentiment: "positive", score: 0.87 },
+      { id: "wt-11", source: "cnet", author: "CNET", text: "LG's WashTower is the best all-in-one laundry solution we've tested. The center control panel is intuitive, and wash results rival standalone machines. Drying could be better for bulky items.", date: "2026-02-08", rating: 4, sentiment: "positive", score: 0.84 },
     ],
   },
   "PU615U": {
@@ -87,6 +95,8 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "cb-4", source: "amazon", author: "BrightRoomUser", text: "Not great in bright rooms. You really need blackout curtains for the best experience. Colors wash out with ambient light.", date: "2025-10-18", rating: 3, sentiment: "negative", score: 0.25 },
       { id: "cb-5", source: "reddit", author: "u/audiophile_too", text: "Built-in speakers are surprisingly decent for casual viewing. But for movie night, pair it with a soundbar. The free soundbar bundle deal is amazing!", date: "2026-02-05", sentiment: "positive", score: 0.82 },
       { id: "cb-6", source: "amazon", author: "ValueHunter", text: "Expensive compared to competitors like Epson and BenQ. You're paying a premium for the LG brand and webOS. Worth it if you're in the LG ecosystem.", date: "2025-11-30", rating: 3, sentiment: "neutral", score: 0.42 },
+      { id: "cb-7", source: "rtings", author: "RTINGS.com", text: "Solid UST projector with excellent color accuracy and good HDR performance. Input lag is low enough for casual gaming. Fan noise is slightly above average.", date: "2026-02-14", rating: 4, sentiment: "positive", score: 0.85 },
+      { id: "cb-8", source: "cnet", author: "CNET", text: "The CineBeam S is a premium UST projector that delivers on picture quality. WebOS integration is a huge plus. Best suited for dedicated home theater rooms with light control.", date: "2026-01-18", rating: 4, sentiment: "positive", score: 0.83 },
     ],
   },
 };
