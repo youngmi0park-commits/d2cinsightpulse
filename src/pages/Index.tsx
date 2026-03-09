@@ -39,10 +39,12 @@ const Index = () => {
 
     const sentimentResult = analyzeSentiment(result.reviews);
     const marketingResult = generateMarketingMessage(result.name, sentimentResult);
+    const geoResult = generateGeoMarketingMessages(result.name, sentimentResult);
 
     setProduct(result);
     setSentiment(sentimentResult);
     setMarketing(marketingResult);
+    setGeoMessages(geoResult);
     setIsLoading(false);
   };
 
