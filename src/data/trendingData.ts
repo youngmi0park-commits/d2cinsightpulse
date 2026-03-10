@@ -34,7 +34,7 @@ export const redditTrending: TrendingProduct[] = [
 export const amazonTrending: TrendingProduct[] = [
   { rank: 1, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 2341, sentimentScore: 91, trend: "up", changePercent: 62 },
   { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 1923, sentimentScore: 86, trend: "up", changePercent: 18 },
-  { rank: 3, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 1654, sentimentScore: 73, trend: "stable", changePercent: 3 },
+  { rank: 3, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 1654, sentimentScore: 73, trend: "stable", changePercent: 3 },
   { rank: 4, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 1432, sentimentScore: 79, trend: "up", changePercent: 11 },
   { rank: 5, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 1287, sentimentScore: 83, trend: "up", changePercent: 28 },
   { rank: 6, modelNumber: "52G930B-B", displayName: "UltraGear evo G9 52\"", category: "Monitor", mentions: 1098, sentimentScore: 90, trend: "up", changePercent: 35 },
