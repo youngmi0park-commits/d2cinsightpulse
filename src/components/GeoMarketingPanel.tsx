@@ -3,13 +3,15 @@ import { type GeoMessage } from "@/lib/formatMessage";
 import { Globe, Copy, Check, Code } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
+import { AdComplianceNotice } from "@/components/AdComplianceNotice";
 
 interface GeoMarketingPanelProps {
   geoMessages: GeoMessage[];
   productName: string;
+  totalReviews: number;
 }
 
-export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPanelProps) {
+export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "us");
   const [activePurpose, setActivePurpose] = useState("sns");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -165,6 +167,14 @@ export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPane
             {copiedKey === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {t("Copy Full Message", "전체 메시지 복사")}
           </button>
+
+          {/* Ad Compliance Notice */}
+          <AdComplianceNotice
+            purpose={activePurpose}
+            geo={activeGeo}
+            productName={productName}
+            totalReviews={totalReviews}
+          />
         </div>
       )}
     </div>
