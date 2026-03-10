@@ -176,7 +176,7 @@ export function generateGeoMarketingMessages(
           icon: "📱",
           headline: `[Ad] ${productName} — Canadian users are loving the ${pros[0] || "experience"}.`,
           body: `Reviews from Canadian and North American users highlight ${pros.join(", ")} as key reasons to choose the ${productName}. Data sourced from ${dataSrc}.`,
-          cta: "Learn More at LG.com/CA →",
+          cta: "Learn More at LGE.com/CA →",
           hashtags: ["#LGCanada", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
         {
