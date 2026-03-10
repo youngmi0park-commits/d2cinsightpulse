@@ -253,7 +253,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Innovation"} Delivered.`),
-          body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as top reasons to choose LG. Explore at LG.com/IN.`),
+          body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as top reasons to choose LG. Explore at LGE.com/IN.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
