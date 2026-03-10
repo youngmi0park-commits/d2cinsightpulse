@@ -263,7 +263,7 @@ export function generateGeoMarketingMessages(
           icon: "📱",
           headline: `[Ad] ${productName} — Users praise ${pros[0] || "performance"} and more.`,
           body: `Indian and global user reviews highlight ${pros.join(", ")} as reasons customers choose the ${productName}. Review data from ${dataSrc}.`,
-          cta: "Explore at LG.com/IN →",
+          cta: "Explore at LGE.com/IN →",
           hashtags: ["#LGIndia", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
       ],
