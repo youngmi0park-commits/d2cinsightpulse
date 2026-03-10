@@ -14,7 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      collection_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          items_collected: number | null
+          source: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          items_collected?: number | null
+          source: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          items_collected?: number | null
+          source?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          model_number: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          model_number: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          model_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          author: string | null
+          collected_at: string
+          content: string
+          external_id: string | null
+          id: string
+          product_id: string
+          published_at: string | null
+          rating: number | null
+          sentiment: string | null
+          sentiment_score: number | null
+          source: string
+          source_url: string | null
+          title: string | null
+        }
+        Insert: {
+          author?: string | null
+          collected_at?: string
+          content: string
+          external_id?: string | null
+          id?: string
+          product_id: string
+          published_at?: string | null
+          rating?: number | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          source: string
+          source_url?: string | null
+          title?: string | null
+        }
+        Update: {
+          author?: string | null
+          collected_at?: string
+          content?: string
+          external_id?: string | null
+          id?: string
+          product_id?: string
+          published_at?: string | null
+          rating?: number | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          source?: string
+          source_url?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trending_keywords: {
+        Row: {
+          change_percent: number | null
+          count: number
+          created_at: string
+          id: string
+          keyword: string
+          related_countries: string[] | null
+          related_products: string[] | null
+          sentiment: string
+          snapshot_date: string
+          source: string
+        }
+        Insert: {
+          change_percent?: number | null
+          count?: number
+          created_at?: string
+          id?: string
+          keyword: string
+          related_countries?: string[] | null
+          related_products?: string[] | null
+          sentiment: string
+          snapshot_date?: string
+          source: string
+        }
+        Update: {
+          change_percent?: number | null
+          count?: number
+          created_at?: string
+          id?: string
+          keyword?: string
+          related_countries?: string[] | null
+          related_products?: string[] | null
+          sentiment?: string
+          snapshot_date?: string
+          source?: string
+        }
+        Relationships: []
+      }
+      trending_snapshots: {
+        Row: {
+          avg_sentiment_score: number | null
+          change_percent: number | null
+          created_at: string
+          id: string
+          mention_count: number
+          product_id: string
+          rank: number | null
+          snapshot_date: string
+          source: string
+          trend: string | null
+        }
+        Insert: {
+          avg_sentiment_score?: number | null
+          change_percent?: number | null
+          created_at?: string
+          id?: string
+          mention_count?: number
+          product_id: string
+          rank?: number | null
+          snapshot_date?: string
+          source: string
+          trend?: string | null
+        }
+        Update: {
+          avg_sentiment_score?: number | null
+          change_percent?: number | null
+          created_at?: string
+          id?: string
+          mention_count?: number
+          product_id?: string
+          rank?: number | null
+          snapshot_date?: string
+          source?: string
+          trend?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trending_snapshots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
