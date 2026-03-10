@@ -331,7 +331,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
-          body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LG.com/NL.`),
+          body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LGE.com/NL.`),
           cta: bannerCta("Ontdek meer"),
           hashtags: [],
         },
