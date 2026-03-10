@@ -86,7 +86,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               onClick={() => setActivePurpose(m.purpose)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
                 activePurpose === m.purpose
-                  ? "bg-accent border-primary/50 text-primary"
+                  ? "bg-primary border-primary/50 text-primary-foreground"
                   : "bg-background border-border text-muted-foreground hover:border-primary/30"
               }`}
             >
