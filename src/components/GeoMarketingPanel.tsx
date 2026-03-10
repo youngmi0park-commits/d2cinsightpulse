@@ -93,6 +93,12 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
       {/* Message Card */}
       {currentMsg && (
         <div className="space-y-4">
+          <div className="p-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-700 dark:text-yellow-400">
+            ⚠️ {t(
+              "This message has been pre-screened against the Overseas Advertising Checklist; however, a mandatory legal review must be completed before actual use.",
+              "본 메시지는 해외광고체크리스트 사전 검수를 완료하였으나, 실제 활용 전 법무 검토를 필수 진행하여 주시기 바랍니다."
+            )}
+          </div>
           {activePurpose === "banner" && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Banner Copy Guidelines", "배너 문구 가이드라인")}</span>
