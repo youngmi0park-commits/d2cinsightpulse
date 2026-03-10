@@ -26,6 +26,19 @@ const categoryLabels: Record<string, string> = {
 // Category display order by total mention volume (descending)
 const categoryOrder = ["TV", "Monitor", "Washer/Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
 
+// Quick-search buttons shown below the search bar (Washer & Dryer split)
+const quickSearchButtons = [
+  { label: "📺 TV", query: "TV" },
+  { label: "🖥️ Monitor", query: "Monitor" },
+  { label: "🧺 Washer", query: "Washer" },
+  { label: "🧺 Dryer", query: "Dryer" },
+  { label: "💻 Laptop", query: "Laptop" },
+  { label: "🎬 Projector", query: "Projector" },
+  { label: "🍳 Kitchen Appliance", query: "Kitchen Appliance" },
+  { label: "🧊 Refrigerator", query: "Refrigerator" },
+  { label: "🔊 Audio", query: "Audio" },
+];
+
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -126,13 +139,13 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {sortedCategories.map((category) => (
+        {quickSearchButtons.map((btn) => (
           <button
-            key={category}
-            onClick={() => { setQuery(category); onSearch(category); }}
+            key={btn.query}
+            onClick={() => { setQuery(btn.query); onSearch(btn.query); }}
             className="px-4 py-1.5 rounded-full text-sm bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary transition-colors border border-border"
           >
-            {categoryLabels[category] || category}
+            {btn.label}
           </button>
         ))}
       </div>
