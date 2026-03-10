@@ -377,48 +377,119 @@ export function generateGeoMarketingMessages(
 
 export function generateMarketingMessage(
   productName: string,
-  sentiment: SentimentResult
+  sentiment: SentimentResult,
+  lang: "en" | "ko" = "ko"
 ): MarketingOutput {
   const { keywords, positive, negative, neutral, averageScore } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
+  const negPercent = total > 0 ? Math.round((negative / total) * 100) : 0;
+  const neuPercent = total > 0 ? Math.round((neutral / total) * 100) : 0;
+  const t = (en: string, ko: string) => (lang === "en" ? en : ko);
 
   const strengthsSummary = keywords.positive.length > 0
-    ? `고객들이 꼽은 ${productName}의 강점: ${keywords.positive.join(", ")}`
-    : `${productName}에 대한 긍정 키워드를 수집 중입니다.`;
+    ? t(
+        `Key strengths of ${productName} highlighted by users: ${keywords.positive.join(", ")}`,
+        `고객들이 꼽은 ${productName}의 강점: ${keywords.positive.join(", ")}`
+      )
+    : t(
+        `Collecting positive keywords for ${productName}.`,
+        `${productName}에 대한 긍정 키워드를 수집 중입니다.`
+      );
 
   const weaknessesSummary = keywords.negative.length > 0
-    ? `개선이 필요한 영역: ${keywords.negative.join(", ")}`
-    : `현재 부정적 피드백이 거의 없습니다.`;
+    ? t(
+        `Areas needing improvement: ${keywords.negative.join(", ")}`,
+        `개선이 필요한 영역: ${keywords.negative.join(", ")}`
+      )
+    : t(
+        `No significant negative feedback at this time.`,
+        `현재 부정적 피드백이 거의 없습니다.`
+      );
 
   const qaList = [
     {
-      question: `${productName}의 가장 큰 장점은 무엇인가요?`,
+      question: t(
+        `What are the biggest advantages of the ${productName}?`,
+        `${productName}의 가장 큰 장점은 무엇인가요?`
+      ),
       answer: keywords.positive.length > 0
-        ? `실제 사용자들이 가장 많이 언급한 장점은 "${keywords.positive.slice(0, 3).join('", "')}" 등입니다. 많은 사용자가 만족감을 표현하고 있습니다.`
-        : `현재 리뷰 데이터를 수집 중이며, 곧 주요 장점을 확인하실 수 있습니다.`,
+        ? t(
+            `The most frequently mentioned strengths by real users are "${keywords.positive.slice(0, 3).join('", "')}", among others. Many users express high satisfaction.`,
+            `실제 사용자들이 가장 많이 언급한 장점은 "${keywords.positive.slice(0, 3).join('", "')}" 등입니다. 많은 사용자가 만족감을 표현하고 있습니다.`
+          )
+        : t(
+            `Review data is currently being collected. Key strengths will be available soon.`,
+            `현재 리뷰 데이터를 수집 중이며, 곧 주요 장점을 확인하실 수 있습니다.`
+          ),
     },
     {
-      question: `${productName}의 단점이나 개선점이 있나요?`,
+      question: t(
+        `Are there any drawbacks or areas for improvement with the ${productName}?`,
+        `${productName}의 단점이나 개선점이 있나요?`
+      ),
       answer: keywords.negative.length > 0
-        ? `일부 사용자가 언급한 개선점은 "${keywords.negative.slice(0, 3).join('", "')}" 등이 있습니다. LG는 지속적인 소프트웨어 업데이트와 제품 개선을 통해 이를 해결하고 있습니다.`
-        : `현재까지 큰 불만 사항은 보고되지 않았습니다.`,
+        ? t(
+            `Some users have mentioned areas for improvement such as "${keywords.negative.slice(0, 3).join('", "')}", among others. LG is actively addressing these through ongoing software updates and product enhancements.`,
+            `일부 사용자가 언급한 개선점은 "${keywords.negative.slice(0, 3).join('", "')}" 등이 있습니다. LG는 지속적인 소프트웨어 업데이트와 제품 개선을 통해 이를 해결하고 있습니다.`
+          )
+        : t(
+            `No major complaints have been reported so far.`,
+            `현재까지 큰 불만 사항은 보고되지 않았습니다.`
+          ),
     },
     {
-      question: `${productName}을(를) 구매해도 괜찮을까요?`,
+      question: t(
+        `Is the ${productName} worth buying?`,
+        `${productName}을(를) 구매해도 괜찮을까요?`
+      ),
       answer: averageScore >= 0.7
-        ? `네! 사용자들이 "${keywords.positive.slice(0, 2).join('", "')}" 등을 높이 평가하고 있어 만족스러운 구매가 될 것입니다. 안심하고 선택하세요.`
+        ? t(
+            `Yes! Users highly rate "${keywords.positive.slice(0, 2).join('", "')}" and more. It's likely to be a satisfying purchase.`,
+            `네! 사용자들이 "${keywords.positive.slice(0, 2).join('", "')}" 등을 높이 평가하고 있어 만족스러운 구매가 될 것입니다. 안심하고 선택하세요.`
+          )
         : averageScore >= 0.4
-        ? `전반적으로 무난한 평가를 받고 있습니다. 용도에 맞는지 확인 후 구매를 권장합니다.`
-        : `현재 일부 개선 피드백이 있으므로, 구매 전 상세 리뷰를 확인하시길 권장합니다.`,
+        ? t(
+            `Overall, it has received decent reviews. We recommend verifying it fits your needs before purchasing.`,
+            `전반적으로 무난한 평가를 받고 있습니다. 용도에 맞는지 확인 후 구매를 권장합니다.`
+          )
+        : t(
+            `There is currently some improvement feedback, so we recommend checking detailed reviews before purchasing.`,
+            `현재 일부 개선 피드백이 있으므로, 구매 전 상세 리뷰를 확인하시길 권장합니다.`
+          ),
     },
   ];
 
   const tagline = averageScore >= 0.7
-    ? `✨ "${productName}" — 사용자들이 인정한 ${keywords.positive[0] || "품질"}, 직접 경험해보세요`
-    : `📊 "${productName}" — 솔직한 리뷰로 확인하세요`;
+    ? t(
+        `✨ "${productName}" — ${keywords.positive[0] || "Quality"} recognized by users. Experience it yourself.`,
+        `✨ "${productName}" — 사용자들이 인정한 ${keywords.positive[0] || "품질"}, 직접 경험해보세요`
+      )
+    : t(
+        `📊 "${productName}" — See what real reviews say.`,
+        `📊 "${productName}" — 솔직한 리뷰로 확인하세요`
+      );
 
-  const reviewGuide = `
+  const reviewGuide = lang === "en"
+    ? `
+📝 ${productName} Review Guide
+
+🟢 Strengths:
+${keywords.positive.map((k) => `  • ${k}`).join("\n") || "  • Collecting data"}
+
+🔴 Areas for Improvement:
+${keywords.negative.map((k) => `  • ${k}`).join("\n") || "  • No notable issues"}
+
+📈 Overall Sentiment Summary:
+  • Positive: ${positive} reviews (${posPercent}%)
+  • Negative: ${negative} reviews (${negPercent}%)
+  • Neutral: ${neutral} reviews (${neuPercent}%)
+  • Average Score: ${(averageScore * 100).toFixed(0)}/100
+
+💡 Marketing Recommendation:
+${averageScore >= 0.7 ? "  → Strongly recommended for positive review-based SNS marketing" : "  → Recommend addressing improvement areas before marketing push"}
+`.trim()
+    : `
 📝 ${productName} 리뷰 가이드
 
 🟢 강점 포인트:
@@ -429,8 +500,8 @@ ${keywords.negative.map((k) => `  • ${k}`).join("\n") || "  • 특이사항 �
 
 📈 전체 감성 요약:
   • 긍정: ${positive}건 (${posPercent}%)
-  • 부정: ${negative}건 (${total > 0 ? Math.round((negative / total) * 100) : 0}%)
-  • 중립: ${neutral}건 (${total > 0 ? Math.round((neutral / total) * 100) : 0}%)
+  • 부정: ${negative}건 (${negPercent}%)
+  • 중립: ${neutral}건 (${neuPercent}%)
   • 평균 점수: ${(averageScore * 100).toFixed(0)}/100
 
 💡 마케팅 추천:
