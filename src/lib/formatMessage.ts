@@ -321,7 +321,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "nl",
+      geo: "LGEBN",
       geoLabel: "Netherlands",
       flag: "🇳🇱",
       language: "Nederlands / English",
