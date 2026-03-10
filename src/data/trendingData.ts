@@ -149,8 +149,8 @@ export const cnetKeywords: TrendingKeyword[] = [
 ];
 
 export const trustpilotTrending: TrendingProduct[] = [
-  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 432, sentimentScore: 71, trend: "stable", changePercent: 2 },
-  { rank: 2, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 321, sentimentScore: 65, trend: "down", changePercent: -8 },
+  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 432, sentimentScore: 71, trend: "stable", changePercent: 2 },
+  { rank: 2, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 321, sentimentScore: 65, trend: "down", changePercent: -8 },
   { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 287, sentimentScore: 78, trend: "up", changePercent: 12 },
   { rank: 4, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 198, sentimentScore: 74, trend: "stable", changePercent: -1 },
   { rank: 5, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 165, sentimentScore: 76, trend: "up", changePercent: 8 },
