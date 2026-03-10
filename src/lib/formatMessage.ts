@@ -131,7 +131,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. Loved for ${pros[0] || "Quality"}.`),
-          body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")} as key strengths. Experience it at Currys or LG.com/UK.`),
+          body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")} as key strengths. Experience it at Currys or LGE.com/UK.`),
           cta: bannerCta("Buy Now"),
           hashtags: [],
         },
