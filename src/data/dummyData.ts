@@ -9,7 +9,7 @@ export interface Review {
   score?: number;
 }
 
-export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Home Appliance" | "Projector";
+export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Washer/Dryer" | "Refrigerator" | "Kitchen Appliance" | "Projector" | "Audio";
 
 export interface ProductData {
   name: string;
@@ -69,7 +69,7 @@ export const dummyProducts: Record<string, ProductData> = {
   "WKHC252HBA": {
     name: "WKHC252HBA",
     displayName: "LG WashTower™ Center Control",
-    category: "Home Appliance",
+    category: "Washer/Dryer",
     reviews: [
       { id: "wt-1", source: "reddit", author: "u/laundry_pro", text: "The LG WashTower is a space saver and performs incredibly well. AI Wash and Dry actually works — it detects fabric type and adjusts automatically. Super quiet too.", date: "2026-01-05", sentiment: "positive", score: 0.93 },
       { id: "wt-2", source: "amazon", author: "ApartmentDweller", text: "Perfect for small spaces. The single-unit design fits where a traditional washer-dryer stack wouldn't. Wash quality is excellent.", date: "2025-12-20", rating: 5, sentiment: "positive", score: 0.9 },
@@ -113,14 +113,19 @@ export const getCategories = (): ProductCategory[] =>
 const searchAliases: Record<string, string[]> = {
   "oled": ["OLED97G5WUA"],
   "g5": ["OLED97G5WUA"],
+  "tv": ["OLED97G5WUA"],
   "ultragear": ["52G930B-B"],
   "g9": ["52G930B-B"],
+  "monitor": ["52G930B-B"],
   "gram": ["17Z90TL-H.AUB9U1"],
   "laptop": ["17Z90TL-H.AUB9U1"],
   "washtower": ["WKHC252HBA"],
   "wash tower": ["WKHC252HBA"],
   "washer": ["WKHC252HBA"],
+  "dryer": ["WKHC252HBA"],
   "laundry": ["WKHC252HBA"],
+  "washer/dryer": ["WKHC252HBA"],
+  "세탁기": ["WKHC252HBA"],
   "cinebeam": ["PU615U"],
   "projector": ["PU615U"],
 };

@@ -15,10 +15,16 @@ interface SearchBarProps {
 const categoryLabels: Record<string, string> = {
   TV: "📺 TV",
   Monitor: "🖥️ Monitor",
+  "Washer/Dryer": "🧺 Washer/Dryer",
   Laptop: "💻 Laptop",
-  "Home Appliance": "🏠 Home Appliance",
   Projector: "🎬 Projector",
+  "Refrigerator": "🧊 Refrigerator",
+  "Kitchen Appliance": "🍳 Kitchen Appliance",
+  Audio: "🔊 Audio",
 };
+
+// Category display order by total mention volume (descending)
+const categoryOrder = ["TV", "Monitor", "Washer/Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
@@ -31,6 +37,13 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
     acc[p.category].push(p);
     return acc;
   }, {});
+
+  // Sort categories by predefined mention volume order
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
+    const ai = categoryOrder.indexOf(a);
+    const bi = categoryOrder.indexOf(b);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +86,9 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               <p className="text-xs text-muted-foreground">{t("Click a category or model to search", "카테고리 또는 모델번호 클릭 시 검색")}</p>
             </div>
             <div className="max-h-80 overflow-y-auto p-2 space-y-3">
-              {Object.entries(grouped).map(([category, products]) => (
+              {sortedCategories.map((category) => {
+                const products = grouped[category];
+                return (
                 <div key={category}>
                   <button
                     onClick={() => handleCategorySearch(category)}
@@ -97,7 +112,8 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
                     </button>
                   ))}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </PopoverContent>
         </Popover>
@@ -110,7 +126,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {Object.keys(grouped).map((category) => (
+        {sortedCategories.map((category) => (
           <button
             key={category}
             onClick={() => { setQuery(category); onSearch(category); }}
