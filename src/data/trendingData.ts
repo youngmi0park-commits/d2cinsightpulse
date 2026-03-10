@@ -89,10 +89,10 @@ export const rtingsKeywords: TrendingKeyword[] = [
   { keyword: "HDR brightness", count: 387, sentiment: "positive", change: 25, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
   { keyword: "response time", count: 354, sentiment: "positive", change: 12, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
   { keyword: "reflection handling", count: 298, sentiment: "positive", change: 32, relatedProducts: ["OLED evo G5 97\""] },
-  { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5, relatedProducts: ["OLED C4 83\""] },
-  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8, relatedProducts: ["UltraGear OLED 34\""] },
+  { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 US", "🇬🇧 UK"] },
+  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8, relatedProducts: ["UltraGear OLED 34\""], relatedCountries: ["🇺🇸 US", "🇩🇪 DE"] },
   { keyword: "input lag", count: 176, sentiment: "positive", change: 15, relatedProducts: ["UltraGear evo G9 52\""] },
-  { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 US"] },
 ];
 
 export const trustedReviewsTrending: TrendingProduct[] = [
