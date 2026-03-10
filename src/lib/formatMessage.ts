@@ -140,8 +140,8 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Social Media Ad",
           icon: "📱",
           headline: `[Ad] ${productName} — Users highlight ${pros[0] || "quality"} as a standout feature.`,
-          body: `UK consumers praise ${pros.join(", ")} in their reviews of the ${productName}. Available at Currys, Richer Sounds, and LG.com/UK.`,
-          cta: "Learn More at LG.com/UK →",
+          body: `UK consumers praise ${pros.join(", ")} in their reviews of the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
+          cta: "Learn More at LGE.com/UK →",
           hashtags: ["#LGUK", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
         {
