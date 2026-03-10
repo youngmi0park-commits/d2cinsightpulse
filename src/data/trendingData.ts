@@ -103,12 +103,12 @@ export const trustedReviewsTrending: TrendingProduct[] = [
 ];
 
 export const trustedReviewsKeywords: TrendingKeyword[] = [
-  { keyword: "build quality", count: 234, sentiment: "positive", change: 12 },
-  { keyword: "value proposition", count: 198, sentiment: "positive", change: 8 },
-  { keyword: "software experience", count: 176, sentiment: "negative", change: 22 },
-  { keyword: "design premium", count: 165, sentiment: "positive", change: 18 },
-  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15 },
-  { keyword: "innovation", count: 132, sentiment: "positive", change: 30 },
+  { keyword: "build quality", count: 234, sentiment: "positive", change: 12, relatedProducts: ["gram 17\" Copilot+", "OLED evo G6 65\""] },
+  { keyword: "value proposition", count: 198, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G6 65\""] },
+  { keyword: "software experience", count: 176, sentiment: "negative", change: 22, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "design premium", count: 165, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
+  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "innovation", count: 132, sentiment: "positive", change: 30, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];
 
 export const consumerReportsTrending: TrendingProduct[] = [
