@@ -46,17 +46,17 @@ export const amazonTrending: TrendingProduct[] = [
 
 export const redditKeywords: TrendingKeyword[] = [
   { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
-  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 US", "🇬🇧 UK", "🇩🇪 DE"] },
+  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK", "🇩🇪 LGEDG"] },
   { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 34\""] },
   { keyword: "brightness", count: 1432, sentiment: "positive", change: 45, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
-  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇺🇸 US", "🇨🇦 CA", "🇦🇺 AU"] },
+  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI", "🇦🇺 LGEAP"] },
   { keyword: "color accuracy", count: 1187, sentiment: "positive", change: 21, relatedProducts: ["OLED evo G6 65\"", "UltraGear OLED 34\""] },
-  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28, relatedProducts: ["OLED C4 83\"", "OLED evo G5 97\""], relatedCountries: ["🇺🇸 US", "🇬🇧 UK", "🇨🇦 CA", "🇦🇺 AU"] },
+  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28, relatedProducts: ["OLED C4 83\"", "OLED evo G5 97\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK", "🇨🇦 LGECI", "🇦🇺 LGEAP"] },
   { keyword: "build quality", count: 987, sentiment: "positive", change: 5, relatedProducts: ["gram 17\" Copilot+"] },
-  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 US", "🇮🇳 IN"] },
+  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN"] },
   { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
   { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 US", "🇰🇷 KR", "🇩🇪 DE"] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
