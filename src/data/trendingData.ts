@@ -184,6 +184,6 @@ export const bestreviewsKeywords: TrendingKeyword[] = [
   { keyword: "best value", count: 176, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G6 65\""] },
   { keyword: "ease of use", count: 154, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Washer", "CineBeam S 4K UST"] },
   { keyword: "durability concern", count: 132, sentiment: "negative", change: 10, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS"] },
-  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
+  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
   { keyword: "recommended", count: 98, sentiment: "positive", change: 25, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];
