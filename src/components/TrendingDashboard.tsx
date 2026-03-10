@@ -300,7 +300,7 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
         <BarChart3 className="h-6 w-6 text-primary" />
         <h2 className="text-xl font-bold font-heading">📡 {t("Real-time Trending Dashboard", "실시간 트렌딩 대시보드")}</h2>
         <Badge variant="secondary" className="text-xs">
-          {t("Live · Weekly", "Live · 주간 집계")}
+          {t(`Live · Weekly (${dateRangeLabel})`, `Live · 주간 집계 (${dateRangeLabel})`)}
         </Badge>
       </div>
 
