@@ -9,12 +9,13 @@ import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
-import { searchProducts, searchProductsMulti, type ProductData } from "@/data/dummyData";
+import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
-import { useSearchProducts, useProductStats, toReviewFormat, type DBProduct } from "@/hooks/useProductData";
+import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
+import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
-import { Activity, BarChart3, Zap, Globe, Database } from "lucide-react";
+import { Activity, BarChart3, Zap, Globe, Database, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -24,7 +25,6 @@ interface AnalyzedProduct {
   sentiment: SentimentResult;
   marketing: MarketingOutput;
   geoMessages: GeoMessage[];
-  isFromDB?: boolean;
 }
 
 const Index = () => {
@@ -40,84 +40,78 @@ const Index = () => {
     setError(null);
     setSearchQuery(query);
 
-    // Try DB first
     try {
-      const { data: dbProducts, error: dbError } = await import("@/integrations/supabase/client").then(
-        ({ supabase }) =>
-          supabase
-            .from("products")
-            .select("*")
-            .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
-            .eq("is_active", true)
-      );
+      const { data: dbProducts, error: dbError } = await supabase
+        .from("products")
+        .select("*")
+        .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
+        .eq("is_active", true);
 
-      if (!dbError && dbProducts && dbProducts.length > 0) {
-        const analyzed: AnalyzedProduct[] = [];
-        for (const product of dbProducts) {
-          const { data: reviews } = await import("@/integrations/supabase/client").then(
-            ({ supabase }) =>
-              supabase
-                .from("reviews")
-                .select("*")
-                .eq("product_id", product.id)
-                .order("collected_at", { ascending: false })
-                .limit(50)
-          );
+      if (dbError) throw dbError;
 
-          const formattedReviews = (reviews || []).map(toReviewFormat);
-          if (formattedReviews.length === 0) continue;
+      if (!dbProducts || dbProducts.length === 0) {
+        setError(
+          t(
+            `No data found for "${query}". Data is collected automatically — please try again later or use a different keyword.`,
+            `"${query}"에 대한 데이터를 찾을 수 없습니다. 데이터는 자동으로 수집됩니다 — 나중에 다시 시도하거나 다른 키워드를 사용해 보세요.`
+          )
+        );
+        setResults([]);
+        setIsLoading(false);
+        return;
+      }
 
-          const sentiment = analyzeSentiment(formattedReviews);
-          const marketing = generateMarketingMessage(product.display_name, sentiment, lang);
-          const geoMessages = generateGeoMarketingMessages(product.display_name, sentiment);
+      const analyzed: AnalyzedProduct[] = [];
+      for (const product of dbProducts) {
+        const { data: reviews } = await supabase
+          .from("reviews")
+          .select("*")
+          .eq("product_id", product.id)
+          .order("collected_at", { ascending: false })
+          .limit(50);
 
-          analyzed.push({
-            product: {
-              name: product.model_number,
-              displayName: product.display_name,
-              category: product.category as any,
-              reviews: formattedReviews,
-            },
-            sentiment,
-            marketing,
-            geoMessages,
-            isFromDB: true,
-          });
-        }
+        const formattedReviews = (reviews || []).map(toReviewFormat);
+        if (formattedReviews.length === 0) continue;
 
-        if (analyzed.length > 0) {
-          setResults(analyzed);
-          setIsLoading(false);
-          return;
-        }
+        const sentiment = analyzeSentiment(formattedReviews);
+        const marketing = generateMarketingMessage(product.display_name, sentiment, lang);
+        const geoMessages = generateGeoMarketingMessages(product.display_name, sentiment);
+
+        analyzed.push({
+          product: {
+            name: product.model_number,
+            displayName: product.display_name,
+            category: product.category as any,
+            reviews: formattedReviews,
+          },
+          sentiment,
+          marketing,
+          geoMessages,
+        });
+      }
+
+      if (analyzed.length === 0) {
+        setError(
+          t(
+            `Products found for "${query}" but no reviews collected yet. Reviews are collected daily — check back soon.`,
+            `"${query}" 관련 제품은 있지만 리뷰가 아직 수집되지 않았습니다. 리뷰는 매일 자동 수집됩니다.`
+          )
+        );
+        setResults([]);
+      } else {
+        setResults(analyzed);
       }
     } catch (e) {
-      console.warn("DB search failed, falling back to dummy data", e);
-    }
-
-    // Fallback to dummy data
-    await new Promise((r) => setTimeout(r, 800));
-    const multiResults = searchProductsMulti(query);
-    if (multiResults.length === 0) {
+      console.error("Search error:", e);
       setError(
         t(
-          `No data found for "${query}". Try using the product suggestion buttons.`,
-          `"${query}"에 대한 데이터를 찾을 수 없습니다. 제품명 추천 버튼을 사용해 보세요.`
+          "An error occurred while searching. Please try again.",
+          "검색 중 오류가 발생했습니다. 다시 시도해 주세요."
         )
       );
       setResults([]);
-      setIsLoading(false);
-      return;
     }
 
-    const analyzed = multiResults.map((product) => {
-      const sentiment = analyzeSentiment(product.reviews);
-      const marketing = generateMarketingMessage(product.displayName, sentiment, lang);
-      const geoMessages = generateGeoMarketingMessages(product.displayName, sentiment);
-      return { product, sentiment, marketing, geoMessages, isFromDB: false };
-    });
-
-    setResults(analyzed);
     setIsLoading(false);
   };
 
@@ -156,15 +150,19 @@ const Index = () => {
                 "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
               )}
             </p>
-            {/* DB Stats Badge */}
-            {stats && stats.reviewCount > 0 && (
+            {stats && (
               <div className="flex items-center justify-center gap-2 mt-4">
                 <Badge variant="outline" className="gap-1.5 text-xs border-primary/30">
                   <Database className="h-3 w-3" />
-                  {t(
-                    `${stats.productCount} products · ${stats.reviewCount} real reviews collected`,
-                    `${stats.productCount}개 제품 · ${stats.reviewCount}건 실제 리뷰 수집됨`
-                  )}
+                  {stats.reviewCount > 0
+                    ? t(
+                        `${stats.productCount} products · ${stats.reviewCount} real reviews collected`,
+                        `${stats.productCount}개 제품 · ${stats.reviewCount}건 실제 리뷰 수집됨`
+                      )
+                    : t(
+                        `${stats.productCount} products registered · Awaiting first collection`,
+                        `${stats.productCount}개 제품 등록됨 · 첫 수집 대기 중`
+                      )}
                 </Badge>
               </div>
             )}
@@ -203,7 +201,8 @@ const Index = () => {
       {/* Error */}
       {error && (
         <div className="container mx-auto px-4 py-8">
-          <div className="p-6 rounded-xl border border-destructive/30 bg-destructive/5 text-center">
+          <div className="p-6 rounded-xl border border-destructive/30 bg-destructive/5 text-center flex items-center justify-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
             <p className="text-destructive">{error}</p>
           </div>
         </div>
@@ -219,12 +218,10 @@ const Index = () => {
             <Badge variant="secondary" className="text-sm">
               {results.length}{t(" products", "개 제품")}
             </Badge>
-            {results[0]?.isFromDB && (
-              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
-                <Database className="h-3 w-3" />
-                {t("Live Data", "실제 데이터")}
-              </Badge>
-            )}
+            <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+              <Database className="h-3 w-3" />
+              {t("Live Data", "실제 데이터")}
+            </Badge>
           </div>
 
           {isMulti ? (
@@ -269,14 +266,14 @@ const Index = () => {
       <footer className="border-t border-border mt-16 py-8">
         <div className="container mx-auto px-4 flex flex-col items-center gap-4">
           <p className="text-sm text-muted-foreground text-center">
-            {stats && stats.reviewCount > 0
+            {stats
               ? t(
                   `LG Product Sentiment Monitor — ${stats.reviewCount} real reviews from ${stats.productCount} products · Auto-collected via Firecrawl`,
                   `LG 제품 감성 모니터 — ${stats.productCount}개 제품에서 ${stats.reviewCount}건의 실제 리뷰 수집 · Firecrawl 자동 수집`
                 )
               : t(
-                  "LG Product Sentiment Monitor — Demo based on dummy data · Real-time API integration coming soon",
-                  "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
+                  "LG Product Sentiment Monitor — Initializing data collection...",
+                  "LG 제품 감성 모니터 — 데이터 수집 초기화 중..."
                 )}
           </p>
           <p className="text-sm font-medium text-foreground/70 text-center">
