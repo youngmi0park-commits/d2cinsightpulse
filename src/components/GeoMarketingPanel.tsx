@@ -99,9 +99,28 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
       {/* Message Card */}
       {currentMsg && (
         <div className="space-y-4">
+          {activePurpose === "banner" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{t("Banner Copy Guidelines", "배너 문구 가이드라인")}</span>
+              <span className="ml-2">
+                {t(
+                  "(Based on lg.com hero banner) Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
+                  "(lg.com 히어로 배너 기준) Headline ≤50자 · Body ≤120자 · CTA ≤20자"
+                )}
+              </span>
+            </div>
+          )}
+
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
+                {activePurpose === "banner" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-red-500" : "text-green-600"}`}>
+                    ({currentMsg.headline.length}/50)
+                  </span>
+                )}
+              </div>
               <CopyBtn text={currentMsg.headline} id="headline" />
             </div>
             <p className="text-lg font-bold font-heading leading-snug">{currentMsg.headline}</p>
@@ -109,7 +128,14 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
 
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
+                {activePurpose === "banner" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-red-500" : "text-green-600"}`}>
+                    ({currentMsg.body.length}/120)
+                  </span>
+                )}
+              </div>
               <CopyBtn text={currentMsg.body} id="body" />
             </div>
             <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{currentMsg.body}</p>
@@ -118,7 +144,14 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
           <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider block mb-1">Call to Action</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Call to Action</span>
+                  {activePurpose === "banner" && (
+                    <span className={`text-[10px] font-mono ${currentMsg.cta.length > 20 ? "text-red-500" : "text-green-600"}`}>
+                      ({currentMsg.cta.length}/20)
+                    </span>
+                  )}
+                </div>
                 <p className="font-semibold text-primary">{currentMsg.cta}</p>
               </div>
               <CopyBtn text={currentMsg.cta} id="cta" />
