@@ -139,7 +139,8 @@ export const cnetTrending: TrendingProduct[] = [
   { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 143, sentimentScore: 90, trend: "up", changePercent: 16 },
   { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 112, sentimentScore: 85, trend: "up", changePercent: 25 },
   { rank: 5, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 98, sentimentScore: 82, trend: "stable", changePercent: 4 },
-  { rank: 6, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 87, sentimentScore: 79, trend: "up", changePercent: 11 },
+  { rank: 6, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 49, sentimentScore: 79, trend: "up", changePercent: 11 },
+  { rank: 7, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 38, sentimentScore: 78, trend: "up", changePercent: 9 },
 ];
 
 export const cnetKeywords: TrendingKeyword[] = [
