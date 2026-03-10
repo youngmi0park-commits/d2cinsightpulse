@@ -88,7 +88,7 @@ const Index = () => {
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
                 <span className="text-gradient">
-                  {t("LG Customer Voice Listening & Marketing Insight", "LG 고객보이스 리스닝 & 마케팅 인사이트")}
+                  {t("Customer Voice Listening Insight Portal", "고객 보이스 리스닝 인사이트 포탈")}
                 </span>
               </h1>
             </div>
