@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin } from "lucide-react";
+import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { useLang } from "@/contexts/LanguageContext";
