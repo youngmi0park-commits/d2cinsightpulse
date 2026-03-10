@@ -167,6 +167,14 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             {copiedKey === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {t("Copy Full Message", "전체 메시지 복사")}
           </button>
+
+          {/* Ad Compliance Notice */}
+          <AdComplianceNotice
+            purpose={activePurpose}
+            geo={activeGeo}
+            productName={productName}
+            totalReviews={totalReviews}
+          />
         </div>
       )}
     </div>
