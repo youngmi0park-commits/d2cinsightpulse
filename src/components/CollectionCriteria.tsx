@@ -154,8 +154,8 @@ const criteria: CriteriaItem[] = [
   },
   {
     icon: AlertTriangle,
-    titleEn: "Risk Minimization Policy",
-    titleKo: "리스크 최소화 방안",
+    titleEn: "Review Collection Guide for Risk Minimization",
+    titleKo: "리스크 최소화 목적 리뷰 수집가이드",
     itemsEn: [
       "Only public reviews are collected (login-required content is prohibited)",
       "Personal identifiable information (PII) is not stored and immediately removed upon detection",
