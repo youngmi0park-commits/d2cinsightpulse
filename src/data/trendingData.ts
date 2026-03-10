@@ -166,7 +166,7 @@ export const trustpilotKeywords: TrendingKeyword[] = [
 ];
 
 export const bestreviewsTrending: TrendingProduct[] = [
-  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Home Appliance", mentions: 98, sentimentScore: 84, trend: "up", changePercent: 18 },
+  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 98, sentimentScore: 84, trend: "up", changePercent: 18 },
   { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 87, sentimentScore: 91, trend: "up", changePercent: 14 },
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 76, sentimentScore: 93, trend: "up", changePercent: 52 },
   { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 65, sentimentScore: 82, trend: "up", changePercent: 20 },
