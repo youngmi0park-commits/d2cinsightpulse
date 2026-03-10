@@ -15,10 +15,16 @@ interface SearchBarProps {
 const categoryLabels: Record<string, string> = {
   TV: "📺 TV",
   Monitor: "🖥️ Monitor",
+  "Washer/Dryer": "🧺 Washer/Dryer",
   Laptop: "💻 Laptop",
-  "Home Appliance": "🏠 Home Appliance",
   Projector: "🎬 Projector",
+  "Refrigerator": "🧊 Refrigerator",
+  "Kitchen Appliance": "🍳 Kitchen Appliance",
+  Audio: "🔊 Audio",
 };
+
+// Category display order by total mention volume (descending)
+const categoryOrder = ["TV", "Monitor", "Washer/Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
