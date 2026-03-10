@@ -114,12 +114,17 @@ function KeywordPanel({ keywords, t }: { keywords: TrendingKeyword[]; t: (en: st
         </div>
         <div className="space-y-2">
           {positive.map((kw) => (
-            <div key={kw.keyword} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{kw.keyword}</span>
-                {kw.change > 20 && <ArrowUpRight className="h-3 w-3 text-green-600" />}
+            <div key={kw.keyword} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="text-sm shrink-0">{kw.keyword}</span>
+                {kw.relatedProducts && kw.relatedProducts.length > 0 && (
+                  <span className="text-[10px] text-green-600/70 truncate">
+                    ({kw.relatedProducts.join(", ")})
+                  </span>
+                )}
+                {kw.change > 20 && <ArrowUpRight className="h-3 w-3 text-green-600 shrink-0" />}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <div className="w-16 h-1.5 bg-green-200 rounded-full overflow-hidden">
                   <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }} />
                 </div>
