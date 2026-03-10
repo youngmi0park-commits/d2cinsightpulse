@@ -26,6 +26,19 @@ const categoryLabels: Record<string, string> = {
 // Category display order by total mention volume (descending)
 const categoryOrder = ["TV", "Monitor", "Washer/Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
 
+// Quick-search buttons shown below the search bar (Washer & Dryer split)
+const quickSearchButtons = [
+  { label: "📺 TV", query: "TV" },
+  { label: "🖥️ Monitor", query: "Monitor" },
+  { label: "🧺 Washer", query: "Washer" },
+  { label: "🧺 Dryer", query: "Dryer" },
+  { label: "💻 Laptop", query: "Laptop" },
+  { label: "🎬 Projector", query: "Projector" },
+  { label: "🍳 Kitchen Appliance", query: "Kitchen Appliance" },
+  { label: "🧊 Refrigerator", query: "Refrigerator" },
+  { label: "🔊 Audio", query: "Audio" },
+];
+
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
