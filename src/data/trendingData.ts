@@ -71,7 +71,7 @@ export const amazonKeywords: TrendingKeyword[] = [
   { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG"] },
   { keyword: "smart features", count: 1187, sentiment: "positive", change: 33, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
   { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
-  { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Center Control"] },
+  { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Washer"] },
   { keyword: "overheating", count: 876, sentiment: "negative", change: 42, relatedProducts: ["gram 17\" Copilot+"], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN", "🇧🇷 LGESP"] },
   { keyword: "design", count: 812, sentiment: "positive", change: 14, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
 ];
