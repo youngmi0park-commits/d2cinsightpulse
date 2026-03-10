@@ -56,38 +56,48 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
 
       {/* Purpose Tabs */}
       {currentGeo && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {currentGeo.messages.map((m) => (
-            <button
-              key={m.purpose}
-              onClick={() => setActivePurpose(m.purpose)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-                activePurpose === m.purpose
-                  ? "bg-primary border-primary/50 text-primary-foreground"
-                  : "bg-background border-border text-muted-foreground hover:border-primary/30"
-              }`}
-            >
-              {m.icon} {m.purposeLabel}
-            </button>
-          ))}
+        <div className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-border bg-secondary/20">
+          <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1 min-w-[60px]">
+            {t("Ad Type", "광고유형")}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {currentGeo.messages.map((m) => (
+              <button
+                key={m.purpose}
+                onClick={() => setActivePurpose(m.purpose)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                  activePurpose === m.purpose
+                    ? "bg-primary border-primary/50 text-primary-foreground"
+                    : "bg-background border-border text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                {m.icon} {m.purposeLabel}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Geo Tabs */}
-      <div className="flex flex-wrap gap-2 mb-5">
-        {geoMessages.map((g) => (
-          <button
-            key={g.geo}
-            onClick={() => { setActiveGeo(g.geo); setActivePurpose(geoMessages.find(x => x.geo === g.geo)?.messages[0]?.purpose ?? "sns"); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-              activeGeo === g.geo
-                ? "bg-primary/20 border-primary text-primary"
-                : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/30"
-            }`}
-          >
-            {g.flag} {g.geoLabel}
-          </button>
-        ))}
+      <div className="flex items-start gap-3 mb-5 p-3 rounded-lg border border-border bg-secondary/20">
+        <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1.5 min-w-[60px]">
+          {t("Country", "국가")}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {geoMessages.map((g) => (
+            <button
+              key={g.geo}
+              onClick={() => { setActiveGeo(g.geo); setActivePurpose(geoMessages.find(x => x.geo === g.geo)?.messages[0]?.purpose ?? "sns"); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                activeGeo === g.geo
+                  ? "bg-primary/20 border-primary text-primary"
+                  : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/30"
+              }`}
+            >
+              {g.flag} {g.geoLabel}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Message Card */}
