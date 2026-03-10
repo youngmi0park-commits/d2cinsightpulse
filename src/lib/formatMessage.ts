@@ -227,7 +227,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
-          body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LG.com/DE.`),
+          body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
           cta: bannerCta("Jetzt entdecken"),
           hashtags: [],
         },
