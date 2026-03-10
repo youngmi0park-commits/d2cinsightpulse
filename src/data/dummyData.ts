@@ -69,7 +69,7 @@ export const dummyProducts: Record<string, ProductData> = {
   "WKHC252HBA": {
     name: "WKHC252HBA",
     displayName: "LG WashTower™ Center Control",
-    category: "Washer/Dryer",
+    category: "Washer",
     reviews: [
       { id: "wt-1", source: "reddit", author: "u/laundry_pro", text: "The LG WashTower is a space saver and performs incredibly well. AI Wash and Dry actually works — it detects fabric type and adjusts automatically. Super quiet too.", date: "2026-01-05", sentiment: "positive", score: 0.93 },
       { id: "wt-2", source: "amazon", author: "ApartmentDweller", text: "Perfect for small spaces. The single-unit design fits where a traditional washer-dryer stack wouldn't. Wash quality is excellent.", date: "2025-12-20", rating: 5, sentiment: "positive", score: 0.9 },

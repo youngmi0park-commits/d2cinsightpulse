@@ -15,7 +15,8 @@ interface SearchBarProps {
 const categoryLabels: Record<string, string> = {
   TV: "📺 TV",
   Monitor: "🖥️ Monitor",
-  "Washer/Dryer": "🧺 Washer/Dryer",
+  Washer: "🧺 Washer",
+  Dryer: "🧺 Dryer",
   Laptop: "💻 Laptop",
   Projector: "🎬 Projector",
   "Refrigerator": "🧊 Refrigerator",
@@ -24,7 +25,7 @@ const categoryLabels: Record<string, string> = {
 };
 
 // Category display order by total mention volume (descending)
-const categoryOrder = ["TV", "Monitor", "Washer/Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
+const categoryOrder = ["TV", "Monitor", "Washer", "Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
 
 // Quick-search buttons shown below the search bar (Washer & Dryer split)
 const quickSearchButtons = [
