@@ -229,7 +229,7 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
       </div>
 
       <MarketingPanel marketing={item.marketing} />
-      <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} />
+      <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
       <ReviewList reviews={item.product.reviews} />
     </>
   );
