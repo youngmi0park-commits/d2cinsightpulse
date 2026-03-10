@@ -243,7 +243,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "in",
+      geo: "LGEIN",
       geoLabel: "India",
       flag: "🇮🇳",
       language: "English (IN)",
