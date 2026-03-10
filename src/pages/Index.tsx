@@ -88,7 +88,7 @@ const Index = () => {
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
                 <span className="text-gradient">
-                  {t("Customer Voice Listening", "고객 보이스 리스닝")}
+                  {t("LG Customer Voice Listening & Marketing Insight", "LG 고객보이스 리스닝 & 마케팅 인사이트")}
                 </span>
               </h1>
             </div>
@@ -196,6 +196,12 @@ const Index = () => {
             {t(
               "LG Product Sentiment Monitor — Demo based on dummy data · Real-time API integration coming soon",
               "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
+            )}
+          </p>
+          <p className="text-sm font-medium text-foreground/70 text-center">
+            {t(
+              "Presented by LG Electronics D2C Marketing Strategy Team",
+              "Presented by LG전자 D2C마케팅전략팀"
             )}
           </p>
           <button
