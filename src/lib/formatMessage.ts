@@ -60,7 +60,7 @@ export function generateGeoMarketingMessages(
 
   return [
     {
-      geo: "us",
+      geo: "LGEUS",
       geoLabel: "United States",
       flag: "🇺🇸",
       language: "English",
