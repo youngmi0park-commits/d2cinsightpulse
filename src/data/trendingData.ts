@@ -62,15 +62,15 @@ export const redditKeywords: TrendingKeyword[] = [
 export const amazonKeywords: TrendingKeyword[] = [
   { keyword: "easy setup", count: 3214, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
   { keyword: "value for money", count: 2876, sentiment: "positive", change: 8, relatedProducts: ["OLED C4 83\"", "Gas Range 5.8 cu ft"] },
-  { keyword: "delivery damage", count: 1987, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "delivery damage", count: 1987, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇺🇸 US", "🇬🇧 UK"] },
   { keyword: "picture quality", count: 1876, sentiment: "positive", change: 11, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
-  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 US", "🇨🇦 CA", "🇮🇳 IN"] },
   { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
-  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 US", "🇩🇪 DE"] },
   { keyword: "smart features", count: 1187, sentiment: "positive", change: 33, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
-  { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 US", "🇨🇦 CA"] },
   { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Center Control"] },
-  { keyword: "overheating", count: 876, sentiment: "negative", change: 42, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "overheating", count: 876, sentiment: "negative", change: 42, relatedProducts: ["gram 17\" Copilot+"], relatedCountries: ["🇺🇸 US", "🇮🇳 IN", "🇧🇷 BR"] },
   { keyword: "design", count: 812, sentiment: "positive", change: 14, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
 ];
 
