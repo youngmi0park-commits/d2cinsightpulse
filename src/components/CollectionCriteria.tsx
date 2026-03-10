@@ -42,12 +42,12 @@ const criteria: CriteriaItem[] = [
     titleEn: "Target Regions (Top 10)",
     titleKo: "대상 지역 (Top 10)",
     itemsEn: [
-      "🇺🇸 United States — Largest Reddit user base & highest lg.com traffic",
-      "🇬🇧 United Kingdom — 2nd largest English-speaking, high Reddit engagement",
-      "🇨🇦 Canada — Large English-speaking user base, active tech communities",
-      "🇦🇺 Australia — 4th largest English-speaking, high activity",
-      "🇩🇪 Germany — Non-English but active on English Reddit, top lg.com interest",
-      "🇮🇳 India · 🇫🇷 France · 🇧🇷 Brazil · 🇳🇱 Netherlands · 🇲🇽 Mexico",
+      "🇺🇸 United States [LGEUS] — Largest Reddit user base & highest lg.com traffic",
+      "🇬🇧 United Kingdom [LGEUK] — 2nd largest English-speaking, high Reddit engagement",
+      "🇨🇦 Canada [LGECI] — Large English-speaking user base, active tech communities",
+      "🇦🇺 Australia [LGEAP] — 4th largest English-speaking, high activity",
+      "🇩🇪 Germany [LGEDG] — Non-English but active on English Reddit, top lg.com interest",
+      "🇮🇳 India [LGEIN] · 🇫🇷 France [LGEFS] · 🇧🇷 Brazil [LGESP] · 🇳🇱 Netherlands [LGEBN] · 🇲🇽 Mexico [LGEMS]",
     ],
     itemsKo: [
       "🇺🇸 미국 — Reddit 최대 사용자 & lg.com 최대 트래픽",
