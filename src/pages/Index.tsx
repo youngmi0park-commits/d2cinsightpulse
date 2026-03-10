@@ -12,8 +12,9 @@ import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { searchProducts, searchProductsMulti, type ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
+import { useSearchProducts, useProductStats, toReviewFormat, type DBProduct } from "@/hooks/useProductData";
 import heroBanner from "@/assets/hero-banner.jpg";
-import { Activity, BarChart3, Zap, Globe } from "lucide-react";
+import { Activity, BarChart3, Zap, Globe, Database } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -23,6 +24,7 @@ interface AnalyzedProduct {
   sentiment: SentimentResult;
   marketing: MarketingOutput;
   geoMessages: GeoMessage[];
+  isFromDB?: boolean;
 }
 
 const Index = () => {
@@ -31,14 +33,70 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { t, lang, toggleLang } = useLang();
+  const { data: stats } = useProductStats();
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
     setError(null);
     setSearchQuery(query);
 
-    await new Promise((r) => setTimeout(r, 800));
+    // Try DB first
+    try {
+      const { data: dbProducts, error: dbError } = await import("@/integrations/supabase/client").then(
+        ({ supabase }) =>
+          supabase
+            .from("products")
+            .select("*")
+            .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
+            .eq("is_active", true)
+      );
 
+      if (!dbError && dbProducts && dbProducts.length > 0) {
+        const analyzed: AnalyzedProduct[] = [];
+        for (const product of dbProducts) {
+          const { data: reviews } = await import("@/integrations/supabase/client").then(
+            ({ supabase }) =>
+              supabase
+                .from("reviews")
+                .select("*")
+                .eq("product_id", product.id)
+                .order("collected_at", { ascending: false })
+                .limit(50)
+          );
+
+          const formattedReviews = (reviews || []).map(toReviewFormat);
+          if (formattedReviews.length === 0) continue;
+
+          const sentiment = analyzeSentiment(formattedReviews);
+          const marketing = generateMarketingMessage(product.display_name, sentiment, lang);
+          const geoMessages = generateGeoMarketingMessages(product.display_name, sentiment);
+
+          analyzed.push({
+            product: {
+              name: product.model_number,
+              displayName: product.display_name,
+              category: product.category as any,
+              reviews: formattedReviews,
+            },
+            sentiment,
+            marketing,
+            geoMessages,
+            isFromDB: true,
+          });
+        }
+
+        if (analyzed.length > 0) {
+          setResults(analyzed);
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("DB search failed, falling back to dummy data", e);
+    }
+
+    // Fallback to dummy data
+    await new Promise((r) => setTimeout(r, 800));
     const multiResults = searchProductsMulti(query);
     if (multiResults.length === 0) {
       setError(
@@ -56,7 +114,7 @@ const Index = () => {
       const sentiment = analyzeSentiment(product.reviews);
       const marketing = generateMarketingMessage(product.displayName, sentiment, lang);
       const geoMessages = generateGeoMarketingMessages(product.displayName, sentiment);
-      return { product, sentiment, marketing, geoMessages };
+      return { product, sentiment, marketing, geoMessages, isFromDB: false };
     });
 
     setResults(analyzed);
@@ -98,6 +156,18 @@ const Index = () => {
                 "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
               )}
             </p>
+            {/* DB Stats Badge */}
+            {stats && stats.reviewCount > 0 && (
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <Badge variant="outline" className="gap-1.5 text-xs border-primary/30">
+                  <Database className="h-3 w-3" />
+                  {t(
+                    `${stats.productCount} products · ${stats.reviewCount} real reviews collected`,
+                    `${stats.productCount}개 제품 · ${stats.reviewCount}건 실제 리뷰 수집됨`
+                  )}
+                </Badge>
+              </div>
+            )}
           </div>
           <SearchBar onSearch={handleSearch} isLoading={isLoading} />
         </div>
@@ -149,6 +219,12 @@ const Index = () => {
             <Badge variant="secondary" className="text-sm">
               {results.length}{t(" products", "개 제품")}
             </Badge>
+            {results[0]?.isFromDB && (
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Database className="h-3 w-3" />
+                {t("Live Data", "실제 데이터")}
+              </Badge>
+            )}
           </div>
 
           {isMulti ? (
@@ -193,10 +269,15 @@ const Index = () => {
       <footer className="border-t border-border mt-16 py-8">
         <div className="container mx-auto px-4 flex flex-col items-center gap-4">
           <p className="text-sm text-muted-foreground text-center">
-            {t(
-              "LG Product Sentiment Monitor — Demo based on dummy data · Real-time API integration coming soon",
-              "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
-            )}
+            {stats && stats.reviewCount > 0
+              ? t(
+                  `LG Product Sentiment Monitor — ${stats.reviewCount} real reviews from ${stats.productCount} products · Auto-collected via Firecrawl`,
+                  `LG 제품 감성 모니터 — ${stats.productCount}개 제품에서 ${stats.reviewCount}건의 실제 리뷰 수집 · Firecrawl 자동 수집`
+                )
+              : t(
+                  "LG Product Sentiment Monitor — Demo based on dummy data · Real-time API integration coming soon",
+                  "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
+                )}
           </p>
           <p className="text-sm font-medium text-foreground/70 text-center">
             {t(
@@ -227,6 +308,9 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <h3 className="text-xl font-bold font-heading font-mono">
           {item.product.name}
         </h3>
+        {item.product.displayName && (
+          <span className="text-sm text-muted-foreground">{item.product.displayName}</span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
