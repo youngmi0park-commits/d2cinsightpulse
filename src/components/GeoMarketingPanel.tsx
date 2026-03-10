@@ -41,9 +41,16 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
 
   return (
     <div className="gradient-card rounded-xl border border-border p-6">
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-2 mb-4">
         <Globe className="h-6 w-6 text-primary" />
         <h3 className="text-lg font-semibold font-heading">🌍 {t("Regional Marketing Messages", "지역별 마케팅 메시지")}</h3>
+      </div>
+
+      <div className="mb-5 p-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-700 dark:text-yellow-400">
+        ⚠️ {t(
+          "This message has been pre-screened against the Overseas Advertising Checklist; however, a mandatory legal review must be completed before actual use.",
+          "본 메시지는 해외광고체크리스트 사전 검수를 완료하였으나, 실제 활용 전 법무 검토를 필수 진행하여 주시기 바랍니다."
+        )}
       </div>
 
       <p className="text-sm text-muted-foreground mb-5">
