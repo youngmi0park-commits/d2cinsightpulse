@@ -38,6 +38,13 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
     return acc;
   }, {});
 
+  // Sort categories by predefined mention volume order
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
+    const ai = categoryOrder.indexOf(a);
+    const bi = categoryOrder.indexOf(b);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) onSearch(query.trim());
