@@ -80,7 +80,7 @@ export function generateGeoMarketingMessages(
           icon: "📱",
           headline: `[Ad] ${productName} — Users love the ${pros[0] || "experience"}. See why.`,
           body: `Real users highlight ${pros.join(", ")} as standout features of the ${productName}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on user feedback.` : ""} Discover what makes it a top choice.`,
-          cta: "Learn More at LG.com →",
+          cta: "Learn More at LGE.com →",
           hashtags: ["#LG", `#${productName.replace(/\s+/g, "")}`, "#ReviewInsights", "#Ad"],
           schema: {
             "@context": "https://schema.org",
