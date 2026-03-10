@@ -295,7 +295,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "br",
+      geo: "LGESP",
       geoLabel: "Brazil",
       flag: "🇧🇷",
       language: "Português / English",
