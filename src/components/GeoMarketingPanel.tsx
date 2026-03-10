@@ -11,7 +11,7 @@ interface GeoMarketingPanelProps {
   totalReviews: number;
 }
 
-export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPanelProps) {
+export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "us");
   const [activePurpose, setActivePurpose] = useState("sns");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
