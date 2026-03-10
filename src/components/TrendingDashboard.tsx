@@ -261,6 +261,10 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const totalMentions = allProducts.reduce((sum, [, v]) => sum + v.totalMentions, 0);
   const avgSentiment = Math.round(allProducts.reduce((sum, [, v]) => sum + v.avgSentiment, 0) / allProducts.length);
 
+  const today = new Date();
+  const weekAgo = subDays(today, 7);
+  const dateRangeLabel = `${format(weekAgo, "yyyy.MM.dd")} ~ ${format(today, "yyyy.MM.dd")}`;
+
   const formatKwWithProducts = (kws: [string, { count: number }][]) =>
     kws.map(([kw]) => {
       const prods = keywordProductMap.get(kw);
