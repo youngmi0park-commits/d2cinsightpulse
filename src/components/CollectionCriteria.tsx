@@ -50,12 +50,12 @@ const criteria: CriteriaItem[] = [
       "🇮🇳 India [LGEIN] · 🇫🇷 France [LGEFS] · 🇧🇷 Brazil [LGESP] · 🇳🇱 Netherlands [LGEBN] · 🇲🇽 Mexico [LGEMS]",
     ],
     itemsKo: [
-      "🇺🇸 미국 — Reddit 최대 사용자 & lg.com 최대 트래픽",
-      "🇬🇧 영국 — 영어권 2위, Reddit 참여도 높음",
-      "🇨🇦 캐나다 — 영어권 대형 사용자, 테크 커뮤니티 활발",
-      "🇦🇺 호주 — 영어권 4위권, 활동성 높음",
-      "🇩🇪 독일 — 비영어권이지만 영문 Reddit 활발, lg.com 관심 상위",
-      "🇮🇳 인도 · 🇫🇷 프랑스 · 🇧🇷 브라질 · 🇳🇱 네덜란드 · 🇲🇽 멕시코",
+      "🇺🇸 미국 [LGEUS] — Reddit 최대 사용자 & lg.com 최대 트래픽",
+      "🇬🇧 영국 [LGEUK] — 영어권 2위, Reddit 참여도 높음",
+      "🇨🇦 캐나다 [LGECI] — 영어권 대형 사용자, 테크 커뮤니티 활발",
+      "🇦🇺 호주 [LGEAP] — 영어권 4위권, 활동성 높음",
+      "🇩🇪 독일 [LGEDG] — 비영어권이지만 영문 Reddit 활발, lg.com 관심 상위",
+      "🇮🇳 인도 [LGEIN] · 🇫🇷 프랑스 [LGEFS] · 🇧🇷 브라질 [LGESP] · 🇳🇱 네덜란드 [LGEBN] · 🇲🇽 멕시코 [LGEMS]",
     ],
   },
   {

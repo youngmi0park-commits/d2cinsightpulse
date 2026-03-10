@@ -347,7 +347,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "mx",
+      geo: "LGEMS",
       geoLabel: "Mexico",
       flag: "🇲🇽",
       language: "Español / English",
