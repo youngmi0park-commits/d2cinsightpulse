@@ -170,7 +170,7 @@ export const bestreviewsTrending: TrendingProduct[] = [
   { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 87, sentimentScore: 91, trend: "up", changePercent: 14 },
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 76, sentimentScore: 93, trend: "up", changePercent: 52 },
   { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 65, sentimentScore: 82, trend: "up", changePercent: 20 },
-  { rank: 5, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 54, sentimentScore: 73, trend: "down", changePercent: -5 },
+  { rank: 5, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 54, sentimentScore: 73, trend: "down", changePercent: -5 },
 ];
 
 export const bestreviewsKeywords: TrendingKeyword[] = [
