@@ -341,7 +341,7 @@ export function generateGeoMarketingMessages(
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
           body: `Gebruikers waarderen ${pros.join(", ")} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
-          cta: "Meer info op LG.com/NL →",
+          cta: "Meer info op LGE.com/NL →",
           hashtags: ["#LGNL", `#${productName.replace(/\s+/g, "")}`, "#Advertentie"],
         },
       ],
