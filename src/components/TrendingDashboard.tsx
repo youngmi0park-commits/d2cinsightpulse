@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { format, subDays } from "date-fns";
 import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -260,6 +261,10 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const totalMentions = allProducts.reduce((sum, [, v]) => sum + v.totalMentions, 0);
   const avgSentiment = Math.round(allProducts.reduce((sum, [, v]) => sum + v.avgSentiment, 0) / allProducts.length);
 
+  const today = new Date();
+  const weekAgo = subDays(today, 7);
+  const dateRangeLabel = `${format(weekAgo, "yyyy.MM.dd")} ~ ${format(today, "yyyy.MM.dd")}`;
+
   const formatKwWithProducts = (kws: [string, { count: number }][]) =>
     kws.map(([kw]) => {
       const prods = keywordProductMap.get(kw);
@@ -295,14 +300,14 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
         <BarChart3 className="h-6 w-6 text-primary" />
         <h2 className="text-xl font-bold font-heading">📡 {t("Real-time Trending Dashboard", "실시간 트렌딩 대시보드")}</h2>
         <Badge variant="secondary" className="text-xs">
-          {t("Live · Weekly", "Live · 주간 집계")}
+          {t(`Live · Weekly (${dateRangeLabel})`, `Live · 주간 집계 (${dateRangeLabel})`)}
         </Badge>
       </div>
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t("Cross-Channel Weekly Trend Insight Report", "전채널 주간 트렌드 인사이트 리포트")}</h3>
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t(`Cross-Channel Weekly Trend Insight Report (${dateRangeLabel})`, `전채널 주간 트렌드 인사이트 리포트 (${dateRangeLabel})`)}</h3>
         </div>
         {insights.map((line, i) => (
           <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
