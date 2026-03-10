@@ -139,13 +139,13 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {sortedCategories.map((category) => (
+        {quickSearchButtons.map((btn) => (
           <button
-            key={category}
-            onClick={() => { setQuery(category); onSearch(category); }}
+            key={btn.query}
+            onClick={() => { setQuery(btn.query); onSearch(btn.query); }}
             className="px-4 py-1.5 rounded-full text-sm bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary transition-colors border border-border"
           >
-            {categoryLabels[category] || category}
+            {btn.label}
           </button>
         ))}
       </div>
