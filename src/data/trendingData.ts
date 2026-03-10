@@ -156,12 +156,12 @@ export const trustpilotTrending: TrendingProduct[] = [
 ];
 
 export const trustpilotKeywords: TrendingKeyword[] = [
-  { keyword: "customer service", count: 876, sentiment: "negative", change: 20 },
-  { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5 },
-  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15 },
-  { keyword: "product quality", count: 487, sentiment: "positive", change: 8 },
-  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25 },
-  { keyword: "value for money", count: 354, sentiment: "positive", change: 12 },
+  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Center Control", "Gas Range 5.8 cu ft"] },
+  { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "product quality", count: 487, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G5 97\"", "OLED C4 83\""] },
+  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "value for money", count: 354, sentiment: "positive", change: 12, relatedProducts: ["OLED C4 83\"", "gram 17\" Copilot+"] },
 ];
 
 export const bestreviewsTrending: TrendingProduct[] = [
