@@ -60,7 +60,7 @@ export function generateGeoMarketingMessages(
 
   return [
     {
-      geo: "us",
+      geo: "LGEUS",
       geoLabel: "United States",
       flag: "🇺🇸",
       language: "English",
@@ -121,7 +121,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "uk",
+      geo: "LGEUK",
       geoLabel: "United Kingdom",
       flag: "🇬🇧",
       language: "English (UK)",
@@ -156,7 +156,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "ca",
+      geo: "LGECI",
       geoLabel: "Canada",
       flag: "🇨🇦",
       language: "English (CA)",
@@ -191,7 +191,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "au",
+      geo: "LGEAP",
       geoLabel: "Australia",
       flag: "🇦🇺",
       language: "English (AU)",
@@ -217,7 +217,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "de",
+      geo: "LGEDG",
       geoLabel: "Germany",
       flag: "🇩🇪",
       language: "Deutsch / English",
@@ -243,7 +243,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "in",
+      geo: "LGEIN",
       geoLabel: "India",
       flag: "🇮🇳",
       language: "English (IN)",
@@ -269,7 +269,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "fr",
+      geo: "LGEFS",
       geoLabel: "France",
       flag: "🇫🇷",
       language: "Français / English",
@@ -295,7 +295,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "br",
+      geo: "LGESP",
       geoLabel: "Brazil",
       flag: "🇧🇷",
       language: "Português / English",
@@ -321,7 +321,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "nl",
+      geo: "LGEBN",
       geoLabel: "Netherlands",
       flag: "🇳🇱",
       language: "Nederlands / English",
@@ -347,7 +347,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "mx",
+      geo: "LGEMS",
       geoLabel: "Mexico",
       flag: "🇲🇽",
       language: "Español / English",

@@ -12,7 +12,7 @@ interface GeoMarketingPanelProps {
 }
 
 export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
-  const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "us");
+  const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
   const [activePurpose, setActivePurpose] = useState("sns");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSchema, setShowSchema] = useState(false);

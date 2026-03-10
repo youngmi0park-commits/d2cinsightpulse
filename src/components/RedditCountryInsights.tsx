@@ -8,6 +8,7 @@ interface CountryData {
   flag: string;
   name: string;
   nameKo: string;
+  risCode: string;
   descriptionEn: string;
   descriptionKo: string;
   keywords: { category: string; items: string[] }[];
@@ -15,7 +16,7 @@ interface CountryData {
 
 const countries: CountryData[] = [
   {
-    rank: 1, flag: "🇺🇸", name: "United States", nameKo: "미국",
+    rank: 1, flag: "🇺🇸", name: "United States", nameKo: "미국", risCode: "LGEUS",
     descriptionEn: "Largest Reddit user base & highest lg.com traffic country",
     descriptionKo: "Reddit 절대 최대 사용자 기반 & lg.com 최대 트래픽 국가",
     keywords: [
@@ -26,7 +27,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 2, flag: "🇬🇧", name: "United Kingdom", nameKo: "영국",
+    rank: 2, flag: "🇬🇧", name: "United Kingdom", nameKo: "영국", risCode: "LGEUK",
     descriptionEn: "2nd largest English-speaking, high Reddit engagement",
     descriptionKo: "영어권 2위 규모, Reddit 참여도 높음",
     keywords: [
@@ -37,7 +38,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 3, flag: "🇨🇦", name: "Canada", nameKo: "캐나다",
+    rank: 3, flag: "🇨🇦", name: "Canada", nameKo: "캐나다", risCode: "LGECI",
     descriptionEn: "Large English-speaking user base, active tech communities",
     descriptionKo: "영어권 대형 사용자층, 테크 커뮤니티 활동 활발",
     keywords: [
@@ -47,7 +48,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 4, flag: "🇦🇺", name: "Australia", nameKo: "호주",
+    rank: 4, flag: "🇦🇺", name: "Australia", nameKo: "호주", risCode: "LGEAP",
     descriptionEn: "4th largest English-speaking user base, high activity",
     descriptionKo: "영어권 4위권 사용자 기반, 활동성 높음",
     keywords: [
@@ -57,7 +58,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 5, flag: "🇩🇪", name: "Germany", nameKo: "독일",
+    rank: 5, flag: "🇩🇪", name: "Germany", nameKo: "독일", risCode: "LGEDG",
     descriptionEn: "Non-English but active on English Reddit, top lg.com interest",
     descriptionKo: "비영어권이지만 영문 Reddit 사용·테크 토픽 활발, lg.com 관심 상위권",
     keywords: [
@@ -68,7 +69,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 6, flag: "🇮🇳", name: "India", nameKo: "인도",
+    rank: 6, flag: "🇮🇳", name: "India", nameKo: "인도", risCode: "LGEIN",
     descriptionEn: "Growing English-speaking & mobile Reddit user base",
     descriptionKo: "영어 사용층 & 모바일 Reddit 사용자 급증 추세",
     keywords: [
@@ -78,7 +79,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 7, flag: "🇫🇷", name: "France", nameKo: "프랑스",
+    rank: 7, flag: "🇫🇷", name: "France", nameKo: "프랑스", risCode: "LGEFS",
     descriptionEn: "Large Reddit user count, sustained CE topic interest",
     descriptionKo: "Reddit 사용자 수 규모 상위, CE 주제 관심 지속",
     keywords: [
@@ -88,7 +89,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 8, flag: "🇧🇷", name: "Brazil", nameKo: "브라질",
+    rank: 8, flag: "🇧🇷", name: "Brazil", nameKo: "브라질", risCode: "LGESP",
     descriptionEn: "Growing user base, top lg.com traffic",
     descriptionKo: "사용자 기반 성장, lg.com 트래픽 상위권",
     keywords: [
@@ -98,7 +99,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 9, flag: "🇳🇱", name: "Netherlands", nameKo: "네덜란드",
+    rank: 9, flag: "🇳🇱", name: "Netherlands", nameKo: "네덜란드", risCode: "LGEBN",
     descriptionEn: "High English proficiency relative to population, active tech forums",
     descriptionKo: "사용자 대비 영어 숙련도 높고 테크 포럼 참여 활발",
     keywords: [
@@ -108,7 +109,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 10, flag: "🇲🇽", name: "Mexico", nameKo: "멕시코",
+    rank: 10, flag: "🇲🇽", name: "Mexico", nameKo: "멕시코", risCode: "LGEMS",
     descriptionEn: "Large user base, frequent North American product/pricing discussions",
     descriptionKo: "사용자 규모 상위, 북미 제품/가격·유통 관련 대화 잦음",
     keywords: [
@@ -163,6 +164,7 @@ export const RedditCountryInsights = () => {
                     <div>
                       <span className="font-semibold text-sm font-heading">{country.name}</span>
                       <span className="text-muted-foreground text-xs ml-2">({country.nameKo})</span>
+                      <span className="text-xs font-mono text-primary/70 ml-2">[{country.risCode}]</span>
                     </div>
                   </div>
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${expandedCountry === country.rank ? "rotate-180" : ""}`} />
