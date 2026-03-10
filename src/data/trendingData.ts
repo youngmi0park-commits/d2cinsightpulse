@@ -116,7 +116,8 @@ export const trustedReviewsKeywords: TrendingKeyword[] = [
 
 export const consumerReportsTrending: TrendingProduct[] = [
   { rank: 1, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 210, sentimentScore: 93, trend: "up", changePercent: 20 },
-  { rank: 2, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 187, sentimentScore: 82, trend: "up", changePercent: 14 },
+  { rank: 2, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 104, sentimentScore: 82, trend: "up", changePercent: 14 },
+  { rank: 3, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 83, sentimentScore: 80, trend: "up", changePercent: 12 },
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 165, sentimentScore: 92, trend: "up", changePercent: 48 },
   { rank: 4, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 132, sentimentScore: 74, trend: "down", changePercent: -6 },
   { rank: 5, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 119, sentimentScore: 85, trend: "stable", changePercent: 2 },
