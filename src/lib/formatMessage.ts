@@ -357,7 +357,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Calidad"} destacada.`),
-          body: bannerBody(`Los usuarios destacan ${pros.slice(0, 2).join(" & ")} como fortalezas. Garantía local. LG.com/MX.`),
+          body: bannerBody(`Los usuarios destacan ${pros.slice(0, 2).join(" & ")} como fortalezas. Garantía local. LGE.com/MX.`),
           cta: bannerCta("Comprar Ahora"),
           hashtags: [],
         },
