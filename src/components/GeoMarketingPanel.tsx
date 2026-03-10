@@ -94,7 +94,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
                   : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/30"
               }`}
             >
-              {g.flag} {g.geoLabel}
+              {g.flag} {g.geoLabel} <span className="font-mono text-xs opacity-70">[{g.geo}]</span>
             </button>
           ))}
         </div>
