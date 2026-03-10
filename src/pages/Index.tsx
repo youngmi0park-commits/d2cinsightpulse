@@ -94,8 +94,8 @@ const Index = () => {
             </div>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {t(
-                "A platform that collects and analyzes real user reviews from major communities like Reddit and Amazon, and provides marketing communication messages.",
-                "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여, 마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
+                "A platform that collects and analyzes real user reviews from major communities like Reddit and Amazon,\nand provides marketing communication messages.",
+                "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
               )}
             </p>
           </div>
