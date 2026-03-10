@@ -152,6 +152,25 @@ const criteria: CriteriaItem[] = [
       "출처: WorldPopulationReview, ExpertBeacon, SimilarWeb 기반 검증",
     ],
   },
+  {
+    icon: AlertTriangle,
+    titleEn: "Risk Minimization Policy",
+    titleKo: "리스크 최소화 방안",
+    itemsEn: [
+      "Only public reviews are collected (login-required content is prohibited)",
+      "Personal identifiable information (PII) is not stored and immediately removed upon detection",
+      "Original review text is never republished externally — only secondary outputs (summaries, scores, keywords) are used",
+      "Scraping that violates each platform's ToS (bypass login, mass traffic) is strictly prohibited",
+      "This dashboard is for internal strategy use only — external disclosure is prohibited",
+    ],
+    itemsKo: [
+      "공개(public) 리뷰만 수집 (로그인 필요 콘텐츠는 금지)",
+      "개인 식별 정보(PII)는 저장하지 않고 즉시 제거",
+      "리뷰 원문을 외부 재게시하지 않고, 요약·점수·키워드 등 '2차 가공물'만 사용",
+      "각 플랫폼의 ToS를 회피하는 scraping(우회 로그인/대량 트래픽) 금지",
+      "대시보드는 내부 전략용으로만 활용 → 외부 공개 금지",
+    ],
+  },
 ];
 
 export const CollectionCriteria = () => {
