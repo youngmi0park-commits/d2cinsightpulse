@@ -47,6 +47,17 @@ export function generateGeoMarketingMessages(
 
   const dataSrc = "Reddit, Amazon, RTINGS, Consumer Reports";
 
+  // Banner copy character limits (based on lg.com/us, lg.com/uk hero banner patterns):
+  // - Kicker/Eyebrow: ~35 chars max
+  // - Headline: ~50 chars max
+  // - Sub-copy/Body: ~120 chars max
+  // - CTA button: ~20 chars max
+
+  const bannerKicker = (text: string) => text.slice(0, 35);
+  const bannerHeadline = (text: string) => text.slice(0, 50);
+  const bannerBody = (text: string) => text.slice(0, 120);
+  const bannerCta = (text: string) => text.slice(0, 20);
+
   return [
     {
       geo: "us",
@@ -54,6 +65,15 @@ export function generateGeoMarketingMessages(
       flag: "🇺🇸",
       language: "English",
       messages: [
+        {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Experience"} Redefined.`),
+          body: bannerBody(`Users praise ${pros.slice(0, 2).join(" & ")}. Discover what makes the ${productName} a standout choice.`),
+          cta: bannerCta("Shop Now"),
+          hashtags: [],
+        },
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
@@ -107,6 +127,15 @@ export function generateGeoMarketingMessages(
       language: "English (UK)",
       messages: [
         {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. Loved for ${pros[0] || "Quality"}.`),
+          body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")} as key strengths. Experience it at Currys or LG.com/UK.`),
+          cta: bannerCta("Buy Now"),
+          hashtags: [],
+        },
+        {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
@@ -132,6 +161,15 @@ export function generateGeoMarketingMessages(
       flag: "🇨🇦",
       language: "English (CA)",
       messages: [
+        {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Performance"} You'll Love.`),
+          body: bannerBody(`Canadian users praise ${pros.slice(0, 2).join(" & ")}. Now available with local warranty and service.`),
+          cta: bannerCta("Shop Now"),
+          hashtags: [],
+        },
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
@@ -159,6 +197,15 @@ export function generateGeoMarketingMessages(
       language: "English (AU)",
       messages: [
         {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Quality"} That Stands Out.`),
+          body: bannerBody(`Aussie users love ${pros.slice(0, 2).join(" & ")}. Available at JB Hi-Fi, Harvey Norman & LG.com AU.`),
+          cta: bannerCta("Learn More"),
+          hashtags: [],
+        },
+        {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
@@ -175,6 +222,15 @@ export function generateGeoMarketingMessages(
       flag: "🇩🇪",
       language: "Deutsch / English",
       messages: [
+        {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
+          body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LG.com/DE.`),
+          cta: bannerCta("Jetzt entdecken"),
+          hashtags: [],
+        },
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
@@ -193,6 +249,15 @@ export function generateGeoMarketingMessages(
       language: "English (IN)",
       messages: [
         {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Innovation"} Delivered.`),
+          body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as top reasons to choose LG. Explore at LG.com/IN.`),
+          cta: bannerCta("Explore Now"),
+          hashtags: [],
+        },
+        {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
@@ -209,6 +274,15 @@ export function generateGeoMarketingMessages(
       flag: "🇫🇷",
       language: "Français / English",
       messages: [
+        {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Qualité"} saluée.`),
+          body: bannerBody(`Les utilisateurs apprécient ${pros.slice(0, 2).join(" & ")}. Disponible chez Darty, Boulanger et LG.com/FR.`),
+          cta: bannerCta("Découvrir"),
+          hashtags: [],
+        },
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
@@ -227,6 +301,15 @@ export function generateGeoMarketingMessages(
       language: "Português / English",
       messages: [
         {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
+          body: bannerBody(`Usuários destacam ${pros.slice(0, 2).join(" & ")} como diferenciais. Confira em LG.com/BR.`),
+          cta: bannerCta("Saiba Mais"),
+          hashtags: [],
+        },
+        {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
@@ -244,6 +327,15 @@ export function generateGeoMarketingMessages(
       language: "Nederlands / English",
       messages: [
         {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
+          body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LG.com/NL.`),
+          cta: bannerCta("Ontdek meer"),
+          hashtags: [],
+        },
+        {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
           icon: "📱",
@@ -260,6 +352,15 @@ export function generateGeoMarketingMessages(
       flag: "🇲🇽",
       language: "Español / English",
       messages: [
+        {
+          purpose: "banner",
+          purposeLabel: "Web Banner Copy",
+          icon: "🖼️",
+          headline: bannerHeadline(`${productName}. ${pros[0] || "Calidad"} destacada.`),
+          body: bannerBody(`Los usuarios destacan ${pros.slice(0, 2).join(" & ")} como fortalezas. Garantía local. LG.com/MX.`),
+          cta: bannerCta("Comprar Ahora"),
+          hashtags: [],
+        },
         {
           purpose: "sns",
           purposeLabel: "Social Media Ad",
