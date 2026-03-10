@@ -139,24 +139,33 @@ function KeywordPanel({ keywords, t }: { keywords: TrendingKeyword[]; t: (en: st
           <ThumbsDown className="h-4 w-4 text-red-500" />
           <h4 className="text-sm font-semibold text-red-800">{t("Negative Keywords", "부정 키워드")}</h4>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {negative.map((kw) => (
-            <div key={kw.keyword} className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-sm shrink-0">{kw.keyword}</span>
-                {kw.relatedProducts && kw.relatedProducts.length > 0 && (
-                  <span className="text-[10px] text-red-500/70 truncate">
-                    ({kw.relatedProducts.join(", ")})
-                  </span>
-                )}
-                {kw.change > 20 && <ArrowDownRight className="h-3 w-3 text-red-500 shrink-0" />}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="w-16 h-1.5 bg-red-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }} />
+            <div key={kw.keyword} className="space-y-0.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-sm shrink-0">{kw.keyword}</span>
+                  {kw.relatedProducts && kw.relatedProducts.length > 0 && (
+                    <span className="text-[10px] text-red-500/70 truncate">
+                      ({kw.relatedProducts.join(", ")})
+                    </span>
+                  )}
+                  {kw.change > 20 && <ArrowDownRight className="h-3 w-3 text-red-500 shrink-0" />}
                 </div>
-                <span className="text-xs font-mono text-red-700 w-12 text-right">{kw.count.toLocaleString()}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="w-16 h-1.5 bg-red-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full" style={{ width: `${Math.min((kw.count / 3500) * 100, 100)}%` }} />
+                  </div>
+                  <span className="text-xs font-mono text-red-700 w-12 text-right">{kw.count.toLocaleString()}</span>
+                </div>
               </div>
+              {kw.relatedCountries && kw.relatedCountries.length > 0 && (
+                <div className="flex items-center gap-1 ml-0.5">
+                  <span className="text-[10px] text-red-400/80 font-medium">
+                    {t("Mentioned in:", "언급 국가:")} {kw.relatedCountries.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
