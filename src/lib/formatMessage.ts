@@ -105,7 +105,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Email Campaign",
           icon: "✉️",
           headline: `[LG Insider] ${productName} — Here's What Users Are Saying`,
-          body: `Hi [First Name],\n\nWe collected ${total} user reviews of the ${productName} from ${dataSrc}.\n\nWhat users love: ${pros.join(", ") || "Overall quality"}\n\nJoin thousands of satisfied customers who chose the ${productName}. See what they're saying about their experience.`,
+          body: `Hi [First Name],\n\nThe ${productName} has recently been praised by customers for: ${pros.join(", ") || "Overall quality"}.\n\nJoin thousands of satisfied customers who chose the ${productName}. Discover their experience for yourself.`,
           cta: "Read the Reviews →",
           hashtags: [],
         },
