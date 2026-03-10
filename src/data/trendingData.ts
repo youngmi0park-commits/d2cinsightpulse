@@ -44,18 +44,18 @@ export const amazonTrending: TrendingProduct[] = [
 ];
 
 export const redditKeywords: TrendingKeyword[] = [
-  { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15 },
-  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8 },
-  { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32 },
-  { keyword: "brightness", count: 1432, sentiment: "positive", change: 45 },
-  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12 },
-  { keyword: "color accuracy", count: 1187, sentiment: "positive", change: 21 },
-  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28 },
-  { keyword: "build quality", count: 987, sentiment: "positive", change: 5 },
-  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3 },
-  { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18 },
-  { keyword: "input lag", count: 743, sentiment: "positive", change: 9 },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34 },
+  { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
+  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 34\""] },
+  { keyword: "brightness", count: 1432, sentiment: "positive", change: 45, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
+  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "color accuracy", count: 1187, sentiment: "positive", change: 21, relatedProducts: ["OLED evo G6 65\"", "UltraGear OLED 34\""] },
+  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28, relatedProducts: ["OLED C4 83\"", "OLED evo G5 97\""] },
+  { keyword: "build quality", count: 987, sentiment: "positive", change: 5, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
+  { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
