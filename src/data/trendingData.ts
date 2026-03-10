@@ -41,7 +41,7 @@ export const amazonTrending: TrendingProduct[] = [
   { rank: 7, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 987, sentimentScore: 84, trend: "down", changePercent: -5 },
   { rank: 8, modelNumber: "S95TR", displayName: "Soundbar S95TR", category: "Audio", mentions: 876, sentimentScore: 88, trend: "up", changePercent: 22 },
   { rank: 9, modelNumber: "34GS95QE-B", displayName: "UltraGear OLED 34\"", category: "Monitor", mentions: 765, sentimentScore: 91, trend: "up", changePercent: 14 },
-  { rank: 10, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Home Appliance", mentions: 654, sentimentScore: 71, trend: "down", changePercent: -12 },
+  { rank: 10, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 654, sentimentScore: 71, trend: "down", changePercent: -12 },
 ];
 
 export const redditKeywords: TrendingKeyword[] = [
