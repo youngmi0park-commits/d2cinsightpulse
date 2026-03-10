@@ -15,6 +15,7 @@ export interface TrendingKeyword {
   sentiment: "positive" | "negative";
   change: number; // percent change from last week
   relatedProducts?: string[]; // product display names associated with this keyword
+  relatedCountries?: string[]; // countries where this keyword is frequently mentioned
 }
 
 export const redditTrending: TrendingProduct[] = [
