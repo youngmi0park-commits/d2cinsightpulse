@@ -201,7 +201,7 @@ export function generateGeoMarketingMessages(
           purposeLabel: "Web Banner Copy",
           icon: "🖼️",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Quality"} That Stands Out.`),
-          body: bannerBody(`Aussie users love ${pros.slice(0, 2).join(" & ")}. Available at JB Hi-Fi, Harvey Norman & LG.com AU.`),
+          body: bannerBody(`Aussie users love ${pros.slice(0, 2).join(" & ")}. Available at JB Hi-Fi, Harvey Norman & LGE.com AU.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
