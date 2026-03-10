@@ -24,7 +24,8 @@ export const redditTrending: TrendingProduct[] = [
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 1203, sentimentScore: 94, trend: "up", changePercent: 78 },
   { rank: 4, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 987, sentimentScore: 81, trend: "stable", changePercent: 2 },
   { rank: 5, modelNumber: "34GS95QE-B", displayName: "UltraGear OLED 34\"", category: "Monitor", mentions: 876, sentimentScore: 88, trend: "up", changePercent: 15 },
-  { rank: 6, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 743, sentimentScore: 76, trend: "down", changePercent: -8 },
+  { rank: 6, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 412, sentimentScore: 76, trend: "down", changePercent: -8 },
+  { rank: 7, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 331, sentimentScore: 74, trend: "down", changePercent: -6 },
   { rank: 7, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 654, sentimentScore: 85, trend: "up", changePercent: 31 },
   { rank: 8, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 612, sentimentScore: 82, trend: "stable", changePercent: -1 },
   { rank: 9, modelNumber: "27GS95QE-B", displayName: "UltraGear OLED 27\"", category: "Monitor", mentions: 589, sentimentScore: 90, trend: "up", changePercent: 19 },
@@ -34,7 +35,8 @@ export const redditTrending: TrendingProduct[] = [
 export const amazonTrending: TrendingProduct[] = [
   { rank: 1, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 2341, sentimentScore: 91, trend: "up", changePercent: 62 },
   { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 1923, sentimentScore: 86, trend: "up", changePercent: 18 },
-  { rank: 3, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 1654, sentimentScore: 73, trend: "stable", changePercent: 3 },
+  { rank: 3, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 923, sentimentScore: 73, trend: "stable", changePercent: 3 },
+  { rank: 4, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 731, sentimentScore: 72, trend: "stable", changePercent: 2 },
   { rank: 4, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 1432, sentimentScore: 79, trend: "up", changePercent: 11 },
   { rank: 5, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 1287, sentimentScore: 83, trend: "up", changePercent: 28 },
   { rank: 6, modelNumber: "52G930B-B", displayName: "UltraGear evo G9 52\"", category: "Monitor", mentions: 1098, sentimentScore: 90, trend: "up", changePercent: 35 },
@@ -56,7 +58,7 @@ export const redditKeywords: TrendingKeyword[] = [
   { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN"] },
   { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
   { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
@@ -64,12 +66,12 @@ export const amazonKeywords: TrendingKeyword[] = [
   { keyword: "value for money", count: 2876, sentiment: "positive", change: 8, relatedProducts: ["OLED C4 83\"", "Gas Range 5.8 cu ft"] },
   { keyword: "delivery damage", count: 1987, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK"] },
   { keyword: "picture quality", count: 1876, sentiment: "positive", change: 11, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
-  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI", "🇮🇳 LGEIN"] },
-  { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
-  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG"] },
+  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI", "🇮🇳 LGEIN"] },
+  { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Washer", "OLED evo G6 65\""] },
+  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG"] },
   { keyword: "smart features", count: 1187, sentiment: "positive", change: 33, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
   { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
-  { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Center Control"] },
+  { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Washer"] },
   { keyword: "overheating", count: 876, sentiment: "negative", change: 42, relatedProducts: ["gram 17\" Copilot+"], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN", "🇧🇷 LGESP"] },
   { keyword: "design", count: 812, sentiment: "positive", change: 14, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
 ];
@@ -114,7 +116,8 @@ export const trustedReviewsKeywords: TrendingKeyword[] = [
 
 export const consumerReportsTrending: TrendingProduct[] = [
   { rank: 1, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 210, sentimentScore: 93, trend: "up", changePercent: 20 },
-  { rank: 2, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 187, sentimentScore: 82, trend: "up", changePercent: 14 },
+  { rank: 2, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 104, sentimentScore: 82, trend: "up", changePercent: 14 },
+  { rank: 3, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 83, sentimentScore: 80, trend: "up", changePercent: 12 },
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 165, sentimentScore: 92, trend: "up", changePercent: 48 },
   { rank: 4, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 132, sentimentScore: 74, trend: "down", changePercent: -6 },
   { rank: 5, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 119, sentimentScore: 85, trend: "stable", changePercent: 2 },
@@ -122,11 +125,11 @@ export const consumerReportsTrending: TrendingProduct[] = [
 ];
 
 export const consumerReportsKeywords: TrendingKeyword[] = [
-  { keyword: "reliability", count: 543, sentiment: "positive", change: 8, relatedProducts: ["WashTower™ Center Control", "OLED evo G5 97\""] },
-  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
+  { keyword: "reliability", count: 543, sentiment: "positive", change: 8, relatedProducts: ["WashTower™ Washer", "OLED evo G5 97\""] },
+  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15, relatedProducts: ["WashTower™ Washer", "OLED evo G6 65\""] },
   { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
-  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5, relatedProducts: ["WashTower™ Center Control"] },
-  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
+  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"] },
+  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
   { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
 ];
 
@@ -136,7 +139,8 @@ export const cnetTrending: TrendingProduct[] = [
   { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 143, sentimentScore: 90, trend: "up", changePercent: 16 },
   { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 112, sentimentScore: 85, trend: "up", changePercent: 25 },
   { rank: 5, modelNumber: "17Z90TL-H.AUB9U1", displayName: "gram 17\" Copilot+", category: "Laptop", mentions: 98, sentimentScore: 82, trend: "stable", changePercent: 4 },
-  { rank: 6, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 87, sentimentScore: 79, trend: "up", changePercent: 11 },
+  { rank: 6, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 49, sentimentScore: 79, trend: "up", changePercent: 11 },
+  { rank: 7, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 38, sentimentScore: 78, trend: "up", changePercent: 9 },
 ];
 
 export const cnetKeywords: TrendingKeyword[] = [
@@ -149,7 +153,8 @@ export const cnetKeywords: TrendingKeyword[] = [
 ];
 
 export const trustpilotTrending: TrendingProduct[] = [
-  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 432, sentimentScore: 71, trend: "stable", changePercent: 2 },
+  { rank: 1, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 241, sentimentScore: 71, trend: "stable", changePercent: 2 },
+  { rank: 2, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 191, sentimentScore: 70, trend: "stable", changePercent: 1 },
   { rank: 2, modelNumber: "LRGL5823S", displayName: "Gas Range 5.8 cu ft", category: "Kitchen Appliance", mentions: 321, sentimentScore: 65, trend: "down", changePercent: -8 },
   { rank: 3, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 287, sentimentScore: 78, trend: "up", changePercent: 12 },
   { rank: 4, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 198, sentimentScore: 74, trend: "stable", changePercent: -1 },
@@ -157,16 +162,17 @@ export const trustpilotTrending: TrendingProduct[] = [
 ];
 
 export const trustpilotKeywords: TrendingKeyword[] = [
-  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Center Control", "Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
+  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Washer", "Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
   { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5, relatedProducts: ["OLED evo G5 97\""] },
-  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇬🇧 LGEUK", "🇫🇷 LGEFS"] },
+  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇬🇧 LGEUK", "🇫🇷 LGEFS"] },
   { keyword: "product quality", count: 487, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G5 97\"", "OLED C4 83\""] },
   { keyword: "repair delay", count: 398, sentiment: "negative", change: 25, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG"] },
   { keyword: "value for money", count: 354, sentiment: "positive", change: 12, relatedProducts: ["OLED C4 83\"", "gram 17\" Copilot+"] },
 ];
 
 export const bestreviewsTrending: TrendingProduct[] = [
-  { rank: 1, modelNumber: "WKHC252HBA", displayName: "WashTower™ Center Control", category: "Washer/Dryer", mentions: 98, sentimentScore: 84, trend: "up", changePercent: 18 },
+  { rank: 1, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 56, sentimentScore: 84, trend: "up", changePercent: 18 },
+  { rank: 2, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 42, sentimentScore: 83, trend: "up", changePercent: 16 },
   { rank: 2, modelNumber: "OLED97G5WUA", displayName: "OLED evo G5 97\"", category: "TV", mentions: 87, sentimentScore: 91, trend: "up", changePercent: 14 },
   { rank: 3, modelNumber: "OLED65G6WUA", displayName: "OLED evo G6 65\"", category: "TV", mentions: 76, sentimentScore: 93, trend: "up", changePercent: 52 },
   { rank: 4, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 65, sentimentScore: 82, trend: "up", changePercent: 20 },
@@ -174,10 +180,10 @@ export const bestreviewsTrending: TrendingProduct[] = [
 ];
 
 export const bestreviewsKeywords: TrendingKeyword[] = [
-  { keyword: "top pick", count: 198, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G5 97\"", "WashTower™ Center Control"] },
+  { keyword: "top pick", count: 198, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G5 97\"", "WashTower™ Washer"] },
   { keyword: "best value", count: 176, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G6 65\""] },
-  { keyword: "ease of use", count: 154, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Center Control", "CineBeam S 4K UST"] },
+  { keyword: "ease of use", count: 154, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Washer", "CineBeam S 4K UST"] },
   { keyword: "durability concern", count: 132, sentiment: "negative", change: 10, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS"] },
-  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
+  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
   { keyword: "recommended", count: 98, sentiment: "positive", change: 25, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];

@@ -9,7 +9,7 @@ export interface Review {
   score?: number;
 }
 
-export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Washer/Dryer" | "Refrigerator" | "Kitchen Appliance" | "Projector" | "Audio";
+export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Washer" | "Dryer" | "Refrigerator" | "Kitchen Appliance" | "Projector" | "Audio";
 
 export interface ProductData {
   name: string;
@@ -66,22 +66,33 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "gr-6", source: "amazon", author: "StudentUser", text: "Great laptop for school. Lightweight, long battery, nice screen. Only complaint is the speaker quality is quite poor.", date: "2025-12-22", rating: 4, sentiment: "positive", score: 0.78 },
     ],
   },
-  "WKHC252HBA": {
-    name: "WKHC252HBA",
-    displayName: "LG WashTower™ Center Control",
-    category: "Washer/Dryer",
+  "WKHC252HBA-W": {
+    name: "WKHC252HBA-W",
+    displayName: "LG WashTower™ Washer",
+    category: "Washer",
     reviews: [
-      { id: "wt-1", source: "reddit", author: "u/laundry_pro", text: "The LG WashTower is a space saver and performs incredibly well. AI Wash and Dry actually works — it detects fabric type and adjusts automatically. Super quiet too.", date: "2026-01-05", sentiment: "positive", score: 0.93 },
+      { id: "wt-1", source: "reddit", author: "u/laundry_pro", text: "The LG WashTower is a space saver and performs incredibly well. AI Wash actually works — it detects fabric type and adjusts automatically. Super quiet too.", date: "2026-01-05", sentiment: "positive", score: 0.93 },
       { id: "wt-2", source: "amazon", author: "ApartmentDweller", text: "Perfect for small spaces. The single-unit design fits where a traditional washer-dryer stack wouldn't. Wash quality is excellent.", date: "2025-12-20", rating: 5, sentiment: "positive", score: 0.9 },
       { id: "wt-3", source: "reddit", author: "u/smart_home_fan", text: "ThinQ app integration is convenient. I can start loads remotely and get notifications when done. Works great with Google Home.", date: "2026-02-01", sentiment: "positive", score: 0.87 },
-      { id: "wt-4", source: "amazon", author: "DisappointedBuyer", text: "The dryer doesn't fully dry heavy loads. Need to run an extra cycle for towels and jeans. Frustrating for a machine at this price.", date: "2025-11-15", rating: 2, sentiment: "negative", score: 0.15 },
       { id: "wt-5", source: "reddit", author: "u/eco_warrior", text: "Energy efficient and uses significantly less water than our old machines. The steam cycle is great for allergen removal. Highly recommended for families.", date: "2026-01-28", sentiment: "positive", score: 0.91 },
       { id: "wt-6", source: "amazon", author: "RepairNightmare", text: "Broke down after 14 months. Service took 3 weeks to schedule. When it works it's great, but reliability is a concern.", date: "2025-10-10", rating: 2, sentiment: "negative", score: 0.12 },
-      { id: "wt-7", source: "consumer_reports", author: "Consumer Reports", text: "Top pick in our combo washer-dryer category. Excellent wash performance, good energy efficiency, and the single-unit design saves significant space. Drying performance is average for heavy loads.", date: "2026-02-15", rating: 4, sentiment: "positive", score: 0.86 },
-      { id: "wt-8", source: "trustpilot", author: "JaneDoe_Home", text: "Love the WashTower! Easy to use, quiet operation, and the AI features actually make a difference. Delivery and installation were smooth. 5 stars!", date: "2026-01-12", rating: 5, sentiment: "positive", score: 0.92 },
-      { id: "wt-9", source: "trustpilot", author: "FrustratedCustomer22", text: "Customer service is terrible. Machine started making loud noises after 6 months. Took forever to get a technician. Product itself is okay but support is awful.", date: "2025-11-20", rating: 2, sentiment: "negative", score: 0.15 },
-      { id: "wt-10", source: "bestreviews", author: "BestReviews", text: "The LG WashTower stands out for its space-saving design and smart features. AI-powered wash cycles adapt to fabric types effectively. A solid choice for apartments and small homes.", date: "2026-01-25", rating: 4, sentiment: "positive", score: 0.87 },
-      { id: "wt-11", source: "cnet", author: "CNET", text: "LG's WashTower is the best all-in-one laundry solution we've tested. The center control panel is intuitive, and wash results rival standalone machines. Drying could be better for bulky items.", date: "2026-02-08", rating: 4, sentiment: "positive", score: 0.84 },
+      { id: "wt-7", source: "consumer_reports", author: "Consumer Reports", text: "Top pick in our washer category. Excellent wash performance, good energy efficiency, and the single-unit design saves significant space.", date: "2026-02-15", rating: 4, sentiment: "positive", score: 0.86 },
+      { id: "wt-8", source: "trustpilot", author: "JaneDoe_Home", text: "Love the WashTower Washer! Easy to use, quiet operation, and the AI features actually make a difference. Delivery and installation were smooth. 5 stars!", date: "2026-01-12", rating: 5, sentiment: "positive", score: 0.92 },
+      { id: "wt-10", source: "bestreviews", author: "BestReviews", text: "The LG WashTower Washer stands out for its space-saving design and smart features. AI-powered wash cycles adapt to fabric types effectively.", date: "2026-01-25", rating: 4, sentiment: "positive", score: 0.87 },
+      { id: "wt-11", source: "cnet", author: "CNET", text: "LG's WashTower Washer is excellent. The center control panel is intuitive, and wash results rival standalone machines.", date: "2026-02-08", rating: 4, sentiment: "positive", score: 0.84 },
+    ],
+  },
+  "WKHC252HBA-D": {
+    name: "WKHC252HBA-D",
+    displayName: "LG WashTower™ Dryer",
+    category: "Dryer",
+    reviews: [
+      { id: "dt-1", source: "reddit", author: "u/laundry_pro", text: "The WashTower Dryer works well for most loads. AI Dry detects moisture levels and adjusts automatically. Quiet operation overall.", date: "2026-01-05", sentiment: "positive", score: 0.88 },
+      { id: "dt-2", source: "amazon", author: "DisappointedBuyer", text: "The dryer doesn't fully dry heavy loads. Need to run an extra cycle for towels and jeans. Frustrating for a machine at this price.", date: "2025-11-15", rating: 2, sentiment: "negative", score: 0.15 },
+      { id: "dt-3", source: "consumer_reports", author: "Consumer Reports", text: "Drying performance is average for heavy loads but good for regular fabrics. Energy efficient and space-saving design is a plus.", date: "2026-02-15", rating: 3, sentiment: "neutral", score: 0.65 },
+      { id: "dt-4", source: "trustpilot", author: "FrustratedCustomer22", text: "Customer service is terrible. Machine started making loud noises after 6 months. Took forever to get a technician. Product itself is okay but support is awful.", date: "2025-11-20", rating: 2, sentiment: "negative", score: 0.15 },
+      { id: "dt-5", source: "bestreviews", author: "BestReviews", text: "The WashTower Dryer is solid for everyday use. Works best with regular loads. A good companion to the WashTower Washer.", date: "2026-01-25", rating: 4, sentiment: "positive", score: 0.82 },
+      { id: "dt-6", source: "cnet", author: "CNET", text: "Drying could be better for bulky items, but for standard loads it performs well. The integrated design saves space effectively.", date: "2026-02-08", rating: 3, sentiment: "neutral", score: 0.70 },
     ],
   },
   "PU615U": {
@@ -212,13 +223,14 @@ const searchAliases: Record<string, string[]> = {
   "monitor": ["52G930B-B", "34GS95QE-B", "27GS95QE-B"],
   "gram": ["17Z90TL-H.AUB9U1"],
   "laptop": ["17Z90TL-H.AUB9U1"],
-  "washtower": ["WKHC252HBA"],
-  "wash tower": ["WKHC252HBA"],
-  "washer": ["WKHC252HBA"],
-  "dryer": ["WKHC252HBA"],
-  "laundry": ["WKHC252HBA"],
-  "washer/dryer": ["WKHC252HBA"],
-  "세탁기": ["WKHC252HBA"],
+  "washtower": ["WKHC252HBA-W", "WKHC252HBA-D"],
+  "wash tower": ["WKHC252HBA-W", "WKHC252HBA-D"],
+  "washer": ["WKHC252HBA-W"],
+  "dryer": ["WKHC252HBA-D"],
+  "laundry": ["WKHC252HBA-W", "WKHC252HBA-D"],
+  "washer/dryer": ["WKHC252HBA-W", "WKHC252HBA-D"],
+  "세탁기": ["WKHC252HBA-W"],
+  "건조기": ["WKHC252HBA-D"],
   "cinebeam": ["PU615U"],
   "projector": ["PU615U"],
   "soundbar": ["S95TR"],
