@@ -139,12 +139,12 @@ export const cnetTrending: TrendingProduct[] = [
 ];
 
 export const cnetKeywords: TrendingKeyword[] = [
-  { keyword: "editor's choice", count: 321, sentiment: "positive", change: 28 },
-  { keyword: "best in class", count: 287, sentiment: "positive", change: 22 },
-  { keyword: "price concern", count: 243, sentiment: "negative", change: 10 },
-  { keyword: "smart features", count: 212, sentiment: "positive", change: 35 },
-  { keyword: "software bloat", count: 187, sentiment: "negative", change: 18 },
-  { keyword: "future-proof", count: 165, sentiment: "positive", change: 14 },
+  { keyword: "editor's choice", count: 321, sentiment: "positive", change: 28, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
+  { keyword: "best in class", count: 287, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G6 65\""] },
+  { keyword: "price concern", count: 243, sentiment: "negative", change: 10, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "smart features", count: 212, sentiment: "positive", change: 35, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
+  { keyword: "software bloat", count: 187, sentiment: "negative", change: 18, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "future-proof", count: 165, sentiment: "positive", change: 14, relatedProducts: ["UltraGear evo G9 52\"", "OLED evo G6 65\""] },
 ];
 
 export const trustpilotTrending: TrendingProduct[] = [
