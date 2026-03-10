@@ -294,7 +294,7 @@ export function generateMarketingMessage(
     {
       question: `${productName}의 가장 큰 장점은 무엇인가요?`,
       answer: keywords.positive.length > 0
-        ? `실제 사용자들이 가장 많이 언급한 장점은 "${keywords.positive.slice(0, 3).join('", "')}" 등입니다. 전체 리뷰의 ${posPercent}%가 긍정적인 반응을 보이고 있습니다.`
+        ? `실제 사용자들이 가장 많이 언급한 장점은 "${keywords.positive.slice(0, 3).join('", "')}" 등입니다. 많은 사용자가 만족감을 표현하고 있습니다.`
         : `현재 리뷰 데이터를 수집 중이며, 곧 주요 장점을 확인하실 수 있습니다.`,
     },
     {
@@ -306,15 +306,15 @@ export function generateMarketingMessage(
     {
       question: `${productName}을(를) 구매해도 괜찮을까요?`,
       answer: averageScore >= 0.7
-        ? `네! 평균 감성 점수 ${(averageScore * 100).toFixed(0)}점으로, 대다수 사용자가 만족하고 있는 제품입니다. 안심하고 구매하셔도 좋습니다.`
+        ? `네! 사용자들이 "${keywords.positive.slice(0, 2).join('", "')}" 등을 높이 평가하고 있어 만족스러운 구매가 될 것입니다. 안심하고 선택하세요.`
         : averageScore >= 0.4
-        ? `전반적으로 평이한 평가를 받고 있습니다. 용도에 맞는지 확인 후 구매를 권장합니다.`
-        : `현재 일부 부정적 피드백이 있으므로, 구매 전 상세 리뷰를 확인하시길 권장합니다.`,
+        ? `전반적으로 무난한 평가를 받고 있습니다. 용도에 맞는지 확인 후 구매를 권장합니다.`
+        : `현재 일부 개선 피드백이 있으므로, 구매 전 상세 리뷰를 확인하시길 권장합니다.`,
     },
   ];
 
   const tagline = averageScore >= 0.7
-    ? `✨ "${productName}" — 고객 ${posPercent}%가 선택한 만족의 아이콘`
+    ? `✨ "${productName}" — 사용자들이 인정한 ${keywords.positive[0] || "품질"}, 직접 경험해보세요`
     : `📊 "${productName}" — 솔직한 리뷰로 확인하세요`;
 
   const reviewGuide = `
