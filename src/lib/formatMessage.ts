@@ -269,7 +269,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "fr",
+      geo: "LGEFS",
       geoLabel: "France",
       flag: "🇫🇷",
       language: "Français / English",
