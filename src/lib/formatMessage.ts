@@ -121,7 +121,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "uk",
+      geo: "LGEUK",
       geoLabel: "United Kingdom",
       flag: "🇬🇧",
       language: "English (UK)",
