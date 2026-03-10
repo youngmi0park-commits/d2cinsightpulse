@@ -54,8 +54,8 @@ const Index = () => {
 
     const analyzed = multiResults.map((product) => {
       const sentiment = analyzeSentiment(product.reviews);
-      const marketing = generateMarketingMessage(product.name, sentiment, lang);
-      const geoMessages = generateGeoMarketingMessages(product.name, sentiment);
+      const marketing = generateMarketingMessage(product.displayName, sentiment, lang);
+      const geoMessages = generateGeoMarketingMessages(product.displayName, sentiment);
       return { product, sentiment, marketing, geoMessages };
     });
 
