@@ -14,6 +14,7 @@ export interface TrendingKeyword {
   count: number;
   sentiment: "positive" | "negative";
   change: number; // percent change from last week
+  relatedProducts?: string[]; // product display names associated with this keyword
 }
 
 export const redditTrending: TrendingProduct[] = [
@@ -43,33 +44,33 @@ export const amazonTrending: TrendingProduct[] = [
 ];
 
 export const redditKeywords: TrendingKeyword[] = [
-  { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15 },
-  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8 },
-  { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32 },
-  { keyword: "brightness", count: 1432, sentiment: "positive", change: 45 },
-  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12 },
-  { keyword: "color accuracy", count: 1187, sentiment: "positive", change: 21 },
-  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28 },
-  { keyword: "build quality", count: 987, sentiment: "positive", change: 5 },
-  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3 },
-  { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18 },
-  { keyword: "input lag", count: 743, sentiment: "positive", change: 9 },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34 },
+  { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
+  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 34\""] },
+  { keyword: "brightness", count: 1432, sentiment: "positive", change: 45, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
+  { keyword: "price too high", count: 1298, sentiment: "negative", change: 12, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "color accuracy", count: 1187, sentiment: "positive", change: 21, relatedProducts: ["OLED evo G6 65\"", "UltraGear OLED 34\""] },
+  { keyword: "webOS ads", count: 1098, sentiment: "negative", change: 28, relatedProducts: ["OLED C4 83\"", "OLED evo G5 97\""] },
+  { keyword: "build quality", count: 987, sentiment: "positive", change: 5, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
+  { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
-  { keyword: "easy setup", count: 3214, sentiment: "positive", change: 22 },
-  { keyword: "value for money", count: 2876, sentiment: "positive", change: 8 },
-  { keyword: "delivery damage", count: 1987, sentiment: "negative", change: 15 },
-  { keyword: "picture quality", count: 1876, sentiment: "positive", change: 11 },
-  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25 },
-  { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18 },
-  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5 },
-  { keyword: "smart features", count: 1187, sentiment: "positive", change: 33 },
-  { keyword: "customer service", count: 1098, sentiment: "negative", change: 19 },
-  { keyword: "durability", count: 987, sentiment: "positive", change: 7 },
-  { keyword: "overheating", count: 876, sentiment: "negative", change: 42 },
-  { keyword: "design", count: 812, sentiment: "positive", change: 14 },
+  { keyword: "easy setup", count: 3214, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
+  { keyword: "value for money", count: 2876, sentiment: "positive", change: 8, relatedProducts: ["OLED C4 83\"", "Gas Range 5.8 cu ft"] },
+  { keyword: "delivery damage", count: 1987, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "picture quality", count: 1876, sentiment: "positive", change: 11, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
+  { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
+  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "smart features", count: 1187, sentiment: "positive", change: 33, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
+  { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Center Control"] },
+  { keyword: "overheating", count: 876, sentiment: "negative", change: 42, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "design", count: 812, sentiment: "positive", change: 14, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
 ];
 
 export const rtingsTrending: TrendingProduct[] = [
@@ -83,14 +84,14 @@ export const rtingsTrending: TrendingProduct[] = [
 ];
 
 export const rtingsKeywords: TrendingKeyword[] = [
-  { keyword: "color accuracy", count: 412, sentiment: "positive", change: 18 },
-  { keyword: "HDR brightness", count: 387, sentiment: "positive", change: 25 },
-  { keyword: "response time", count: 354, sentiment: "positive", change: 12 },
-  { keyword: "reflection handling", count: 298, sentiment: "positive", change: 32 },
-  { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5 },
-  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8 },
-  { keyword: "input lag", count: 176, sentiment: "positive", change: 15 },
-  { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11 },
+  { keyword: "color accuracy", count: 412, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G6 65\"", "UltraGear OLED 34\""] },
+  { keyword: "HDR brightness", count: 387, sentiment: "positive", change: 25, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
+  { keyword: "response time", count: 354, sentiment: "positive", change: 12, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
+  { keyword: "reflection handling", count: 298, sentiment: "positive", change: 32, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8, relatedProducts: ["UltraGear OLED 34\""] },
+  { keyword: "input lag", count: 176, sentiment: "positive", change: 15, relatedProducts: ["UltraGear evo G9 52\""] },
+  { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11, relatedProducts: ["OLED C4 83\""] },
 ];
 
 export const trustedReviewsTrending: TrendingProduct[] = [
@@ -102,12 +103,12 @@ export const trustedReviewsTrending: TrendingProduct[] = [
 ];
 
 export const trustedReviewsKeywords: TrendingKeyword[] = [
-  { keyword: "build quality", count: 234, sentiment: "positive", change: 12 },
-  { keyword: "value proposition", count: 198, sentiment: "positive", change: 8 },
-  { keyword: "software experience", count: 176, sentiment: "negative", change: 22 },
-  { keyword: "design premium", count: 165, sentiment: "positive", change: 18 },
-  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15 },
-  { keyword: "innovation", count: 132, sentiment: "positive", change: 30 },
+  { keyword: "build quality", count: 234, sentiment: "positive", change: 12, relatedProducts: ["gram 17\" Copilot+", "OLED evo G6 65\""] },
+  { keyword: "value proposition", count: 198, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G6 65\""] },
+  { keyword: "software experience", count: 176, sentiment: "negative", change: 22, relatedProducts: ["gram 17\" Copilot+"] },
+  { keyword: "design premium", count: 165, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
+  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "innovation", count: 132, sentiment: "positive", change: 30, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];
 
 export const consumerReportsTrending: TrendingProduct[] = [
@@ -120,12 +121,12 @@ export const consumerReportsTrending: TrendingProduct[] = [
 ];
 
 export const consumerReportsKeywords: TrendingKeyword[] = [
-  { keyword: "reliability", count: 543, sentiment: "positive", change: 8 },
-  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15 },
-  { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12 },
-  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5 },
-  { keyword: "noise output", count: 298, sentiment: "negative", change: 18 },
-  { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10 },
+  { keyword: "reliability", count: 543, sentiment: "positive", change: 8, relatedProducts: ["WashTower™ Center Control", "OLED evo G5 97\""] },
+  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
+  { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
 ];
 
 export const cnetTrending: TrendingProduct[] = [
@@ -138,12 +139,12 @@ export const cnetTrending: TrendingProduct[] = [
 ];
 
 export const cnetKeywords: TrendingKeyword[] = [
-  { keyword: "editor's choice", count: 321, sentiment: "positive", change: 28 },
-  { keyword: "best in class", count: 287, sentiment: "positive", change: 22 },
-  { keyword: "price concern", count: 243, sentiment: "negative", change: 10 },
-  { keyword: "smart features", count: 212, sentiment: "positive", change: 35 },
-  { keyword: "software bloat", count: 187, sentiment: "negative", change: 18 },
-  { keyword: "future-proof", count: 165, sentiment: "positive", change: 14 },
+  { keyword: "editor's choice", count: 321, sentiment: "positive", change: 28, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
+  { keyword: "best in class", count: 287, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G6 65\""] },
+  { keyword: "price concern", count: 243, sentiment: "negative", change: 10, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "smart features", count: 212, sentiment: "positive", change: 35, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
+  { keyword: "software bloat", count: 187, sentiment: "negative", change: 18, relatedProducts: ["OLED C4 83\""] },
+  { keyword: "future-proof", count: 165, sentiment: "positive", change: 14, relatedProducts: ["UltraGear evo G9 52\"", "OLED evo G6 65\""] },
 ];
 
 export const trustpilotTrending: TrendingProduct[] = [
@@ -155,12 +156,12 @@ export const trustpilotTrending: TrendingProduct[] = [
 ];
 
 export const trustpilotKeywords: TrendingKeyword[] = [
-  { keyword: "customer service", count: 876, sentiment: "negative", change: 20 },
-  { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5 },
-  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15 },
-  { keyword: "product quality", count: 487, sentiment: "positive", change: 8 },
-  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25 },
-  { keyword: "value for money", count: 354, sentiment: "positive", change: 12 },
+  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Center Control", "Gas Range 5.8 cu ft"] },
+  { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5, relatedProducts: ["OLED evo G5 97\""] },
+  { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "product quality", count: 487, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G5 97\"", "OLED C4 83\""] },
+  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "value for money", count: 354, sentiment: "positive", change: 12, relatedProducts: ["OLED C4 83\"", "gram 17\" Copilot+"] },
 ];
 
 export const bestreviewsTrending: TrendingProduct[] = [
@@ -172,10 +173,10 @@ export const bestreviewsTrending: TrendingProduct[] = [
 ];
 
 export const bestreviewsKeywords: TrendingKeyword[] = [
-  { keyword: "top pick", count: 198, sentiment: "positive", change: 22 },
-  { keyword: "best value", count: 176, sentiment: "positive", change: 15 },
-  { keyword: "ease of use", count: 154, sentiment: "positive", change: 18 },
-  { keyword: "durability concern", count: 132, sentiment: "negative", change: 10 },
-  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8 },
-  { keyword: "recommended", count: 98, sentiment: "positive", change: 25 },
+  { keyword: "top pick", count: 198, sentiment: "positive", change: 22, relatedProducts: ["OLED evo G5 97\"", "WashTower™ Center Control"] },
+  { keyword: "best value", count: 176, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G6 65\""] },
+  { keyword: "ease of use", count: 154, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Center Control", "CineBeam S 4K UST"] },
+  { keyword: "durability concern", count: 132, sentiment: "negative", change: 10, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "installation hassle", count: 109, sentiment: "negative", change: 8, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "recommended", count: 98, sentiment: "positive", change: 25, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];
