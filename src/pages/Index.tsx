@@ -198,6 +198,12 @@ const Index = () => {
               "LG 제품 감성 모니터 — 더미 데이터 기반 데모 · 추후 실시간 API 연동 예정"
             )}
           </p>
+          <p className="text-sm font-medium text-foreground/70 text-center">
+            {t(
+              "Presented by LG Electronics D2C Marketing Strategy Team",
+              "Presented by LG전자 D2C마케팅전략팀"
+            )}
+          </p>
           <button
             onClick={toggleLang}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-sm font-medium hover:bg-primary/10 transition-colors"
