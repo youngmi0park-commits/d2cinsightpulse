@@ -121,12 +121,12 @@ export const consumerReportsTrending: TrendingProduct[] = [
 ];
 
 export const consumerReportsKeywords: TrendingKeyword[] = [
-  { keyword: "reliability", count: 543, sentiment: "positive", change: 8 },
-  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15 },
-  { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12 },
-  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5 },
-  { keyword: "noise output", count: 298, sentiment: "negative", change: 18 },
-  { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10 },
+  { keyword: "reliability", count: 543, sentiment: "positive", change: 8, relatedProducts: ["WashTower™ Center Control", "OLED evo G5 97\""] },
+  { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15, relatedProducts: ["WashTower™ Center Control", "OLED evo G6 65\""] },
+  { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12, relatedProducts: ["Gas Range 5.8 cu ft"] },
+  { keyword: "safety rating", count: 354, sentiment: "positive", change: 5, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Center Control"] },
+  { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
 ];
 
 export const cnetTrending: TrendingProduct[] = [
