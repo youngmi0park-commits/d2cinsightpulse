@@ -191,7 +191,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "au",
+      geo: "LGEAP",
       geoLabel: "Australia",
       flag: "🇦🇺",
       language: "English (AU)",
