@@ -9,7 +9,7 @@ export interface Review {
   score?: number;
 }
 
-export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Home Appliance" | "Projector";
+export type ProductCategory = "TV" | "Monitor" | "Laptop" | "Washer/Dryer" | "Refrigerator" | "Kitchen Appliance" | "Projector" | "Audio";
 
 export interface ProductData {
   name: string;
