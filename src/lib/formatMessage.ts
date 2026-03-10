@@ -315,7 +315,7 @@ export function generateGeoMarketingMessages(
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
           body: `Usuários destacam ${pros.join(", ")} como pontos fortes. Dados de ${dataSrc}. Qualidade OLED e estabilidade de streaming são pontos frequentes.`,
-          cta: "Saiba mais em LG.com/BR →",
+          cta: "Saiba mais em LGE.com/BR →",
           hashtags: ["#LGBrasil", `#${productName.replace(/\s+/g, "")}`, "#Anúncio"],
         },
       ],
