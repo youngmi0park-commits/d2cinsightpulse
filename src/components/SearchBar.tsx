@@ -86,7 +86,9 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               <p className="text-xs text-muted-foreground">{t("Click a category or model to search", "카테고리 또는 모델번호 클릭 시 검색")}</p>
             </div>
             <div className="max-h-80 overflow-y-auto p-2 space-y-3">
-              {Object.entries(grouped).map(([category, products]) => (
+              {sortedCategories.map((category) => {
+                const products = grouped[category];
+                return (
                 <div key={category}>
                   <button
                     onClick={() => handleCategorySearch(category)}
@@ -110,7 +112,8 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
                     </button>
                   ))}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </PopoverContent>
         </Popover>
