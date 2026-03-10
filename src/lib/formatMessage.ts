@@ -156,7 +156,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "ca",
+      geo: "LGECI",
       geoLabel: "Canada",
       flag: "🇨🇦",
       language: "English (CA)",
