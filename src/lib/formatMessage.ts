@@ -217,7 +217,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "de",
+      geo: "LGEDG",
       geoLabel: "Germany",
       flag: "🇩🇪",
       language: "Deutsch / English",
