@@ -3,10 +3,12 @@ import { type GeoMessage } from "@/lib/formatMessage";
 import { Globe, Copy, Check, Code } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
+import { AdComplianceNotice } from "@/components/AdComplianceNotice";
 
 interface GeoMarketingPanelProps {
   geoMessages: GeoMessage[];
   productName: string;
+  totalReviews: number;
 }
 
 export function GeoMarketingPanel({ geoMessages, productName }: GeoMarketingPanelProps) {
