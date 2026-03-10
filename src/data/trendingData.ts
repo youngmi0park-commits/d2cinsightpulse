@@ -58,7 +58,7 @@ export const redditKeywords: TrendingKeyword[] = [
   { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN"] },
   { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
   { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Center Control"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
