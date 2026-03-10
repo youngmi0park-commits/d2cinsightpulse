@@ -47,7 +47,7 @@ export function generateGeoMarketingMessages(
 
   const dataSrc = "Reddit, Amazon, RTINGS, Consumer Reports";
 
-  // Banner copy character limits (based on lg.com/us, lg.com/uk hero banner patterns):
+  // Banner copy character limits (based on lge.com/us, lge.com/uk hero banner patterns):
   // - Kicker/Eyebrow: ~35 chars max
   // - Headline: ~50 chars max
   // - Sub-copy/Body: ~120 chars max
