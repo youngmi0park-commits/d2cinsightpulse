@@ -126,7 +126,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {Object.keys(grouped).map((category) => (
+        {sortedCategories.map((category) => (
           <button
             key={category}
             onClick={() => { setQuery(category); onSearch(category); }}
