@@ -99,6 +99,97 @@ export const dummyProducts: Record<string, ProductData> = {
       { id: "cb-8", source: "cnet", author: "CNET", text: "The CineBeam S is a premium UST projector that delivers on picture quality. WebOS integration is a huge plus. Best suited for dedicated home theater rooms with light control.", date: "2026-01-18", rating: 4, sentiment: "positive", score: 0.83 },
     ],
   },
+  "OLED65G6WUA": {
+    name: "OLED65G6WUA",
+    displayName: "LG OLED evo AI G6 65\"",
+    category: "TV",
+    reviews: [
+      { id: "g6-1", source: "reddit", author: "u/oled_lover", text: "The G6 is LG's best value flagship OLED. Incredible picture quality with the new α12 AI processor. Brightness is a huge leap over the G5.", date: "2026-02-18", sentiment: "positive", score: 0.95 },
+      { id: "g6-2", source: "amazon", author: "HomeTheaterFan", text: "Stunning TV. The new tandem OLED panel delivers amazing HDR highlights. Dolby Vision IQ is perfectly tuned. Best 65-inch on the market.", date: "2026-01-25", rating: 5, sentiment: "positive", score: 0.94 },
+      { id: "g6-3", source: "reddit", author: "u/design_first", text: "The ultra-slim one-connect design is beautiful. Hangs on the wall like a painting. Finally a TV that looks good even when off.", date: "2026-02-01", sentiment: "positive", score: 0.88 },
+      { id: "g6-4", source: "amazon", author: "CasualViewer", text: "Great picture but the webOS ads are still annoying. Why does a premium TV have ads on the home screen? LG needs to fix this.", date: "2025-12-28", rating: 4, sentiment: "negative", score: 0.3 },
+      { id: "g6-5", source: "rtings", author: "RTINGS.com", text: "The G6 sets a new bar for OLED TVs. Record-breaking peak brightness, near-perfect color accuracy, and excellent motion handling. Our new top pick.", date: "2026-02-22", rating: 5, sentiment: "positive", score: 0.97 },
+      { id: "g6-6", source: "cnet", author: "CNET", text: "Editor's Choice. The LG G6 is the best TV we've ever tested. The tandem OLED technology delivers stunning brightness without sacrificing black levels.", date: "2026-02-15", rating: 5, sentiment: "positive", score: 0.96 },
+      { id: "g6-7", source: "reddit", author: "u/gaming_setup", text: "4K 144Hz gaming is flawless. VRR works perfectly with both PS5 and Xbox. The Game Optimizer dashboard is super useful.", date: "2026-01-15", sentiment: "positive", score: 0.91 },
+    ],
+  },
+  "OLED83C4PUA": {
+    name: "OLED83C4PUA",
+    displayName: "LG OLED C4 83\"",
+    category: "TV",
+    reviews: [
+      { id: "c4-1", source: "reddit", author: "u/big_screen_fan", text: "The C4 83-inch is the sweet spot for large screen OLED. Great picture, reasonable price compared to G5. Perfect for my living room.", date: "2026-01-10", sentiment: "positive", score: 0.87 },
+      { id: "c4-2", source: "amazon", author: "ValueSeeker", text: "Best value OLED TV. You get 90% of the G5's quality at 60% of the price. The 83-inch size is perfect for 10-foot viewing distance.", date: "2025-12-15", rating: 5, sentiment: "positive", score: 0.9 },
+      { id: "c4-3", source: "reddit", author: "u/burn_in_worry", text: "Had my C3 for 2 years with zero burn-in issues. Confident the C4 will be even better. LG's pixel refresher really works.", date: "2026-02-05", sentiment: "positive", score: 0.82 },
+      { id: "c4-4", source: "amazon", author: "SportsViewer", text: "Sports look amazing on this TV. Smooth motion handling and the brightness is good enough for daytime viewing. Only wish the sound was better.", date: "2025-11-20", rating: 4, sentiment: "positive", score: 0.78 },
+      { id: "c4-5", source: "consumer_reports", author: "Consumer Reports", text: "Excellent all-around OLED TV. Strong picture quality, good smart features, and competitive pricing. Loses points for below-average built-in speakers.", date: "2026-02-10", rating: 4, sentiment: "positive", score: 0.85 },
+      { id: "c4-6", source: "trustpilot", author: "HappyCustomer_UK", text: "Delivered on time, perfect condition. The C4 is a massive upgrade from my old LCD. Colors are breathtaking. Very happy with the purchase.", date: "2026-01-20", rating: 5, sentiment: "positive", score: 0.92 },
+    ],
+  },
+  "34GS95QE-B": {
+    name: "34GS95QE-B",
+    displayName: "LG UltraGear OLED 34\"",
+    category: "Monitor",
+    reviews: [
+      { id: "ug34-1", source: "reddit", author: "u/ultrawide_gamer", text: "The 34-inch UltraGear OLED is the perfect size for desk gaming. 240Hz is buttery smooth and the curve is immersive without being too aggressive.", date: "2026-02-12", sentiment: "positive", score: 0.93 },
+      { id: "ug34-2", source: "amazon", author: "ProductivityPro", text: "Great for both work and gaming. The 21:9 aspect ratio is amazing for multitasking. OLED blacks make everything look stunning.", date: "2026-01-08", rating: 5, sentiment: "positive", score: 0.9 },
+      { id: "ug34-3", source: "reddit", author: "u/color_work", text: "Color accuracy is incredible out of the box. Using it for photo editing and it rivals monitors costing twice as much. Hardware calibration support is a plus.", date: "2026-01-28", sentiment: "positive", score: 0.91 },
+      { id: "ug34-4", source: "amazon", author: "BurnInConcerned", text: "Worried about OLED burn-in for productivity use. Taskbar ghosting is a real concern. LG should offer better burn-in warranty for monitors.", date: "2025-12-20", rating: 3, sentiment: "negative", score: 0.25 },
+      { id: "ug34-5", source: "cnet", author: "CNET", text: "Best ultrawide gaming monitor of 2026. The combination of OLED picture quality, 240Hz refresh rate, and competitive pricing makes it a no-brainer for gamers.", date: "2026-02-10", rating: 5, sentiment: "positive", score: 0.94 },
+      { id: "ug34-6", source: "rtings", author: "RTINGS.com", text: "Excellent gaming monitor with near-perfect response times and outstanding HDR performance. The 34-inch size is ideal for desk use.", date: "2026-02-08", rating: 5, sentiment: "positive", score: 0.93 },
+    ],
+  },
+  "27GS95QE-B": {
+    name: "27GS95QE-B",
+    displayName: "LG UltraGear OLED 27\"",
+    category: "Monitor",
+    reviews: [
+      { id: "ug27-1", source: "reddit", author: "u/esports_player", text: "The 27-inch 1440p OLED is perfect for competitive gaming. 240Hz with instant response times. I've improved my rank just from the smoother visuals.", date: "2026-02-08", sentiment: "positive", score: 0.92 },
+      { id: "ug27-2", source: "amazon", author: "DesktopGamer", text: "Fantastic monitor for the price. OLED at 27 inches is the sweet spot. Only downside is the 1440p resolution — wish it was 4K.", date: "2026-01-15", rating: 4, sentiment: "positive", score: 0.8 },
+      { id: "ug27-3", source: "reddit", author: "u/fps_master", text: "Coming from a 360Hz IPS, the OLED motion clarity is noticeably better even at lower refresh rate. Colors and contrast are on another level.", date: "2026-01-30", sentiment: "positive", score: 0.89 },
+      { id: "ug27-4", source: "amazon", author: "CasualUser", text: "Text fringing on OLED is annoying for daily productivity. Fine for gaming but not great as an all-around monitor.", date: "2025-12-10", rating: 3, sentiment: "negative", score: 0.3 },
+      { id: "ug27-5", source: "rtings", author: "RTINGS.com", text: "Best 27-inch gaming monitor we've tested. Exceptional motion handling, vibrant colors, and minimal input lag. A top choice for competitive gamers.", date: "2026-02-14", rating: 5, sentiment: "positive", score: 0.95 },
+    ],
+  },
+  "S95TR": {
+    name: "S95TR",
+    displayName: "LG Soundbar S95TR 9.1.5ch",
+    category: "Audio",
+    reviews: [
+      { id: "sb-1", source: "reddit", author: "u/audiophile_home", text: "The S95TR is the best soundbar I've ever heard. 9.1.5 channels with actual upfiring and side-firing speakers. Dolby Atmos is truly immersive.", date: "2026-02-10", sentiment: "positive", score: 0.95 },
+      { id: "sb-2", source: "amazon", author: "MovieBuff", text: "Incredible sound quality. The wireless rear speakers and subwoofer make setup easy. Dialog clarity is excellent. Perfect companion for my LG OLED.", date: "2026-01-20", rating: 5, sentiment: "positive", score: 0.93 },
+      { id: "sb-3", source: "reddit", author: "u/surround_sound", text: "Replaced my traditional 7.1 AVR setup with this. Honestly, for 90% of content it sounds just as good with zero cable clutter. Highly recommended.", date: "2026-01-05", sentiment: "positive", score: 0.88 },
+      { id: "sb-4", source: "amazon", author: "TechCritic", text: "Overpriced for a soundbar. At this price you could get a proper AVR with bookshelf speakers. Sound is good but not $1500 good.", date: "2025-12-18", rating: 3, sentiment: "negative", score: 0.22 },
+      { id: "sb-5", source: "cnet", author: "CNET", text: "The S95TR sets a new standard for premium soundbars. Room-filling Atmos sound, excellent build quality, and seamless integration with LG TVs via WOW Orchestra.", date: "2026-02-12", rating: 5, sentiment: "positive", score: 0.94 },
+      { id: "sb-6", source: "rtings", author: "RTINGS.com", text: "Best soundbar we've tested. Outstanding surround performance with genuine height channels. Bass from the wireless sub is deep and controlled.", date: "2026-02-16", rating: 5, sentiment: "positive", score: 0.96 },
+    ],
+  },
+  "LRGL5823S": {
+    name: "LRGL5823S",
+    displayName: "LG Gas Range 5.8 cu ft",
+    category: "Kitchen Appliance",
+    reviews: [
+      { id: "gr-k1", source: "amazon", author: "HomeCook", text: "Solid gas range with great oven capacity. The 5.8 cu ft oven fits a full-size turkey easily. Even heating and accurate temperature control.", date: "2026-01-12", rating: 4, sentiment: "positive", score: 0.82 },
+      { id: "gr-k2", source: "reddit", author: "u/kitchen_upgrade", text: "Replaced my old range with this LG. The ProBake Convection is amazing — everything cooks evenly. The air fry feature is a nice bonus.", date: "2026-02-01", sentiment: "positive", score: 0.87 },
+      { id: "gr-k3", source: "amazon", author: "FrustratedOwner", text: "Oven stopped working after 8 months. Getting warranty service has been a nightmare. When it worked, it was great. Now it's an expensive paperweight.", date: "2025-11-15", rating: 1, sentiment: "negative", score: 0.08 },
+      { id: "gr-k4", source: "consumer_reports", author: "Consumer Reports", text: "Good overall range with strong baking performance. The InstaView window is handy. Loses points for below-average simmer performance on the cooktop.", date: "2026-02-08", rating: 4, sentiment: "positive", score: 0.8 },
+      { id: "gr-k5", source: "trustpilot", author: "DisappointedChef", text: "The burner igniters keep clicking even after the flame is lit. Very annoying. Customer support was unhelpful. Expected better from LG.", date: "2025-12-05", rating: 2, sentiment: "negative", score: 0.15 },
+      { id: "gr-k6", source: "bestreviews", author: "BestReviews", text: "A capable gas range with a spacious oven. InstaView and air fry add modern convenience. Reliable daily performer for families.", date: "2026-01-28", rating: 4, sentiment: "positive", score: 0.84 },
+    ],
+  },
+  "LRMVS3006S": {
+    name: "LRMVS3006S",
+    displayName: "LG InstaView French Door Refrigerator 30 cu ft",
+    category: "Refrigerator",
+    reviews: [
+      { id: "rf-1", source: "amazon", author: "FamilyKitchen", text: "Love the InstaView door-in-door! Knock twice and see inside without opening. Keeps things organized and saves energy. Spacious 30 cu ft is perfect for our family.", date: "2026-01-18", rating: 5, sentiment: "positive", score: 0.92 },
+      { id: "rf-2", source: "reddit", author: "u/smart_kitchen", text: "ThinQ app lets me check the fridge contents remotely. The Craft Ice maker is a hit at parties — round ice balls look premium. Great fridge overall.", date: "2026-02-05", sentiment: "positive", score: 0.89 },
+      { id: "rf-3", source: "amazon", author: "IceMakerIssue", text: "Ice maker broke after 6 months. This seems to be a common issue with LG fridges based on forums. Repair took 3 weeks. Very frustrating.", date: "2025-11-25", rating: 2, sentiment: "negative", score: 0.12 },
+      { id: "rf-4", source: "consumer_reports", author: "Consumer Reports", text: "Excellent storage capacity and innovative features. Temperature consistency is very good. The ice maker reliability concern keeps it from a top rating.", date: "2026-02-12", rating: 4, sentiment: "positive", score: 0.83 },
+      { id: "rf-5", source: "reddit", author: "u/energy_saver", text: "Energy Star certified and noticeably quieter than our old fridge. The linear compressor technology really makes a difference. Very happy with the purchase.", date: "2026-01-28", sentiment: "positive", score: 0.88 },
+      { id: "rf-6", source: "trustpilot", author: "FridgeBuyer2025", text: "Beautiful design and great features but the customer service when we had a water filter issue was terrible. Took weeks to resolve.", date: "2025-12-15", rating: 3, sentiment: "negative", score: 0.25 },
+    ],
+  },
 };
 
 export const getProductNames = (): string[] => Object.keys(dummyProducts);
@@ -111,12 +202,14 @@ export const getCategories = (): ProductCategory[] =>
 
 // Search keywords mapping for category/brand name matching
 const searchAliases: Record<string, string[]> = {
-  "oled": ["OLED97G5WUA"],
+  "oled": ["OLED97G5WUA", "OLED65G6WUA", "OLED83C4PUA"],
   "g5": ["OLED97G5WUA"],
-  "tv": ["OLED97G5WUA"],
-  "ultragear": ["52G930B-B"],
+  "g6": ["OLED65G6WUA"],
+  "c4": ["OLED83C4PUA"],
+  "tv": ["OLED97G5WUA", "OLED65G6WUA", "OLED83C4PUA"],
+  "ultragear": ["52G930B-B", "34GS95QE-B", "27GS95QE-B"],
   "g9": ["52G930B-B"],
-  "monitor": ["52G930B-B"],
+  "monitor": ["52G930B-B", "34GS95QE-B", "27GS95QE-B"],
   "gram": ["17Z90TL-H.AUB9U1"],
   "laptop": ["17Z90TL-H.AUB9U1"],
   "washtower": ["WKHC252HBA"],
@@ -128,6 +221,15 @@ const searchAliases: Record<string, string[]> = {
   "세탁기": ["WKHC252HBA"],
   "cinebeam": ["PU615U"],
   "projector": ["PU615U"],
+  "soundbar": ["S95TR"],
+  "audio": ["S95TR"],
+  "range": ["LRGL5823S"],
+  "kitchen": ["LRGL5823S"],
+  "kitchen appliance": ["LRGL5823S"],
+  "refrigerator": ["LRMVS3006S"],
+  "fridge": ["LRMVS3006S"],
+  "냉장고": ["LRMVS3006S"],
+  "instaview": ["LRMVS3006S"],
 };
 
 export const searchProducts = (query: string): ProductData | null => {
