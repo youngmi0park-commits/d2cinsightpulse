@@ -307,7 +307,7 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t("Cross-Channel Weekly Trend Insight Report", "전채널 주간 트렌드 인사이트 리포트")}</h3>
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t(`Cross-Channel Weekly Trend Insight Report (${dateRangeLabel})`, `전채널 주간 트렌드 인사이트 리포트 (${dateRangeLabel})`)}</h3>
         </div>
         {insights.map((line, i) => (
           <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
