@@ -1,6 +1,8 @@
 import type { Review } from "@/data/dummyData";
-import { Star } from "lucide-react";
+import { Star, Calendar, TrendingUp } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
+import { subDays, format } from "date-fns";
 
 interface ReviewListProps {
   reviews: Review[];
@@ -29,9 +31,7 @@ const sourceStyle = (s: string) => {
   return map[s] || "bg-muted text-muted-foreground";
 };
 
-export function ReviewList({ reviews }: ReviewListProps) {
-  const { t } = useLang();
-
+function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string) => string }) {
   const sentimentStyle = (s?: string) => {
     if (s === "positive") return "border-success/30 bg-success/5";
     if (s === "negative") return "border-destructive/30 bg-destructive/5";
@@ -45,41 +45,107 @@ export function ReviewList({ reviews }: ReviewListProps) {
   };
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6">
-      <h3 className="text-lg font-semibold mb-4 font-heading">{t(`Collected Reviews (${reviews.length})`, `수집된 리뷰 (${reviews.length}건)`)}</h3>
-      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
-        {reviews.map((review) => (
-          <div
-            key={review.id}
-            className={`p-4 rounded-lg border transition-all hover:scale-[1.01] ${sentimentStyle(review.sentiment)}`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded font-mono ${sourceStyle(review.source)}`}>
-                  {sourceLabel(review.source)}
-                </span>
-                <span className="text-sm text-muted-foreground">{review.author}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {review.rating && (
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`h-3 w-3 ${i < review.rating! ? "text-warning fill-warning" : "text-muted"}`} />
-                    ))}
-                  </div>
-                )}
-                {sentimentBadge(review.sentiment)}
-              </div>
+    <div className={`p-4 rounded-lg border transition-all hover:scale-[1.01] ${sentimentStyle(review.sentiment)}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`text-xs px-2 py-0.5 rounded font-mono ${sourceStyle(review.source)}`}>
+            {sourceLabel(review.source)}
+          </span>
+          <span className="text-sm text-muted-foreground">{review.author}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {review.rating && (
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={`h-3 w-3 ${i < review.rating! ? "text-warning fill-warning" : "text-muted"}`} />
+              ))}
             </div>
-            <p className="text-sm leading-relaxed">{review.text}</p>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-muted-foreground">{review.date}</span>
-              {review.score !== undefined && (
-                <span className="text-xs font-mono text-muted-foreground">{t("Score", "점수")}: {(review.score * 100).toFixed(0)}</span>
-              )}
-            </div>
+          )}
+          {sentimentBadge(review.sentiment)}
+        </div>
+      </div>
+      <p className="text-sm leading-relaxed">{review.text}</p>
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-xs text-muted-foreground">{review.date}</span>
+        {review.score !== undefined && (
+          <span className="text-xs font-mono text-muted-foreground">{t("Score", "점수")}: {(review.score * 100).toFixed(0)}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function ReviewList({ reviews }: ReviewListProps) {
+  const { t } = useLang();
+
+  const now = new Date();
+  const weekAgo = subDays(now, 7);
+  const weekLabel = `${format(weekAgo, "MM.dd")} ~ ${format(now, "MM.dd")}`;
+
+  const weeklyReviews = reviews.filter((r) => {
+    if (!r.date) return false;
+    const d = new Date(r.date);
+    return d >= weekAgo;
+  });
+
+  const olderReviews = reviews.filter((r) => {
+    if (!r.date) return true;
+    const d = new Date(r.date);
+    return d < weekAgo;
+  });
+
+  return (
+    <div className="gradient-card rounded-xl border border-border p-6 space-y-6">
+      <h3 className="text-lg font-semibold font-heading">
+        {t(`Collected Reviews (${reviews.length})`, `수집된 리뷰 (${reviews.length}건)`)}
+      </h3>
+
+      {/* Weekly Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <h4 className="text-sm font-bold text-primary">
+            {t(`Weekly Reviews (${weekLabel})`, `주간 리뷰 (${weekLabel})`)}
+          </h4>
+          <Badge variant="secondary" className="text-xs">
+            {weeklyReviews.length}{t(" reviews", "건")}
+          </Badge>
+        </div>
+        {weeklyReviews.length > 0 ? (
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            {weeklyReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} t={t} />
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-sm text-muted-foreground py-3 text-center border border-dashed border-border rounded-lg">
+            {t("No reviews collected in the last 7 days.", "최근 7일간 수집된 리뷰가 없습니다.")}
+          </p>
+        )}
+      </div>
+
+      {/* Cumulative Section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <h4 className="text-sm font-bold text-muted-foreground">
+            {t("Cumulative (12 months)", "누적 (12개월)")}
+          </h4>
+          <Badge variant="outline" className="text-xs">
+            {olderReviews.length}{t(" reviews", "건")}
+          </Badge>
+        </div>
+        {olderReviews.length > 0 ? (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+            {olderReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} t={t} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-3 text-center border border-dashed border-border rounded-lg">
+            {t("No older reviews collected.", "이전 기간 수집 리뷰가 없습니다.")}
+          </p>
+        )}
       </div>
     </div>
   );
