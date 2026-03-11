@@ -91,21 +91,52 @@ Deno.serve(async (req) => {
           }
 
           const searchData = await searchRes.json();
-          console.log(`[${channel.label}] Raw response status: ${searchRes.status}, success: ${searchData.success}, data count: ${searchData.data?.length || 0}`);
           const results = searchData.data || [];
+          console.log(`[${channel.label}] Found ${results.length} search results for ${category}`);
 
-          if (results.length === 0) {
-            console.log(`[${channel.label}] No results for ${category}`);
-            continue;
-          }
+          if (results.length === 0) continue;
 
-          console.log(`[${channel.label}] Got ${results.length} results for ${category}, first result keys: ${Object.keys(results[0] || {}).join(',')}, markdown: ${results[0]?.markdown?.length || 0}, extract: ${results[0]?.extract?.length || 0}, description: ${results[0]?.description?.length || 0}`);
-
-          // Use AI to extract structured review data from scraped content
+          // Step 2: Scrape each URL to get full content (search only returns snippets)
           for (const result of results) {
-            // Use markdown, extract, or description - whichever is available
-            const content = result.markdown || result.extract || result.description || "";
-            if (content.length < 50) continue;
+            const url = result.url;
+            if (!url) continue;
+
+            let content = result.markdown || "";
+            
+            // If no markdown from search, scrape the URL individually
+            if (!content || content.length < 200) {
+              try {
+                console.log(`[${channel.label}] Scraping: ${url}`);
+                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    url,
+                    formats: ["markdown"],
+                    onlyMainContent: true,
+                  }),
+                });
+                
+                if (scrapeRes.ok) {
+                  const scrapeData = await scrapeRes.json();
+                  content = scrapeData.data?.markdown || scrapeData.markdown || "";
+                  console.log(`[${channel.label}] Scraped ${url}: ${content.length} chars`);
+                } else {
+                  const errText = await scrapeRes.text();
+                  console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
+                  // Fall back to description
+                  content = result.description || "";
+                }
+              } catch (scrapeErr) {
+                console.error(`[${channel.label}] Scrape error: ${scrapeErr}`);
+                content = result.description || "";
+              }
+            }
+
+            if (content.length < 100) continue;
 
             try {
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
