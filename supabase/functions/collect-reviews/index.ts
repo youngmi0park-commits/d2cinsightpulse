@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Channel definitions with Firecrawl search queries
 const CHANNELS = [
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review` },
+  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
   { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
   { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
@@ -18,7 +18,7 @@ const CHANNELS = [
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
 ];
 
-const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum"];
+const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
