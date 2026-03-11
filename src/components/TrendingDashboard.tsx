@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingC
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
-import { useTrendingProducts, useTrendingKeywords, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useTrendingProducts, useTrendingKeywords, useProductStats, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
