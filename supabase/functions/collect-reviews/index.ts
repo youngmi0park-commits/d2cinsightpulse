@@ -188,7 +188,15 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                 if (!productId) continue;
 
                 // Generate external_id to avoid duplicates
-                const externalId = `${channel.id}-${btoa(review.content.slice(0, 50)).slice(0, 30)}`;
+                // Use a simple hash to avoid btoa Latin1 issues with Unicode content
+                const hashInput = review.content.slice(0, 100);
+                let hash = 0;
+                for (let i = 0; i < hashInput.length; i++) {
+                  const char = hashInput.charCodeAt(i);
+                  hash = ((hash << 5) - hash) + char;
+                  hash |= 0;
+                }
+                const externalId = `${channel.id}-${Math.abs(hash).toString(36)}-${review.content.length}`;
 
                 const { data: existingReview } = await supabase
                   .from("reviews")
