@@ -440,23 +440,28 @@ export function generateMarketingMessage(
     },
     {
       question: t(
-        `Is the ${productName} worth buying?`,
-        `${productName}을(를) 구매해도 괜찮을까요?`
+        `Any tips for getting the most out of the ${productName}?`,
+        `${productName}을(를) 최대한 활용하는 팁이 있나요?`
       ),
-      answer: averageScore >= 0.7
+      answer: keywords.positive.length > 0
         ? t(
-            `Yes! Users highly rate "${keywords.positive.slice(0, 2).join('", "')}" and more. It's likely to be a satisfying purchase.`,
-            `네! 사용자들이 "${keywords.positive.slice(0, 2).join('", "')}" 등을 높이 평가하고 있어 만족스러운 구매가 될 것입니다. 안심하고 선택하세요.`
-          )
-        : averageScore >= 0.4
-        ? t(
-            `Overall, it has received decent reviews. We recommend verifying it fits your needs before purchasing.`,
-            `전반적으로 무난한 평가를 받고 있습니다. 용도에 맞는지 확인 후 구매를 권장합니다.`
+            `Users recommend taking advantage of features like ${keywords.positive.slice(0, 2).join(" and ")}. Check the product settings and explore community tips for optimal setup.`,
+            `사용자들은 ${keywords.positive.slice(0, 2).join(", ")} 등의 기능을 적극 활용할 것을 추천합니다. 제품 설정을 확인하고 커뮤니티 팁을 참고하여 최적의 설정을 찾아보세요.`
           )
         : t(
-            `There is currently some improvement feedback, so we recommend checking detailed reviews before purchasing.`,
-            `현재 일부 개선 피드백이 있으므로, 구매 전 상세 리뷰를 확인하시길 권장합니다.`
+            `Usage tips will be updated as more user feedback is collected.`,
+            `더 많은 사용자 피드백이 수집되면 사용 팁이 업데이트됩니다.`
           ),
+    },
+    {
+      question: t(
+        `What do users say about the ${productName}'s durability and long-term use?`,
+        `${productName}의 내구성과 장기 사용에 대한 사용자 의견은?`
+      ),
+      answer: t(
+        `Based on collected reviews, users generally report ${averageScore >= 0.6 ? "positive long-term experiences" : "mixed feedback on longevity"}. Key topics include ${keywords.positive.slice(0, 2).join(", ") || "build quality"}.`,
+        `수집된 리뷰에 따르면 사용자들은 ${averageScore >= 0.6 ? "전반적으로 긍정적인 장기 사용 경험" : "내구성에 대한 다양한 의견"}을 보고하고 있습니다. 주요 관심사는 ${keywords.positive.slice(0, 2).join(", ") || "제품 품질"} 등입니다.`
+      ),
     },
   ];
 
