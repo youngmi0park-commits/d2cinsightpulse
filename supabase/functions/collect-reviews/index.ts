@@ -92,15 +92,51 @@ Deno.serve(async (req) => {
 
           const searchData = await searchRes.json();
           const results = searchData.data || [];
+          console.log(`[${channel.label}] Found ${results.length} search results for ${category}`);
 
-          if (results.length === 0) {
-            console.log(`[${channel.label}] No results for ${category}`);
-            continue;
-          }
+          if (results.length === 0) continue;
 
-          // Use AI to extract structured review data from scraped content
+          // Step 2: Scrape each URL to get full content (search only returns snippets)
           for (const result of results) {
-            if (!result.markdown || result.markdown.length < 100) continue;
+            const url = result.url;
+            if (!url) continue;
+
+            let content = result.markdown || "";
+            
+            // If no markdown from search, scrape the URL individually
+            if (!content || content.length < 200) {
+              try {
+                console.log(`[${channel.label}] Scraping: ${url}`);
+                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    url,
+                    formats: ["markdown"],
+                    onlyMainContent: true,
+                  }),
+                });
+                
+                if (scrapeRes.ok) {
+                  const scrapeData = await scrapeRes.json();
+                  content = scrapeData.data?.markdown || scrapeData.markdown || "";
+                  console.log(`[${channel.label}] Scraped ${url}: ${content.length} chars`);
+                } else {
+                  const errText = await scrapeRes.text();
+                  console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
+                  // Fall back to description
+                  content = result.description || "";
+                }
+              } catch (scrapeErr) {
+                console.error(`[${channel.label}] Scrape error: ${scrapeErr}`);
+                content = result.description || "";
+              }
+            }
+
+            if (content.length < 100) continue;
 
             try {
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -130,7 +166,7 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                     },
                     {
                       role: "user",
-                      content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${result.markdown.slice(0, 8000)}`,
+                      content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${content.slice(0, 8000)}`,
                     },
                   ],
                   temperature: 0.1,
@@ -188,7 +224,15 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                 if (!productId) continue;
 
                 // Generate external_id to avoid duplicates
-                const externalId = `${channel.id}-${btoa(review.content.slice(0, 50)).slice(0, 30)}`;
+                // Use a simple hash to avoid btoa Latin1 issues with Unicode content
+                const hashInput = review.content.slice(0, 100);
+                let hash = 0;
+                for (let i = 0; i < hashInput.length; i++) {
+                  const char = hashInput.charCodeAt(i);
+                  hash = ((hash << 5) - hash) + char;
+                  hash |= 0;
+                }
+                const externalId = `${channel.id}-${Math.abs(hash).toString(36)}-${review.content.length}`;
 
                 const { data: existingReview } = await supabase
                   .from("reviews")
