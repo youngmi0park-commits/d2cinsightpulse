@@ -228,21 +228,18 @@ const Index = () => {
             <Tabs defaultValue={results[0].product.name} className="w-full">
               <div className="space-y-3 mb-6">
                 {Object.entries(groupedResults).map(([category, items]) => (
-                  <div key={category} className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary">
+                  <div key={category}>
+                    <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary mb-2">
                       {category}
                     </Badge>
-                    <TabsList className="h-auto p-1 bg-secondary/50">
+                    <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
                       {items.map((item) => (
                         <TabsTrigger
                           key={item.product.name}
                           value={item.product.name}
-                          className="text-xs sm:text-sm px-3 py-1.5"
+                          className="text-xs px-3 py-1.5 font-mono"
                         >
-                          <span className="font-mono">{item.product.name}</span>
-                          <span className="hidden sm:inline ml-2 text-muted-foreground text-xs">
-                            {item.product.displayName}
-                          </span>
+                          {item.product.name}
                         </TabsTrigger>
                       ))}
                     </TabsList>
