@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Channel definitions with Firecrawl search queries
 const CHANNELS = [
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review` },
+  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
   { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
   { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
