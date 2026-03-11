@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingC
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
-import { useTrendingProducts, useTrendingKeywords, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useTrendingProducts, useTrendingKeywords, useProductStats, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
@@ -236,10 +236,19 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const { t } = useLang();
   const { data: allTrendingProducts = [], isLoading } = useTrendingProducts();
   const { data: allKeywords = [] } = useTrendingKeywords();
+  const { data: stats } = useProductStats();
+
+  const lastCollection = stats?.lastCollection;
+  const lastCollectedAt = lastCollection?.completed_at
+    ? new Date(lastCollection.completed_at)
+    : null;
 
   const today = new Date();
   const weekAgo = subDays(today, 7);
   const dateRangeLabel = `${format(weekAgo, "yyyy.MM.dd")} ~ ${format(today, "yyyy.MM.dd")}`;
+  const lastSyncLabel = lastCollectedAt
+    ? format(lastCollectedAt, "yyyy.MM.dd HH:mm")
+    : null;
 
   const totalMentions = allTrendingProducts.reduce((sum, p) => sum + p.mentions, 0);
   const avgSentiment = allTrendingProducts.length > 0
@@ -257,7 +266,18 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
       return `"${kw.keyword}"${prods}`;
     }).join(", ");
 
+  const collectionStatusLine = lastSyncLabel
+    ? t(
+        `🔄 Last synced: ${lastSyncLabel} (${lastCollection?.items_collected ?? 0} items collected, status: ${lastCollection?.status ?? "unknown"})`,
+        `🔄 마지막 동기화: ${lastSyncLabel} (${lastCollection?.items_collected ?? 0}건 수집, 상태: ${lastCollection?.status === "completed" ? "완료" : lastCollection?.status === "running" ? "수집중" : lastCollection?.status ?? "알 수 없음"})`
+      )
+    : t(
+        "🔄 No collection has been run yet.",
+        "🔄 아직 수집이 실행되지 않았습니다."
+      );
+
   const insights = totalMentions > 0 ? [
+    collectionStatusLine,
     t(
       `📊 A total of ${totalMentions.toLocaleString()} product mentions were collected across ${SOURCE_TABS.length} channels, with an average sentiment score of ${avgSentiment}.`,
       `📊 전체 ${SOURCE_TABS.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`
@@ -279,6 +299,7 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
       `⚠️ 부정 키워드 TOP 3: ${formatKwList(negKeywords)}`
     ) : "",
   ].filter(Boolean) : [
+    collectionStatusLine,
     t(
       "📊 No data collected yet. Data will appear here once the automated collection runs.",
       "📊 아직 수집된 데이터가 없습니다. 자동 수집이 실행되면 여기에 데이터가 표시됩니다."
@@ -294,6 +315,11 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
           <Database className="h-3 w-3" />
           {t(`Live · Weekly (${dateRangeLabel})`, `Live · 주간 집계 (${dateRangeLabel})`)}
         </Badge>
+        {lastSyncLabel && (
+          <Badge variant="outline" className="text-xs gap-1">
+            🔄 {t(`Synced ${lastSyncLabel}`, `${lastSyncLabel} 동기화`)}
+          </Badge>
+        )}
       </div>
 
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
