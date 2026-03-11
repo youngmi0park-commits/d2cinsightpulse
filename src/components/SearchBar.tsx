@@ -29,7 +29,7 @@ const categoryOrder = ["TV", "Monitor", "Washer", "Dryer", "Laptop", "Projector"
 
 // Quick-search buttons shown below the search bar (Washer & Dryer split)
 const quickSearchButtons = [
-  { label: "📺 TV / StanbyME", query: "TV" },
+  { label: "📺 TV", query: "TV" },
   { label: "🖥️ Monitor", query: "Monitor" },
   { label: "🧺 Washer", query: "Washer" },
   { label: "🧺 Dryer", query: "Dryer" },
