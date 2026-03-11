@@ -18,7 +18,7 @@ const CHANNELS = [
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
 ];
 
-const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum"];
+const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
