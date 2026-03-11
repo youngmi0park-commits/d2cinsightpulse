@@ -135,7 +135,7 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                     },
                     {
                       role: "user",
-                      content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${result.markdown.slice(0, 8000)}`,
+                      content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${content.slice(0, 8000)}`,
                     },
                   ],
                   temperature: 0.1,
