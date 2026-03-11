@@ -151,7 +151,7 @@ const Index = () => {
               )}
             </p>
             {stats && (
-              <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+              <div className="flex items-center justify-center gap-2 mt-4">
                 <Badge variant="outline" className="gap-1.5 text-xs border-primary/30">
                   <Database className="h-3 w-3" />
                   {stats.reviewCount > 0
@@ -164,14 +164,6 @@ const Index = () => {
                         `${stats.productCount}개 제품 등록됨 · 첫 수집 대기 중`
                       )}
                 </Badge>
-                {stats.lastCollection?.completed_at && (
-                  <Badge variant="outline" className="gap-1.5 text-xs border-muted-foreground/30">
-                    🔄 {t(
-                      `Last sync: ${new Date(stats.lastCollection.completed_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`,
-                      `마지막 동기화: ${new Date(stats.lastCollection.completed_at).toLocaleString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
-                    )}
-                  </Badge>
-                )}
               </div>
             )}
           </div>
