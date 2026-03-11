@@ -91,12 +91,15 @@ Deno.serve(async (req) => {
           }
 
           const searchData = await searchRes.json();
+          console.log(`[${channel.label}] Raw response status: ${searchRes.status}, success: ${searchData.success}, data count: ${searchData.data?.length || 0}`);
           const results = searchData.data || [];
 
           if (results.length === 0) {
             console.log(`[${channel.label}] No results for ${category}`);
             continue;
           }
+
+          console.log(`[${channel.label}] Got ${results.length} results for ${category}, first markdown length: ${results[0]?.markdown?.length || 0}`);
 
           // Use AI to extract structured review data from scraped content
           for (const result of results) {
