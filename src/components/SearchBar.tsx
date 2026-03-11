@@ -31,6 +31,7 @@ const categoryOrder = ["TV", "Monitor", "Washer", "Dryer", "Laptop", "Projector"
 const quickSearchButtons = [
   { label: "📺 TV", query: "TV" },
   { label: "🖥️ Monitor", query: "Monitor" },
+  { label: "📱 StanbyME", query: "StanbyME" },
   { label: "🧺 Washer", query: "Washer" },
   { label: "🧺 Dryer", query: "Dryer" },
   { label: "💻 Laptop", query: "Laptop" },
