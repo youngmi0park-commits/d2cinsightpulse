@@ -99,11 +99,13 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          console.log(`[${channel.label}] Got ${results.length} results for ${category}, first markdown length: ${results[0]?.markdown?.length || 0}`);
+          console.log(`[${channel.label}] Got ${results.length} results for ${category}, first result keys: ${Object.keys(results[0] || {}).join(',')}, markdown: ${results[0]?.markdown?.length || 0}, extract: ${results[0]?.extract?.length || 0}, description: ${results[0]?.description?.length || 0}`);
 
           // Use AI to extract structured review data from scraped content
           for (const result of results) {
-            if (!result.markdown || result.markdown.length < 100) continue;
+            // Use markdown, extract, or description - whichever is available
+            const content = result.markdown || result.extract || result.description || "";
+            if (content.length < 50) continue;
 
             try {
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
