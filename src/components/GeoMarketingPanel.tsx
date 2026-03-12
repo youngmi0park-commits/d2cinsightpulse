@@ -13,7 +13,7 @@ interface GeoMarketingPanelProps {
 
 export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
-  const [activePurpose, setActivePurpose] = useState("sns");
+  const [activePurpose, setActivePurpose] = useState("dotcom");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSchema, setShowSchema] = useState(false);
   const { t } = useLang();
