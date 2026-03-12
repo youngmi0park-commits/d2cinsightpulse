@@ -98,7 +98,7 @@ export function getComplianceChecks(purpose: string): ComplianceCheck[] {
     },
   ];
 
-  if (purpose === "sns") {
+  if (purpose === "social") {
     checks.push({
       id: "ad-label",
       category: "General #20",
