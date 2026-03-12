@@ -20,6 +20,40 @@ const CHANNELS = [
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
+// lge.com top inbound search keywords (dotcom top 100)
+const DOTCOM_KEYWORDS = [
+  // TV & Display
+  "tv", "oled", "lg oled g5", "lg oled c4", "lg oled c5", "lg oled g4",
+  "lg smart tv 32", "qned", "lg oled g4 65", "lg oled c4 65", "tv oled",
+  "smart tv", "tv 50 polegadas", "tv 65 polegadas", "smart tv 43 polegadas",
+  "tv 55", "tv 65", "lg 43 inch tv 2025 model", "oled g5", "oled c4", "oled c5",
+  "c4", "c5", "g4", "g5",
+  // Remote & Accessories
+  "lg magic remote", "magic remote", "lg smart tv magic remote", "remote",
+  "controle remoto smart tv",
+  // Monitor & Display
+  "monitor", "ultragear", "smart monitor", "stand by me", "stand by me 2",
+  // Audio
+  "soundbar", "xboom", "barra de sonido",
+  // Laundry
+  "washing machine", "lava e seca", "lava e seca vc2 14kg", "lavadora",
+  "lavasecadora", "lava e seca vc4 12kg", "secadora", "lavadoras",
+  "lg 8kg top load washing machine", "washer dryer", "lavaseca", "washtower",
+  "lavadora secadora", "washing machine top load", "lg 9kg front load washing machine",
+  "lg washing machine 7 kg semi autom", "dryer", "vc2",
+  // Kitchen
+  "refrigerator", "refrigerador", "fridge", "freezer", "refrigerador 22 pies",
+  "refrigerador 14 pies", "microwave", "microondas", "dishwasher", "lavavajillas",
+  // Air Conditioning
+  "air conditioner", "ar condicionado dual inverter 12000", "ar condicionado dual inverter 9000",
+  "ar condicionado", "ar condicionado portatil", "split type inverter aircon",
+  "lg 1 5 star dual inverter split ac 20", "ar condicionado 127v", "aire acondicionado",
+  "window type inverter", "ar condicionado dual inverter 18000", "air purifier",
+  "aire acondicionado inverter",
+  // Other
+  "lg scale go", "cls31460001", "lg g5", "lg c4", "lg c5",
+];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -40,7 +74,9 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Parse request body for optional filters
-  let targetCategories = LG_CATEGORIES;
+  // Default: combine LG_CATEGORIES + DOTCOM_KEYWORDS (deduplicated)
+  const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
+  let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
   try {
     const body = await req.json();
