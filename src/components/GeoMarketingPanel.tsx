@@ -154,7 +154,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
-                {activePurpose === "banner" && (
+                {activePurpose === "dotcom" && (
                   <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-red-500" : "text-green-600"}`}>
                     ({currentMsg.headline.length}/50)
                   </span>
