@@ -120,6 +120,18 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               </span>
             </div>
           )}
+          {activePurpose === "criteo" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">Criteo Guidelines</span>
+              <span className="ml-2">Headline ≤25 chars · Description ≤45 chars · CTA ≤15 chars · Image: 300×250, 728×90, 160×600</span>
+            </div>
+          )}
+          {activePurpose === "pmax" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">Google Pmax Guidelines</span>
+              <span className="ml-2">Headline ≤30 chars · Long Headline ≤90 chars · Description ≤90 chars · Images: 1200×628, 1200×1200, 960×1200</span>
+            </div>
+          )}
 
           {/* Ad Product Guides - Criteo / Pmax */}
           <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs space-y-2">
@@ -155,8 +167,18 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
                 {activePurpose === "dotcom" && (
-                  <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-red-500" : "text-green-600"}`}>
+                  <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.headline.length}/50)
+                  </span>
+                )}
+                {activePurpose === "criteo" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.headline.length > 25 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.headline.length}/25)
+                  </span>
+                )}
+                {activePurpose === "pmax" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.headline.length > 30 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.headline.length}/30)
                   </span>
                 )}
               </div>
@@ -170,8 +192,18 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
                 {activePurpose === "dotcom" && (
-                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-red-500" : "text-green-600"}`}>
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.body.length}/120)
+                  </span>
+                )}
+                {activePurpose === "criteo" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 45 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.body.length}/45)
+                  </span>
+                )}
+                {activePurpose === "pmax" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 90 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.body.length}/90)
                   </span>
                 )}
               </div>
@@ -186,8 +218,13 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Call to Action</span>
                   {activePurpose === "dotcom" && (
-                    <span className={`text-[10px] font-mono ${currentMsg.cta.length > 20 ? "text-red-500" : "text-green-600"}`}>
+                    <span className={`text-[10px] font-mono ${currentMsg.cta.length > 20 ? "text-destructive" : "text-green-600"}`}>
                       ({currentMsg.cta.length}/20)
+                    </span>
+                  )}
+                  {activePurpose === "criteo" && (
+                    <span className={`text-[10px] font-mono ${currentMsg.cta.length > 15 ? "text-destructive" : "text-green-600"}`}>
+                      ({currentMsg.cta.length}/15)
                     </span>
                   )}
                 </div>
