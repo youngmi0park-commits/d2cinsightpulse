@@ -8,21 +8,26 @@ export interface MarketingOutput {
   weaknessesSummary: string;
 }
 
+export type ChannelGroup = "inside" | "outside";
+
+export interface PurposeMessage {
+  purpose: string;
+  purposeLabel: string;
+  channelGroup: ChannelGroup;
+  icon: string;
+  headline: string;
+  body: string;
+  cta: string;
+  hashtags: string[];
+  schema?: Record<string, unknown>;
+}
+
 export interface GeoMessage {
   geo: string;
   geoLabel: string;
   flag: string;
   language: string;
-  messages: {
-    purpose: string;
-    purposeLabel: string;
-    icon: string;
-    headline: string;
-    body: string;
-    cta: string;
-    hashtags: string[];
-    schema?: Record<string, unknown>;
-  }[];
+  messages: PurposeMessage[];
 }
 
 export function generateGeoMarketingMessages(
