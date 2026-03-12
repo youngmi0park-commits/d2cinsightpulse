@@ -87,7 +87,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
           {geoMessages.map((g) => (
             <button
               key={g.geo}
-              onClick={() => { setActiveGeo(g.geo); setActivePurpose(geoMessages.find(x => x.geo === g.geo)?.messages[0]?.purpose ?? "sns"); }}
+              onClick={() => { setActiveGeo(g.geo); setActivePurpose(geoMessages.find(x => x.geo === g.geo)?.messages[0]?.purpose ?? "dotcom"); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                 activeGeo === g.geo
                   ? "bg-primary/20 border-primary text-primary"
