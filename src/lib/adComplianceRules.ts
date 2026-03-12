@@ -28,21 +28,13 @@ export function getDisclaimers(
   };
 
   const purposeDisclaimer: Record<string, { en: string; ko: string }> = {
-    sns: {
+    dotcom: {
+      en: `${base.en} Product specifications and availability may vary by region.`,
+      ko: `${base.ko} 제품 사양 및 구매 가능 여부는 지역에 따라 다를 수 있습니다.`,
+    },
+    social: {
       en: `Ad · ${base.en} Product specifications and availability may vary by region.`,
       ko: `광고 · ${base.ko} 제품 사양 및 구매 가능 여부는 지역에 따라 다를 수 있습니다.`,
-    },
-    pdp: {
-      en: `${base.en} Ratings reflect aggregated user sentiment, not laboratory test results.`,
-      ko: `${base.ko} 평점은 사용자 감성을 종합한 수치이며, 실험실 테스트 결과가 아닙니다.`,
-    },
-    email: {
-      en: `${base.en} You are receiving this because you opted in. Unsubscribe anytime.`,
-      ko: `${base.ko} 수신 동의에 따라 발송됩니다. 언제든 수신 거부 가능합니다.`,
-    },
-    press: {
-      en: `${base.en} Forward-looking statements are based on current data and may change.`,
-      ko: `${base.ko} 전망 관련 진술은 현재 데이터에 기반하며 변경될 수 있습니다.`,
     },
   };
 
