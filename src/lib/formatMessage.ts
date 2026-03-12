@@ -357,7 +357,10 @@ export function generateGeoMarketingMessages(
         },
       ],
     },
-  ];
+  ].map((geo) => ({
+    ...geo,
+    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo)],
+  }));
 }
 
 export function generateMarketingMessage(

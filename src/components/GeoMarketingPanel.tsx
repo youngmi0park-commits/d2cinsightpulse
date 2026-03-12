@@ -120,6 +120,18 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               </span>
             </div>
           )}
+          {activePurpose === "criteo" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">Criteo Guidelines</span>
+              <span className="ml-2">Headline ≤25 chars · Description ≤45 chars · CTA ≤15 chars · Image: 300×250, 728×90, 160×600</span>
+            </div>
+          )}
+          {activePurpose === "pmax" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">Google Pmax Guidelines</span>
+              <span className="ml-2">Headline ≤30 chars · Long Headline ≤90 chars · Description ≤90 chars · Images: 1200×628, 1200×1200, 960×1200</span>
+            </div>
+          )}
 
           {/* Ad Product Guides - Criteo / Pmax */}
           <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs space-y-2">
