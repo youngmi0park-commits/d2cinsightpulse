@@ -192,8 +192,18 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
                 {activePurpose === "dotcom" && (
-                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-red-500" : "text-green-600"}`}>
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.body.length}/120)
+                  </span>
+                )}
+                {activePurpose === "criteo" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 45 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.body.length}/45)
+                  </span>
+                )}
+                {activePurpose === "pmax" && (
+                  <span className={`text-[10px] font-mono ${currentMsg.body.length > 90 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.body.length}/90)
                   </span>
                 )}
               </div>
