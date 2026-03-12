@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Parse request body for optional filters
-  let targetCategories = LG_CATEGORIES;
+  // Default: combine LG_CATEGORIES + DOTCOM_KEYWORDS (deduplicated)
+  const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
+  let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
   try {
     const body = await req.json();
