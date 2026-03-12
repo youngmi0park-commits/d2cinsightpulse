@@ -152,17 +152,17 @@ export function generateGeoMarketingMessages(
       language: "English (AU)",
       messages: [
         {
-          purpose: "banner",
-          purposeLabel: "Web Banner Copy",
-          icon: "🖼️",
+          purpose: "dotcom",
+          purposeLabel: "닷컴 카피",
+          icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Quality"} That Stands Out.`),
           body: bannerBody(`Aussie users love ${pros.slice(0, 2).join(" & ")}. Available at JB Hi-Fi, Harvey Norman & LGE.com AU.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
         {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
+          purpose: "social",
+          purposeLabel: "소셜미디어 카피",
           icon: "📱",
           headline: `[Ad] ${productName} — Australian users highlight ${pros[0] || "quality"} in their reviews.`,
           body: `Users praise ${pros.join(", ")} as standout features. Data sourced from ${dataSrc}. Available at JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
