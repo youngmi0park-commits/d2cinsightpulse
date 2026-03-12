@@ -58,7 +58,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
       {currentGeo && (
         <div className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-border bg-secondary/20">
           <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1 min-w-[60px]">
-            {t("Ad Type", "광고유형")}
+            {t("Exposure Type", "노출타입")}
           </span>
           <div className="flex flex-wrap gap-2">
             {currentGeo.messages.map((m) => (
