@@ -204,17 +204,17 @@ export function generateGeoMarketingMessages(
       language: "English (IN)",
       messages: [
         {
-          purpose: "banner",
-          purposeLabel: "Web Banner Copy",
-          icon: "🖼️",
+          purpose: "dotcom",
+          purposeLabel: "닷컴 카피",
+          icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Innovation"} Delivered.`),
           body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as top reasons to choose LG. Explore at LGE.com/IN.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
         {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
+          purpose: "social",
+          purposeLabel: "소셜미디어 카피",
           icon: "📱",
           headline: `[Ad] ${productName} — Users praise ${pros[0] || "performance"} and more.`,
           body: `Indian and global user reviews highlight ${pros.join(", ")} as reasons customers choose the ${productName}. Review data from ${dataSrc}.`,
