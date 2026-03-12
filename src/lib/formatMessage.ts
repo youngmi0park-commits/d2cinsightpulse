@@ -178,17 +178,17 @@ export function generateGeoMarketingMessages(
       language: "Deutsch / English",
       messages: [
         {
-          purpose: "banner",
-          purposeLabel: "Web Banner Copy",
-          icon: "🖼️",
+          purpose: "dotcom",
+          purposeLabel: "닷컴 카피",
+          icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
           body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
           cta: bannerCta("Jetzt entdecken"),
           hashtags: [],
         },
         {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
+          purpose: "social",
+          purposeLabel: "소셜미디어 카피",
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
           body: `Nutzer heben ${pros.join(", ")} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
