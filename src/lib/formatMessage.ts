@@ -58,6 +58,36 @@ export function generateGeoMarketingMessages(
   const bannerBody = (text: string) => text.slice(0, 120);
   const bannerCta = (text: string) => text.slice(0, 20);
 
+  // Criteo limits: Headline ≤25, Description ≤45, CTA ≤15
+  const criteoHL = (text: string) => text.slice(0, 25);
+  const criteoDesc = (text: string) => text.slice(0, 45);
+  const criteoCta = (text: string) => text.slice(0, 15);
+
+  // Pmax limits: Headline ≤30, Long Headline ≤90, Description ≤90
+  const pmaxHL = (text: string) => text.slice(0, 30);
+  const pmaxLongHL = (text: string) => text.slice(0, 90);
+  const pmaxDesc = (text: string) => text.slice(0, 90);
+
+  const makeCriteoMsg = (geo: string) => ({
+    purpose: "criteo",
+    purposeLabel: "Criteo Copy",
+    icon: "🎯",
+    headline: criteoHL(`${productName} — ${pros[0] || "Quality"}`),
+    body: criteoDesc(`Users praise ${pros.slice(0, 2).join(" & ")}.`),
+    cta: criteoCta("Shop Now"),
+    hashtags: [] as string[],
+  });
+
+  const makePmaxMsg = (geo: string) => ({
+    purpose: "pmax",
+    purposeLabel: "Pmax Copy",
+    icon: "📊",
+    headline: pmaxHL(`${productName} — ${pros[0] || "Quality"}`),
+    body: pmaxDesc(`Users highlight ${pros.join(", ")} as standout features of the ${productName}. See real reviews.`),
+    cta: "Shop Now",
+    hashtags: [] as string[],
+  });
+
   return [
     {
       geo: "LGEUS",
