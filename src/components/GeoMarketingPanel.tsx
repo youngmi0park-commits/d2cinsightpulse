@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { type GeoMessage } from "@/lib/formatMessage";
-import { Globe, Copy, Check, Code } from "lucide-react";
+import { type GeoMessage, type ChannelGroup } from "@/lib/formatMessage";
+import { Globe, Copy, Check, Code, Building2, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
 import { AdComplianceNotice } from "@/components/AdComplianceNotice";
@@ -11,16 +11,45 @@ interface GeoMarketingPanelProps {
   totalReviews: number;
 }
 
+const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: string; labelKo: string; descEn: string; descKo: string }[] = [
+  {
+    key: "inside",
+    icon: Building2,
+    labelEn: "Inside Channel",
+    labelKo: "Inside 채널",
+    descEn: "Homepage, Dotcom, Internal Communications",
+    descKo: "홈페이지, 닷컴, 내부 커뮤니케이션",
+  },
+  {
+    key: "outside",
+    icon: Megaphone,
+    labelEn: "Outside Channel",
+    labelKo: "Outside 채널",
+    descEn: "Social Media, Paid Ads, Influencer Review Guides",
+    descKo: "소셜미디어, 유료광고, 인플루언서 리뷰 가이드",
+  },
+];
+
 export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
+  const [activeChannel, setActiveChannel] = useState<ChannelGroup>("inside");
   const [activePurpose, setActivePurpose] = useState("dotcom");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSchema, setShowSchema] = useState(false);
   const { t } = useLang();
 
   const currentGeo = geoMessages.find((g) => g.geo === activeGeo);
-  const currentMsg = currentGeo?.messages.find((m) => m.purpose === activePurpose)
-    ?? currentGeo?.messages[0];
+  const channelMessages = currentGeo?.messages.filter((m) => m.channelGroup === activeChannel) ?? [];
+  const currentMsg = channelMessages.find((m) => m.purpose === activePurpose) ?? channelMessages[0];
+
+  // Sync activePurpose when switching channels
+  const handleChannelSwitch = (ch: ChannelGroup) => {
+    setActiveChannel(ch);
+    const msgs = currentGeo?.messages.filter((m) => m.channelGroup === ch) ?? [];
+    if (msgs.length > 0 && !msgs.find((m) => m.purpose === activePurpose)) {
+      setActivePurpose(msgs[0].purpose);
+    }
+  };
 
   const copyText = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -46,27 +75,53 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
         <h3 className="text-lg font-semibold font-heading">🌍 {t("Regional Marketing Messages", "지역별 마케팅 메시지")}</h3>
       </div>
 
-
       <p className="text-sm text-muted-foreground mb-5">
         {t(
-          "Auto-generated marketing copy tailored by region and purpose based on collected review data. Includes JSON-LD structured data optimized for AI crawlers and search engines.",
-          "수집된 리뷰 데이터를 기반으로 지역(Geo)과 목적에 맞춰 자동 생성된 마케팅 카피입니다. JSON-LD 구조화 데이터를 포함하여 AI 크롤러·검색엔진 최적화에 적합합니다."
+          "Auto-generated marketing copy tailored by channel type, region, and purpose based on collected review data.",
+          "수집된 리뷰 데이터를 기반으로 채널 유형·지역(Geo)·목적에 맞춰 자동 생성된 마케팅 카피입니다."
         )}
       </p>
 
-      {/* Purpose Tabs */}
-      {currentGeo && (
+      {/* Channel Group Tabs (Inside / Outside) */}
+      <div className="flex gap-3 mb-5">
+        {CHANNEL_GROUPS.map((ch) => {
+          const Icon = ch.icon;
+          const isActive = activeChannel === ch.key;
+          return (
+            <button
+              key={ch.key}
+              onClick={() => handleChannelSwitch(ch.key)}
+              className={`flex-1 p-4 rounded-xl border-2 transition-all text-left ${
+                isActive
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-border bg-secondary/20 hover:border-primary/30"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Icon className={`h-5 w-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-sm font-semibold ${isActive ? "text-primary" : "text-foreground/80"}`}>
+                  {t(ch.labelEn, ch.labelKo)}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">{t(ch.descEn, ch.descKo)}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Purpose Tabs within selected channel */}
+      {channelMessages.length > 0 && (
         <div className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-border bg-secondary/20">
           <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1 min-w-[60px]">
             {t("Exposure Type", "노출타입")}
           </span>
           <div className="flex flex-wrap gap-2">
-            {currentGeo.messages.map((m) => (
+            {channelMessages.map((m) => (
               <button
                 key={m.purpose}
                 onClick={() => setActivePurpose(m.purpose)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-                  activePurpose === m.purpose
+                  activePurpose === m.purpose || (currentMsg?.purpose === m.purpose && activePurpose !== m.purpose)
                     ? "bg-primary border-primary/50 text-primary-foreground"
                     : "bg-background border-border text-muted-foreground hover:border-primary/30"
                 }`}
@@ -87,7 +142,13 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
           {geoMessages.map((g) => (
             <button
               key={g.geo}
-              onClick={() => { setActiveGeo(g.geo); setActivePurpose(geoMessages.find(x => x.geo === g.geo)?.messages[0]?.purpose ?? "dotcom"); }}
+              onClick={() => {
+                setActiveGeo(g.geo);
+                const msgs = geoMessages.find(x => x.geo === g.geo)?.messages.filter(m => m.channelGroup === activeChannel) ?? [];
+                if (msgs.length > 0 && !msgs.find(m => m.purpose === activePurpose)) {
+                  setActivePurpose(msgs[0].purpose);
+                }
+              }}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                 activeGeo === g.geo
                   ? "bg-primary/20 border-primary text-primary"
@@ -109,6 +170,8 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               "본 메시지는 해외광고체크리스트 사전 검수를 완료하였으나, 실제 활용 전 법무 검토를 필수 진행하여 주시기 바랍니다."
             )}
           </div>
+
+          {/* Purpose-specific guidelines */}
           {activePurpose === "dotcom" && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
@@ -132,36 +195,61 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               <span className="ml-2">Headline ≤30 chars · Long Headline ≤90 chars · Description ≤90 chars · Images: 1200×628, 1200×1200, 960×1200</span>
             </div>
           )}
+          {activePurpose === "influencer" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{t("Influencer Review Guide", "인플루언서 리뷰 가이드")}</span>
+              <span className="ml-2">
+                {t(
+                  "Talking points for influencer partners. Must include #Sponsored / #Ad disclosure. Authentic tone recommended.",
+                  "인플루언서 파트너용 토킹 포인트. #Sponsored / #Ad 표기 필수. 진정성 있는 톤 권장."
+                )}
+              </span>
+            </div>
+          )}
+          {activePurpose === "internal" && (
+            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{t("Internal Communication", "내부 커뮤니케이션")}</span>
+              <span className="ml-2">
+                {t(
+                  "For internal stakeholders only. Contains raw sentiment data and improvement areas. NOT for external use.",
+                  "내부 관계자 전용. 원시 감성 데이터 및 개선 영역 포함. 외부 사용 불가."
+                )}
+              </span>
+            </div>
+          )}
 
-          {/* Ad Product Guides - Criteo / Pmax */}
-          <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs space-y-2">
-            <span className="font-semibold text-foreground/80">{t("📋 Ad Product Specs Guide", "📋 광고상품별 스펙 가이드")}</span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-              <div className="p-2.5 rounded-md border border-border bg-background/60">
-                <div className="font-semibold text-primary mb-1">Criteo (Display / Retargeting)</div>
-                <ul className="space-y-0.5 text-muted-foreground">
-                  <li>• Headline: {t("≤25 chars", "≤25자")}</li>
-                  <li>• Description: {t("≤45 chars", "≤45자")}</li>
-                  <li>• CTA: {t("≤15 chars (predefined buttons recommended)", "≤15자 (사전정의 버튼 권장)")}</li>
-                  <li>• Logo: {t("Brand logo auto-applied", "브랜드 로고 자동 적용")}</li>
-                  <li>• {t("Image: 300×250, 728×90, 160×600 etc.", "이미지: 300×250, 728×90, 160×600 등")}</li>
-                  <li>• {t("Text overlay ≤20% of creative area", "텍스트 오버레이 ≤ 크리에이티브 영역의 20%")}</li>
-                </ul>
-              </div>
-              <div className="p-2.5 rounded-md border border-border bg-background/60">
-                <div className="font-semibold text-primary mb-1">Google Performance Max (Pmax)</div>
-                <ul className="space-y-0.5 text-muted-foreground">
-                  <li>• Headline: {t("≤30 chars (up to 5)", "≤30자 (최대 5개)")}</li>
-                  <li>• Long Headline: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
-                  <li>• Description: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
-                  <li>• Business Name: {t("≤25 chars", "≤25자")}</li>
-                  <li>• CTA: {t("Auto-generated or selectable", "자동 생성 또는 선택 가능")}</li>
-                  <li>• {t("Images: 1200×628 (landscape), 1200×1200 (square), 960×1200 (portrait)", "이미지: 1200×628 (가로), 1200×1200 (정사각), 960×1200 (세로)")}</li>
-                </ul>
+          {/* Ad Product Specs Guide (only for outside channel ad types) */}
+          {activeChannel === "outside" && (activePurpose === "criteo" || activePurpose === "pmax") && (
+            <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs space-y-2">
+              <span className="font-semibold text-foreground/80">{t("📋 Ad Product Specs Guide", "📋 광고상품별 스펙 가이드")}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                <div className="p-2.5 rounded-md border border-border bg-background/60">
+                  <div className="font-semibold text-primary mb-1">Criteo (Display / Retargeting)</div>
+                  <ul className="space-y-0.5 text-muted-foreground">
+                    <li>• Headline: {t("≤25 chars", "≤25자")}</li>
+                    <li>• Description: {t("≤45 chars", "≤45자")}</li>
+                    <li>• CTA: {t("≤15 chars (predefined buttons recommended)", "≤15자 (사전정의 버튼 권장)")}</li>
+                    <li>• Logo: {t("Brand logo auto-applied", "브랜드 로고 자동 적용")}</li>
+                    <li>• {t("Image: 300×250, 728×90, 160×600 etc.", "이미지: 300×250, 728×90, 160×600 등")}</li>
+                    <li>• {t("Text overlay ≤20% of creative area", "텍스트 오버레이 ≤ 크리에이티브 영역의 20%")}</li>
+                  </ul>
+                </div>
+                <div className="p-2.5 rounded-md border border-border bg-background/60">
+                  <div className="font-semibold text-primary mb-1">Google Performance Max (Pmax)</div>
+                  <ul className="space-y-0.5 text-muted-foreground">
+                    <li>• Headline: {t("≤30 chars (up to 5)", "≤30자 (최대 5개)")}</li>
+                    <li>• Long Headline: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
+                    <li>• Description: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
+                    <li>• Business Name: {t("≤25 chars", "≤25자")}</li>
+                    <li>• CTA: {t("Auto-generated or selectable", "자동 생성 또는 선택 가능")}</li>
+                    <li>• {t("Images: 1200×628 (landscape), 1200×1200 (square), 960×1200 (portrait)", "이미지: 1200×628 (가로), 1200×1200 (정사각), 960×1200 (세로)")}</li>
+                  </ul>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
+          {/* Headline */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
@@ -187,6 +275,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             <p className="text-lg font-bold font-heading leading-snug">{currentMsg.headline}</p>
           </div>
 
+          {/* Body */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
@@ -212,6 +301,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{currentMsg.body}</p>
           </div>
 
+          {/* CTA */}
           <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -234,6 +324,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             </div>
           </div>
 
+          {/* Hashtags */}
           {currentMsg.hashtags.length > 0 && (
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -250,6 +341,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             </div>
           )}
 
+          {/* JSON-LD Schema */}
           {currentMsg.schema && (
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
               <div className="flex items-center justify-between mb-2">
@@ -271,6 +363,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             </div>
           )}
 
+          {/* Copy Full */}
           <button
             onClick={() =>
               copyText(
