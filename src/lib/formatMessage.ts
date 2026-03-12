@@ -282,17 +282,17 @@ export function generateGeoMarketingMessages(
       language: "Nederlands / English",
       messages: [
         {
-          purpose: "banner",
-          purposeLabel: "Web Banner Copy",
-          icon: "🖼️",
+          purpose: "dotcom",
+          purposeLabel: "닷컴 카피",
+          icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
           body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LGE.com/NL.`),
           cta: bannerCta("Ontdek meer"),
           hashtags: [],
         },
         {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
+          purpose: "social",
+          purposeLabel: "소셜미디어 카피",
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
           body: `Gebruikers waarderen ${pros.join(", ")} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
