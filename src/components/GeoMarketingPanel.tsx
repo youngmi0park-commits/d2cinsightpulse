@@ -185,7 +185,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Call to Action</span>
-                  {activePurpose === "banner" && (
+                  {activePurpose === "dotcom" && (
                     <span className={`text-[10px] font-mono ${currentMsg.cta.length > 20 ? "text-red-500" : "text-green-600"}`}>
                       ({currentMsg.cta.length}/20)
                     </span>

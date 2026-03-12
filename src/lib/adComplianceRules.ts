@@ -108,15 +108,6 @@ export function getComplianceChecks(purpose: string): ComplianceCheck[] {
     });
   }
 
-  if (purpose === "press") {
-    checks.push({
-      id: "forward-looking",
-      category: "General #8",
-      rule: "Forward-looking statements are qualified with appropriate disclaimers",
-      ruleKo: "전망 관련 진술에 적절한 면책 조항이 포함됩니다",
-      status: "pass",
-    });
-  }
 
   return checks;
 }
