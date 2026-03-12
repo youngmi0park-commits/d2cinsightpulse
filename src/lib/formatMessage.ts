@@ -256,17 +256,17 @@ export function generateGeoMarketingMessages(
       language: "Português / English",
       messages: [
         {
-          purpose: "banner",
-          purposeLabel: "Web Banner Copy",
-          icon: "🖼️",
+          purpose: "dotcom",
+          purposeLabel: "닷컴 카피",
+          icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
           body: bannerBody(`Usuários destacam ${pros.slice(0, 2).join(" & ")} como diferenciais. Confira em LGE.com/BR.`),
           cta: bannerCta("Saiba Mais"),
           hashtags: [],
         },
         {
-          purpose: "sns",
-          purposeLabel: "Social Media Ad",
+          purpose: "social",
+          purposeLabel: "소셜미디어 카피",
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
           body: `Usuários destacam ${pros.join(", ")} como pontos fortes. Dados de ${dataSrc}. Qualidade OLED e estabilidade de streaming são pontos frequentes.`,
