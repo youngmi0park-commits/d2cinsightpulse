@@ -109,9 +109,9 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               "본 메시지는 해외광고체크리스트 사전 검수를 완료하였으나, 실제 활용 전 법무 검토를 필수 진행하여 주시기 바랍니다."
             )}
           </div>
-          {activePurpose === "banner" && (
+          {activePurpose === "dotcom" && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
-              <span className="font-semibold text-primary">{t("Banner Copy Guidelines", "배너 문구 가이드라인")}</span>
+              <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
               <span className="ml-2">
                 {t(
                   "(Based on lg.com hero banner) Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
@@ -120,6 +120,35 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
               </span>
             </div>
           )}
+
+          {/* Ad Product Guides - Criteo / Pmax */}
+          <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs space-y-2">
+            <span className="font-semibold text-foreground/80">{t("📋 Ad Product Specs Guide", "📋 광고상품별 스펙 가이드")}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+              <div className="p-2.5 rounded-md border border-border bg-background/60">
+                <div className="font-semibold text-primary mb-1">Criteo (Display / Retargeting)</div>
+                <ul className="space-y-0.5 text-muted-foreground">
+                  <li>• Headline: {t("≤25 chars", "≤25자")}</li>
+                  <li>• Description: {t("≤45 chars", "≤45자")}</li>
+                  <li>• CTA: {t("≤15 chars (predefined buttons recommended)", "≤15자 (사전정의 버튼 권장)")}</li>
+                  <li>• Logo: {t("Brand logo auto-applied", "브랜드 로고 자동 적용")}</li>
+                  <li>• {t("Image: 300×250, 728×90, 160×600 etc.", "이미지: 300×250, 728×90, 160×600 등")}</li>
+                  <li>• {t("Text overlay ≤20% of creative area", "텍스트 오버레이 ≤ 크리에이티브 영역의 20%")}</li>
+                </ul>
+              </div>
+              <div className="p-2.5 rounded-md border border-border bg-background/60">
+                <div className="font-semibold text-primary mb-1">Google Performance Max (Pmax)</div>
+                <ul className="space-y-0.5 text-muted-foreground">
+                  <li>• Headline: {t("≤30 chars (up to 5)", "≤30자 (최대 5개)")}</li>
+                  <li>• Long Headline: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
+                  <li>• Description: {t("≤90 chars (up to 5)", "≤90자 (최대 5개)")}</li>
+                  <li>• Business Name: {t("≤25 chars", "≤25자")}</li>
+                  <li>• CTA: {t("Auto-generated or selectable", "자동 생성 또는 선택 가능")}</li>
+                  <li>• {t("Images: 1200×628 (landscape), 1200×1200 (square), 960×1200 (portrait)", "이미지: 1200×628 (가로), 1200×1200 (정사각), 960×1200 (세로)")}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
