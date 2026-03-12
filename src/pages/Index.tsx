@@ -136,18 +136,21 @@ const Index = () => {
         />
         <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
           <div className="text-center mb-10">
-            <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-2">
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
                 <span className="text-gradient">
-                  Customer Voice Listening Insight Portal
+                  D2C Insight Pulse
                 </span>
               </h1>
             </div>
+            <p className="text-sm md:text-base text-muted-foreground/70 italic mb-4">
+              Feel the Pulse. Gain the Insight.
+            </p>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
               {t(
-                "A platform that collects and analyzes real user reviews from major communities like Reddit and Amazon,\nand provides marketing communication messages.",
-                "Reddit · Amazon 등 주요 커뮤니티의 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
+                "A platform that collects and analyzes real user reviews from major communities and retailers like Reddit and Amazon,\nand provides marketing communication messages.",
+                "Reddit · Amazon 등 주요 커뮤니티와 유통사 내 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."
               )}
             </p>
             {stats && (
