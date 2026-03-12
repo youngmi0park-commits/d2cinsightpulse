@@ -22,36 +22,46 @@ const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air 
 
 // lge.com top inbound search keywords (dotcom top 100)
 const DOTCOM_KEYWORDS = [
-  // TV & Display
-  "tv", "oled", "lg oled g5", "lg oled c4", "lg oled c5", "lg oled g4",
+  // 1-10: Core Brand & Display Tech
+  "oled", "lg gram", "ultragear", "thinq", "ai core tech", "4k", "hdr", "g-sync compatible", "thin and light", "burn-in",
+  // 11-20: TV Models & Panel Tech
+  "c4", "g4", "c3", "cx", "nano ips", "144hz", "1ms", "dolby vision", "lodb", "smart tv",
+  // 21-30: Home Appliances & Display
+  "refrigerator", "washing machine", "dryer", "french door", "inverter", "core ultra", "lg glance", "portable", "1440p", "freesync",
+  // 31-40: Display Quality & Product
+  "uniformity", "green tint", "backlight bleed", "17z90tp", "hybrid ai", "time travel", "dolby atmos", "sleek", "21:9", "curved",
+  // 41-50: Monitor Models & Home
+  "gp850", "gl850", "27gl83a", "dishwasher", "energy-efficient", "life's good", "nanocell", "qhd", "overclock", "displayport",
+  // 51-60: Laundry & Business
+  "deep wash", "commercial washer", "drum machine", "lg partner store", "consumer reports", "jd power", "ces 2026", "ryu jae-chul", "b2b", "builder market",
+  // 61-70: TV Processor & Smart Features
+  "alpha 9 processor", "evo panel", "brightness booster", "magic remote", "webos", "game dashboard", "input lag", "vrr", "allm", "hdmi 2.1",
+  // 71-80: Laptop & Display Specs
+  "style edition", "aerominum", "magnesium alloy", "number pad", "trackpad responsiveness", "arc graphics", "multi-tasking", "future proof", "anti-glare", "nits",
+  // 81-90: Kitchen & Laundry Premium
+  "instaview", "door-in-door", "craft ice", "linear compressor", "direct drive motor", "turbowash", "steam cycle", "heat pump dryer", "quadwash", "truesteam",
+  // 91-100: Marketing & Strategy
+  "keyword strategy", "seo", "organic traffic", "ppc bidding", "long-tail keywords", "influencer collaboration", "customer satisfaction", "brand reputation", "crisis management", "social listening",
+  // Previous dotcom keywords (merged)
+  "tv", "lg oled g5", "lg oled c4", "lg oled c5", "lg oled g4",
   "lg smart tv 32", "qned", "lg oled g4 65", "lg oled c4 65", "tv oled",
-  "smart tv", "tv 50 polegadas", "tv 65 polegadas", "smart tv 43 polegadas",
-  "tv 55", "tv 65", "lg 43 inch tv 2025 model", "oled g5", "oled c4", "oled c5",
-  "c4", "c5", "g4", "g5",
-  // Remote & Accessories
-  "lg magic remote", "magic remote", "lg smart tv magic remote", "remote",
-  "controle remoto smart tv",
-  // Monitor & Display
-  "monitor", "ultragear", "smart monitor", "stand by me", "stand by me 2",
-  // Audio
+  "tv 50 polegadas", "tv 65 polegadas", "smart tv 43 polegadas",
+  "tv 55", "tv 65", "lg 43 inch tv 2025 model", "oled g5", "oled c4", "oled c5", "c5", "g5",
+  "lg magic remote", "lg smart tv magic remote", "remote", "controle remoto smart tv",
+  "monitor", "smart monitor", "stand by me", "stand by me 2",
   "soundbar", "xboom", "barra de sonido",
-  // Laundry
-  "washing machine", "lava e seca", "lava e seca vc2 14kg", "lavadora",
-  "lavasecadora", "lava e seca vc4 12kg", "secadora", "lavadoras",
-  "lg 8kg top load washing machine", "washer dryer", "lavaseca", "washtower",
+  "lava e seca", "lava e seca vc2 14kg", "lavadora", "lavasecadora", "lava e seca vc4 12kg",
+  "secadora", "lavadoras", "lg 8kg top load washing machine", "washer dryer", "lashtower",
   "lavadora secadora", "washing machine top load", "lg 9kg front load washing machine",
-  "lg washing machine 7 kg semi autom", "dryer", "vc2",
-  // Kitchen
-  "refrigerator", "refrigerador", "fridge", "freezer", "refrigerador 22 pies",
-  "refrigerador 14 pies", "microwave", "microondas", "dishwasher", "lavavajillas",
-  // Air Conditioning
+  "lg washing machine 7 kg semi autom", "vc2",
+  "refrigerador", "fridge", "freezer", "refrigerador 22 pies", "refrigerador 14 pies",
+  "microwave", "microondas", "lavavajillas",
   "air conditioner", "ar condicionado dual inverter 12000", "ar condicionado dual inverter 9000",
   "ar condicionado", "ar condicionado portatil", "split type inverter aircon",
   "lg 1 5 star dual inverter split ac 20", "ar condicionado 127v", "aire acondicionado",
   "window type inverter", "ar condicionado dual inverter 18000", "air purifier",
   "aire acondicionado inverter",
-  // Other
-  "lg scale go", "cls31460001", "lg g5", "lg c4", "lg c5",
+  "lg scale go", "cls31460001", "lg g5", "lg c4", "lg c5", "washtower",
 ];
 
 Deno.serve(async (req) => {
