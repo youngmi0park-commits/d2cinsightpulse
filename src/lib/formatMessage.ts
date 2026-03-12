@@ -73,9 +73,10 @@ export function generateGeoMarketingMessages(
   const pmaxLongHL = (text: string) => text.slice(0, 90);
   const pmaxDesc = (text: string) => text.slice(0, 90);
 
-  const makeCriteoMsg = (geo: string) => ({
+  const makeCriteoMsg = (geo: string): PurposeMessage => ({
     purpose: "criteo",
     purposeLabel: "Criteo Copy",
+    channelGroup: "outside",
     icon: "🎯",
     headline: criteoHL(`${productName} — ${pros[0] || "Quality"}`),
     body: criteoDesc(`Users praise ${pros.slice(0, 2).join(" & ")}.`),
@@ -83,14 +84,37 @@ export function generateGeoMarketingMessages(
     hashtags: [] as string[],
   });
 
-  const makePmaxMsg = (geo: string) => ({
+  const makePmaxMsg = (geo: string): PurposeMessage => ({
     purpose: "pmax",
     purposeLabel: "Pmax Copy",
+    channelGroup: "outside",
     icon: "📊",
     headline: pmaxHL(`${productName} — ${pros[0] || "Quality"}`),
     body: pmaxDesc(`Users highlight ${pros.join(", ")} as standout features of the ${productName}. See real reviews.`),
     cta: "Shop Now",
     hashtags: [] as string[],
+  });
+
+  const makeInfluencerGuide = (geo: string, lang: string): PurposeMessage => ({
+    purpose: "influencer",
+    purposeLabel: "인플루언서 리뷰 가이드",
+    channelGroup: "outside",
+    icon: "🎤",
+    headline: `${productName} — Review Talking Points`,
+    body: `Key features users love: ${pros.join(", ")}. ${cons.length > 0 ? `Honest note: some users mention ${cons[0]} — LG is actively improving this.` : ""} Focus on real-world experience and authentic storytelling.`,
+    cta: "Learn More at LGE.com →",
+    hashtags: ["#LGPartner", `#${productName.replace(/\s+/g, "")}`, "#Sponsored"],
+  });
+
+  const makeInternalBrief = (geo: string): PurposeMessage => ({
+    purpose: "internal",
+    purposeLabel: "내부 커뮤니케이션",
+    channelGroup: "inside",
+    icon: "📋",
+    headline: `[Internal] ${productName} — Customer Voice Summary`,
+    body: `Sentiment Score: ${score}/100 | Positive: ${posPercent}% (${positive}건) | Top Praise: ${pros.join(", ")} | Improvement Areas: ${cons.join(", ") || "None noted"} | Total Reviews: ${total}`,
+    cta: "View Full Report →",
+    hashtags: [],
   });
 
   return [
