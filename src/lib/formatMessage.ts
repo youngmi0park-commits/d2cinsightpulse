@@ -127,6 +127,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Experience"} Redefined.`),
           body: bannerBody(`Users praise ${pros.slice(0, 2).join(" & ")}. Discover what makes the ${productName} a standout choice.`),
@@ -136,6 +137,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users love the ${pros[0] || "experience"}. See why.`,
           body: `Real users highlight ${pros.join(", ")} as standout features of the ${productName}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on user feedback.` : ""} Discover what makes it a top choice.`,
@@ -161,6 +163,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. Loved for ${pros[0] || "Quality"}.`),
           body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")} as key strengths. Experience it at Currys or LGE.com/UK.`),
@@ -170,6 +173,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users highlight ${pros[0] || "quality"} as a standout feature.`,
           body: `UK consumers praise ${pros.join(", ")} in their reviews of the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
@@ -187,6 +191,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Performance"} You'll Love.`),
           body: bannerBody(`Canadian users praise ${pros.slice(0, 2).join(" & ")}. Now available with local warranty and service.`),
@@ -196,6 +201,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Canadian users are loving the ${pros[0] || "experience"}.`,
           body: `Reviews from Canadian and North American users highlight ${pros.join(", ")} as key reasons to choose the ${productName}. Data sourced from ${dataSrc}.`,
@@ -213,6 +219,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Quality"} That Stands Out.`),
           body: bannerBody(`Aussie users love ${pros.slice(0, 2).join(" & ")}. Available at JB Hi-Fi, Harvey Norman & LGE.com AU.`),
@@ -222,6 +229,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Australian users highlight ${pros[0] || "quality"} in their reviews.`,
           body: `Users praise ${pros.join(", ")} as standout features. Data sourced from ${dataSrc}. Available at JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
@@ -239,6 +247,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
           body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
@@ -248,6 +257,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
           body: `Nutzer heben ${pros.join(", ")} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
@@ -265,6 +275,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Innovation"} Delivered.`),
           body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as top reasons to choose LG. Explore at LGE.com/IN.`),
@@ -274,6 +285,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users praise ${pros[0] || "performance"} and more.`,
           body: `Indian and global user reviews highlight ${pros.join(", ")} as reasons customers choose the ${productName}. Review data from ${dataSrc}.`,
@@ -291,6 +303,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualité"} saluée.`),
           body: bannerBody(`Les utilisateurs apprécient ${pros.slice(0, 2).join(" & ")}. Disponible chez Darty, Boulanger et LGE.com/FR.`),
@@ -300,6 +313,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicité] ${productName} — Les utilisateurs saluent ${pros[0] || "la qualité"}.`,
           body: `Les utilisateurs mettent en avant ${pros.join(", ")} comme points forts. Données issues de ${dataSrc}. Disponible chez Darty, Boulanger et LGE.com/FR.`,
@@ -317,6 +331,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
           body: bannerBody(`Usuários destacam ${pros.slice(0, 2).join(" & ")} como diferenciais. Confira em LGE.com/BR.`),
@@ -326,6 +341,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
           body: `Usuários destacam ${pros.join(", ")} como pontos fortes. Dados de ${dataSrc}. Qualidade OLED e estabilidade de streaming são pontos frequentes.`,
@@ -343,6 +359,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
           body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LGE.com/NL.`),
@@ -352,6 +369,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
           body: `Gebruikers waarderen ${pros.join(", ")} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
@@ -369,6 +387,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "dotcom",
           purposeLabel: "닷컴 카피",
+          channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Calidad"} destacada.`),
           body: bannerBody(`Los usuarios destacan ${pros.slice(0, 2).join(" & ")} como fortalezas. Garantía local. LGE.com/MX.`),
@@ -378,6 +397,7 @@ export function generateGeoMarketingMessages(
         {
           purpose: "social",
           purposeLabel: "소셜미디어 카피",
+          channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicidad] ${productName} — Los usuarios destacan ${pros[0] || "calidad"} como fortaleza.`,
           body: `Los usuarios destacan ${pros.join(", ")} como puntos fuertes. Datos de ${dataSrc}. Garantía local disponible.`,
@@ -388,7 +408,7 @@ export function generateGeoMarketingMessages(
     },
   ].map((geo) => ({
     ...geo,
-    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo)],
+    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo), makeInfluencerGuide(geo.geo, geo.language), makeInternalBrief(geo.geo)],
   }));
 }
 
