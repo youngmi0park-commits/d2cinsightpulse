@@ -258,7 +258,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
