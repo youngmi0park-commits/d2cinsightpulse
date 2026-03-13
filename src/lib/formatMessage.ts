@@ -202,7 +202,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Canadian users are loving the ${pros[0] || "experience"}.`,
