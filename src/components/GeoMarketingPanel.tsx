@@ -24,7 +24,7 @@ const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: stri
     key: "outside",
     icon: Megaphone,
     labelEn: "Outside Channel",
-    labelKo: "Outside 채널",
+    labelKo: "Outside Channel",
     descEn: "Social Media, Paid Ads, Influencer Review Guides",
     descKo: "소셜미디어, 유료광고, 인플루언서 리뷰 가이드",
   },
