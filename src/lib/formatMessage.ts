@@ -561,10 +561,10 @@ ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천"
       `Check the product settings and explore community tips for optimal setup and performance.`,
       `제품 설정을 확인하고 커뮤니티 팁을 참고하여 최적의 성능을 이끌어내세요.`
     ),
-    ...(cons.length > 0
+    ...(keywords.negative.length > 0
       ? [t(
-          `Some users note "${cons[0]}" — check for firmware/software updates that may address this.`,
-          `일부 사용자가 "${cons[0]}"을(를) 언급합니다 — 펌웨어/소프트웨어 업데이트를 확인해 보세요.`
+          `Some users note "${keywords.negative[0]}" — check for firmware/software updates that may address this.`,
+          `일부 사용자가 "${keywords.negative[0]}"을(를) 언급합니다 — 펌웨어/소프트웨어 업데이트를 확인해 보세요.`
         )]
       : []),
     t(
