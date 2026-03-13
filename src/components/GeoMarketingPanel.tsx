@@ -72,7 +72,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
     <div className="gradient-card rounded-xl border border-border p-6">
       <div className="flex items-center gap-2 mb-4">
         <Globe className="h-6 w-6 text-primary" />
-        <h3 className="text-lg font-semibold font-heading">🌍 {t("Regional Marketing Messages", "지역별 마케팅 메시지")}</h3>
+        <h3 className="text-lg font-semibold font-heading">🌍 {t("Channel Marketing Copy Generator", "채널별 마케팅 카피 생성")}</h3>
       </div>
 
       <p className="text-sm text-muted-foreground mb-5">
