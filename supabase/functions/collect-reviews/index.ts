@@ -409,14 +409,14 @@ async function updateTrendingSnapshots(supabase: any) {
           messages: [
             {
               role: "system",
-              content: `Extract top trending keywords from LG product reviews. Return JSON array of objects:
-- keyword: string (the keyword/phrase)
+              content: `Extract top trending keywords from LG product reviews. Focus on ADJECTIVES and descriptive words that express sentiment (e.g. "stunning", "frustrating", "reliable", "noisy"). EXCLUDE product names, model numbers, brand names, and generic nouns. Return JSON array of objects:
+- keyword: string (the adjective/descriptive keyword)
 - count: number (estimated frequency)
 - sentiment: "positive" | "negative" | "neutral"
 - source: string (most common source for this keyword)
-- related_products: string[] (model numbers mentioned)
+- related_products: string[] (model numbers mentioned with this keyword)
 - related_countries: string[] (country codes if mentioned, e.g. ["US","UK"])
-Return 20-30 keywords, ONLY valid JSON, no markdown.`,
+Return 20-30 adjective-focused keywords, ONLY valid JSON, no markdown.`,
             },
             { role: "user", content: combinedText.slice(0, 10000) },
           ],

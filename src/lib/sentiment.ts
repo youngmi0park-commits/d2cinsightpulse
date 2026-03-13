@@ -8,17 +8,30 @@ export interface SentimentResult {
   keywords: { positive: string[]; negative: string[] };
 }
 
+// Adjective-focused keywords only (no product names or nouns)
 const positiveKeywords = [
-  "stunning", "amazing", "incredible", "best", "love", "perfect", "great",
-  "excellent", "phenomenal", "gorgeous", "breathtaking", "recommended",
-  "worth", "magic", "easy", "convenient", "quiet", "efficient",
-  "좋", "훌륭", "추천", "편해", "조용", "강추", "절약",
+  // English adjectives
+  "stunning", "amazing", "incredible", "perfect", "great", "excellent",
+  "phenomenal", "gorgeous", "breathtaking", "brilliant", "impressive",
+  "beautiful", "smooth", "sharp", "vivid", "crisp", "reliable",
+  "intuitive", "responsive", "quiet", "efficient", "convenient",
+  "comfortable", "durable", "lightweight", "sleek", "fast",
+  // Korean adjectives
+  "좋은", "훌륭한", "편한", "편리한", "조용한", "깨끗한", "선명한",
+  "빠른", "가벼운", "부드러운", "쾌적한", "든든한", "만족스러운",
+  "뛰어난", "깔끔한", "세련된", "강력한", "안정적",
 ];
 
 const negativeKeywords = [
-  "slow", "bloated", "frustrating", "disappointing", "poor", "worried",
-  "plasticky", "complaint", "barely", "expensive", "bad", "broken",
-  "아쉬", "고장", "비싸", "걱정", "실망", "축축",
+  // English adjectives
+  "slow", "bloated", "frustrating", "disappointing", "poor", "cheap",
+  "plasticky", "noisy", "dim", "blurry", "laggy", "bulky",
+  "flimsy", "unreliable", "uncomfortable", "complicated", "fragile",
+  "defective", "overpriced", "mediocre", "annoying", "clunky",
+  // Korean adjectives
+  "아쉬운", "비싼", "느린", "무거운", "시끄러운", "불편한",
+  "어두운", "흐릿한", "약한", "복잡한", "불안정한", "실망스러운",
+  "허술한", "조잡한", "답답한",
 ];
 
 export function analyzeSentiment(reviews: Review[]): SentimentResult {
