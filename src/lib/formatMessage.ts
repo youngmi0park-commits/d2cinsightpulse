@@ -230,7 +230,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Australian users highlight ${pros[0] || "quality"} in their reviews.`,
