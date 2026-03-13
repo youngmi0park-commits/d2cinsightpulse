@@ -138,7 +138,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users love the ${pros[0] || "experience"}. See why.`,
@@ -174,7 +174,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users highlight ${pros[0] || "quality"} as a standout feature.`,
@@ -202,7 +202,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Canadian users are loving the ${pros[0] || "experience"}.`,
@@ -230,7 +230,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Australian users highlight ${pros[0] || "quality"} in their reviews.`,
@@ -258,7 +258,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
@@ -286,7 +286,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — Users praise ${pros[0] || "performance"} and more.`,
@@ -314,7 +314,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicité] ${productName} — Les utilisateurs saluent ${pros[0] || "la qualité"}.`,
@@ -342,7 +342,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
@@ -370,7 +370,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
@@ -398,7 +398,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicidad] ${productName} — Los usuarios destacan ${pros[0] || "calidad"} como fortaleza.`,
