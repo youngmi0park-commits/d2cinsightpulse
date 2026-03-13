@@ -370,7 +370,7 @@ export function generateGeoMarketingMessages(
         },
         {
           purpose: "social",
-          purposeLabel: "소셜미디어 카피",
+          purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
