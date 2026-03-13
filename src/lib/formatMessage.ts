@@ -6,6 +6,8 @@ export interface MarketingOutput {
   tagline: string;
   strengthsSummary: string;
   weaknessesSummary: string;
+  userTips: string[];
+  durabilityInsights: string[];
 }
 
 export type ChannelGroup = "inside" | "outside";
