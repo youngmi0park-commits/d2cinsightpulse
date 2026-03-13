@@ -16,9 +16,9 @@ const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: stri
     key: "inside",
     icon: Building2,
     labelEn: "Inside Channel",
-    labelKo: "Inside 채널",
-    descEn: "Homepage, Dotcom, Internal Communications",
-    descKo: "홈페이지, 닷컴, 내부 커뮤니케이션",
+    labelKo: "Inside Channel",
+    descEn: "Dotcom, Internal Communications",
+    descKo: "닷컴, 내부 커뮤니케이션",
   },
   {
     key: "outside",
