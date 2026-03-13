@@ -552,5 +552,50 @@ ${keywords.negative.map((k) => `  • ${k}`).join("\n") || "  • 특이사항 �
 ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천" : "  → 개선점 보완 후 마케팅 집행 권장"}
 `.trim();
 
-  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary };
+  const userTips = [
+    t(
+      `Take advantage of ${keywords.positive.slice(0, 2).join(" and ") || "key features"} — users report these as standout capabilities.`,
+      `${keywords.positive.slice(0, 2).join(", ") || "주요 기능"}을(를) 적극 활용하세요 — 사용자들이 뛰어난 기능으로 꼽고 있습니다.`
+    ),
+    t(
+      `Check the product settings and explore community tips for optimal setup and performance.`,
+      `제품 설정을 확인하고 커뮤니티 팁을 참고하여 최적의 성능을 이끌어내세요.`
+    ),
+    ...(cons.length > 0
+      ? [t(
+          `Some users note "${cons[0]}" — check for firmware/software updates that may address this.`,
+          `일부 사용자가 "${cons[0]}"을(를) 언급합니다 — 펌웨어/소프트웨어 업데이트를 확인해 보세요.`
+        )]
+      : []),
+    t(
+      `Join online communities (Reddit, forums) to discover hidden features and setup guides shared by other users.`,
+      `온라인 커뮤니티(Reddit, 포럼)에서 다른 사용자들이 공유한 숨겨진 기능과 설정 가이드를 찾아보세요.`
+    ),
+  ];
+
+  const durabilityInsights = [
+    t(
+      `Overall durability sentiment: ${averageScore >= 0.7 ? "Highly positive — users report reliable long-term performance" : averageScore >= 0.5 ? "Generally positive with some mixed feedback on longevity" : "Mixed — some users report concerns about long-term reliability"}`,
+      `전반적 내구성 평가: ${averageScore >= 0.7 ? "매우 긍정적 — 장기 사용 안정성에 대한 높은 만족도" : averageScore >= 0.5 ? "대체로 긍정적이나 일부 장기 사용 관련 혼재된 의견" : "혼재 — 일부 사용자가 장기 신뢰성에 대한 우려 표명"}`
+    ),
+    t(
+      `Build quality keywords frequently mentioned: ${keywords.positive.slice(0, 3).join(", ") || "Collecting data..."}`,
+      `자주 언급되는 품질 키워드: ${keywords.positive.slice(0, 3).join(", ") || "데이터 수집 중..."}`
+    ),
+    ...(keywords.negative.length > 0
+      ? [t(
+          `Durability concerns noted: ${keywords.negative.slice(0, 2).join(", ")}. LG is actively improving these areas.`,
+          `내구성 관련 우려 사항: ${keywords.negative.slice(0, 2).join(", ")}. LG가 적극적으로 개선 중입니다.`
+        )]
+      : [t(
+          `No significant durability complaints reported at this time.`,
+          `현재 심각한 내구성 관련 불만은 보고되지 않았습니다.`
+        )]),
+    t(
+      `Based on ${total} reviews — satisfaction rate: ${posPercent}%`,
+      `${total}건의 리뷰 기반 — 만족도: ${posPercent}%`
+    ),
+  ];
+
+  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, durabilityInsights };
 }
