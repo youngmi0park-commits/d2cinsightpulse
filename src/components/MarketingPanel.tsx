@@ -67,7 +67,7 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
   return (
     <div className="gradient-card rounded-xl border border-border p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold font-heading">{t("Marketing Message Conversion", "마케팅 메시지 변환")}</h3>
+        <h3 className="text-lg font-semibold font-heading">{t("Channel Communication Message Guide", "채널별 커뮤니케이션 메시지 활용안")}</h3>
         <p className="text-2xl font-bold mt-2 text-gradient">{marketing.tagline}</p>
       </div>
 

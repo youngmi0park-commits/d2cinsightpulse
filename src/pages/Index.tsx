@@ -315,8 +315,8 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <KeywordCloud keywords={item.sentiment.keywords} />
       </div>
 
-      <MarketingPanel marketing={item.marketing} />
       <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
+      <MarketingPanel marketing={item.marketing} />
       <ReviewList reviews={item.product.reviews} />
     </>
   );
