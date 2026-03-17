@@ -243,13 +243,29 @@ const Index = () => {
             </Badge>
           </div>
 
-          {isMulti ? (
-            <Tabs defaultValue={results[0].product.name} className="w-full">
+          <ResultsGroupFilter
+            products={results.map((r) => ({
+              name: r.product.name,
+              displayName: r.product.displayName,
+              category: r.product.category,
+            }))}
+            groupMode={groupMode}
+            onGroupModeChange={setGroupMode}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+          />
+
+          {filteredResults.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {t("No products match the selected filter.", "선택한 필터에 해당하는 제품이 없습니다.")}
+            </p>
+          ) : isMulti ? (
+            <Tabs defaultValue={filteredResults[0].product.name} className="w-full">
               <div className="space-y-3 mb-6">
-                {Object.entries(groupedResults).map(([category, items]) => (
-                  <div key={category}>
+                {Object.entries(groupedResults).map(([groupKey, items]) => (
+                  <div key={groupKey}>
                     <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary mb-2">
-                      {category}
+                      {groupKey} ({items.length})
                     </Badge>
                     <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
                       {items.map((item) => (
@@ -266,14 +282,14 @@ const Index = () => {
                 ))}
               </div>
 
-              {results.map((item) => (
+              {filteredResults.map((item) => (
                 <TabsContent key={item.product.name} value={item.product.name} className="space-y-6">
                   <ProductAnalysisView item={item} />
                 </TabsContent>
               ))}
             </Tabs>
           ) : (
-            <ProductAnalysisView item={results[0]} />
+            <ProductAnalysisView item={filteredResults[0]} />
           )}
         </div>
       )}
