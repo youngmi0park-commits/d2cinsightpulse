@@ -271,18 +271,7 @@ const Index = () => {
               "고객의 진짜 목소리에서 출발해, 브랜드의 다음 움직임을 이끄는 인사이트 플랫폼 — D2C Insight Pulse"
             )}
           </p>
-          <p className="text-xs text-muted-foreground/70 text-center">
-            {stats
-              ? t(
-                  `Auto-collecting ${stats.reviewCount.toLocaleString()} real reviews from ${stats.productCount.toLocaleString()} products via Firecrawl`,
-                  `${stats.productCount.toLocaleString()}개 제품의 ${stats.reviewCount.toLocaleString()}건의 실제 리뷰를 Firecrawl로 자동수집 중`
-                )
-              : t(
-                  "Initializing data collection via Firecrawl...",
-                  "Firecrawl로 데이터 수집 초기화 중..."
-                )}
-          </p>
-          <p className="text-sm font-medium text-foreground/70 text-center">
+          <p className="text-sm text-muted-foreground text-center">
             {t(
               "Presented by LG Electronics D2C Marketing Strategy Team",
               "Presented by LG전자 D2C마케팅전략팀"
