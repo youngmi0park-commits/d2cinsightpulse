@@ -21,7 +21,7 @@ const CHANNELS = [
   { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
 ];
 
-const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
+const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
 // ──────────────────────────────────────────────────────────────────
 // EXPANDED KEYWORD TAXONOMY (all English-based)
@@ -38,7 +38,11 @@ const PRODUCT_NAME_KEYWORDS = [
   "LG Gram", "Gram 16", "Gram16", "G16", "Gram 17", "Gram17", "Gram Pro",
   // Home Appliances
   "WashTower", "LashTower", "InstaView", "ThinQ", "CordZero", "PuriCare",
-  "StanbyME", "StandbyMe", "Stand by Me", "XBOOM",
+  "StanbyME", "StandbyMe", "Stand by Me",
+  // Audio
+  "XBOOM", "xboom", "xboom Bounce", "xboom Grab", "xboom Stage 301", "xboom Buds",
+  "S95AR", "S90TR", "S90TY", "S80TR", "S70TR", "S70TY", "SG10TY", "SC9S", "S77S",
+  "LG Soundbar", "Sound Suite", "Dolby Atmos soundbar", "WOW Orchestra", "WOWCAST",
   // Air Conditioner
   "Dual Inverter", "DualInverter", "Dual Cool", "DualCool", "ArtCool",
   "LW1522IVSM", "LW1822IVSM", "LW2422IVSM", "LP1421BSST",

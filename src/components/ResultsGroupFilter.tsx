@@ -32,7 +32,10 @@ export function extractSubCategory(displayName: string): string {
   if (upper.includes("INSTAVIEW")) return "InstaView";
   if (upper.includes("TONE FREE")) return "Tone Free";
   if (upper.includes("SOUND BAR") || upper.includes("SOUNDBAR")) return "Soundbar";
-  if (upper.includes("XBOOM")) return "XBOOM";
+  if (upper.includes("SOUND SUITE")) return "Sound Suite";
+  if (upper.includes("XBOOM") && (upper.includes("BUD") || upper.includes("EARBUD"))) return "xboom Buds";
+  if (upper.includes("XBOOM") && upper.includes("STAGE")) return "xboom Stage";
+  if (upper.includes("XBOOM")) return "xboom";
   if (upper.includes("4K")) return "4K UHD";
   return "Other";
 }
