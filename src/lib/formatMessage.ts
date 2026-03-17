@@ -1,6 +1,76 @@
 import type { SentimentResult } from "./sentiment";
 import { getPatternHeadline } from "@/data/bannerCopyReference";
 
+/**
+ * Extract a clean, PR-friendly product name from a long display_name.
+ * e.g. "LG 5000 BTU Window Air Conditioner [2024 New] Easy Mechanical Control..." → "LG 5000 BTU Window Air Conditioner"
+ * e.g. "LG OLED evo C5 65\" 4K Smart TV" → "LG OLED evo C5 65\" 4K Smart TV"
+ */
+export function toPRName(displayName: string): string {
+  // Remove bracketed content like [2024 New]
+  let name = displayName.replace(/\[.*?\]/g, "").trim();
+
+  // Cut at common noise separators: comma, pipe, long dashes
+  const cutPoints = [", ", " | ", " — ", " - Cools ", " - with ", " - 115V", " - Covers"];
+  for (const sep of cutPoints) {
+    const idx = name.indexOf(sep);
+    if (idx > 15) {
+      name = name.slice(0, idx).trim();
+      break;
+    }
+  }
+
+  // If still too long (>60 chars), truncate at last full word before 60
+  if (name.length > 60) {
+    name = smartTrim(name, 60);
+  }
+
+  return name;
+}
+
+/**
+ * Smart trim: cuts at a word boundary, ensuring no mid-word truncation.
+ * If the text ends mid-sentence after trimming, appends an appropriate ending.
+ */
+function smartTrim(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+
+  // Find last space before maxLen
+  let trimmed = text.slice(0, maxLen);
+  const lastSpace = trimmed.lastIndexOf(" ");
+  if (lastSpace > maxLen * 0.5) {
+    trimmed = trimmed.slice(0, lastSpace);
+  }
+
+  // Remove trailing punctuation fragments
+  trimmed = trimmed.replace(/[,;:\-–—\s]+$/, "");
+
+  // If original ended with period and trimmed doesn't, add period
+  if (!trimmed.endsWith(".") && !trimmed.endsWith("!") && !trimmed.endsWith("?")) {
+    // Check if the trimmed version looks like a complete thought
+    // Don't add period for very short fragments
+    if (trimmed.length > 20) {
+      trimmed = trimmed + ".";
+    }
+  }
+
+  return trimmed;
+}
+
+/** Banner-safe trim functions that respect word boundaries */
+const bannerKicker = (text: string) => smartTrim(text, 35);
+const bannerHeadline = (text: string) => smartTrim(text, 50);
+const bannerBody = (text: string) => smartTrim(text, 120);
+const bannerCta = (text: string) => smartTrim(text, 20);
+
+const criteoHL = (text: string) => smartTrim(text, 25);
+const criteoDesc = (text: string) => smartTrim(text, 45);
+const criteoCta = (text: string) => smartTrim(text, 15);
+
+const pmaxHL = (text: string) => smartTrim(text, 30);
+const pmaxLongHL = (text: string) => smartTrim(text, 90);
+const pmaxDesc = (text: string) => smartTrim(text, 90);
+
 export interface MarketingOutput {
   qaList: { question: string; answer: string }[];
   reviewGuide: string;
@@ -35,9 +105,10 @@ export interface GeoMessage {
 }
 
 export function generateGeoMarketingMessages(
-  productName: string,
+  rawProductName: string,
   sentiment: SentimentResult
 ): GeoMessage[] {
+  const productName = toPRName(rawProductName);
   const { keywords, positive, negative, neutral, averageScore } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
@@ -55,27 +126,6 @@ export function generateGeoMarketingMessages(
   // - 환경 관련 주장 시 구체적 근거 필요 (Environmental Claims 섹션)
 
   const dataSrc = "Reddit, Amazon, RTINGS, Consumer Reports";
-
-  // Banner copy character limits (based on lge.com/us, lge.com/uk hero banner patterns):
-  // - Kicker/Eyebrow: ~35 chars max
-  // - Headline: ~50 chars max
-  // - Sub-copy/Body: ~120 chars max
-  // - CTA button: ~20 chars max
-
-  const bannerKicker = (text: string) => text.slice(0, 35);
-  const bannerHeadline = (text: string) => text.slice(0, 50);
-  const bannerBody = (text: string) => text.slice(0, 120);
-  const bannerCta = (text: string) => text.slice(0, 20);
-
-  // Criteo limits: Headline ≤25, Description ≤45, CTA ≤15
-  const criteoHL = (text: string) => text.slice(0, 25);
-  const criteoDesc = (text: string) => text.slice(0, 45);
-  const criteoCta = (text: string) => text.slice(0, 15);
-
-  // Pmax limits: Headline ≤30, Long Headline ≤90, Description ≤90
-  const pmaxHL = (text: string) => text.slice(0, 30);
-  const pmaxLongHL = (text: string) => text.slice(0, 90);
-  const pmaxDesc = (text: string) => text.slice(0, 90);
 
   const makeCriteoMsg = (geo: string): PurposeMessage => ({
     purpose: "criteo",
@@ -452,10 +502,11 @@ export function generateGeoMarketingMessages(
 }
 
 export function generateMarketingMessage(
-  productName: string,
+  rawProductName: string,
   sentiment: SentimentResult,
   lang: "en" | "ko" = "ko"
 ): MarketingOutput {
+  const productName = toPRName(rawProductName);
   const { keywords, positive, negative, neutral, averageScore } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
