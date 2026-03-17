@@ -105,9 +105,10 @@ export interface GeoMessage {
 }
 
 export function generateGeoMarketingMessages(
-  productName: string,
+  rawProductName: string,
   sentiment: SentimentResult
 ): GeoMessage[] {
+  const productName = toPRName(rawProductName);
   const { keywords, positive, negative, neutral, averageScore } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
@@ -125,27 +126,6 @@ export function generateGeoMarketingMessages(
   // - 환경 관련 주장 시 구체적 근거 필요 (Environmental Claims 섹션)
 
   const dataSrc = "Reddit, Amazon, RTINGS, Consumer Reports";
-
-  // Banner copy character limits (based on lge.com/us, lge.com/uk hero banner patterns):
-  // - Kicker/Eyebrow: ~35 chars max
-  // - Headline: ~50 chars max
-  // - Sub-copy/Body: ~120 chars max
-  // - CTA button: ~20 chars max
-
-  const bannerKicker = (text: string) => text.slice(0, 35);
-  const bannerHeadline = (text: string) => text.slice(0, 50);
-  const bannerBody = (text: string) => text.slice(0, 120);
-  const bannerCta = (text: string) => text.slice(0, 20);
-
-  // Criteo limits: Headline ≤25, Description ≤45, CTA ≤15
-  const criteoHL = (text: string) => text.slice(0, 25);
-  const criteoDesc = (text: string) => text.slice(0, 45);
-  const criteoCta = (text: string) => text.slice(0, 15);
-
-  // Pmax limits: Headline ≤30, Long Headline ≤90, Description ≤90
-  const pmaxHL = (text: string) => text.slice(0, 30);
-  const pmaxLongHL = (text: string) => text.slice(0, 90);
-  const pmaxDesc = (text: string) => text.slice(0, 90);
 
   const makeCriteoMsg = (geo: string): PurposeMessage => ({
     purpose: "criteo",
