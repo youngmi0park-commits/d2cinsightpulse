@@ -25,6 +25,7 @@ const criteria: CriteriaItem[] = [
       "CNET — Tech media editor reviews and Editor's Choice ratings",
       "Trustpilot — Direct consumer reviews for appliances/services and CS evaluation",
       "BestReviews — Comprehensive appliance/projector recommendation reviews",
+      "YouTube — Video review comments collected via Firecrawl (site:youtube.com search). Captures viewer opinions on product review videos",
     ],
     itemsKo: [
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub 등)",
@@ -35,6 +36,7 @@ const criteria: CriteriaItem[] = [
       "CNET — 테크 미디어 에디터 리뷰 및 Editor's Choice 평가",
       "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가",
       "BestReviews — 가전·프로젝터 종합 추천 리뷰",
+      "YouTube — Firecrawl 기반 영상 리뷰 댓글 수집 (site:youtube.com 검색). 제품 리뷰 영상의 시청자 의견 캡처",
     ],
   },
   {
