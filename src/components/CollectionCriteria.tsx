@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle } from "lucide-react";
+import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { useLang } from "@/contexts/LanguageContext";
@@ -17,7 +17,7 @@ const criteria: CriteriaItem[] = [
     titleEn: "Collection Channels",
     titleKo: "수집 채널",
     itemsEn: [
-      "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, etc.)",
+      "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, etc.)",
       "Amazon — Product review sections (US, UK, CA, DE, IN, FR and other major marketplaces)",
       "RTINGS — Professional TV/Monitor/Projector reviews and measurement data",
       "Trusted Reviews — Professional editor reviews for TV/Monitor/Laptop (UK-based)",
@@ -27,7 +27,7 @@ const criteria: CriteriaItem[] = [
       "BestReviews — Comprehensive appliance/projector recommendation reviews",
     ],
     itemsKo: [
-      "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram 등)",
+      "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub 등)",
       "Amazon — 제품별 리뷰 섹션 (US, UK, CA, DE, IN, FR 등 주요 마켓플레이스)",
       "RTINGS — TV·모니터·프로젝터 전문 리뷰 및 측정 데이터",
       "Trusted Reviews — TV·모니터·노트북 전문 에디터 리뷰 (UK 기반)",
@@ -35,6 +35,48 @@ const criteria: CriteriaItem[] = [
       "CNET — 테크 미디어 에디터 리뷰 및 Editor's Choice 평가",
       "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가",
       "BestReviews — 가전·프로젝터 종합 추천 리뷰",
+    ],
+  },
+  {
+    icon: Search,
+    titleEn: "Expanded Keyword Taxonomy (6 Categories)",
+    titleKo: "확장 키워드 분류체계 (6개 카테고리)",
+    itemsEn: [
+      "1️⃣ Product Name · Model: Official names + abbreviations + shorthand (e.g., LG Gram, Gram16, G16, OLED C4, UltraGear, WashTower, StanbyME)",
+      "2️⃣ Feature · Spec: battery, heat, performance, picture quality, brightness, weight, firmware, bug, stuttering, noise, energy efficiency, HDR, refresh rate, burn-in",
+      "3️⃣ Sentiment · Attitude: Positive (recommend, satisfied, impressive, must-have) / Negative (disappointed, refund, defective, avoid) / Mixed (expensive but good, great except for)",
+      "4️⃣ Comparison · Alternative: better than, switched from, alternative to, Samsung vs LG, upgrade from, do not recommend",
+      "5️⃣ Problem · Desire: wish it had, needs improvement, fix this, missing feature, deal breaker, frustrating",
+      "All keywords are standardized in English regardless of source language",
+    ],
+    itemsKo: [
+      "1️⃣ 제품명·모델명: 정식 명칭 + 약어 + 줄임말 (예: LG 그램, Gram16, G16, OLED C4, UltraGear, WashTower, StanbyME)",
+      "2️⃣ 기능·스펙: 배터리, 발열, 성능, 화질, 밝기, 무게, 펌웨어, 버그, 끊김, 소음, 에너지효율, HDR, 주사율, 번인",
+      "3️⃣ 감정·태도: 긍정 (추천, 만족, 인상적, 필수템) / 부정 (실망, 환불, 불량, 비추) / 혼합 (비싸지만 좋다, 좋은데 아쉬운)",
+      "4️⃣ 비교·대체: A보다 B가 낫다, A에서 B로 바꿨다, 대체제, 삼성 vs LG, 업그레이드, 추천 안 함",
+      "5️⃣ 문제·욕구: 이 기능 있으면 좋겠다, 개선 필요, 버그 수정, 빠진 기능, 결정적 단점, 불편",
+      "모든 키워드는 소스 언어에 관계없이 영문 기준으로 통일",
+    ],
+  },
+  {
+    icon: Brain,
+    titleEn: "AI Analysis Pipeline (6-in-1)",
+    titleKo: "AI 분석 파이프라인 (6-in-1)",
+    itemsEn: [
+      "1️⃣ Expanded Keyword Detection — Detects product names, features/specs, sentiment, comparison, and problem/desire keywords from each review",
+      "2️⃣ Brand Relevance Check — Determines if mention is actually about an LG product (brand_relevant: true/false + reason)",
+      "3️⃣ Granular Sentiment — 10 emotion categories (satisfaction, recommendation, impressed, neutral, informational, question, complaint, anger, disappointment, mixed) × intensity 1-5",
+      "4️⃣ Noise Filtering — Classifies content as: review / general_mention / advertisement / noise (e.g., 'bug' in gaming context excluded)",
+      "5️⃣ User Segmentation — Infers user type (actual_user, potential_customer, reviewer, journalist), region, and platform type",
+      "6️⃣ Marketing Message Conversion — Auto-generates copy: positive → recommendation, negative → improvement, mixed → balanced message",
+    ],
+    itemsKo: [
+      "1️⃣ 확장 키워드 감지 — 리뷰별 제품명, 기능·스펙, 감정, 비교, 문제·욕구 키워드 자동 감지",
+      "2️⃣ 브랜드 연관성 판단 — LG 제품 관련 언급인지 자동 판별 (brand_relevant: true/false + 근거 요약)",
+      "3️⃣ 감성 세분화 — 10개 감정 카테고리(만족, 추천, 감동, 중립, 정보공유, 질문, 불만, 분노, 실망, 혼합) × 강도 1-5",
+      "4️⃣ 노이즈 필터링 — 콘텐츠 유형 분류: 실제 평가 / 일반 언급 / 광고 / 노이즈 (예: 게임 용어 'bug' 제외)",
+      "5️⃣ 사용자 세그먼트 — 사용자 유형 추론 (실사용자, 잠재고객, 리뷰어, 기자), 지역, 플랫폼 유형",
+      "6️⃣ 마케팅 메시지 전환 — 자동 카피 생성: 긍정→추천, 부정→개선, 혼합→균형 메시지",
     ],
   },
   {
@@ -143,6 +185,25 @@ const criteria: CriteriaItem[] = [
     ],
   },
   {
+    icon: Users,
+    titleEn: "User Segmentation & Content Classification",
+    titleKo: "사용자 세그먼트 및 콘텐츠 분류",
+    itemsEn: [
+      "User Types: actual_user (verified owner) / potential_customer / reviewer (professional) / journalist / unknown",
+      "Content Types: review (actual evaluation) / general_mention / advertisement (promotional) / noise (irrelevant)",
+      "Platform Types: community / review_site / video / blog / news",
+      "Region inference: Country code auto-detected from context (US, UK, KR, etc.)",
+      "Noise auto-filtered: 'bug' in gaming context, general LG brand mentions without product evaluation, sponsored content tagged separately",
+    ],
+    itemsKo: [
+      "사용자 유형: 실사용자 (구매 확인) / 잠재고객 / 전문 리뷰어 / 기자 / 미분류",
+      "콘텐츠 유형: 실제 평가 / 일반 언급 / 광고·홍보 / 노이즈 (비관련)",
+      "플랫폼 유형: 커뮤니티 / 리뷰 사이트 / 영상 / 블로그 / 뉴스",
+      "지역 추론: 문맥에서 국가 코드 자동 감지 (US, UK, KR 등)",
+      "노이즈 자동 필터링: 게임 맥락의 'bug', 제품 평가 없는 LG 일반 언급, 광고성 콘텐츠 별도 태깅",
+    ],
+  },
+  {
     icon: MessageSquare,
     titleEn: "Common Interest Topics (Cross-Region)",
     titleKo: "공통 관심 주제 (크로스 지역)",
@@ -166,11 +227,13 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "English reviews collected first (English-speaking perspective)",
       "Non-English Reddit activity in English included (Germany, Netherlands, etc.)",
+      "All extracted keywords standardized to English regardless of source language",
       "Multi-language NLP expansion planned",
     ],
     itemsKo: [
       "영어 리뷰 1차 수집 (영어권 중심 관점)",
       "비영어권 영문 Reddit 활동 포함 (독일, 네덜란드 등)",
+      "추출된 모든 키워드는 소스 언어에 관계없이 영문으로 통일",
       "향후 다국어 NLP 확장 예정",
     ],
   },
@@ -181,11 +244,15 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "Bot/spam filtering applied",
       "Only reviews meeting minimum character count collected",
+      "Brand relevance auto-check: non-LG mentions filtered out with reason",
+      "Noise filtering: gaming 'bug', general brand mentions, ads tagged & excluded",
       "Sources: Verified via WorldPopulationReview, ExpertBeacon, SimilarWeb",
     ],
     itemsKo: [
       "봇/스팸 필터링 적용",
       "최소 문자 수 기준 충족 리뷰만 수집",
+      "브랜드 연관성 자동 체크: LG 제품 비관련 언급은 사유와 함께 필터링",
+      "노이즈 필터링: 게임 용어 'bug', 일반 브랜드 언급, 광고 태깅 및 제외",
       "출처: WorldPopulationReview, ExpertBeacon, SimilarWeb 기반 검증",
     ],
   },
