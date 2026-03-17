@@ -21,7 +21,7 @@ const CHANNELS = [
   { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
 ];
 
-const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
+const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
 // ──────────────────────────────────────────────────────────────────
 // EXPANDED KEYWORD TAXONOMY (all English-based)
