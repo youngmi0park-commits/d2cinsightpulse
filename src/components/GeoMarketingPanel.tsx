@@ -249,12 +249,28 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             </div>
           )}
 
+          {/* Kicker / Eyebrow (dotcom only) */}
+          {currentMsg.kicker && (
+            <div className="p-3 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Kicker / Eyebrow</span>
+                  <span className={`text-[10px] font-mono ${currentMsg.kicker.length > 35 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.kicker.length}/35)
+                  </span>
+                </div>
+                <CopyBtn text={currentMsg.kicker} id="kicker" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">{currentMsg.kicker}</p>
+            </div>
+          )}
+
           {/* Headline */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
-                {activePurpose === "dotcom" && (
+                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
                   <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.headline.length}/50)
                   </span>
