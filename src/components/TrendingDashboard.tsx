@@ -1,5 +1,5 @@
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -200,6 +200,7 @@ const SOURCE_TABS: SourceTabConfig[] = [
   { value: "cnet", label: "CNET", icon: <Tv className="h-4 w-4" />, emoji: "📡" },
   { value: "trustpilot", label: "Trustpilot", icon: <Award className="h-4 w-4" />, emoji: "💬" },
   { value: "bestreviews", label: "BestReviews", icon: <BarChart3 className="h-4 w-4" />, emoji: "🏆" },
+  { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" />, emoji: "🎬" },
 ];
 
 function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
