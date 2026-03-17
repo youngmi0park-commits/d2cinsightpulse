@@ -119,12 +119,25 @@ const Index = () => {
   };
 
   const hasResults = results.length > 0;
-  const isMulti = results.length > 1;
 
-  const groupedResults = results.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
-    const cat = item.product.category;
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
+  // Apply filter to results
+  const filteredResults = selectedFilter
+    ? results.filter((item) => {
+        if (groupMode === "subcategory") return extractSubCategory(item.product.displayName) === selectedFilter;
+        if (groupMode === "inch") return (extractInch(item.product.displayName) || t("Unknown", "미분류")) === selectedFilter;
+        return item.product.name === selectedFilter;
+      })
+    : results;
+
+  const isMulti = filteredResults.length > 1;
+
+  const groupedResults = filteredResults.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
+    let key: string;
+    if (groupMode === "subcategory") key = extractSubCategory(item.product.displayName);
+    else if (groupMode === "inch") key = extractInch(item.product.displayName) || t("Unknown", "미분류");
+    else key = item.product.category;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
     return acc;
   }, {});
 
