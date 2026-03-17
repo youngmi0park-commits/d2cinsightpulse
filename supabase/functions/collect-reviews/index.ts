@@ -60,6 +60,20 @@ const FEATURE_SPEC_KEYWORDS = [
   "refresh rate", "144Hz", "120Hz", "response time", "input lag",
   "burn-in", "retention", "panel uniformity", "backlight bleed",
   "smart features", "webOS", "voice control", "magic remote",
+  // Air Conditioner — Performance & Technology
+  "dual inverter compressor", "AI core tech", "energy saving", "smart diagnosis",
+  "cooling speed", "rapid cooling", "fast cooling", "instant cool",
+  "low noise", "silent operation", "sleep mode", "quiet mode",
+  "auto cleaning", "self-cleaning", "anti-bacterial", "allergen filter",
+  "dehumidification", "humidity control", "air purification",
+  "smart ThinQ", "WiFi control", "voice assistant", "remote control app",
+  "energy star", "SEER rating", "EER rating", "annual energy cost",
+  "BTU", "tonnage", "coverage area", "room size",
+  "installation", "easy install", "window kit", "portable",
+  "gold fin", "ocean black fin", "corrosion resistant",
+  "4-way swing", "monsoon comfort", "stabilizer free", "tropicalized",
+  "R32 refrigerant", "R410A", "eco-friendly refrigerant",
+  "compressor warranty", "10 year warranty",
 ];
 
 // 3️⃣ Sentiment · Attitude Keywords
