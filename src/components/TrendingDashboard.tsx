@@ -200,6 +200,7 @@ const SOURCE_TABS: SourceTabConfig[] = [
   { value: "cnet", label: "CNET", icon: <Tv className="h-4 w-4" />, emoji: "📡" },
   { value: "trustpilot", label: "Trustpilot", icon: <Award className="h-4 w-4" />, emoji: "💬" },
   { value: "bestreviews", label: "BestReviews", icon: <BarChart3 className="h-4 w-4" />, emoji: "🏆" },
+  { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" />, emoji: "🎬" },
 ];
 
 function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
