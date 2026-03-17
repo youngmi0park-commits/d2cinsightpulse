@@ -72,6 +72,25 @@ KEYWORD CATEGORIES (tag each keyword):
 3. "comparison" — used when comparing products (e.g., "better", "superior", "inferior", "comparable", "unmatched")
 4. "problem" — describes issues or desires (e.g., "buggy", "unreliable", "inconsistent", "missing", "incomplete")
 
+⚠️ CRITICAL — CONTEXT-AWARE SENTIMENT CLASSIFICATION:
+You MUST read the FULL surrounding context of each keyword before assigning sentiment. Do NOT assign sentiment based on the word alone.
+
+Examples of context-dependent classification:
+- "quiet" → positive when describing a washing machine ("it's really quiet"), but could be negative if describing audio output ("the sound is too quiet")
+- "heavy" → negative for a laptop ("too heavy to carry"), but could be positive for build quality ("feels heavy and solid")
+- "bright" → positive for a TV screen ("bright and vivid colors"), but negative for a bedroom TV ("too bright at night, hurts my eyes")
+- "cheap" → negative when implying low quality ("feels cheap and flimsy"), but positive when meaning affordable ("cheap compared to competitors")
+- "aggressive" → positive for gaming ("aggressive response time"), but negative for fan noise ("aggressive fan noise")
+- "simple" → positive for UI ("simple and intuitive"), but negative for features ("too simple, lacks features")
+- "soft" → positive for closing mechanism ("soft-close doors"), but negative for image quality ("image looks soft and blurry")
+
+Process for EACH keyword:
+1. Find ALL occurrences of the keyword in the reviews
+2. Read the full sentence and surrounding sentences for each occurrence
+3. Determine the INTENT of the author — are they praising or criticizing?
+4. If the word appears in both positive and negative contexts, classify based on the MAJORITY usage
+5. Provide a "context_example" that clearly shows the sentiment context
+
 RULES:
 1. ALL keywords must be in ENGLISH regardless of source language
 2. ONLY extract adjectives and descriptive words
@@ -86,11 +105,12 @@ RULES:
 Return a JSON array of objects:
 - keyword: string (the adjective/descriptive word, ENGLISH only)
 - count: number (estimated frequency in the reviews)
-- sentiment: "positive" | "negative" | "neutral"
+- sentiment: "positive" | "negative" | "neutral" (based on FULL CONTEXT, not the word itself)
 - keyword_category: string ("feature_spec" | "emotional" | "comparison" | "problem")
 - related_products: string[] (model numbers mentioned alongside this adjective)
 - related_countries: string[] (country codes if mentioned, e.g. ["US","UK"])
-- context_example: string (a brief usage context example, 10-20 words)
+- context_example: string (a brief quote from the review showing the keyword IN CONTEXT, 10-25 words)
+- sentiment_reasoning: string (1 sentence explaining WHY this sentiment was assigned based on context)
 
 Return 15-25 keywords per source. ONLY valid JSON, no markdown.`,
             },
