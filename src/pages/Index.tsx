@@ -264,8 +264,8 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border mt-16 py-8">
-        <div className="container mx-auto px-4 flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center leading-relaxed">
+        <div className="container mx-auto px-4 flex flex-col items-center gap-1.5">
+          <p className="text-sm text-muted-foreground text-center leading-snug">
             {t(
               "Starting from real customer voices, an insight platform that drives the brand's next move — D2C Insight Pulse",
               "고객의 진짜 목소리에서 출발해, 브랜드의 다음 움직임을 이끄는 인사이트 플랫폼 — D2C Insight Pulse"
