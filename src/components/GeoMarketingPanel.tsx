@@ -172,13 +172,13 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
           </div>
 
           {/* Purpose-specific guidelines */}
-          {activePurpose === "dotcom" && (
+          {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
               <span className="ml-2">
                 {t(
-                  "(Based on lg.com hero banner) Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
-                  "(lg.com 히어로 배너 기준) Headline ≤50자 · Body ≤120자 · CTA ≤20자"
+                  "(Ref: lg.com/us, lg.com/uk hero banners) Kicker ≤35 chars · Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
+                  "(참고: lg.com/us, lg.com/uk 히어로 배너) Kicker ≤35자 · Headline ≤50자 · Body ≤120자 · CTA ≤20자"
                 )}
               </span>
             </div>
