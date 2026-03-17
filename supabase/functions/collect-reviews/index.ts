@@ -39,6 +39,10 @@ const PRODUCT_NAME_KEYWORDS = [
   // Home Appliances
   "WashTower", "LashTower", "InstaView", "ThinQ", "CordZero", "PuriCare",
   "StanbyME", "StandbyMe", "Stand by Me", "XBOOM",
+  // Air Conditioner
+  "Dual Inverter", "DualInverter", "Dual Cool", "DualCool", "ArtCool",
+  "LW1522IVSM", "LW1822IVSM", "LW2422IVSM", "LP1421BSST",
+  "LG Window AC", "LG Split AC", "LG Portable AC",
 ];
 
 // 2️⃣ Feature · Spec Keywords
