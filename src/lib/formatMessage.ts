@@ -502,10 +502,11 @@ export function generateGeoMarketingMessages(
 }
 
 export function generateMarketingMessage(
-  productName: string,
+  rawProductName: string,
   sentiment: SentimentResult,
   lang: "en" | "ko" = "ko"
 ): MarketingOutput {
+  const productName = toPRName(rawProductName);
   const { keywords, positive, negative, neutral, averageScore } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
