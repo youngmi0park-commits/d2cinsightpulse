@@ -9,6 +9,7 @@ const corsHeaders = {
 // Channel definitions with Firecrawl search queries
 const CHANNELS = [
   { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
+  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" ${product}` },
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
   { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
   { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
@@ -17,6 +18,7 @@ const CHANNELS = [
   { id: "trustpilot", label: "Trustpilot", queryTemplate: (product: string) => `site:trustpilot.com LG ${product}` },
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
   { id: "youtube", label: "YouTube", queryTemplate: (product: string) => `site:youtube.com LG ${product} review` },
+  { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
