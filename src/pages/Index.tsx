@@ -19,6 +19,7 @@ import { Activity, BarChart3, Zap, Globe, Database, AlertCircle } from "lucide-r
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 
 interface AnalyzedProduct {
   product: ProductData;
@@ -32,6 +33,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang, toggleLang } = useLang();
   const { data: stats } = useProductStats();
 
@@ -116,12 +119,25 @@ const Index = () => {
   };
 
   const hasResults = results.length > 0;
-  const isMulti = results.length > 1;
 
-  const groupedResults = results.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
-    const cat = item.product.category;
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
+  // Apply filter to results
+  const filteredResults = selectedFilter
+    ? results.filter((item) => {
+        if (groupMode === "subcategory") return extractSubCategory(item.product.displayName) === selectedFilter;
+        if (groupMode === "inch") return (extractInch(item.product.displayName) || t("Unknown", "미분류")) === selectedFilter;
+        return item.product.name === selectedFilter;
+      })
+    : results;
+
+  const isMulti = filteredResults.length > 1;
+
+  const groupedResults = filteredResults.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
+    let key: string;
+    if (groupMode === "subcategory") key = extractSubCategory(item.product.displayName);
+    else if (groupMode === "inch") key = extractInch(item.product.displayName) || t("Unknown", "미분류");
+    else key = item.product.category;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
     return acc;
   }, {});
 
@@ -227,13 +243,29 @@ const Index = () => {
             </Badge>
           </div>
 
-          {isMulti ? (
-            <Tabs defaultValue={results[0].product.name} className="w-full">
+          <ResultsGroupFilter
+            products={results.map((r) => ({
+              name: r.product.name,
+              displayName: r.product.displayName,
+              category: r.product.category,
+            }))}
+            groupMode={groupMode}
+            onGroupModeChange={setGroupMode}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+          />
+
+          {filteredResults.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {t("No products match the selected filter.", "선택한 필터에 해당하는 제품이 없습니다.")}
+            </p>
+          ) : isMulti ? (
+            <Tabs defaultValue={filteredResults[0].product.name} className="w-full">
               <div className="space-y-3 mb-6">
-                {Object.entries(groupedResults).map(([category, items]) => (
-                  <div key={category}>
+                {Object.entries(groupedResults).map(([groupKey, items]) => (
+                  <div key={groupKey}>
                     <Badge variant="outline" className="text-xs font-semibold border-primary/30 text-primary mb-2">
-                      {category}
+                      {groupKey} ({items.length})
                     </Badge>
                     <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
                       {items.map((item) => (
@@ -250,14 +282,14 @@ const Index = () => {
                 ))}
               </div>
 
-              {results.map((item) => (
+              {filteredResults.map((item) => (
                 <TabsContent key={item.product.name} value={item.product.name} className="space-y-6">
                   <ProductAnalysisView item={item} />
                 </TabsContent>
               ))}
             </Tabs>
           ) : (
-            <ProductAnalysisView item={results[0]} />
+            <ProductAnalysisView item={filteredResults[0]} />
           )}
         </div>
       )}
