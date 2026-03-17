@@ -26,7 +26,7 @@ export const redditTrending: TrendingProduct[] = [
   { rank: 5, modelNumber: "34GS95QE-B", displayName: "UltraGear OLED 34\"", category: "Monitor", mentions: 876, sentimentScore: 88, trend: "up", changePercent: 15 },
   { rank: 6, modelNumber: "WKHC252HBA-W", displayName: "WashTower™ Washer", category: "Washer", mentions: 412, sentimentScore: 76, trend: "down", changePercent: -8 },
   { rank: 7, modelNumber: "WKHC252HBA-D", displayName: "WashTower™ Dryer", category: "Dryer", mentions: 331, sentimentScore: 74, trend: "down", changePercent: -6 },
-  { rank: 7, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 654, sentimentScore: 85, trend: "up", changePercent: 31 },
+  { rank: 8, modelNumber: "PU615U", displayName: "CineBeam S 4K UST", category: "Projector", mentions: 654, sentimentScore: 85, trend: "up", changePercent: 31 },
   { rank: 8, modelNumber: "OLED83C4PUA", displayName: "OLED C4 83\"", category: "TV", mentions: 612, sentimentScore: 82, trend: "stable", changePercent: -1 },
   { rank: 9, modelNumber: "27GS95QE-B", displayName: "UltraGear OLED 27\"", category: "Monitor", mentions: 589, sentimentScore: 90, trend: "up", changePercent: 19 },
   { rank: 10, modelNumber: "S95TR", displayName: "Soundbar S95TR", category: "Audio", mentions: 534, sentimentScore: 87, trend: "up", changePercent: 12 },
