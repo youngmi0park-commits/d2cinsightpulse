@@ -1,8 +1,12 @@
+import { useState } from "react";
 import type { Review } from "@/data/dummyData";
-import { Star, Calendar, TrendingUp } from "lucide-react";
+import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { subDays, format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface ReviewListProps {
   reviews: Review[];
@@ -32,6 +36,42 @@ const sourceStyle = (s: string) => {
 };
 
 function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string) => string }) {
+  const [translated, setTranslated] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [showTranslation, setShowTranslation] = useState(false);
+
+  const handleTranslate = async () => {
+    if (translated) {
+      setShowTranslation(!showTranslation);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-review", {
+        body: { text: review.text },
+      });
+
+      if (error) throw error;
+
+      if (data?.translated) {
+        setTranslated(data.translated);
+        setShowTranslation(true);
+      } else {
+        throw new Error("Translation failed");
+      }
+    } catch (e) {
+      console.error("Translation error:", e);
+      toast({
+        title: t("Translation failed", "번역 실패"),
+        description: t("Please try again later.", "나중에 다시 시도해 주세요."),
+        variant: "destructive",
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   const sentimentStyle = (s?: string) => {
     if (s === "positive") return "border-success/30 bg-success/5";
     if (s === "negative") return "border-destructive/30 bg-destructive/5";
@@ -64,9 +104,40 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
           {sentimentBadge(review.sentiment)}
         </div>
       </div>
+
       <p className="text-sm leading-relaxed">{review.text}</p>
+
+      {showTranslation && translated && (
+        <div className="mt-2 p-3 rounded-md bg-primary/5 border border-primary/20">
+          <p className="text-sm leading-relaxed text-foreground/90">
+            <span className="text-xs font-semibold text-primary mr-1.5">🇰🇷</span>
+            {translated}
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mt-2">
-        <span className="text-xs text-muted-foreground">{review.date}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{review.date}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleTranslate}
+            disabled={isTranslating}
+            className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+          >
+            {isTranslating ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Languages className="h-3 w-3" />
+            )}
+            {showTranslation
+              ? t("Hide translation", "번역 숨기기")
+              : translated
+                ? t("Show translation", "번역 보기")
+                : t("Translate to Korean", "국문 번역")}
+          </Button>
+        </div>
         {review.score !== undefined && (
           <span className="text-xs font-mono text-muted-foreground">{t("Score", "점수")}: {(review.score * 100).toFixed(0)}</span>
         )}
