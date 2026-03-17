@@ -20,29 +20,97 @@ const CHANNELS = [
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
 
+// ──────────────────────────────────────────────────────────────────
+// EXPANDED KEYWORD TAXONOMY (all English-based)
+// ──────────────────────────────────────────────────────────────────
+
+// 1️⃣ Product Name · Model Name (official + abbreviations + shorthand)
+const PRODUCT_NAME_KEYWORDS = [
+  // TV
+  "LG OLED", "OLED C4", "OLED C5", "OLED G4", "OLED G5", "C4", "C5", "G4", "G5",
+  "OLED65C4PUA", "OLED55C4", "QNED", "NanoCell", "UR9000",
+  // Monitor
+  "UltraGear", "UltraFine", "UltraWide", "27GP850", "27GL83A", "32GQ950",
+  // Laptop
+  "LG Gram", "Gram 16", "Gram16", "G16", "Gram 17", "Gram17", "Gram Pro",
+  // Home Appliances
+  "WashTower", "LashTower", "InstaView", "ThinQ", "CordZero", "PuriCare",
+  "StanbyME", "StandbyMe", "Stand by Me", "XBOOM",
+];
+
+// 2️⃣ Feature · Spec Keywords
+const FEATURE_SPEC_KEYWORDS = [
+  "battery", "battery life", "heat", "heating", "overheating", "thermal",
+  "performance", "speed", "processing", "lag", "latency",
+  "picture quality", "image quality", "color accuracy", "brightness", "dimming",
+  "weight", "lightweight", "portability", "build quality",
+  "update", "firmware", "software update", "bug", "error", "crash",
+  "slow", "stuttering", "buffering", "freezing", "glitch",
+  "noise", "fan noise", "compressor noise", "vibration",
+  "energy efficiency", "power consumption", "standby power",
+  "connectivity", "WiFi", "Bluetooth", "HDMI", "USB-C",
+  "HDR", "Dolby Vision", "Dolby Atmos", "G-Sync", "FreeSync", "VRR",
+  "refresh rate", "144Hz", "120Hz", "response time", "input lag",
+  "burn-in", "retention", "panel uniformity", "backlight bleed",
+  "smart features", "webOS", "voice control", "magic remote",
+];
+
+// 3️⃣ Sentiment · Attitude Keywords
+const SENTIMENT_KEYWORDS = {
+  positive: [
+    "recommend", "satisfied", "good", "great", "excellent", "love",
+    "impressive", "stunning", "amazing", "fantastic", "perfect",
+    "reliable", "durable", "premium", "worth it", "must-have",
+  ],
+  negative: [
+    "disappointed", "frustrated", "bad", "worst", "terrible", "awful",
+    "refund", "return", "regret", "waste", "overpriced", "defective",
+    "poor quality", "not worth", "do not buy", "avoid",
+  ],
+  mixed: [
+    "expensive but good", "pricey but worth it", "good but overpriced",
+    "great except for", "love it but", "nice but",
+  ],
+};
+
+// 4️⃣ Comparison · Alternative Keywords
+const COMPARISON_KEYWORDS = [
+  "better than", "worse than", "compared to", "versus", "vs",
+  "switched from", "switched to", "replaced with", "alternative to",
+  "instead of", "upgrade from", "downgrade", "do not recommend",
+  "Samsung vs LG", "Sony vs LG", "TCL vs LG",
+];
+
+// 5️⃣ Problem · Desire Keywords
+const PROBLEM_DESIRE_KEYWORDS = [
+  "wish it had", "would be nice if", "needs improvement",
+  "when is the update", "fix this", "please add",
+  "bug", "inconvenient", "could be better", "should improve",
+  "missing feature", "deal breaker", "frustrating",
+];
+
+// Combine all for search query enrichment
+const EXPANDED_SEARCH_TERMS = [
+  ...PRODUCT_NAME_KEYWORDS,
+  ...FEATURE_SPEC_KEYWORDS,
+  ...SENTIMENT_KEYWORDS.positive,
+  ...SENTIMENT_KEYWORDS.negative,
+  ...COMPARISON_KEYWORDS.slice(0, 10),
+  ...PROBLEM_DESIRE_KEYWORDS.slice(0, 8),
+];
+
 // lge.com top inbound search keywords (dotcom top 100)
 const DOTCOM_KEYWORDS = [
-  // 1-10: Core Brand & Display Tech
   "oled", "lg gram", "ultragear", "thinq", "ai core tech", "4k", "hdr", "g-sync compatible", "thin and light", "burn-in",
-  // 11-20: TV Models & Panel Tech
   "c4", "g4", "c3", "cx", "nano ips", "144hz", "1ms", "dolby vision", "lodb", "smart tv",
-  // 21-30: Home Appliances & Display
   "refrigerator", "washing machine", "dryer", "french door", "inverter", "core ultra", "lg glance", "portable", "1440p", "freesync",
-  // 31-40: Display Quality & Product
   "uniformity", "green tint", "backlight bleed", "17z90tp", "hybrid ai", "time travel", "dolby atmos", "sleek", "21:9", "curved",
-  // 41-50: Monitor Models & Home
   "gp850", "gl850", "27gl83a", "dishwasher", "energy-efficient", "life's good", "nanocell", "qhd", "overclock", "displayport",
-  // 51-60: Laundry & Business
   "deep wash", "commercial washer", "drum machine", "lg partner store", "consumer reports", "jd power", "ces 2026", "ryu jae-chul", "b2b", "builder market",
-  // 61-70: TV Processor & Smart Features
   "alpha 9 processor", "evo panel", "brightness booster", "magic remote", "webos", "game dashboard", "input lag", "vrr", "allm", "hdmi 2.1",
-  // 71-80: Laptop & Display Specs
   "style edition", "aerominum", "magnesium alloy", "number pad", "trackpad responsiveness", "arc graphics", "multi-tasking", "future proof", "anti-glare", "nits",
-  // 81-90: Kitchen & Laundry Premium
   "instaview", "door-in-door", "craft ice", "linear compressor", "direct drive motor", "turbowash", "steam cycle", "heat pump dryer", "quadwash", "truesteam",
-  // 91-100: Marketing & Strategy
   "keyword strategy", "seo", "organic traffic", "ppc bidding", "long-tail keywords", "influencer collaboration", "customer satisfaction", "brand reputation", "crisis management", "social listening",
-  // Previous dotcom keywords (merged)
   "tv", "lg oled g5", "lg oled c4", "lg oled c5", "lg oled g4",
   "lg smart tv 32", "qned", "lg oled g4 65", "lg oled c4 65", "tv oled",
   "tv 50 polegadas", "tv 65 polegadas", "smart tv 43 polegadas",
@@ -64,6 +132,61 @@ const DOTCOM_KEYWORDS = [
   "lg scale go", "cls31460001", "lg g5", "lg c4", "lg c5", "washtower",
 ];
 
+// ──────────────────────────────────────────────────────────────────
+// ENHANCED AI SYSTEM PROMPT (6-in-1 analysis)
+// ──────────────────────────────────────────────────────────────────
+const REVIEW_EXTRACTION_PROMPT = `You are an advanced review data extractor and analyzer for LG Electronics products. Extract individual product reviews from the given content and perform multi-dimensional analysis.
+
+For each review, return a JSON array of objects with these fields:
+
+## Core Fields
+- model_number: string (LG model number if found, e.g. "OLED65C4PUA", "27GP850-B", "WM4000HWA". If not found, use category name)
+- display_name: string (full product name, e.g. "LG C4 65-inch OLED TV")
+- category: string (one of: TV, Monitor, Refrigerator, Washer, Dryer, Air Conditioner, Soundbar, Laptop, Projector, Robot Vacuum)
+- title: string (review title or summary, max 100 chars)
+- content: string (review text, max 500 chars)
+- author: string or null
+- rating: number 1-5 or null
+- published_at: string ISO date or null
+
+## 1️⃣ Expanded Keyword Detection
+- detected_keywords: string[] (all relevant keywords found: product names, features/specs, sentiment words, comparison phrases, problem/desire expressions — ALL IN ENGLISH)
+
+## 2️⃣ Brand Relevance Check
+- brand_relevant: boolean (true if the mention is specifically about an LG Electronics product)
+- brand_relevance_reason: string (1-2 sentence explanation of why it is/isn't relevant)
+
+## 3️⃣ Granular Sentiment Analysis
+- sentiment: "positive" | "negative" | "neutral" | "mixed"
+- sentiment_score: number 0-1 (0=very negative, 1=very positive)
+- emotion_category: string (one of: "satisfaction", "recommendation", "impressed", "neutral", "informational", "question", "complaint", "anger", "disappointment", "mixed")
+- emotion_intensity: number 1-5 (1=very mild, 5=very strong)
+- emotion_evidence: string (the key sentence that supports this emotion classification)
+
+## 4️⃣ Noise Filtering
+- content_type: string (one of: "review" = actual product evaluation, "general_mention" = casual mention not evaluating product, "advertisement" = promotional/sponsored content, "noise" = irrelevant mention like "bug" used in gaming context)
+- noise_reason: string or null (if content_type is not "review", explain why)
+
+## 5️⃣ User Segment Inference
+- user_type: string (one of: "actual_user" = verified owner/user, "potential_customer" = considering purchase, "reviewer" = professional reviewer, "journalist" = press/media, "unknown")
+- user_region: string or null (country code if detectable, e.g. "US", "UK", "KR")
+- platform_type: string (one of: "community", "review_site", "video", "blog", "news")
+
+## 6️⃣ Marketing Message Conversion
+- marketing_message: object with:
+  - original_summary: string (1-sentence summary of the user's opinion)
+  - emotion_label: string (the emotion_category value)
+  - copy: string (1-2 sentence marketing message derived from this review:
+    - positive → recommendation copy
+    - negative → improvement acknowledgment message
+    - mixed → balanced message)
+
+RULES:
+- Only include actual user opinions/reviews, not product specs listings
+- ALL keywords must be in ENGLISH regardless of source language
+- If no reviews found, return empty array []
+- Return ONLY valid JSON, no markdown`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -83,8 +206,6 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Parse request body for optional filters
-  // Default: combine LG_CATEGORIES + DOTCOM_KEYWORDS (deduplicated)
   const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
   let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
@@ -96,7 +217,6 @@ Deno.serve(async (req) => {
     // Use defaults
   }
 
-  // Create collection log
   const { data: logEntry } = await supabase
     .from("collection_logs")
     .insert({ source: "firecrawl-all", status: "running" })
@@ -109,13 +229,10 @@ Deno.serve(async (req) => {
 
   try {
     for (const category of targetCategories) {
-      const searchQuery = `LG Electronics ${category} review 2025 2026`;
-
       for (const channel of targetChannels) {
         try {
           console.log(`[${channel.label}] Searching: ${category}`);
 
-          // Use Firecrawl search to find review pages
           const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
             method: "POST",
             headers: {
@@ -142,14 +259,12 @@ Deno.serve(async (req) => {
 
           if (results.length === 0) continue;
 
-          // Step 2: Scrape each URL to get full content (search only returns snippets)
           for (const result of results) {
             const url = result.url;
             if (!url) continue;
 
             let content = result.markdown || "";
-            
-            // If no markdown from search, scrape the URL individually
+
             if (!content || content.length < 200) {
               try {
                 console.log(`[${channel.label}] Scraping: ${url}`);
@@ -165,15 +280,13 @@ Deno.serve(async (req) => {
                     onlyMainContent: true,
                   }),
                 });
-                
+
                 if (scrapeRes.ok) {
                   const scrapeData = await scrapeRes.json();
                   content = scrapeData.data?.markdown || scrapeData.markdown || "";
-                  console.log(`[${channel.label}] Scraped ${url}: ${content.length} chars`);
                 } else {
                   const errText = await scrapeRes.text();
                   console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
-                  // Fall back to description
                   content = result.description || "";
                 }
               } catch (scrapeErr) {
@@ -192,31 +305,16 @@ Deno.serve(async (req) => {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  model: "google/gemini-2.5-flash-lite",
+                  model: "google/gemini-2.5-flash",
                   messages: [
-                    {
-                      role: "system",
-                      content: `You are a review data extractor for LG Electronics products. Extract individual product reviews from the given content. Return a JSON array of objects with these fields:
-- model_number: string (LG model number if found, e.g. "OLED65C4PUA", "27GP850-B", "WM4000HWA". If not found, use category name)
-- display_name: string (full product name, e.g. "LG C4 65-inch OLED TV")
-- category: string (one of: TV, Monitor, Refrigerator, Washer, Dryer, Air Conditioner, Soundbar, Laptop, Projector, Robot Vacuum)
-- title: string (review title or summary, max 100 chars)
-- content: string (review text, max 500 chars)
-- author: string or null
-- rating: number 1-5 or null
-- sentiment: "positive" | "negative" | "neutral"
-- sentiment_score: number 0-1 (0=very negative, 1=very positive)
-- published_at: string ISO date or null
-
-Only include actual user opinions/reviews, not product specs. If no reviews found, return empty array []. Return ONLY valid JSON, no markdown.`,
-                    },
+                    { role: "system", content: REVIEW_EXTRACTION_PROMPT },
                     {
                       role: "user",
                       content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${content.slice(0, 8000)}`,
                     },
                   ],
                   temperature: 0.1,
-                  max_tokens: 4000,
+                  max_tokens: 6000,
                 }),
               });
 
@@ -227,8 +325,7 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
 
               const aiData = await aiRes.json();
               const rawText = aiData.choices?.[0]?.message?.content || "[]";
-              
-              // Parse JSON from AI response (handle markdown code blocks)
+
               let reviews: any[];
               try {
                 const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -239,9 +336,14 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                 continue;
               }
 
-              // Upsert products and reviews
               for (const review of reviews) {
                 if (!review.content || review.content.length < 20) continue;
+
+                // Skip noise and non-relevant content
+                if (review.content_type === "noise" || review.brand_relevant === false) {
+                  console.log(`[${channel.label}] Skipped noise/irrelevant: ${review.title?.slice(0, 50)}`);
+                  continue;
+                }
 
                 // Upsert product
                 const modelNum = review.model_number || `LG-${category}-GENERIC`;
@@ -270,7 +372,6 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                 if (!productId) continue;
 
                 // Generate external_id to avoid duplicates
-                // Use a simple hash to avoid btoa Latin1 issues with Unicode content
                 const hashInput = review.content.slice(0, 100);
                 let hash = 0;
                 for (let i = 0; i < hashInput.length; i++) {
@@ -286,7 +387,7 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                   .eq("external_id", externalId)
                   .maybeSingle();
 
-                if (existingReview) continue; // Skip duplicate
+                if (existingReview) continue;
 
                 await supabase.from("reviews").insert({
                   product_id: productId,
@@ -300,6 +401,12 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
                   sentiment: review.sentiment || "neutral",
                   sentiment_score: review.sentiment_score ?? 0.5,
                   published_at: review.published_at || null,
+                  // Enhanced analysis fields
+                  emotion_category: review.emotion_category || "neutral",
+                  emotion_intensity: review.emotion_intensity || 3,
+                  user_type: review.user_type || "unknown",
+                  content_type: review.content_type || "review",
+                  platform_type: review.platform_type || "unknown",
                 });
 
                 totalCollected++;
@@ -318,7 +425,6 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
     // Update trending snapshots
     await updateTrendingSnapshots(supabase);
 
-    // Update collection log
     if (logId) {
       await supabase.from("collection_logs").update({
         status: errors.length > 0 ? "partial" : "completed",
@@ -351,9 +457,8 @@ Only include actual user opinions/reviews, not product specs. If no reviews foun
 
 async function updateTrendingSnapshots(supabase: any) {
   try {
-    // Get review counts per product grouped by source from the last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    
+
     const { data: products } = await supabase.from("products").select("id, model_number, display_name");
     if (!products?.length) return;
 
@@ -366,7 +471,6 @@ async function updateTrendingSnapshots(supabase: any) {
 
       if (!recentReviews?.length) continue;
 
-      // Group by source
       const bySource: Record<string, any[]> = {};
       for (const r of recentReviews) {
         if (!bySource[r.source]) bySource[r.source] = [];
@@ -387,16 +491,19 @@ async function updateTrendingSnapshots(supabase: any) {
       }
     }
 
-    // Extract trending keywords using AI
+    // Extract trending keywords using enhanced prompt
     const { data: recentAllReviews } = await supabase
       .from("reviews")
-      .select("content, source, sentiment")
+      .select("content, source, sentiment, emotion_category, user_type, content_type")
       .gte("collected_at", sevenDaysAgo)
+      .eq("content_type", "review")
       .limit(200);
 
     if (recentAllReviews?.length > 10) {
       const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      const combinedText = recentAllReviews.map((r: any) => `[${r.source}/${r.sentiment}] ${r.content.slice(0, 200)}`).join("\n");
+      const combinedText = recentAllReviews
+        .map((r: any) => `[${r.source}/${r.sentiment}/${r.emotion_category}/${r.user_type}] ${r.content.slice(0, 200)}`)
+        .join("\n");
 
       const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -405,18 +512,30 @@ async function updateTrendingSnapshots(supabase: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: "google/gemini-2.5-flash",
           messages: [
             {
               role: "system",
-              content: `Extract top trending keywords from LG product reviews. Focus on ADJECTIVES and descriptive words that express sentiment (e.g. "stunning", "frustrating", "reliable", "noisy"). EXCLUDE product names, model numbers, brand names, and generic nouns. Return JSON array of objects:
-- keyword: string (the adjective/descriptive keyword)
+              content: `Extract top trending keywords from LG product reviews. Focus on ADJECTIVES and descriptive words that express product qualities or user experience.
+
+KEYWORD CATEGORIES TO EXTRACT (all in ENGLISH):
+1. Feature/Spec descriptors: words describing how features perform (e.g., "responsive", "laggy", "crisp")
+2. Emotional descriptors: how users feel (e.g., "satisfied", "frustrated", "impressed")
+3. Comparison indicators: words used when comparing (e.g., "better", "superior", "inferior")
+4. Problem descriptors: words describing issues (e.g., "buggy", "unreliable", "inconsistent")
+
+STRICTLY EXCLUDE: brand names, product names, model numbers, generic nouns, technology specs.
+
+Return JSON array of objects:
+- keyword: string (the adjective/descriptive keyword, ENGLISH only)
 - count: number (estimated frequency)
 - sentiment: "positive" | "negative" | "neutral"
-- source: string (most common source for this keyword)
+- source: string (most common source)
 - related_products: string[] (model numbers mentioned with this keyword)
-- related_countries: string[] (country codes if mentioned, e.g. ["US","UK"])
-Return 20-30 adjective-focused keywords, ONLY valid JSON, no markdown.`,
+- related_countries: string[] (country codes if mentioned)
+- keyword_category: string ("feature_spec" | "emotional" | "comparison" | "problem")
+
+Return 20-30 keywords. ONLY valid JSON, no markdown.`,
             },
             { role: "user", content: combinedText.slice(0, 10000) },
           ],
