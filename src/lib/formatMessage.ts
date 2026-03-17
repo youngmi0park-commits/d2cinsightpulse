@@ -18,6 +18,7 @@ export interface PurposeMessage {
   purposeLabel: string;
   channelGroup: ChannelGroup;
   icon: string;
+  kicker?: string;
   headline: string;
   body: string;
   cta: string;
