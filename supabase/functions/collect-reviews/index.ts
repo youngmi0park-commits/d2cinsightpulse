@@ -150,6 +150,12 @@ const DOTCOM_KEYWORDS = [
   "lg 1 5 star dual inverter split ac 20", "ar condicionado 127v", "aire acondicionado",
   "window type inverter", "ar condicionado dual inverter 18000", "air purifier",
   "aire acondicionado inverter",
+  // AC marketing & performance keywords
+  "dual inverter ac", "LG AC dual inverter", "LG air conditioner review",
+  "LG AC energy saving", "LG AC smart diagnosis", "LG AI air conditioner",
+  "LG window AC quiet", "LG portable AC", "LG split AC inverter",
+  "LG AC vs Samsung AC", "LG AC vs Daikin", "LG AC vs Carrier",
+  "LG AC cooling performance", "LG AC electricity bill", "LG AC noise level",
   "lg scale go", "cls31460001", "lg g5", "lg c4", "lg c5", "washtower",
 ];
 
