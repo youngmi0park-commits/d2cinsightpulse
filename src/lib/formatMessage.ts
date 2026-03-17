@@ -1,4 +1,5 @@
 import type { SentimentResult } from "./sentiment";
+import { getPatternHeadline } from "@/data/bannerCopyReference";
 
 export interface MarketingOutput {
   qaList: { question: string; answer: string }[];
