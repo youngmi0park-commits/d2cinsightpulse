@@ -19,6 +19,7 @@ import { Activity, BarChart3, Zap, Globe, Database, AlertCircle } from "lucide-r
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 
 interface AnalyzedProduct {
   product: ProductData;
