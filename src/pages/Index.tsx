@@ -33,6 +33,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang, toggleLang } = useLang();
   const { data: stats } = useProductStats();
 
