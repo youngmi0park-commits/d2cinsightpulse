@@ -25,12 +25,12 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    // Get recent reviews (last 14 days for more data)
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const { data: reviews } = await supabase
       .from("reviews")
-      .select("content, source, sentiment, product_id, products!inner(model_number, display_name, category)")
+      .select("content, source, sentiment, emotion_category, user_type, content_type, product_id, products!inner(model_number, display_name, category)")
       .gte("collected_at", fourteenDaysAgo)
+      .eq("content_type", "review")
       .limit(500);
 
     if (!reviews?.length) {
@@ -40,7 +40,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Group reviews by source for per-source keyword extraction
     const bySource: Record<string, any[]> = {};
     for (const r of reviews) {
       if (!bySource[r.source]) bySource[r.source] = [];
@@ -51,7 +50,7 @@ Deno.serve(async (req) => {
 
     for (const [source, sourceReviews] of Object.entries(bySource)) {
       const combinedText = sourceReviews
-        .map((r: any) => `[${r.sentiment}] ${r.content.slice(0, 300)}`)
+        .map((r: any) => `[${r.sentiment}/${r.emotion_category || "unknown"}/${r.user_type || "unknown"}] ${r.content.slice(0, 300)}`)
         .join("\n");
 
       const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -61,36 +60,44 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
+          model: "google/gemini-2.5-flash",
           messages: [
             {
               role: "system",
-              content: `You are a keyword extractor for LG Electronics product reviews. Your task is to extract ONLY ADJECTIVES and DESCRIPTIVE PHRASES that express product qualities or user experience.
+              content: `You are a keyword extractor for LG Electronics product reviews. Extract ONLY ADJECTIVES and DESCRIPTIVE PHRASES in ENGLISH.
+
+KEYWORD CATEGORIES (tag each keyword):
+1. "feature_spec" — describes product feature performance (e.g., "responsive", "crisp", "laggy", "dim", "smooth", "sharp")
+2. "emotional" — describes user feeling (e.g., "satisfied", "frustrated", "impressed", "disappointed", "delighted")
+3. "comparison" — used when comparing products (e.g., "better", "superior", "inferior", "comparable", "unmatched")
+4. "problem" — describes issues or desires (e.g., "buggy", "unreliable", "inconsistent", "missing", "incomplete")
 
 RULES:
-1. ONLY extract adjectives and descriptive words (e.g., "stunning", "reliable", "noisy", "efficient", "frustrating", "responsive", "crisp", "vibrant", "sluggish", "durable")
-2. STRICTLY EXCLUDE:
+1. ALL keywords must be in ENGLISH regardless of source language
+2. ONLY extract adjectives and descriptive words
+3. STRICTLY EXCLUDE:
    - Brand names: LG, Samsung, Sony, etc.
-   - Product names/types: TV, refrigerator, monitor, washer, OLED, smart TV, etc.
+   - Product names/types: TV, refrigerator, monitor, OLED, smart TV, etc.
    - Model numbers: C4, G4, UR9000, etc.
-   - Generic nouns: engineer, customer service, warranty, app, compressor, ice maker, etc.
+   - Generic nouns: engineer, customer service, warranty, app, compressor, etc.
    - Technology specs: 4K, HDR, HDMI, etc.
-3. Focus on words that describe HOW the product performs or HOW the user feels
-4. Include both English and descriptive compound phrases (e.g., "picture quality" → rephrase as "sharp", "clear")
+4. Focus on words that describe HOW the product performs or HOW the user feels
 
 Return a JSON array of objects:
-- keyword: string (the adjective/descriptive word)
+- keyword: string (the adjective/descriptive word, ENGLISH only)
 - count: number (estimated frequency in the reviews)
 - sentiment: "positive" | "negative" | "neutral"
+- keyword_category: string ("feature_spec" | "emotional" | "comparison" | "problem")
 - related_products: string[] (model numbers mentioned alongside this adjective)
 - related_countries: string[] (country codes if mentioned, e.g. ["US","UK"])
+- context_example: string (a brief usage context example, 10-20 words)
 
-Return 15-25 adjective keywords per source. ONLY valid JSON, no markdown.`,
+Return 15-25 keywords per source. ONLY valid JSON, no markdown.`,
             },
             { role: "user", content: `Source: ${source}\n\n${combinedText.slice(0, 12000)}` },
           ],
           temperature: 0.1,
-          max_tokens: 3000,
+          max_tokens: 4000,
         }),
       });
 
@@ -107,7 +114,6 @@ Return 15-25 adjective keywords per source. ONLY valid JSON, no markdown.`,
         const keywords = JSON.parse(cleaned);
         if (!Array.isArray(keywords)) continue;
 
-        // Filter out any remaining non-adjective keywords as a safety net
         const excludePatterns = /^(lg|samsung|sony|tv|oled|qled|monitor|refrigerator|washer|dryer|washing machine|smart tv|4k|hdr|hdmi|engineer|customer service|warranty|app|compressor|ice maker|soundbar|laptop|projector|air conditioner|freezer|microwave|dishwasher|alexa|webos|nanocell|qned|ultragear|standbyme|thinq|xboom|puricare)/i;
 
         for (const kw of keywords) {

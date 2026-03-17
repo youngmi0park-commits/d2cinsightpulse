@@ -10,28 +10,31 @@ export interface SentimentResult {
 
 // Adjective-focused keywords only (no product names or nouns)
 const positiveKeywords = [
-  // English adjectives
+  // Feature/Spec descriptors
   "stunning", "amazing", "incredible", "perfect", "great", "excellent",
   "phenomenal", "gorgeous", "breathtaking", "brilliant", "impressive",
   "beautiful", "smooth", "sharp", "vivid", "crisp", "reliable",
   "intuitive", "responsive", "quiet", "efficient", "convenient",
   "comfortable", "durable", "lightweight", "sleek", "fast",
-  // Korean adjectives
-  "좋은", "훌륭한", "편한", "편리한", "조용한", "깨끗한", "선명한",
-  "빠른", "가벼운", "부드러운", "쾌적한", "든든한", "만족스러운",
-  "뛰어난", "깔끔한", "세련된", "강력한", "안정적",
+  // Emotional descriptors
+  "satisfied", "impressed", "delighted", "premium", "worth it",
+  "must-have", "fantastic", "superior", "unmatched", "flawless",
+  // Sentiment/Attitude keywords
+  "recommend", "love", "good",
 ];
 
 const negativeKeywords = [
-  // English adjectives
+  // Feature/Spec descriptors
   "slow", "bloated", "frustrating", "disappointing", "poor", "cheap",
   "plasticky", "noisy", "dim", "blurry", "laggy", "bulky",
   "flimsy", "unreliable", "uncomfortable", "complicated", "fragile",
   "defective", "overpriced", "mediocre", "annoying", "clunky",
-  // Korean adjectives
-  "아쉬운", "비싼", "느린", "무거운", "시끄러운", "불편한",
-  "어두운", "흐릿한", "약한", "복잡한", "불안정한", "실망스러운",
-  "허술한", "조잡한", "답답한",
+  // Problem descriptors
+  "buggy", "inconsistent", "incomplete", "unstable", "glitchy",
+  "unresponsive", "outdated", "inferior",
+  // Sentiment/Attitude keywords
+  "disappointed", "terrible", "awful", "worst", "regret",
+  "waste", "avoid", "do not buy",
 ];
 
 export function analyzeSentiment(reviews: Review[]): SentimentResult {

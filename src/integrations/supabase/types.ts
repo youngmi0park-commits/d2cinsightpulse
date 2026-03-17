@@ -79,8 +79,12 @@ export type Database = {
           author: string | null
           collected_at: string
           content: string
+          content_type: string | null
+          emotion_category: string | null
+          emotion_intensity: number | null
           external_id: string | null
           id: string
+          platform_type: string | null
           product_id: string
           published_at: string | null
           rating: number | null
@@ -89,13 +93,18 @@ export type Database = {
           source: string
           source_url: string | null
           title: string | null
+          user_type: string | null
         }
         Insert: {
           author?: string | null
           collected_at?: string
           content: string
+          content_type?: string | null
+          emotion_category?: string | null
+          emotion_intensity?: number | null
           external_id?: string | null
           id?: string
+          platform_type?: string | null
           product_id: string
           published_at?: string | null
           rating?: number | null
@@ -104,13 +113,18 @@ export type Database = {
           source: string
           source_url?: string | null
           title?: string | null
+          user_type?: string | null
         }
         Update: {
           author?: string | null
           collected_at?: string
           content?: string
+          content_type?: string | null
+          emotion_category?: string | null
+          emotion_intensity?: number | null
           external_id?: string | null
           id?: string
+          platform_type?: string | null
           product_id?: string
           published_at?: string | null
           rating?: number | null
@@ -119,6 +133,7 @@ export type Database = {
           source?: string
           source_url?: string | null
           title?: string | null
+          user_type?: string | null
         }
         Relationships: [
           {
