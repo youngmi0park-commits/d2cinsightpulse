@@ -16,6 +16,7 @@ const CHANNELS = [
   { id: "cnet", label: "CNET", queryTemplate: (product: string) => `site:cnet.com LG ${product} review` },
   { id: "trustpilot", label: "Trustpilot", queryTemplate: (product: string) => `site:trustpilot.com LG ${product}` },
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
+  { id: "youtube", label: "YouTube", queryTemplate: (product: string) => `site:youtube.com LG ${product} review` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
