@@ -172,13 +172,13 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
           </div>
 
           {/* Purpose-specific guidelines */}
-          {activePurpose === "dotcom" && (
+          {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
               <span className="ml-2">
                 {t(
-                  "(Based on lg.com hero banner) Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
-                  "(lg.com 히어로 배너 기준) Headline ≤50자 · Body ≤120자 · CTA ≤20자"
+                  "(Ref: lg.com/us, lg.com/uk hero banners) Kicker ≤35 chars · Headline ≤50 chars · Body ≤120 chars · CTA ≤20 chars",
+                  "(참고: lg.com/us, lg.com/uk 히어로 배너) Kicker ≤35자 · Headline ≤50자 · Body ≤120자 · CTA ≤20자"
                 )}
               </span>
             </div>
@@ -249,12 +249,28 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             </div>
           )}
 
+          {/* Kicker / Eyebrow (dotcom only) */}
+          {currentMsg.kicker && (
+            <div className="p-3 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Kicker / Eyebrow</span>
+                  <span className={`text-[10px] font-mono ${currentMsg.kicker.length > 35 ? "text-destructive" : "text-green-600"}`}>
+                    ({currentMsg.kicker.length}/35)
+                  </span>
+                </div>
+                <CopyBtn text={currentMsg.kicker} id="kicker" />
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">{currentMsg.kicker}</p>
+            </div>
+          )}
+
           {/* Headline */}
           <div className="p-4 rounded-lg border border-border bg-secondary/30">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
-                {activePurpose === "dotcom" && (
+                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
                   <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.headline.length}/50)
                   </span>
@@ -280,7 +296,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
-                {activePurpose === "dotcom" && (
+                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
                   <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.body.length}/120)
                   </span>

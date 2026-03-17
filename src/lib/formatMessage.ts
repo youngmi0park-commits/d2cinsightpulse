@@ -1,4 +1,5 @@
 import type { SentimentResult } from "./sentiment";
+import { getPatternHeadline } from "@/data/bannerCopyReference";
 
 export interface MarketingOutput {
   qaList: { question: string; answer: string }[];
@@ -17,6 +18,7 @@ export interface PurposeMessage {
   purposeLabel: string;
   channelGroup: ChannelGroup;
   icon: string;
+  kicker?: string;
   headline: string;
   body: string;
   cta: string;
@@ -131,9 +133,32 @@ export function generateGeoMarketingMessages(
           purposeLabel: "닷컴 카피",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
-          headline: bannerHeadline(`${productName}. ${pros[0] || "Experience"} Redefined.`),
-          body: bannerBody(`Users praise ${pros.slice(0, 2).join(" & ")}. Discover what makes the ${productName} a standout choice.`),
+          kicker: bannerKicker("INTRODUCING"),
+          headline: bannerHeadline(getPatternHeadline("technical", productName, pros[0] || "Experience", 0)),
+          body: bannerBody(`Powered by real user feedback — ${pros.slice(0, 2).join(" & ")} stand out. Discover the ${productName}.`),
           cta: bannerCta("Shop Now"),
+          hashtags: [],
+        },
+        {
+          purpose: "dotcom_alt1",
+          purposeLabel: "닷컴 카피 (Aspirational)",
+          channelGroup: "inside" as ChannelGroup,
+          icon: "🌐",
+          kicker: bannerKicker("REAL USER REVIEWS"),
+          headline: bannerHeadline(getPatternHeadline("aspirational", productName, pros[0] || "Innovation", 1)),
+          body: bannerBody(`Users highlight ${pros.slice(0, 2).join(" & ")} as reasons to choose the ${productName}.`),
+          cta: bannerCta("Learn More"),
+          hashtags: [],
+        },
+        {
+          purpose: "dotcom_alt2",
+          purposeLabel: "닷컴 카피 (Promotional)",
+          channelGroup: "inside" as ChannelGroup,
+          icon: "🌐",
+          kicker: bannerKicker("USER FAVORITES"),
+          headline: bannerHeadline(getPatternHeadline("promotional", productName, pros[0] || "Quality", 2)),
+          body: bannerBody(`${posPercent}% positive sentiment from ${total} real reviews. See why users love the ${productName}.`),
+          cta: bannerCta("Explore Now"),
           hashtags: [],
         },
         {
@@ -167,9 +192,21 @@ export function generateGeoMarketingMessages(
           purposeLabel: "닷컴 카피",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
+          kicker: bannerKicker("CUSTOMER FAVOURITES"),
           headline: bannerHeadline(`${productName}. Loved for ${pros[0] || "Quality"}.`),
-          body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")} as key strengths. Experience it at Currys or LGE.com/UK.`),
+          body: bannerBody(`UK users highlight ${pros.slice(0, 2).join(" & ")}. Experience it at Currys or LGE.com/UK.`),
           cta: bannerCta("Buy Now"),
+          hashtags: [],
+        },
+        {
+          purpose: "dotcom_alt1",
+          purposeLabel: "닷컴 카피 (Playful)",
+          channelGroup: "inside" as ChannelGroup,
+          icon: "🌐",
+          kicker: bannerKicker("Life's Good."),
+          headline: bannerHeadline(getPatternHeadline("playful", productName, pros[0] || "Quality", 3)),
+          body: bannerBody(`Real users rate it ${(averageScore * 5).toFixed(1)}/5. Available at Currys, Richer Sounds & LGE.com/UK.`),
+          cta: bannerCta("Discover"),
           hashtags: [],
         },
         {
