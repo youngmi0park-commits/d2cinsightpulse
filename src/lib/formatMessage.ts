@@ -500,7 +500,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicidad] ${productName} — Los usuarios destacan ${pros[0] || "calidad"} como fortaleza.`,
-          body: `Los usuarios destacan ${pros.join(", ")} como puntos fuertes. Datos de ${dataSrc}. Garantía local disponible.`,
+          body: `Los usuarios destacan ${topBody} como puntos fuertes. Datos de ${dataSrc}. Garantía local disponible.`,
           cta: "Más información en LGE.com/MX →",
           hashtags: ["#LGMexico", `#${productName.replace(/\s+/g, "")}`, "#Publicidad"],
         },
