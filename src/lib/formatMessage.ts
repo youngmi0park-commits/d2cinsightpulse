@@ -406,7 +406,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualité"} saluée.`),
-          body: bannerBody(`Les utilisateurs apprécient ${pros.slice(0, 2).join(" & ")}. Disponible chez Darty, Boulanger et LGE.com/FR.`),
+          body: bannerBody(`Les utilisateurs apprécient ${topBodyShort}. Disponible chez Darty, Boulanger et LGE.com/FR.`),
           cta: bannerCta("Découvrir"),
           hashtags: [],
         },
