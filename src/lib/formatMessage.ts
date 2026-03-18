@@ -388,7 +388,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Performance"}. ${pros[1] || "Quality"}. Delivered.`,
-          body: `Users describe the ${productName} as ${pros.slice(0, 3).join(", ")}. Review data from ${dataSrc}.`,
+          body: `Users describe the ${productName} as ${topBody}. Review data from ${dataSrc}.`,
           cta: "Explore at LGE.com/IN →",
           hashtags: ["#LGIndia", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
