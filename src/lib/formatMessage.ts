@@ -416,7 +416,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicité] ${productName} — Les utilisateurs saluent ${pros[0] || "la qualité"}.`,
-          body: `Les utilisateurs mettent en avant ${pros.join(", ")} comme points forts. Données issues de ${dataSrc}. Disponible chez Darty, Boulanger et LGE.com/FR.`,
+          body: `Les utilisateurs mettent en avant ${topBody} comme points forts. Données issues de ${dataSrc}. Disponible chez Darty, Boulanger et LGE.com/FR.`,
           cta: "En savoir plus sur LGE.com/FR →",
           hashtags: ["#LGFrance", `#${productName.replace(/\s+/g, "")}`, "#Publicité"],
         },
