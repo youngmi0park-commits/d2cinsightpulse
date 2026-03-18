@@ -78,6 +78,7 @@ export interface MarketingOutput {
   strengthsSummary: string;
   weaknessesSummary: string;
   userTips: string[];
+  usageScenes: string[];
   durabilityInsights: string[];
 }
 

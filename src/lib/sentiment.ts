@@ -8,6 +8,8 @@ export interface SentimentResult {
   keywords: { positive: string[]; negative: string[] };
   /** Adjective+Feature compound phrases extracted from reviews, ranked by frequency */
   phrases: { positive: string[]; negative: string[] };
+  /** Usage scenes/situations extracted from reviews (place + situation) */
+  usageScenes: string[];
 }
 
 // Adjective-focused keywords only (no product names or nouns)
