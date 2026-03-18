@@ -360,7 +360,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
-          body: `Nutzer heben ${pros.join(", ")} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
+          body: `Nutzer heben ${topBody} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
           cta: "Mehr erfahren auf LGE.com/DE →",
           hashtags: ["#LGDeutschland", `#${productName.replace(/\s+/g, "")}`, "#Anzeige"],
         },
