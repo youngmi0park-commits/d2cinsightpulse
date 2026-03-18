@@ -10,6 +10,7 @@ const corsHeaders = {
 const CHANNELS = [
   { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
   { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" ${product}` },
+  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup OR flair:"Review & Setups"` },
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
   { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
   { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
