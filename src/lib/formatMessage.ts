@@ -472,7 +472,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
-          body: `Gebruikers waarderen ${pros.join(", ")} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
+          body: `Gebruikers waarderen ${topBody} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
           cta: "Meer info op LGE.com/NL →",
           hashtags: ["#LGNL", `#${productName.replace(/\s+/g, "")}`, "#Advertentie"],
         },
