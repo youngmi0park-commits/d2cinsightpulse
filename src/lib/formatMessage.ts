@@ -155,7 +155,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "📊",
     headline: pmaxHL(`${productName} — ${pros[0] || "Quality"}`),
-    body: pmaxDesc(`${pros.slice(0, 3).join(", ")} — real users' words for the ${productName}. See their reviews.`),
+    body: pmaxDesc(`${topBody} — real users' words for the ${productName}. See their reviews.`),
     cta: "Shop Now",
     hashtags: [] as string[],
   });
