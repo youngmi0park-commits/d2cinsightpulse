@@ -144,7 +144,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "📊",
     headline: pmaxHL(`${productName} — ${pros[0] || "Quality"}`),
-    body: pmaxDesc(`Users highlight ${pros.join(", ")} as standout features of the ${productName}. See real reviews.`),
+    body: pmaxDesc(`${pros.slice(0, 3).join(", ")} — real users' words for the ${productName}. See their reviews.`),
     cta: "Shop Now",
     hashtags: [] as string[],
   });
