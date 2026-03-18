@@ -185,7 +185,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("INTRODUCING"),
           headline: bannerHeadline(getPatternHeadline("technical", productName, pros[0] || "Experience", 0)),
-          body: bannerBody(`Powered by real user feedback — ${pros.slice(0, 2).join(" & ")} stand out. Discover the ${productName}.`),
+          body: bannerBody(`${pros.slice(0, 3).join(", ")} — the words users choose to describe the ${productName}.`),
           cta: bannerCta("Shop Now"),
           hashtags: [],
         },
