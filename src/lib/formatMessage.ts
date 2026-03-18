@@ -228,7 +228,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Impressive"}. ${pros[1] || "Refined"}. See for yourself.`,
-          body: `Users call it ${pros.slice(0, 3).join(", ")}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on feedback.` : ""} Discover the ${productName}.`,
+          body: `Users call it ${topBody}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on feedback.` : ""} Discover the ${productName}.`,
           cta: "Learn More at LGE.com →",
           hashtags: ["#LG", `#${productName.replace(/\s+/g, "")}`, "#ReviewInsights", "#Ad"],
           schema: {
