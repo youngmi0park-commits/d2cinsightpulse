@@ -531,8 +531,8 @@ export function generateMarketingMessage(
 
   const strengthsSummary = keywords.positive.length > 0
     ? t(
-        `Key strengths of ${productName} highlighted by users: ${keywords.positive.join(", ")}`,
-        `고객들이 꼽은 ${productName}의 강점: ${keywords.positive.join(", ")}`
+        `Key strengths of ${productName} highlighted by users: ${topPhraseStr || keywords.positive.join(", ")}`,
+        `고객들이 꼽은 ${productName}의 강점: ${topPhraseStr || keywords.positive.join(", ")}`
       )
     : t(
         `Collecting positive keywords for ${productName}.`,
