@@ -322,7 +322,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Efficient"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — users' words for the ${productName}. At JB Hi-Fi, Harvey Norman & LGE.com AU.`),
+          body: bannerBody(`${topBody} — users' words for the ${productName}. At JB Hi-Fi, Harvey Norman & LGE.com AU.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
