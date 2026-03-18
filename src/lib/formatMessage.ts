@@ -255,7 +255,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("CUSTOMER FAVOURITES"),
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Refined"}.`),
-          body: bannerBody(`Users describe it as ${pros.slice(0, 3).join(", ")}. Experience it at Currys or LGE.com/UK.`),
+          body: bannerBody(`Users describe it as ${topBody}. Experience it at Currys or LGE.com/UK.`),
           cta: bannerCta("Buy Now"),
           hashtags: [],
         },
