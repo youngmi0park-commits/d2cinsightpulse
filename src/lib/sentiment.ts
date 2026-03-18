@@ -6,6 +6,8 @@ export interface SentimentResult {
   neutral: number;
   averageScore: number;
   keywords: { positive: string[]; negative: string[] };
+  /** Adjective+Feature compound phrases extracted from reviews, ranked by frequency */
+  phrases: { positive: string[]; negative: string[] };
 }
 
 // Adjective-focused keywords only (no product names or nouns)
@@ -37,6 +39,136 @@ const negativeKeywords = [
   "waste", "avoid", "do not buy",
 ];
 
+// Feature nouns that adjectives commonly attach to in product reviews
+const featureNouns = [
+  // Display / Visual
+  "picture quality", "image quality", "picture", "display", "screen", "colors", "contrast",
+  "brightness", "black levels", "viewing angles", "resolution", "HDR", "motion handling",
+  // Audio
+  "sound quality", "sound", "audio", "bass", "speakers", "dialogue clarity",
+  // Smart / Software
+  "smart features", "interface", "remote", "apps", "webOS", "ThinQ",
+  "voice control", "setup", "navigation", "software", "updates",
+  // Design / Build
+  "design", "build quality", "build", "finish", "stand", "slim profile",
+  "form factor", "aesthetics", "bezels", "mounting",
+  // Performance
+  "performance", "speed", "response time", "input lag", "gaming",
+  "refresh rate", "processing", "upscaling",
+  // Cooling / Appliance
+  "cooling", "airflow", "temperature control", "energy efficiency",
+  "noise level", "installation", "cleaning", "capacity",
+  // Laundry
+  "wash quality", "spin cycle", "vibration", "cycle time", "drum",
+  // General
+  "value", "price", "quality", "durability", "reliability",
+  "connectivity", "features", "functionality",
+];
+
+// Positive adverb+adjective intensifiers
+const positiveIntensifiers = [
+  "incredibly", "amazingly", "exceptionally", "remarkably", "surprisingly",
+  "absolutely", "truly", "really", "very", "extremely", "super",
+];
+
+/**
+ * Extract "adjective + feature" and "adverb + adjective + feature" compound phrases
+ * from review text. Returns phrases ranked by frequency.
+ */
+function extractPhrases(reviews: Review[]): { positive: Map<string, number>; negative: Map<string, number> } {
+  const posPhrases = new Map<string, number>();
+  const negPhrases = new Map<string, number>();
+
+  for (const review of reviews) {
+    const text = review.text.toLowerCase();
+
+    for (const noun of featureNouns) {
+      const nounLower = noun.toLowerCase();
+      // Check if the feature noun appears in the text
+      if (!text.includes(nounLower)) continue;
+
+      // Look for adjective near the noun (within ~4 words before)
+      // Build regex: (adjective) (0-3 words) (noun)
+      for (const adj of positiveKeywords) {
+        // Pattern: "adj ... noun" or "intensifier adj ... noun"
+        const simplePattern = new RegExp(
+          `\\b(${positiveIntensifiers.join("|")})?\\s*${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`,
+          "i"
+        );
+        const match = text.match(simplePattern);
+        if (match) {
+          const intensifier = match[1] ? `${capitalize(match[1])} ` : "";
+          const phrase = `${intensifier}${capitalize(adj)} ${capitalizePhrase(noun)}`;
+          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
+        }
+      }
+
+      for (const adj of negativeKeywords) {
+        const pattern = new RegExp(
+          `\\b${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`,
+          "i"
+        );
+        if (pattern.test(text)) {
+          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
+          negPhrases.set(phrase, (negPhrases.get(phrase) || 0) + 1);
+        }
+      }
+    }
+
+    // Also capture "noun is/are/was adjective" patterns
+    for (const noun of featureNouns) {
+      const nounLower = noun.toLowerCase();
+      if (!text.includes(nounLower)) continue;
+
+      for (const adj of positiveKeywords) {
+        const reversePattern = new RegExp(
+          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+(?:${positiveIntensifiers.join("|")}\\s+)?${escapeRegex(adj)}\\b`,
+          "i"
+        );
+        if (reversePattern.test(text)) {
+          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
+          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
+        }
+      }
+
+      for (const adj of negativeKeywords) {
+        const reversePattern = new RegExp(
+          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+${escapeRegex(adj)}\\b`,
+          "i"
+        );
+        if (reversePattern.test(text)) {
+          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
+          negPhrases.set(phrase, (negPhrases.get(phrase) || 0) + 1);
+        }
+      }
+    }
+  }
+
+  return { positive: posPhrases, negative: negPhrases };
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function capitalizePhrase(str: string): string {
+  // Keep short words like "of", "and" lowercase; capitalize main words
+  return str.split(" ").map((w, i) =>
+    i === 0 || w.length > 3 ? capitalize(w) : w
+  ).join(" ");
+}
+
+/** Sort a frequency map by count descending, return keys */
+function sortByFrequency(map: Map<string, number>): string[] {
+  return [...map.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([phrase]) => phrase);
+}
+
 export function analyzeSentiment(reviews: Review[]): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
   let totalScore = 0;
@@ -60,6 +192,9 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     });
   });
 
+  // Extract compound phrases
+  const phraseResult = extractPhrases(reviews);
+
   return {
     positive,
     negative,
@@ -68,6 +203,10 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     keywords: {
       positive: Array.from(posKeywords),
       negative: Array.from(negKeywords),
+    },
+    phrases: {
+      positive: sortByFrequency(phraseResult.positive),
+      negative: sortByFrequency(phraseResult.negative),
     },
   };
 }
