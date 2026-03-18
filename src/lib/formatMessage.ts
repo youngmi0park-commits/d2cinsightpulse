@@ -533,7 +533,9 @@ export function generateMarketingMessage(
   const posPhrases = (phrases?.positive || []).slice(0, 5);
   const topPhraseStr = posPhrases.length >= 2
     ? posPhrases.slice(0, 3).join(", ")
-    : keywords.positive.slice(0, 3).join(", ");
+    : keywords.positive.length > 0
+      ? keywords.positive.slice(0, 3).join(", ")
+      : "Impressive Quality, Refined Design";
 
   const strengthsSummary = keywords.positive.length > 0
     ? t(
