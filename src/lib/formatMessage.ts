@@ -294,7 +294,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Reliable"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — what users love about the ${productName}. Now with local warranty and service.`),
+          body: bannerBody(`${topBody} — what users love about the ${productName}. Now with local warranty and service.`),
           cta: bannerCta("Shop Now"),
           hashtags: [],
         },
