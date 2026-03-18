@@ -434,7 +434,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
-          body: bannerBody(`Usuários destacam ${pros.slice(0, 2).join(" & ")} como diferenciais. Confira em LGE.com/BR.`),
+          body: bannerBody(`Usuários destacam ${topBodyShort} como diferenciais. Confira em LGE.com/BR.`),
           cta: bannerCta("Saiba Mais"),
           hashtags: [],
         },
