@@ -71,6 +71,15 @@ const positiveIntensifiers = [
   "absolutely", "truly", "really", "very", "extremely", "super",
 ];
 
+// Additional positive expression patterns (not pure adjectives)
+const positiveExpressions = [
+  "best", "top", "leading", "award-winning", "top-rated",
+  "high-quality", "well-built", "well-designed", "top-notch",
+  "cutting-edge", "state-of-the-art", "next-level", "must-see",
+  "standout", "flagship", "class-leading", "top contender",
+  "top pick", "highly rated", "crowd favorite",
+];
+
 /**
  * Extract "adjective + feature" and "adverb + adjective + feature" compound phrases
  * from review text. Returns phrases ranked by frequency.
@@ -111,6 +120,27 @@ function extractPhrases(reviews: Review[]): { positive: Map<string, number>; neg
         if (pattern.test(text)) {
           const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
           negPhrases.set(phrase, (negPhrases.get(phrase) || 0) + 1);
+        }
+      }
+
+      // Also check positive expressions (e.g. "best picture quality", "top-rated display")
+      for (const expr of positiveExpressions) {
+        const exprPattern = new RegExp(
+          `\\b${escapeRegex(expr)}\\b[\\w\\s,]{0,20}\\b${escapeRegex(nounLower)}\\b`,
+          "i"
+        );
+        if (exprPattern.test(text)) {
+          const phrase = `${capitalizePhrase(expr)} ${capitalizePhrase(noun)}`;
+          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
+        }
+        // Reverse: "noun ... best/top"
+        const revExprPattern = new RegExp(
+          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,15}\\b${escapeRegex(expr)}\\b`,
+          "i"
+        );
+        if (revExprPattern.test(text)) {
+          const phrase = `${capitalizePhrase(expr)} ${capitalizePhrase(noun)}`;
+          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
         }
       }
     }
