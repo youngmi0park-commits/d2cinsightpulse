@@ -109,12 +109,23 @@ export function generateGeoMarketingMessages(
   sentiment: SentimentResult
 ): GeoMessage[] {
   const productName = toPRName(rawProductName);
-  const { keywords, positive, negative, neutral, averageScore } = sentiment;
+  const { keywords, positive, negative, neutral, averageScore, phrases } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
   const pros = keywords.positive.slice(0, 3);
   const cons = keywords.negative.slice(0, 2);
   const score = (averageScore * 100).toFixed(0);
+
+  // Compound phrases from reviews e.g. "Stunning Picture Quality", "Incredibly Smooth Motion"
+  const posPhrases = (phrases?.positive || []).slice(0, 5);
+  const negPhrases = (phrases?.negative || []).slice(0, 3);
+  // Helper: pick top phrases or fall back to adjective keywords
+  const topBody = posPhrases.length >= 2
+    ? posPhrases.slice(0, 3).join(", ")
+    : pros.slice(0, 3).join(", ");
+  const topBodyShort = posPhrases.length >= 1
+    ? posPhrases.slice(0, 2).join(" & ")
+    : pros.slice(0, 2).join(" & ");
 
   // ⚠️ LGE 해외광고 법무검토 체크리스트 준수 사항:
   // - 근거 없는 최상급 표현 금지 (#9): "best", "#1", "unprecedented", "crowd favorite" 등 사용 불가
