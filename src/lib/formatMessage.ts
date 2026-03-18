@@ -304,7 +304,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Impressive"}. ${pros[1] || "Efficient"}. Users agree.`,
-          body: `Canadian users describe the ${productName} as ${pros.slice(0, 3).join(", ")}. Data sourced from ${dataSrc}.`,
+          body: `Canadian users describe the ${productName} as ${topBody}. Data sourced from ${dataSrc}.`,
           cta: "Learn More at LGE.com/CA →",
           hashtags: ["#LGCanada", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
