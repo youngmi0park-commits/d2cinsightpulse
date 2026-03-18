@@ -227,6 +227,9 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
   // Extract compound phrases
   const phraseResult = extractPhrases(reviews);
 
+  // Extract usage scenes (places, situations)
+  const usageScenes = extractUsageScenes(reviews);
+
   return {
     positive,
     negative,
@@ -240,6 +243,7 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
       positive: sortByFrequency(phraseResult.positive),
       negative: sortByFrequency(phraseResult.negative),
     },
+    usageScenes,
   };
 }
 
