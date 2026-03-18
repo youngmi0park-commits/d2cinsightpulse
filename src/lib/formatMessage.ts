@@ -266,7 +266,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("Life's Good."),
           headline: bannerHeadline(getPatternHeadline("playful", productName, pros[0] || "Quality", 3)),
-          body: bannerBody(`${pros[0] || "Stunning"}, ${pros[1] || "smooth"}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
+          body: bannerBody(`${topBodyShort}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
           cta: bannerCta("Discover"),
           hashtags: [],
         },
