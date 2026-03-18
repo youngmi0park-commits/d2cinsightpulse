@@ -462,7 +462,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
-          body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LGE.com/NL.`),
+          body: bannerBody(`Gebruikers waarderen ${topBodyShort}. EU-garantie. Ontdek meer op LGE.com/NL.`),
           cta: bannerCta("Ontdek meer"),
           hashtags: [],
         },
