@@ -444,7 +444,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
-          body: `Usuários destacam ${pros.join(", ")} como pontos fortes. Dados de ${dataSrc}. Qualidade OLED e estabilidade de streaming são pontos frequentes.`,
+          body: `Usuários destacam ${topBody} como pontos fortes. Dados de ${dataSrc}.`,
           cta: "Saiba mais em LGE.com/BR →",
           hashtags: ["#LGBrasil", `#${productName.replace(/\s+/g, "")}`, "#Anúncio"],
         },
