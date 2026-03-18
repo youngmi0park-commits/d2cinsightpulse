@@ -109,12 +109,23 @@ export function generateGeoMarketingMessages(
   sentiment: SentimentResult
 ): GeoMessage[] {
   const productName = toPRName(rawProductName);
-  const { keywords, positive, negative, neutral, averageScore } = sentiment;
+  const { keywords, positive, negative, neutral, averageScore, phrases } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
   const pros = keywords.positive.slice(0, 3);
   const cons = keywords.negative.slice(0, 2);
   const score = (averageScore * 100).toFixed(0);
+
+  // Compound phrases from reviews e.g. "Stunning Picture Quality", "Incredibly Smooth Motion"
+  const posPhrases = (phrases?.positive || []).slice(0, 5);
+  const negPhrases = (phrases?.negative || []).slice(0, 3);
+  // Helper: pick top phrases or fall back to adjective keywords
+  const topBody = posPhrases.length >= 2
+    ? posPhrases.slice(0, 3).join(", ")
+    : pros.slice(0, 3).join(", ");
+  const topBodyShort = posPhrases.length >= 1
+    ? posPhrases.slice(0, 2).join(" & ")
+    : pros.slice(0, 2).join(" & ");
 
   // ⚠️ LGE 해외광고 법무검토 체크리스트 준수 사항:
   // - 근거 없는 최상급 표현 금지 (#9): "best", "#1", "unprecedented", "crowd favorite" 등 사용 불가
@@ -133,7 +144,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "🎯",
     headline: criteoHL(`${productName} — ${pros[0] || "Quality"}`),
-    body: criteoDesc(`${pros.slice(0, 2).join(", ")} — see why.`),
+    body: criteoDesc(`${topBodyShort} — see why.`),
     cta: criteoCta("Shop Now"),
     hashtags: [] as string[],
   });
@@ -144,7 +155,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "📊",
     headline: pmaxHL(`${productName} — ${pros[0] || "Quality"}`),
-    body: pmaxDesc(`${pros.slice(0, 3).join(", ")} — real users' words for the ${productName}. See their reviews.`),
+    body: pmaxDesc(`${topBody} — real users' words for the ${productName}. See their reviews.`),
     cta: "Shop Now",
     hashtags: [] as string[],
   });
@@ -155,7 +166,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "🎤",
     headline: `${productName} — Review Talking Points`,
-    body: `Key features users love: ${pros.join(", ")}. ${cons.length > 0 ? `Honest note: some users mention ${cons[0]} — LG is actively improving this.` : ""} Focus on real-world experience and authentic storytelling.`,
+    body: `Key phrases from reviews: ${topBody}. ${cons.length > 0 ? `Honest note: some users mention ${cons[0]} — LG is actively improving this.` : ""} Focus on real-world experience and authentic storytelling.`,
     cta: "Learn More at LGE.com →",
     hashtags: ["#LGPartner", `#${productName.replace(/\s+/g, "")}`, "#Sponsored"],
   });
@@ -185,7 +196,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("INTRODUCING"),
           headline: bannerHeadline(getPatternHeadline("technical", productName, pros[0] || "Experience", 0)),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — the words users choose to describe the ${productName}.`),
+          body: bannerBody(`${topBody} — the words users choose to describe the ${productName}.`),
           cta: bannerCta("Shop Now"),
           hashtags: [],
         },
@@ -196,7 +207,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("REAL USER REVIEWS"),
           headline: bannerHeadline(`${productName}. ${pros.slice(0, 2).join(". ")}.`),
-          body: bannerBody(`${pros[0] || "Impressive"}, ${pros[1] || "refined"}, and built for the way you live. Meet the ${productName}.`),
+          body: bannerBody(`${topBodyShort}, and built for the way you live. Meet the ${productName}.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
@@ -207,7 +218,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("USER FAVORITES"),
           headline: bannerHeadline(getPatternHeadline("promotional", productName, pros[0] || "Quality", 2)),
-          body: bannerBody(`Users describe it as ${pros.slice(0, 3).join(", ")}. Experience the ${productName} yourself.`),
+          body: bannerBody(`Users describe it as ${topBody}. Experience the ${productName} yourself.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
@@ -217,7 +228,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Impressive"}. ${pros[1] || "Refined"}. See for yourself.`,
-          body: `Users call it ${pros.slice(0, 3).join(", ")}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on feedback.` : ""} Discover the ${productName}.`,
+          body: `Users call it ${topBody}. ${cons.length > 0 ? `LG continues to refine ${cons[0]} based on feedback.` : ""} Discover the ${productName}.`,
           cta: "Learn More at LGE.com →",
           hashtags: ["#LG", `#${productName.replace(/\s+/g, "")}`, "#ReviewInsights", "#Ad"],
           schema: {
@@ -244,7 +255,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("CUSTOMER FAVOURITES"),
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Refined"}.`),
-          body: bannerBody(`Users describe it as ${pros.slice(0, 3).join(", ")}. Experience it at Currys or LGE.com/UK.`),
+          body: bannerBody(`Users describe it as ${topBody}. Experience it at Currys or LGE.com/UK.`),
           cta: bannerCta("Buy Now"),
           hashtags: [],
         },
@@ -255,7 +266,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("Life's Good."),
           headline: bannerHeadline(getPatternHeadline("playful", productName, pros[0] || "Quality", 3)),
-          body: bannerBody(`${pros[0] || "Stunning"}, ${pros[1] || "smooth"}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
+          body: bannerBody(`${topBodyShort}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
           cta: bannerCta("Discover"),
           hashtags: [],
         },
@@ -265,7 +276,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Quality"}. ${pros[1] || "Reliable"}. Worth It.`,
-          body: `${pros.slice(0, 3).join(", ")} — that's how UK users describe the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
+          body: `${topBody} — that's how UK users describe the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
           cta: "Learn More at LGE.com/UK →",
           hashtags: ["#LGUK", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
@@ -283,7 +294,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Reliable"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — what users love about the ${productName}. Now with local warranty and service.`),
+          body: bannerBody(`${topBody} — what users love about the ${productName}. Now with local warranty and service.`),
           cta: bannerCta("Shop Now"),
           hashtags: [],
         },
@@ -293,7 +304,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Impressive"}. ${pros[1] || "Efficient"}. Users agree.`,
-          body: `Canadian users describe the ${productName} as ${pros.slice(0, 3).join(", ")}. Data sourced from ${dataSrc}.`,
+          body: `Canadian users describe the ${productName} as ${topBody}. Data sourced from ${dataSrc}.`,
           cta: "Learn More at LGE.com/CA →",
           hashtags: ["#LGCanada", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
@@ -311,7 +322,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Efficient"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — users' words for the ${productName}. At JB Hi-Fi, Harvey Norman & LGE.com AU.`),
+          body: bannerBody(`${topBody} — users' words for the ${productName}. At JB Hi-Fi, Harvey Norman & LGE.com AU.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
@@ -321,7 +332,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Quality"}. ${pros[1] || "Reliable"}. Users' choice.`,
-          body: `${pros.slice(0, 3).join(", ")} — real user words for the ${productName}. At JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
+          body: `${topBody} — real user words for the ${productName}. At JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
           cta: "Learn More at LGE.com/AU →",
           hashtags: ["#LGAustralia", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
@@ -339,7 +350,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
-          body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
+          body: bannerBody(`Nutzer loben ${topBodyShort}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
           cta: bannerCta("Jetzt entdecken"),
           hashtags: [],
         },
@@ -349,7 +360,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anzeige] ${productName} — Nutzer loben ${pros[0] || "Qualität"} in ihren Bewertungen.`,
-          body: `Nutzer heben ${pros.join(", ")} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
+          body: `Nutzer heben ${topBody} als Stärken hervor. DVB-T2/SAT-Kompatibilität und EU-Garantie inklusive. Daten aus ${dataSrc}.`,
           cta: "Mehr erfahren auf LGE.com/DE →",
           hashtags: ["#LGDeutschland", `#${productName.replace(/\s+/g, "")}`, "#Anzeige"],
         },
@@ -367,7 +378,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Innovative"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — how users describe the ${productName}. Explore at LGE.com/IN.`),
+          body: bannerBody(`${topBody} — how users describe the ${productName}. Explore at LGE.com/IN.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
@@ -377,7 +388,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Performance"}. ${pros[1] || "Quality"}. Delivered.`,
-          body: `Users describe the ${productName} as ${pros.slice(0, 3).join(", ")}. Review data from ${dataSrc}.`,
+          body: `Users describe the ${productName} as ${topBody}. Review data from ${dataSrc}.`,
           cta: "Explore at LGE.com/IN →",
           hashtags: ["#LGIndia", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
@@ -395,7 +406,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualité"} saluée.`),
-          body: bannerBody(`Les utilisateurs apprécient ${pros.slice(0, 2).join(" & ")}. Disponible chez Darty, Boulanger et LGE.com/FR.`),
+          body: bannerBody(`Les utilisateurs apprécient ${topBodyShort}. Disponible chez Darty, Boulanger et LGE.com/FR.`),
           cta: bannerCta("Découvrir"),
           hashtags: [],
         },
@@ -405,7 +416,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicité] ${productName} — Les utilisateurs saluent ${pros[0] || "la qualité"}.`,
-          body: `Les utilisateurs mettent en avant ${pros.join(", ")} comme points forts. Données issues de ${dataSrc}. Disponible chez Darty, Boulanger et LGE.com/FR.`,
+          body: `Les utilisateurs mettent en avant ${topBody} comme points forts. Données issues de ${dataSrc}. Disponible chez Darty, Boulanger et LGE.com/FR.`,
           cta: "En savoir plus sur LGE.com/FR →",
           hashtags: ["#LGFrance", `#${productName.replace(/\s+/g, "")}`, "#Publicité"],
         },
@@ -423,7 +434,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
-          body: bannerBody(`Usuários destacam ${pros.slice(0, 2).join(" & ")} como diferenciais. Confira em LGE.com/BR.`),
+          body: bannerBody(`Usuários destacam ${topBodyShort} como diferenciais. Confira em LGE.com/BR.`),
           cta: bannerCta("Saiba Mais"),
           hashtags: [],
         },
@@ -433,7 +444,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Anúncio] ${productName} — Usuários destacam ${pros[0] || "qualidade"} como diferencial.`,
-          body: `Usuários destacam ${pros.join(", ")} como pontos fortes. Dados de ${dataSrc}. Qualidade OLED e estabilidade de streaming são pontos frequentes.`,
+          body: `Usuários destacam ${topBody} como pontos fortes. Dados de ${dataSrc}.`,
           cta: "Saiba mais em LGE.com/BR →",
           hashtags: ["#LGBrasil", `#${productName.replace(/\s+/g, "")}`, "#Anúncio"],
         },
@@ -451,7 +462,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
-          body: bannerBody(`Gebruikers waarderen ${pros.slice(0, 2).join(" & ")}. EU-garantie. Ontdek meer op LGE.com/NL.`),
+          body: bannerBody(`Gebruikers waarderen ${topBodyShort}. EU-garantie. Ontdek meer op LGE.com/NL.`),
           cta: bannerCta("Ontdek meer"),
           hashtags: [],
         },
@@ -461,7 +472,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Advertentie] ${productName} — Gebruikers waarderen ${pros[0] || "kwaliteit"}.`,
-          body: `Gebruikers waarderen ${pros.join(", ")} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
+          body: `Gebruikers waarderen ${topBody} als sterke punten. Gegevens van ${dataSrc}. EU-energielabel en garantie van toepassing.`,
           cta: "Meer info op LGE.com/NL →",
           hashtags: ["#LGNL", `#${productName.replace(/\s+/g, "")}`, "#Advertentie"],
         },
@@ -479,7 +490,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Calidad"} destacada.`),
-          body: bannerBody(`Los usuarios destacan ${pros.slice(0, 2).join(" & ")} como fortalezas. Garantía local. LGE.com/MX.`),
+          body: bannerBody(`Los usuarios destacan ${topBodyShort} como fortalezas. Garantía local. LGE.com/MX.`),
           cta: bannerCta("Comprar Ahora"),
           hashtags: [],
         },
@@ -489,7 +500,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Publicidad] ${productName} — Los usuarios destacan ${pros[0] || "calidad"} como fortaleza.`,
-          body: `Los usuarios destacan ${pros.join(", ")} como puntos fuertes. Datos de ${dataSrc}. Garantía local disponible.`,
+          body: `Los usuarios destacan ${topBody} como puntos fuertes. Datos de ${dataSrc}. Garantía local disponible.`,
           cta: "Más información en LGE.com/MX →",
           hashtags: ["#LGMexico", `#${productName.replace(/\s+/g, "")}`, "#Publicidad"],
         },
@@ -507,17 +518,21 @@ export function generateMarketingMessage(
   lang: "en" | "ko" = "ko"
 ): MarketingOutput {
   const productName = toPRName(rawProductName);
-  const { keywords, positive, negative, neutral, averageScore } = sentiment;
+  const { keywords, positive, negative, neutral, averageScore, phrases } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
   const negPercent = total > 0 ? Math.round((negative / total) * 100) : 0;
   const neuPercent = total > 0 ? Math.round((neutral / total) * 100) : 0;
   const t = (en: string, ko: string) => (lang === "en" ? en : ko);
+  const posPhrases = (phrases?.positive || []).slice(0, 5);
+  const topPhraseStr = posPhrases.length >= 2
+    ? posPhrases.slice(0, 3).join(", ")
+    : keywords.positive.slice(0, 3).join(", ");
 
   const strengthsSummary = keywords.positive.length > 0
     ? t(
-        `Key strengths of ${productName} highlighted by users: ${keywords.positive.join(", ")}`,
-        `고객들이 꼽은 ${productName}의 강점: ${keywords.positive.join(", ")}`
+        `Key strengths of ${productName} highlighted by users: ${topPhraseStr || keywords.positive.join(", ")}`,
+        `고객들이 꼽은 ${productName}의 강점: ${topPhraseStr || keywords.positive.join(", ")}`
       )
     : t(
         `Collecting positive keywords for ${productName}.`,
@@ -594,8 +609,8 @@ export function generateMarketingMessage(
 
   const tagline = averageScore >= 0.7
     ? t(
-        `✨ "${productName}" — ${keywords.positive[0] || "Quality"} recognized by users. Experience it yourself.`,
-        `✨ "${productName}" — 사용자들이 인정한 ${keywords.positive[0] || "품질"}, 직접 경험해보세요`
+        `✨ "${productName}" — ${posPhrases[0] || keywords.positive[0] || "Quality"} recognized by users. Experience it yourself.`,
+        `✨ "${productName}" — 사용자들이 인정한 ${posPhrases[0] || keywords.positive[0] || "품질"}, 직접 경험해보세요`
       )
     : t(
         `📊 "${productName}" — See what real reviews say.`,
