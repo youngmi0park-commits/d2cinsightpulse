@@ -350,7 +350,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
-          body: bannerBody(`Nutzer loben ${pros.slice(0, 2).join(" & ")}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
+          body: bannerBody(`Nutzer loben ${topBodyShort}. Mit EU-Garantie. Jetzt entdecken auf LGE.com/DE.`),
           cta: bannerCta("Jetzt entdecken"),
           hashtags: [],
         },
