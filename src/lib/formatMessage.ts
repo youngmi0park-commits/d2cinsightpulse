@@ -166,7 +166,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "🎤",
     headline: `${productName} — Review Talking Points`,
-    body: `Key features users love: ${pros.join(", ")}. ${cons.length > 0 ? `Honest note: some users mention ${cons[0]} — LG is actively improving this.` : ""} Focus on real-world experience and authentic storytelling.`,
+    body: `Key phrases from reviews: ${topBody}. ${cons.length > 0 ? `Honest note: some users mention ${cons[0]} — LG is actively improving this.` : ""} Focus on real-world experience and authentic storytelling.`,
     cta: "Learn More at LGE.com →",
     hashtags: ["#LGPartner", `#${productName.replace(/\s+/g, "")}`, "#Sponsored"],
   });
