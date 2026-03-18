@@ -133,7 +133,7 @@ export function generateGeoMarketingMessages(
     channelGroup: "outside",
     icon: "🎯",
     headline: criteoHL(`${productName} — ${pros[0] || "Quality"}`),
-    body: criteoDesc(`Users praise ${pros.slice(0, 2).join(" & ")}.`),
+    body: criteoDesc(`${pros.slice(0, 2).join(", ")} — see why.`),
     cta: criteoCta("Shop Now"),
     hashtags: [] as string[],
   });
