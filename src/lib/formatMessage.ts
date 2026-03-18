@@ -378,7 +378,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Innovative"}.`),
-          body: bannerBody(`${pros.slice(0, 3).join(", ")} — how users describe the ${productName}. Explore at LGE.com/IN.`),
+          body: bannerBody(`${topBody} — how users describe the ${productName}. Explore at LGE.com/IN.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
