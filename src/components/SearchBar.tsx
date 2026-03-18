@@ -30,15 +30,13 @@ const categoryOrder = ["TV", "Monitor", "Washer", "Dryer", "Laptop", "Projector"
 // Quick-search buttons shown below the search bar (Washer & Dryer split)
 const quickSearchButtons = [
   { label: "📺 TV", query: "TV" },
-  { label: "🖥️ Monitor", query: "Monitor" },
-  { label: "❄️ Air Conditioner", query: "Air Conditioner" },
   { label: "🧺 Washer", query: "Washer" },
-  { label: "🧺 Dryer", query: "Dryer" },
-  { label: "💻 Laptop", query: "Laptop" },
-  { label: "🎬 Projector", query: "Projector" },
-  { label: "🍳 Kitchen Appliance", query: "Kitchen Appliance" },
+  { label: "🖥️ Monitor", query: "Monitor" },
   { label: "🧊 Refrigerator", query: "Refrigerator" },
+  { label: "❄️ Air Conditioner", query: "Air Conditioner" },
   { label: "🔊 Audio", query: "Audio" },
+  { label: "💻 Laptop", query: "Laptop" },
+  { label: "🧺 Dryer", query: "Dryer" },
 ];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
