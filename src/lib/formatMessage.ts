@@ -207,7 +207,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("REAL USER REVIEWS"),
           headline: bannerHeadline(`${productName}. ${pros.slice(0, 2).join(". ")}.`),
-          body: bannerBody(`${pros[0] || "Impressive"}, ${pros[1] || "refined"}, and built for the way you live. Meet the ${productName}.`),
+          body: bannerBody(`${topBodyShort}, and built for the way you live. Meet the ${productName}.`),
           cta: bannerCta("Learn More"),
           hashtags: [],
         },
