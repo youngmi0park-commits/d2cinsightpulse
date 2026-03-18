@@ -518,12 +518,16 @@ export function generateMarketingMessage(
   lang: "en" | "ko" = "ko"
 ): MarketingOutput {
   const productName = toPRName(rawProductName);
-  const { keywords, positive, negative, neutral, averageScore } = sentiment;
+  const { keywords, positive, negative, neutral, averageScore, phrases } = sentiment;
   const total = positive + negative + neutral;
   const posPercent = total > 0 ? Math.round((positive / total) * 100) : 0;
   const negPercent = total > 0 ? Math.round((negative / total) * 100) : 0;
   const neuPercent = total > 0 ? Math.round((neutral / total) * 100) : 0;
   const t = (en: string, ko: string) => (lang === "en" ? en : ko);
+  const posPhrases = (phrases?.positive || []).slice(0, 5);
+  const topPhraseStr = posPhrases.length >= 2
+    ? posPhrases.slice(0, 3).join(", ")
+    : keywords.positive.slice(0, 3).join(", ");
 
   const strengthsSummary = keywords.positive.length > 0
     ? t(
