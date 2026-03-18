@@ -71,6 +71,15 @@ const positiveIntensifiers = [
   "absolutely", "truly", "really", "very", "extremely", "super",
 ];
 
+// Additional positive expression patterns (not pure adjectives)
+const positiveExpressions = [
+  "best", "top", "leading", "award-winning", "top-rated",
+  "high-quality", "well-built", "well-designed", "top-notch",
+  "cutting-edge", "state-of-the-art", "next-level", "must-see",
+  "standout", "flagship", "class-leading", "top contender",
+  "top pick", "highly rated", "crowd favorite",
+];
+
 /**
  * Extract "adjective + feature" and "adverb + adjective + feature" compound phrases
  * from review text. Returns phrases ranked by frequency.
