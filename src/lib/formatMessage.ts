@@ -276,7 +276,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Quality"}. ${pros[1] || "Reliable"}. Worth It.`,
-          body: `${pros.slice(0, 3).join(", ")} — that's how UK users describe the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
+          body: `${topBody} — that's how UK users describe the ${productName}. Available at Currys, Richer Sounds, and LGE.com/UK.`,
           cta: "Learn More at LGE.com/UK →",
           hashtags: ["#LGUK", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
