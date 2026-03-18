@@ -207,7 +207,7 @@ export function generateGeoMarketingMessages(
           icon: "🌐",
           kicker: bannerKicker("USER FAVORITES"),
           headline: bannerHeadline(getPatternHeadline("promotional", productName, pros[0] || "Quality", 2)),
-          body: bannerBody(`${posPercent}% positive sentiment from ${total} real reviews. See why users love the ${productName}.`),
+          body: bannerBody(`Users describe it as ${pros.slice(0, 3).join(", ")}. Experience the ${productName} yourself.`),
           cta: bannerCta("Explore Now"),
           hashtags: [],
         },
