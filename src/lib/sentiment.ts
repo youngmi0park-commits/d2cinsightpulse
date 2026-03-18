@@ -256,3 +256,91 @@ function classifyText(text: string): "positive" | "negative" | "neutral" {
   if (negCount > posCount) return "negative";
   return "neutral";
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Usage Scene Extraction — places, situations, contexts
+// ──────────────────────────────────────────────────────────────────
+
+const SCENE_PLACES = [
+  "kitchen", "bedroom", "living room", "bathroom", "office", "desk", "garage",
+  "patio", "balcony", "backyard", "garden", "outdoor", "outdoors", "camping",
+  "tailgating", "road trip", "hotel", "dorm", "dorm room", "apartment",
+  "small space", "studio", "gym", "workout room", "home gym", "basement",
+  "nursery", "kids room", "game room", "man cave", "shed", "RV", "van",
+  "poolside", "beach", "park", "rooftop", "terrace", "laundry room",
+];
+
+const SCENE_SITUATIONS = [
+  "cooking", "working from home", "WFH", "remote work", "work from bed",
+  "movie night", "binge watching", "gaming", "streaming", "video call",
+  "zoom call", "exercise", "yoga", "meditation", "bedtime", "night routine",
+  "morning routine", "multitasking", "studying", "reading recipes",
+  "following tutorials", "music listening", "party", "entertaining guests",
+  "kids entertainment", "baby monitor", "pet cam", "presentation",
+  "photo editing", "content creation", "podcast", "karaoke",
+  "outdoor movie", "tailgate party", "picnic", "barbecue", "BBQ",
+  "travel", "commute", "flight", "hotel room",
+];
+
+const SCENE_PATTERNS = [
+  // "I use it in/at/for ..."
+  /\b(?:use|using|used)\s+(?:it|this|mine)\s+(?:in|at|for|during|while)\s+(?:the\s+)?([^,.!?]{3,40})/gi,
+  // "great for / perfect for ..."
+  /\b(?:great|perfect|ideal|amazing|awesome|convenient|handy)\s+(?:for|in|at|during)\s+(?:the\s+)?([^,.!?]{3,40})/gi,
+  // "in my kitchen / in the bedroom ..."
+  /\b(?:in|at)\s+(?:my|the|our)\s+([^,.!?]{3,30})/gi,
+  // "while cooking / while working ..."
+  /\b(?:while|when|during)\s+([^,.!?]{3,30})/gi,
+  // "from room to room / kitchen to bedroom"
+  /\bfrom\s+(?:the\s+)?(\w+)\s+to\s+(?:the\s+)?(\w+)/gi,
+];
+
+function extractUsageScenes(reviews: Review[]): string[] {
+  const sceneMap = new Map<string, number>();
+
+  for (const review of reviews) {
+    const text = review.text;
+    const textLower = text.toLowerCase();
+
+    // Direct place matches
+    for (const place of SCENE_PLACES) {
+      if (textLower.includes(place.toLowerCase())) {
+        const normalized = place.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+      }
+    }
+
+    // Direct situation matches
+    for (const situation of SCENE_SITUATIONS) {
+      if (textLower.includes(situation.toLowerCase())) {
+        const normalized = situation.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+      }
+    }
+
+    // Pattern-based extraction for richer context
+    for (const pattern of SCENE_PATTERNS) {
+      pattern.lastIndex = 0;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const scene = (match[1] || "").trim();
+        if (scene.length >= 4 && scene.length <= 40) {
+          // Check it's not just filler words
+          const fillerWords = ["the", "a", "an", "it", "this", "that", "my", "your", "i", "we"];
+          const words = scene.toLowerCase().split(/\s+/);
+          const meaningfulWords = words.filter(w => !fillerWords.includes(w));
+          if (meaningfulWords.length >= 1) {
+            const normalized = scene.charAt(0).toUpperCase() + scene.slice(1);
+            sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort by frequency, return top scenes
+  return [...sceneMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([scene, count]) => `${scene} (${count}x)`);
+}

@@ -709,5 +709,20 @@ ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천"
     ),
   ];
 
-  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, durabilityInsights };
+  // Usage Scenes — extracted from review mentions of places & situations
+  const usageScenes = (sentiment.usageScenes || []).length > 0
+    ? sentiment.usageScenes.map((scene) => {
+        return t(
+          `📍 ${scene}`,
+          `📍 ${scene}`
+        );
+      })
+    : [
+        t(
+          "No specific usage scenes mentioned yet — more review data needed.",
+          "아직 구체적인 사용 장면 언급이 없습니다 — 리뷰 데이터가 더 필요합니다."
+        ),
+      ];
+
+  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, usageScenes, durabilityInsights };
 }
