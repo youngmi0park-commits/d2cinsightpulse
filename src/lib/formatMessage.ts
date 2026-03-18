@@ -609,8 +609,8 @@ export function generateMarketingMessage(
 
   const tagline = averageScore >= 0.7
     ? t(
-        `✨ "${productName}" — ${keywords.positive[0] || "Quality"} recognized by users. Experience it yourself.`,
-        `✨ "${productName}" — 사용자들이 인정한 ${keywords.positive[0] || "품질"}, 직접 경험해보세요`
+        `✨ "${productName}" — ${posPhrases[0] || keywords.positive[0] || "Quality"} recognized by users. Experience it yourself.`,
+        `✨ "${productName}" — 사용자들이 인정한 ${posPhrases[0] || keywords.positive[0] || "품질"}, 직접 경험해보세요`
       )
     : t(
         `📊 "${productName}" — See what real reviews say.`,
