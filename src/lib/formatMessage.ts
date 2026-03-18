@@ -332,7 +332,7 @@ export function generateGeoMarketingMessages(
           channelGroup: "outside" as ChannelGroup,
           icon: "📱",
           headline: `[Ad] ${productName} — ${pros[0] || "Quality"}. ${pros[1] || "Reliable"}. Users' choice.`,
-          body: `${pros.slice(0, 3).join(", ")} — real user words for the ${productName}. At JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
+          body: `${topBody} — real user words for the ${productName}. At JB Hi-Fi, Harvey Norman, and LGE.com AU.`,
           cta: "Learn More at LGE.com/AU →",
           hashtags: ["#LGAustralia", `#${productName.replace(/\s+/g, "")}`, "#Ad"],
         },
