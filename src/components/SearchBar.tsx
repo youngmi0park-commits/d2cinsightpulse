@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Search, List } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, List, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getProductList } from "@/data/dummyData";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { useProductListWithCounts, ProductWithCount } from "@/hooks/useProductListWithCounts";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -22,12 +22,15 @@ const categoryLabels: Record<string, string> = {
   "Refrigerator": "🧊 Refrigerator",
   "Kitchen Appliance": "🍳 Kitchen Appliance",
   Audio: "🔊 Audio",
+  "Air Conditioner": "❄️ Air Conditioner",
 };
 
-// Category display order by total mention volume (descending)
-const categoryOrder = ["TV", "Monitor", "Washer", "Dryer", "Laptop", "Projector", "Kitchen Appliance", "Refrigerator", "Audio"];
+// Category display order
+const categoryOrder = ["TV", "Monitor", "Washer", "Air Conditioner", "Audio", "Laptop", "Dryer", "Refrigerator", "Projector", "Kitchen Appliance"];
 
-// Quick-search buttons shown below the search bar (Washer & Dryer split)
+const TOP_N = 3;
+
+// Quick-search buttons
 const quickSearchButtons = [
   { label: "📺 TV", query: "TV" },
   { label: "🧺 Washer", query: "Washer" },
@@ -42,21 +45,36 @@ const quickSearchButtons = [
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const productList = getProductList();
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const { t } = useLang();
+  const { data: productList = [], isLoading: productsLoading } = useProductListWithCounts();
 
-  const grouped = productList.reduce<Record<string, typeof productList>>((acc, p) => {
-    if (!acc[p.category]) acc[p.category] = [];
-    acc[p.category].push(p);
-    return acc;
-  }, {});
+  const grouped = useMemo(() => {
+    const g: Record<string, ProductWithCount[]> = {};
+    for (const p of productList) {
+      if (!g[p.category]) g[p.category] = [];
+      g[p.category].push(p);
+    }
+    // Already sorted by review_count desc from hook
+    return g;
+  }, [productList]);
 
-  // Sort categories by predefined mention volume order
-  const sortedCategories = Object.keys(grouped).sort((a, b) => {
-    const ai = categoryOrder.indexOf(a);
-    const bi = categoryOrder.indexOf(b);
-    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-  });
+  const sortedCategories = useMemo(() => {
+    return Object.keys(grouped).sort((a, b) => {
+      const ai = categoryOrder.indexOf(a);
+      const bi = categoryOrder.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+  }, [grouped]);
+
+  const toggleExpand = (category: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,40 +111,78 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               <List className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0" align="end">
+          <PopoverContent className="w-96 p-0" align="end">
             <div className="p-3 border-b border-border">
               <p className="text-sm font-semibold">{t("Product List", "제품 리스트")}</p>
-              <p className="text-xs text-muted-foreground">{t("Click a category or model to search", "카테고리 또는 모델번호 클릭 시 검색")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("Top 3 by review count per category • Click to expand", "카테고리별 리뷰 상위 3개 우선 표시 • 클릭하여 확장")}
+              </p>
             </div>
-            <div className="max-h-80 overflow-y-auto p-2 space-y-3">
-              {sortedCategories.map((category) => {
-                const products = grouped[category];
-                return (
-                <div key={category}>
-                  <button
-                    onClick={() => handleCategorySearch(category)}
-                    className="flex items-center gap-2 w-full text-left px-2 py-1 rounded hover:bg-primary/10 transition-colors"
-                  >
-                    <Badge variant="outline" className="text-xs border-primary/30 text-primary cursor-pointer">
-                      {categoryLabels[category] || category}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{t("Search all →", "전체 검색 →")}</span>
-                  </button>
-                  {products.map((p) => (
-                    <button
-                      key={p.name}
-                      onClick={() => handleSelectProduct(p.name)}
-                      className="w-full text-left px-3 py-2 rounded text-sm hover:bg-secondary transition-colors flex items-center justify-between"
-                    >
-                      <span className="font-mono text-xs">{p.name}</span>
-                      <span className="text-xs text-muted-foreground truncate ml-2 max-w-[140px]">
-                        {p.displayName}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                );
-              })}
+            <div className="max-h-96 overflow-y-auto p-2 space-y-2">
+              {productsLoading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">{t("Loading...", "로딩 중...")}</p>
+              ) : (
+                sortedCategories.map((category) => {
+                  const products = grouped[category];
+                  const isExpanded = expandedCategories.has(category);
+                  const hasMore = products.length > TOP_N;
+                  const visibleProducts = isExpanded ? products : products.slice(0, TOP_N);
+                  const totalReviews = products.reduce((sum, p) => sum + p.review_count, 0);
+
+                  return (
+                    <div key={category} className="border border-border/50 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => handleCategorySearch(category)}
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 bg-secondary/50 hover:bg-primary/10 transition-colors"
+                      >
+                        <Badge variant="outline" className="text-xs border-primary/30 text-primary cursor-pointer">
+                          {categoryLabels[category] || category}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {products.length}{t(" products", "개")} · {totalReviews}{t(" reviews", "건")}
+                        </span>
+                      </button>
+                      <div className="divide-y divide-border/30">
+                        {visibleProducts.map((p, idx) => (
+                          <button
+                            key={p.id}
+                            onClick={() => handleSelectProduct(p.model_number)}
+                            className="w-full text-left px-3 py-1.5 text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+                          >
+                            {idx < TOP_N && !isExpanded && (
+                              <span className="text-xs font-bold text-primary/70 w-4">{idx + 1}</span>
+                            )}
+                            {(isExpanded || idx >= TOP_N) && (
+                              <span className="text-xs text-muted-foreground w-4">{idx + 1}</span>
+                            )}
+                            <span className="font-mono text-xs truncate flex-1">{p.model_number}</span>
+                            <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                              {p.display_name}
+                            </span>
+                            {p.review_count > 0 && (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                                {p.review_count}
+                              </Badge>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      {hasMore && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleExpand(category); }}
+                          className="w-full text-center py-1 text-xs text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1 bg-secondary/30"
+                        >
+                          {isExpanded ? (
+                            <><ChevronUp className="h-3 w-3" />{t("Collapse", "접기")}</>
+                          ) : (
+                            <><ChevronDown className="h-3 w-3" />{t(`+${products.length - TOP_N} more`, `+${products.length - TOP_N}개 더보기`)}</>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </PopoverContent>
         </Popover>
