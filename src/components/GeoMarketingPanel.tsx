@@ -152,7 +152,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                 {m.icon} {m.purposeLabel}
               </button>
             ))}
-            {activeChannel === "outside" && toolkitData && (
+            {activeChannel === "inside" && toolkitData && (
               <>
                 <button
                   onClick={() => setActivePurpose("customer_language")}
@@ -162,7 +162,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                       : "bg-background border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  💬 {t("Customer Language Library", "고객 언어 라이브러리")}
+                  💬 {t("닷컴 카피_고객언어활용", "닷컴 카피_고객언어활용")}
                 </button>
                 <button
                   onClick={() => setActivePurpose("problem_solution")}
@@ -172,7 +172,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                       : "bg-background border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  🧩 {t("Problem → Solution Templates", "문제→해결 템플릿")}
+                  🧩 {t("닷컴 카피_문제해결형", "닷컴 카피_문제해결형")}
                 </button>
               </>
             )}
