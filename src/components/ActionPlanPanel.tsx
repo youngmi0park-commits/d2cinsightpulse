@@ -214,8 +214,8 @@ export function ActionPlanPanel({ productName, displayName, category, sentiment,
                     {t("Analysis Summary", "분석 요약")}
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-center">
-                      <p className="text-2xl font-bold text-emerald-500">{plan.summary.positiveRatio}%</p>
+                    <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-center">
+                      <p className="text-2xl font-bold text-primary">{plan.summary.positiveRatio}%</p>
                       <p className="text-xs text-muted-foreground">{t("Positive", "긍정")}</p>
                     </div>
                     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-center">
