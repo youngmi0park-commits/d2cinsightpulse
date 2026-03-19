@@ -4,11 +4,9 @@ import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 import { toPRName } from "@/lib/formatMessage";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import {
-  Copy, ChevronDown, ChevronUp, Rocket,
+  Copy, Rocket,
   MessageSquareQuote, Puzzle, Search, Users, Sparkles,
   HelpCircle, AlertTriangle, Target, Mail, Video, FileText,
 } from "lucide-react";
