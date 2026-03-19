@@ -280,9 +280,9 @@ const Index = () => {
                         <TabsTrigger
                           key={item.product.name}
                           value={item.product.name}
-                          className="text-xs px-3 py-1.5 font-mono"
+                          className="text-xs px-3 py-1.5"
                         >
-                          {item.product.name}
+                          {item.product.displayName || item.product.name}
                         </TabsTrigger>
                       ))}
                     </TabsList>
