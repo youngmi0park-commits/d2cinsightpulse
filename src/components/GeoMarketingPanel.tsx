@@ -1,14 +1,31 @@
-import { useState } from "react";
-import { type GeoMessage, type ChannelGroup } from "@/lib/formatMessage";
-import { Globe, Copy, Check, Code, Building2, Megaphone } from "lucide-react";
+import { useState, useMemo } from "react";
+import { type GeoMessage, type ChannelGroup, toPRName } from "@/lib/formatMessage";
+import { Globe, Copy, Check, Code, Building2, Megaphone, MessageSquareQuote, Puzzle } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
 import { AdComplianceNotice } from "@/components/AdComplianceNotice";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { generateMarketerToolkit } from "@/lib/marketerToolkit";
+import type { SentimentResult } from "@/lib/sentiment";
+
+const TAG_COLORS: Record<string, string> = {
+  positive: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  negative: "bg-red-500/10 text-red-400 border-red-500/20",
+  confusion: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  expectation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+};
+const TAG_LABELS: Record<string, string> = {
+  positive: "Positive", negative: "Negative", confusion: "Confusion", expectation: "Expectation",
+};
 
 interface GeoMarketingPanelProps {
   geoMessages: GeoMessage[];
   productName: string;
   totalReviews: number;
+  displayName?: string;
+  sentiment?: SentimentResult;
+  reviews?: { text: string; sentiment?: string }[];
 }
 
 const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: string; labelKo: string; descEn: string; descKo: string }[] = [
