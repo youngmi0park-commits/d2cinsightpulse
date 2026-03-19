@@ -328,10 +328,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
                 </div>
               )}
             </ToolkitSection>
-          </div>
-        </CollapsibleContent>
-      </div>
-    </Collapsible>
+    </div>
   );
 }
 
