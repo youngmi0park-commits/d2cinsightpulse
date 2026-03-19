@@ -10,10 +10,10 @@ import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 import type { SentimentResult } from "@/lib/sentiment";
 
 const TAG_COLORS: Record<string, string> = {
-  positive: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  negative: "bg-red-500/10 text-red-400 border-red-500/20",
-  confusion: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  expectation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  positive: "bg-emerald-600/10 text-emerald-800 border-emerald-600/20",
+  negative: "bg-red-600/10 text-red-800 border-red-600/20",
+  confusion: "bg-amber-600/10 text-amber-800 border-amber-600/20",
+  expectation: "bg-blue-600/10 text-blue-800 border-blue-600/20",
 };
 const TAG_LABELS: Record<string, string> = {
   positive: "Positive", negative: "Negative", confusion: "Confusion", expectation: "Expectation",
