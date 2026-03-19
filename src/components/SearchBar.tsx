@@ -6,7 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
 import { useProductListWithCounts, ProductWithCount } from "@/hooks/useProductListWithCounts";
-
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 interface SearchBarProps {
   onSearch: (query: string) => void;
   isLoading: boolean;
@@ -48,6 +49,27 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const { t } = useLang();
   const { data: productList = [], isLoading: productsLoading } = useProductListWithCounts();
+
+  // Check if houzz has 100+ reviews to show quick-search button
+  const { data: houzzCount = 0 } = useQuery({
+    queryKey: ["houzz-review-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("source", "houzz");
+      return count ?? 0;
+    },
+    staleTime: 60_000,
+  });
+
+  const dynamicButtons = useMemo(() => {
+    const base = [...quickSearchButtons];
+    if (houzzCount >= 100) {
+      base.push({ label: "🏠 Houzz", query: "houzz" });
+    }
+    return base;
+  }, [houzzCount]);
 
   const grouped = useMemo(() => {
     const g: Record<string, ProductWithCount[]> = {};
@@ -195,7 +217,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {quickSearchButtons.map((btn) => (
+        {dynamicButtons.map((btn) => (
           <button
             key={btn.query}
             onClick={() => { setQuery(btn.query); onSearch(btn.query); }}
