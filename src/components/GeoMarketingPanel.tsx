@@ -447,7 +447,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
-                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
+                {(activePurpose === "dotcom" || activePurpose === "dotcom_promo") && (
                   <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.body.length}/120)
                   </span>
