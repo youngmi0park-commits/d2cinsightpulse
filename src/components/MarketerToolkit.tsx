@@ -84,72 +84,8 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
               )}
             </p>
 
-            {/* ① Customer Language Library */}
-            <ToolkitSection
-              icon={<MessageSquareQuote className="h-4 w-4" />}
-              number="①"
-              title={t("Customer Language Library", "고객 언어 라이브러리")}
-              subtitle={t("A/B test copy candidates & landing page headlines from real expressions", "실제 고객 표현에서 추출한 A/B 테스트 카피 후보")}
-              onCopy={() => copySection("Customer Language Library", data.customerExpressions.map(e => `[${TAG_LABELS[e.tag]}] "${e.text}" (${e.count}x)`).join("\n"))}
-            >
-              {data.customerExpressions.length === 0 ? (
-                <EmptyState text={t("Not enough vivid expressions found yet.", "아직 충분한 생생한 표현이 추출되지 않았습니다.")} />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {data.customerExpressions.map((expr, i) => (
-                    <button
-                      key={i}
-                      onClick={() => copyText(expr.text)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs cursor-pointer hover:opacity-80 transition-opacity ${TAG_COLORS[expr.tag]}`}
-                    >
-                      <span className="font-medium">{TAG_LABELS[expr.tag]}</span>
-                      <span className="opacity-80">"{expr.text}"</span>
-                      {expr.count > 1 && <span className="opacity-60">({expr.count}x)</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </ToolkitSection>
+            {/* ① & ② moved to Channel Marketing Copy → Outside Channel */}
 
-            {/* ② Problem-Solution Copy Templates */}
-            <ToolkitSection
-              icon={<Puzzle className="h-4 w-4" />}
-              number="②"
-              title={t("Problem → Solution Copy Templates", "문제 → 해결 카피 템플릿")}
-              subtitle={t("Copy-paste ready templates from real pain points", "실제 불만에서 생성한 복붙 가능한 카피 템플릿")}
-              onCopy={() => copySection("Copy Templates", data.problemSolutionTemplates.map(t => t.copyTemplate).join("\n\n---\n\n"))}
-            >
-              {data.problemSolutionTemplates.length === 0 ? (
-                <EmptyState text={t("No negative feedback to generate templates from.", "템플릿을 생성할 부정 피드백이 없습니다.")} />
-              ) : (
-                <div className="grid gap-3">
-                  {data.problemSolutionTemplates.map((tpl, i) => (
-                    <div key={i} className="relative group bg-muted/30 rounded-lg p-4 border border-border/50">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
-                        onClick={() => copyText(tpl.copyTemplate)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">
-                          {t("Pain Point", "페인 포인트")}: {tpl.problem}
-                        </Badge>
-                        <span className="text-muted-foreground text-xs">→</span>
-                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                          {t("Solution", "해결")}: {tpl.solution.split(" — ")[0]?.slice(0, 30)}
-                        </Badge>
-                      </div>
-                      <pre className="text-sm text-foreground/80 whitespace-pre-wrap font-sans leading-relaxed">
-                        {tpl.copyTemplate}
-                      </pre>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ToolkitSection>
 
             {/* ③ Search Intent Ad Ideas */}
             <ToolkitSection
