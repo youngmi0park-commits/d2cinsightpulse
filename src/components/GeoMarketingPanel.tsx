@@ -55,6 +55,12 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
   const [showSchema, setShowSchema] = useState(false);
   const { t } = useLang();
 
+  const toolkitData = useMemo(() => {
+    if (!sentiment || !reviews || reviews.length < 3) return null;
+    return generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews);
+  }, [displayName, productName, sentiment, reviews]);
+
+  const isToolkitPurpose = activePurpose === "customer_language" || activePurpose === "problem_solution";
   const currentGeo = geoMessages.find((g) => g.geo === activeGeo);
   const channelMessages = currentGeo?.messages.filter((m) => m.channelGroup === activeChannel) ?? [];
   const currentMsg = channelMessages.find((m) => m.purpose === activePurpose) ?? channelMessages[0];
