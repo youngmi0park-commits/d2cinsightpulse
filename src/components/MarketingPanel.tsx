@@ -37,7 +37,7 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
   };
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6 space-y-5">
+    <div className="p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

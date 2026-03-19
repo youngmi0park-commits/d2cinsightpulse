@@ -2,10 +2,7 @@ import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
-import { MarketingPanel } from "@/components/MarketingPanel";
-import { ActionPlanPanel } from "@/components/ActionPlanPanel";
-import { MarketerToolkit } from "@/components/MarketerToolkit";
-import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
+import { MarketingHub } from "@/components/MarketingHub";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
@@ -346,11 +343,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
 
       {item.product.reviews.length > 0 && (
         <>
-          <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
-          <MarketingPanel marketing={item.marketing} />
-          <MarketerToolkit
+          <MarketingHub
+            geoMessages={item.geoMessages}
             productName={item.product.name}
             displayName={item.product.displayName}
+            totalReviews={item.product.reviews.length}
+            marketing={item.marketing}
             sentiment={item.sentiment}
             reviews={item.product.reviews}
           />

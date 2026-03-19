@@ -1,14 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import type { SentimentResult } from "@/lib/sentiment";
 import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 import { toPRName } from "@/lib/formatMessage";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import {
-  Copy, ChevronDown, ChevronUp, Rocket,
+  Copy, Rocket,
   MessageSquareQuote, Puzzle, Search, Users, Sparkles,
   HelpCircle, AlertTriangle, Target, Mail, Video, FileText,
 } from "lucide-react";
@@ -49,7 +48,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 export function MarketerToolkit({ productName, displayName, sentiment, reviews }: Props) {
   const { t } = useLang();
-  const [isOpen, setIsOpen] = useState(true);
+  
 
   const data = useMemo(
     () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews),
@@ -68,25 +67,16 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
   if (reviews.length < 3) return null;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="gradient-card rounded-xl border border-border overflow-hidden">
-        <CollapsibleTrigger asChild>
-          <button className="w-full flex items-center justify-between p-5 hover:bg-accent/5 transition-colors text-left">
-            <div className="flex items-center gap-2.5">
-              <Rocket className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold font-heading">
-                {t("Marketer's Actionable Toolkit", "마케터 실행 툴킷")}
-              </h3>
-              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                7 {t("Tools", "항목")}
-              </Badge>
-            </div>
-            {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-          </button>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent>
-          <div className="px-5 pb-6 space-y-6">
+    <div className="p-5 space-y-6">
+      <div className="flex items-center gap-2.5 mb-1">
+        <Rocket className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-semibold font-heading">
+          {t("Marketer's Actionable Toolkit", "마케터 실행 툴킷")}
+        </h3>
+        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+          7 {t("Tools", "항목")}
+        </Badge>
+      </div>
             <p className="text-sm text-muted-foreground">
               {t(
                 "Ready-to-use marketing sources extracted from real customer reviews — copy, templates, ad ideas, segments, and more.",
@@ -337,10 +327,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
                 </div>
               )}
             </ToolkitSection>
-          </div>
-        </CollapsibleContent>
-      </div>
-    </Collapsible>
+    </div>
   );
 }
 

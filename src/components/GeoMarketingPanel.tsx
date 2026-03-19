@@ -69,7 +69,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
   );
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6">
+    <div className="p-6">
       <div className="flex items-center gap-2 mb-4">
         <Globe className="h-6 w-6 text-primary" />
         <h3 className="text-lg font-semibold font-heading">🌍 {t("Channel Marketing Copy Generator", "채널별 마케팅 카피 생성")}</h3>
