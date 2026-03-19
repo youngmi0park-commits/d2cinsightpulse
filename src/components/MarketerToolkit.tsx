@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { SentimentResult } from "@/lib/sentiment";
-import { generateMarketerToolkit, type MarketerToolkitData } from "@/lib/marketerToolkit";
+import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 import { toPRName } from "@/lib/formatMessage";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";

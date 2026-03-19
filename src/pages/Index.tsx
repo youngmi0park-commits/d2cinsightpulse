@@ -4,6 +4,7 @@ import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { MarketingPanel } from "@/components/MarketingPanel";
 import { ActionPlanPanel } from "@/components/ActionPlanPanel";
+import { MarketerToolkit } from "@/components/MarketerToolkit";
 import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
