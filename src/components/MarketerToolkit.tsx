@@ -17,7 +17,7 @@ interface Props {
   productName: string;
   displayName: string;
   sentiment: SentimentResult;
-  reviews: { text: string; sentiment: string }[];
+  reviews: { text: string; sentiment?: string }[];
 }
 
 const TAG_COLORS: Record<string, string> = {

@@ -404,7 +404,7 @@ function generateImprovementPoints(
 export function generateMarketerToolkit(
   productName: string,
   sentiment: SentimentResult,
-  reviews: { text: string; sentiment: string }[]
+  reviews: { text: string; sentiment?: string }[]
 ): MarketerToolkitData {
   return {
     customerExpressions: extractExpressions(reviews),
