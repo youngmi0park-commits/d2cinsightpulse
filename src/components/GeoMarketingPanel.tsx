@@ -47,7 +47,7 @@ const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: stri
   },
 ];
 
-export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
+export function GeoMarketingPanel({ geoMessages, productName, totalReviews, displayName, sentiment, reviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
   const [activeChannel, setActiveChannel] = useState<ChannelGroup>("inside");
   const [activePurpose, setActivePurpose] = useState("dotcom");
