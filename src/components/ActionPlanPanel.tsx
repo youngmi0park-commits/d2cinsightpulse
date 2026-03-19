@@ -301,7 +301,7 @@ export function ActionPlanPanel({ productName, displayName, category, sentiment,
                           </div>
                           <p className="text-xs font-medium">{strategy.activity}</p>
                           <p className="text-xs text-muted-foreground leading-relaxed">{strategy.detail}</p>
-                          <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                          <p className="text-[10px] text-primary">
                             ✦ {strategy.expectedEffect}
                           </p>
                         </div>

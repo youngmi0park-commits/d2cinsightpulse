@@ -1,1 +1,4 @@
 project_id = "ygdgbapodmoxklcssjzr"
+
+[functions.generate-action-plan]
+verify_jwt = false
