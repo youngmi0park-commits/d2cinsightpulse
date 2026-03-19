@@ -3,6 +3,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { MarketingPanel } from "@/components/MarketingPanel";
+import { ActionPlanPanel } from "@/components/ActionPlanPanel";
 import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
