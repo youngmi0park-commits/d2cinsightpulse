@@ -82,7 +82,7 @@ const VIVID_NEGATIVE = [
   /(?:broke|stopped|failed|died|crashed)\s+(?:after|within|in)\s+([^.!]{5,50})/gi,
 ];
 
-function extractExpressions(reviews: { text: string; sentiment: string }[]): CustomerExpression[] {
+function extractExpressions(reviews: { text: string; sentiment?: string }[]): CustomerExpression[] {
   const expressionMap = new Map<string, { tag: CustomerExpression["tag"]; count: number }>();
 
   const addMatch = (text: string, tag: CustomerExpression["tag"]) => {
