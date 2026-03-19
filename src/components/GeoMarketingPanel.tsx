@@ -208,8 +208,112 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
         </div>
       </div>
 
+      {/* Toolkit: Customer Language Library */}
+      {isToolkitPurpose && toolkitData && (
+        <div className="space-y-4">
+          {activePurpose === "customer_language" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquareQuote className="h-4 w-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-foreground/90">
+                    {t("Customer Language Library", "고객 언어 라이브러리")}
+                  </h4>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => copyText(
+                  toolkitData.customerExpressions.map(e => `[${TAG_LABELS[e.tag]}] "${e.text}" (${e.count}x)`).join("\n"), "toolkit_lang"
+                )} className="h-7 text-[10px] gap-1 text-muted-foreground">
+                  {copiedKey === "toolkit_lang" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} Copy
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "Real customer expressions extracted from reviews — use as A/B test copy candidates & landing page headlines.",
+                  "리뷰에서 추출한 실제 고객 표현 — A/B 테스트 카피 후보 및 랜딩페이지 헤드라인으로 활용하세요."
+                )}
+              </p>
+              {toolkitData.customerExpressions.length === 0 ? (
+                <div className="bg-muted/20 rounded-lg p-4 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">{t("Not enough vivid expressions found yet.", "아직 충분한 생생한 표현이 추출되지 않았습니다.")}</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {toolkitData.customerExpressions.map((expr, i) => (
+                    <button
+                      key={i}
+                      onClick={() => copyText(expr.text, `expr_${i}`)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs cursor-pointer hover:opacity-80 transition-opacity ${TAG_COLORS[expr.tag]}`}
+                    >
+                      <span className="font-medium">{TAG_LABELS[expr.tag]}</span>
+                      <span className="opacity-80">"{expr.text}"</span>
+                      {expr.count > 1 && <span className="opacity-60">({expr.count}x)</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activePurpose === "problem_solution" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Puzzle className="h-4 w-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-foreground/90">
+                    {t("Problem → Solution Copy Templates", "문제 → 해결 카피 템플릿")}
+                  </h4>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => copyText(
+                  toolkitData.problemSolutionTemplates.map(tpl => tpl.copyTemplate).join("\n\n---\n\n"), "toolkit_tpl"
+                )} className="h-7 text-[10px] gap-1 text-muted-foreground">
+                  {copiedKey === "toolkit_tpl" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} Copy
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "Copy-paste ready templates generated from real customer pain points.",
+                  "실제 고객 불만에서 생성한 복붙 가능한 카피 템플릿입니다."
+                )}
+              </p>
+              {toolkitData.problemSolutionTemplates.length === 0 ? (
+                <div className="bg-muted/20 rounded-lg p-4 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">{t("No negative feedback to generate templates from.", "템플릿을 생성할 부정 피드백이 없습니다.")}</p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {toolkitData.problemSolutionTemplates.map((tpl, i) => (
+                    <div key={i} className="relative group bg-muted/30 rounded-lg p-4 border border-border/50">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
+                        onClick={() => copyText(tpl.copyTemplate, `tpl_${i}`)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">
+                          {t("Pain Point", "페인 포인트")}: {tpl.problem}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">→</span>
+                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                          {t("Solution", "해결")}: {tpl.solution.split(" — ")[0]?.slice(0, 30)}
+                        </Badge>
+                      </div>
+                      <pre className="text-sm text-foreground/80 whitespace-pre-wrap font-sans leading-relaxed">
+                        {tpl.copyTemplate}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Message Card */}
-      {currentMsg && (
+      {currentMsg && !isToolkitPurpose && (
         <div className="space-y-4">
           <div className="p-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-700 dark:text-yellow-400">
             ⚠️ {t(
