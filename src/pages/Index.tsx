@@ -92,6 +92,15 @@ const Index = () => {
         });
       }
 
+      // Sort: exact model_number match first, then by review count
+      analyzed.sort((a, b) => {
+        const qLower = query.toLowerCase();
+        const aExact = a.product.name.toLowerCase() === qLower ? 1 : 0;
+        const bExact = b.product.name.toLowerCase() === qLower ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        return b.product.reviews.length - a.product.reviews.length;
+      });
+
       if (analyzed.length === 0) {
         setError(
           t(
@@ -271,9 +280,9 @@ const Index = () => {
                         <TabsTrigger
                           key={item.product.name}
                           value={item.product.name}
-                          className="text-xs px-3 py-1.5 font-mono"
+                          className="text-xs px-3 py-1.5"
                         >
-                          {item.product.name}
+                          {item.product.displayName || item.product.name}
                         </TabsTrigger>
                       ))}
                     </TabsList>
@@ -328,12 +337,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <Badge variant="outline" className="text-xs border-primary/30 text-primary">
           {item.product.category}
         </Badge>
-        <h3 className="text-xl font-bold font-heading font-mono">
-          {item.product.name}
+        <h3 className="text-xl font-bold font-heading">
+          {item.product.displayName || item.product.name}
         </h3>
-        {item.product.displayName && (
-          <span className="text-sm text-muted-foreground">{item.product.displayName}</span>
-        )}
+        <span className="text-sm text-muted-foreground font-mono">
+          {item.product.name}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
