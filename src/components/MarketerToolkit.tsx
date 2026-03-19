@@ -108,7 +108,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ④ CRM Segment Insights */}
             <ToolkitSection
               icon={<Users className="h-4 w-4" />}
-              number="④"
+              number="②"
               title={t("Retargeting & CRM Segment Insights", "리타겟팅 & CRM 세그먼트 인사이트")}
               subtitle={t("Behavior-based segments with message, channel, and offer recommendations", "행동 기반 세그먼트별 메시지·채널·오퍼 추천")}
               onCopy={() => copySection("CRM Segments", data.crmSegments.map(s => `[${s.name}]\n${s.description}\nMessage: ${s.message}\nChannel: ${s.channel}\nOffer: ${s.offer}`).join("\n\n"))}
