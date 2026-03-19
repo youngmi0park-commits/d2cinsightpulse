@@ -66,6 +66,9 @@ export function MarketingHub({
             geoMessages={geoMessages}
             productName={productName}
             totalReviews={totalReviews}
+            displayName={displayName}
+            sentiment={sentiment}
+            reviews={reviews}
           />
         </TabsContent>
 
