@@ -343,11 +343,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
 
       {item.product.reviews.length > 0 && (
         <>
-          <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
-          <MarketingPanel marketing={item.marketing} />
-          <MarketerToolkit
+          <MarketingHub
+            geoMessages={item.geoMessages}
             productName={item.product.name}
             displayName={item.product.displayName}
+            totalReviews={item.product.reviews.length}
+            marketing={item.marketing}
             sentiment={item.sentiment}
             reviews={item.product.reviews}
           />
