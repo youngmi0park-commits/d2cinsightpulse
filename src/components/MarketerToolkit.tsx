@@ -193,7 +193,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑥ FAQ Auto-generation */}
             <ToolkitSection
               icon={<HelpCircle className="h-4 w-4" />}
-              number="⑥"
+              number="④"
               title={t("Auto-Generated FAQ", "자동 생성 FAQ")}
               subtitle={t("Top questions from reviews — ready for blog, IG, or YouTube script", "리뷰에서 추출한 반복 질문 TOP N — 블로그·인스타·유튜브 스크립트용")}
               onCopy={() => copySection("FAQ", data.faqItems.map(f => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n"))}
