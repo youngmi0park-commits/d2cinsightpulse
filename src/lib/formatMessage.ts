@@ -247,17 +247,6 @@ export function generateGeoMarketingMessages(
           hashtags: [],
         },
         {
-          purpose: "dotcom_alt1",
-          purposeLabel: "닷컴 카피 (Playful)",
-          channelGroup: "inside" as ChannelGroup,
-          icon: "🌐",
-          kicker: bannerKicker("Life's Good."),
-          headline: bannerHeadline(getPatternHeadline("playful", productName, pros[0] || "Quality", 3)),
-          body: bannerBody(`${topBodyShort}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
-          cta: bannerCta("Discover"),
-          hashtags: [],
-        },
-        {
           purpose: "social",
           purposeLabel: "SNS Copy",
           channelGroup: "outside" as ChannelGroup,
