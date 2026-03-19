@@ -50,6 +50,27 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   const { t } = useLang();
   const { data: productList = [], isLoading: productsLoading } = useProductListWithCounts();
 
+  // Check if houzz has 100+ reviews to show quick-search button
+  const { data: houzzCount = 0 } = useQuery({
+    queryKey: ["houzz-review-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("source", "houzz");
+      return count ?? 0;
+    },
+    staleTime: 60_000,
+  });
+
+  const dynamicButtons = useMemo(() => {
+    const base = [...quickSearchButtons];
+    if (houzzCount >= 100) {
+      base.push({ label: "🏠 Houzz", query: "houzz" });
+    }
+    return base;
+  }, [houzzCount]);
+
   const grouped = useMemo(() => {
     const g: Record<string, ProductWithCount[]> = {};
     for (const p of productList) {
