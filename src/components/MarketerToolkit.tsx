@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Copy, Rocket,
-  MessageSquareQuote, Puzzle, Search, Users, Sparkles,
+  Search, Users, Sparkles,
   HelpCircle, AlertTriangle, Target, Mail, Video, FileText,
 } from "lucide-react";
 
