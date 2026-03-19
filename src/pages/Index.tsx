@@ -92,6 +92,15 @@ const Index = () => {
         });
       }
 
+      // Sort: exact model_number match first, then by review count
+      analyzed.sort((a, b) => {
+        const qLower = query.toLowerCase();
+        const aExact = a.product.name.toLowerCase() === qLower ? 1 : 0;
+        const bExact = b.product.name.toLowerCase() === qLower ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+        return b.product.reviews.length - a.product.reviews.length;
+      });
+
       if (analyzed.length === 0) {
         setError(
           t(
