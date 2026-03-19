@@ -350,7 +350,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Innovative"}.`),
