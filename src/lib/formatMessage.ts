@@ -495,7 +495,7 @@ export function generateGeoMarketingMessages(
     },
   ].map((geo) => ({
     ...geo,
-    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo), makeInfluencerGuide(geo.geo, geo.language), makeInternalBrief(geo.geo)],
+    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo), makeInfluencerGuide(geo.geo, geo.language)],
   }));
 }
 
