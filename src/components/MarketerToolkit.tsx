@@ -222,7 +222,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑦ Improvement Points */}
             <ToolkitSection
               icon={<AlertTriangle className="h-4 w-4" />}
-              number="⑦"
+              number="⑤"
               title={t("Customer Improvement Points", "고객이 말하는 개선 포인트")}
               subtitle={t("Categorized improvement areas — shareable insight cards for product teams", "제품팀과 공유 가능한 카테고리별 개선 인사이트 카드")}
               onCopy={() => copySection("Improvement Points", data.improvementPoints.map(p => `[${p.severity.toUpperCase()}] ${p.category}: ${p.point} (${p.mentions} mentions)`).join("\n"))}
