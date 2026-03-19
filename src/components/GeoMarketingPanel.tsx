@@ -133,7 +133,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
       </div>
 
       {/* Purpose Tabs within selected channel */}
-      {channelMessages.length > 0 && (
+      {(channelMessages.length > 0 || activeChannel === "outside") && (
         <div className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-border bg-secondary/20">
           <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1 min-w-[60px]">
             {t("Exposure Type", "노출타입")}
@@ -144,7 +144,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                 key={m.purpose}
                 onClick={() => setActivePurpose(m.purpose)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-                  activePurpose === m.purpose || (currentMsg?.purpose === m.purpose && activePurpose !== m.purpose)
+                  activePurpose === m.purpose
                     ? "bg-primary border-primary/50 text-primary-foreground"
                     : "bg-background border-border text-muted-foreground hover:border-primary/30"
                 }`}
@@ -152,6 +152,30 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                 {m.icon} {m.purposeLabel}
               </button>
             ))}
+            {activeChannel === "outside" && toolkitData && (
+              <>
+                <button
+                  onClick={() => setActivePurpose("customer_language")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                    activePurpose === "customer_language"
+                      ? "bg-primary border-primary/50 text-primary-foreground"
+                      : "bg-background border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  💬 {t("Customer Language Library", "고객 언어 라이브러리")}
+                </button>
+                <button
+                  onClick={() => setActivePurpose("problem_solution")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                    activePurpose === "problem_solution"
+                      ? "bg-primary border-primary/50 text-primary-foreground"
+                      : "bg-background border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  🧩 {t("Problem → Solution Templates", "문제→해결 템플릿")}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
