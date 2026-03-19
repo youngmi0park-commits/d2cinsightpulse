@@ -19,19 +19,6 @@ interface Props {
   reviews: { text: string; sentiment?: string }[];
 }
 
-const TAG_COLORS: Record<string, string> = {
-  positive: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  negative: "bg-red-500/10 text-red-400 border-red-500/20",
-  confusion: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  expectation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-};
-
-const TAG_LABELS: Record<string, string> = {
-  positive: "Positive",
-  negative: "Negative",
-  confusion: "Confusion",
-  expectation: "Expectation",
-};
 
 const INTENT_COLORS: Record<string, string> = {
   problem_aware: "bg-red-500/10 text-red-400 border-red-500/20",
