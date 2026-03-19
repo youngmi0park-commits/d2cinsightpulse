@@ -323,7 +323,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
           </div>
 
           {/* Purpose-specific guidelines */}
-          {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
+          {(activePurpose === "dotcom" || activePurpose === "dotcom_promo") && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
               <span className="ml-2">
