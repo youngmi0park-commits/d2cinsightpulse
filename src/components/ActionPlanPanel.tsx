@@ -97,7 +97,7 @@ export function ActionPlanPanel({ productName, displayName, category, sentiment,
 
     try {
       const sampleReviews = reviews.slice(0, 30).map(r => ({
-        content: r.content?.slice(0, 300),
+        content: r.text?.slice(0, 300),
         sentiment: r.sentiment,
       }));
 
