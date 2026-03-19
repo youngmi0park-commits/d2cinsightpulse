@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import type { SentimentResult } from "@/lib/sentiment";
 import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 import { toPRName } from "@/lib/formatMessage";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Copy, Rocket,
