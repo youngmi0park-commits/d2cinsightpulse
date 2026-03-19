@@ -77,7 +77,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ③ Search Intent Ad Ideas */}
             <ToolkitSection
               icon={<Search className="h-4 w-4" />}
-              number="③"
+              number="①"
               title={t("Search Intent Ad Ideas", "검색 의도 기반 광고 아이디어")}
               subtitle={t("Ad concepts mapped to customer search behavior", "고객 검색 행동에 매핑된 광고 컨셉")}
               onCopy={() => copySection("Search Intent Ads", data.searchIntentAds.map(a => `[${a.intentLabel}] ${a.keyword} → ${a.adIdea}`).join("\n"))}
