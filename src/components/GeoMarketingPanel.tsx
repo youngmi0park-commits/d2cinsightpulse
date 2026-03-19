@@ -1,14 +1,31 @@
-import { useState } from "react";
-import { type GeoMessage, type ChannelGroup } from "@/lib/formatMessage";
-import { Globe, Copy, Check, Code, Building2, Megaphone } from "lucide-react";
+import { useState, useMemo } from "react";
+import { type GeoMessage, type ChannelGroup, toPRName } from "@/lib/formatMessage";
+import { Globe, Copy, Check, Code, Building2, Megaphone, MessageSquareQuote, Puzzle } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/contexts/LanguageContext";
 import { AdComplianceNotice } from "@/components/AdComplianceNotice";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { generateMarketerToolkit } from "@/lib/marketerToolkit";
+import type { SentimentResult } from "@/lib/sentiment";
+
+const TAG_COLORS: Record<string, string> = {
+  positive: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  negative: "bg-red-500/10 text-red-400 border-red-500/20",
+  confusion: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  expectation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+};
+const TAG_LABELS: Record<string, string> = {
+  positive: "Positive", negative: "Negative", confusion: "Confusion", expectation: "Expectation",
+};
 
 interface GeoMarketingPanelProps {
   geoMessages: GeoMessage[];
   productName: string;
   totalReviews: number;
+  displayName?: string;
+  sentiment?: SentimentResult;
+  reviews?: { text: string; sentiment?: string }[];
 }
 
 const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: string; labelKo: string; descEn: string; descKo: string }[] = [
@@ -30,7 +47,7 @@ const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: stri
   },
 ];
 
-export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: GeoMarketingPanelProps) {
+export function GeoMarketingPanel({ geoMessages, productName, totalReviews, displayName, sentiment, reviews }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
   const [activeChannel, setActiveChannel] = useState<ChannelGroup>("inside");
   const [activePurpose, setActivePurpose] = useState("dotcom");
@@ -38,6 +55,12 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
   const [showSchema, setShowSchema] = useState(false);
   const { t } = useLang();
 
+  const toolkitData = useMemo(() => {
+    if (!sentiment || !reviews || reviews.length < 3) return null;
+    return generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews);
+  }, [displayName, productName, sentiment, reviews]);
+
+  const isToolkitPurpose = activePurpose === "customer_language" || activePurpose === "problem_solution";
   const currentGeo = geoMessages.find((g) => g.geo === activeGeo);
   const channelMessages = currentGeo?.messages.filter((m) => m.channelGroup === activeChannel) ?? [];
   const currentMsg = channelMessages.find((m) => m.purpose === activePurpose) ?? channelMessages[0];
@@ -110,7 +133,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
       </div>
 
       {/* Purpose Tabs within selected channel */}
-      {channelMessages.length > 0 && (
+      {(channelMessages.length > 0 || activeChannel === "outside") && (
         <div className="flex items-start gap-3 mb-4 p-3 rounded-lg border border-border bg-secondary/20">
           <span className="shrink-0 text-xs font-medium text-muted-foreground mt-1 min-w-[60px]">
             {t("Exposure Type", "노출타입")}
@@ -121,7 +144,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
                 key={m.purpose}
                 onClick={() => setActivePurpose(m.purpose)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-                  activePurpose === m.purpose || (currentMsg?.purpose === m.purpose && activePurpose !== m.purpose)
+                  activePurpose === m.purpose
                     ? "bg-primary border-primary/50 text-primary-foreground"
                     : "bg-background border-border text-muted-foreground hover:border-primary/30"
                 }`}
@@ -129,6 +152,30 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
                 {m.icon} {m.purposeLabel}
               </button>
             ))}
+            {activeChannel === "outside" && toolkitData && (
+              <>
+                <button
+                  onClick={() => setActivePurpose("customer_language")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                    activePurpose === "customer_language"
+                      ? "bg-primary border-primary/50 text-primary-foreground"
+                      : "bg-background border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  💬 {t("Customer Language Library", "고객 언어 라이브러리")}
+                </button>
+                <button
+                  onClick={() => setActivePurpose("problem_solution")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                    activePurpose === "problem_solution"
+                      ? "bg-primary border-primary/50 text-primary-foreground"
+                      : "bg-background border-border text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  🧩 {t("Problem → Solution Templates", "문제→해결 템플릿")}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -161,8 +208,112 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews }: Ge
         </div>
       </div>
 
+      {/* Toolkit: Customer Language Library */}
+      {isToolkitPurpose && toolkitData && (
+        <div className="space-y-4">
+          {activePurpose === "customer_language" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquareQuote className="h-4 w-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-foreground/90">
+                    {t("Customer Language Library", "고객 언어 라이브러리")}
+                  </h4>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => copyText(
+                  toolkitData.customerExpressions.map(e => `[${TAG_LABELS[e.tag]}] "${e.text}" (${e.count}x)`).join("\n"), "toolkit_lang"
+                )} className="h-7 text-[10px] gap-1 text-muted-foreground">
+                  {copiedKey === "toolkit_lang" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} Copy
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "Real customer expressions extracted from reviews — use as A/B test copy candidates & landing page headlines.",
+                  "리뷰에서 추출한 실제 고객 표현 — A/B 테스트 카피 후보 및 랜딩페이지 헤드라인으로 활용하세요."
+                )}
+              </p>
+              {toolkitData.customerExpressions.length === 0 ? (
+                <div className="bg-muted/20 rounded-lg p-4 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">{t("Not enough vivid expressions found yet.", "아직 충분한 생생한 표현이 추출되지 않았습니다.")}</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {toolkitData.customerExpressions.map((expr, i) => (
+                    <button
+                      key={i}
+                      onClick={() => copyText(expr.text, `expr_${i}`)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs cursor-pointer hover:opacity-80 transition-opacity ${TAG_COLORS[expr.tag]}`}
+                    >
+                      <span className="font-medium">{TAG_LABELS[expr.tag]}</span>
+                      <span className="opacity-80">"{expr.text}"</span>
+                      {expr.count > 1 && <span className="opacity-60">({expr.count}x)</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activePurpose === "problem_solution" && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Puzzle className="h-4 w-4 text-primary" />
+                  <h4 className="text-sm font-semibold text-foreground/90">
+                    {t("Problem → Solution Copy Templates", "문제 → 해결 카피 템플릿")}
+                  </h4>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => copyText(
+                  toolkitData.problemSolutionTemplates.map(tpl => tpl.copyTemplate).join("\n\n---\n\n"), "toolkit_tpl"
+                )} className="h-7 text-[10px] gap-1 text-muted-foreground">
+                  {copiedKey === "toolkit_tpl" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} Copy
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "Copy-paste ready templates generated from real customer pain points.",
+                  "실제 고객 불만에서 생성한 복붙 가능한 카피 템플릿입니다."
+                )}
+              </p>
+              {toolkitData.problemSolutionTemplates.length === 0 ? (
+                <div className="bg-muted/20 rounded-lg p-4 border border-border/30 text-center">
+                  <p className="text-xs text-muted-foreground">{t("No negative feedback to generate templates from.", "템플릿을 생성할 부정 피드백이 없습니다.")}</p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {toolkitData.problemSolutionTemplates.map((tpl, i) => (
+                    <div key={i} className="relative group bg-muted/30 rounded-lg p-4 border border-border/50">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
+                        onClick={() => copyText(tpl.copyTemplate, `tpl_${i}`)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">
+                          {t("Pain Point", "페인 포인트")}: {tpl.problem}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">→</span>
+                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                          {t("Solution", "해결")}: {tpl.solution.split(" — ")[0]?.slice(0, 30)}
+                        </Badge>
+                      </div>
+                      <pre className="text-sm text-foreground/80 whitespace-pre-wrap font-sans leading-relaxed">
+                        {tpl.copyTemplate}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Message Card */}
-      {currentMsg && (
+      {currentMsg && !isToolkitPurpose && (
         <div className="space-y-4">
           <div className="p-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-700 dark:text-yellow-400">
             ⚠️ {t(

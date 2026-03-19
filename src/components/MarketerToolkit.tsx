@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Copy, Rocket,
-  MessageSquareQuote, Puzzle, Search, Users, Sparkles,
+  Search, Users, Sparkles,
   HelpCircle, AlertTriangle, Target, Mail, Video, FileText,
 } from "lucide-react";
 
@@ -19,19 +19,6 @@ interface Props {
   reviews: { text: string; sentiment?: string }[];
 }
 
-const TAG_COLORS: Record<string, string> = {
-  positive: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  negative: "bg-red-500/10 text-red-400 border-red-500/20",
-  confusion: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  expectation: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-};
-
-const TAG_LABELS: Record<string, string> = {
-  positive: "Positive",
-  negative: "Negative",
-  confusion: "Confusion",
-  expectation: "Expectation",
-};
 
 const INTENT_COLORS: Record<string, string> = {
   problem_aware: "bg-red-500/10 text-red-400 border-red-500/20",
@@ -74,7 +61,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
           {t("Marketer's Actionable Toolkit", "마케터 실행 툴킷")}
         </h3>
         <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-          7 {t("Tools", "항목")}
+          5 {t("Tools", "항목")}
         </Badge>
       </div>
             <p className="text-sm text-muted-foreground">
@@ -84,77 +71,13 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
               )}
             </p>
 
-            {/* ① Customer Language Library */}
-            <ToolkitSection
-              icon={<MessageSquareQuote className="h-4 w-4" />}
-              number="①"
-              title={t("Customer Language Library", "고객 언어 라이브러리")}
-              subtitle={t("A/B test copy candidates & landing page headlines from real expressions", "실제 고객 표현에서 추출한 A/B 테스트 카피 후보")}
-              onCopy={() => copySection("Customer Language Library", data.customerExpressions.map(e => `[${TAG_LABELS[e.tag]}] "${e.text}" (${e.count}x)`).join("\n"))}
-            >
-              {data.customerExpressions.length === 0 ? (
-                <EmptyState text={t("Not enough vivid expressions found yet.", "아직 충분한 생생한 표현이 추출되지 않았습니다.")} />
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {data.customerExpressions.map((expr, i) => (
-                    <button
-                      key={i}
-                      onClick={() => copyText(expr.text)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs cursor-pointer hover:opacity-80 transition-opacity ${TAG_COLORS[expr.tag]}`}
-                    >
-                      <span className="font-medium">{TAG_LABELS[expr.tag]}</span>
-                      <span className="opacity-80">"{expr.text}"</span>
-                      {expr.count > 1 && <span className="opacity-60">({expr.count}x)</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </ToolkitSection>
+            {/* ① & ② moved to Channel Marketing Copy → Outside Channel */}
 
-            {/* ② Problem-Solution Copy Templates */}
-            <ToolkitSection
-              icon={<Puzzle className="h-4 w-4" />}
-              number="②"
-              title={t("Problem → Solution Copy Templates", "문제 → 해결 카피 템플릿")}
-              subtitle={t("Copy-paste ready templates from real pain points", "실제 불만에서 생성한 복붙 가능한 카피 템플릿")}
-              onCopy={() => copySection("Copy Templates", data.problemSolutionTemplates.map(t => t.copyTemplate).join("\n\n---\n\n"))}
-            >
-              {data.problemSolutionTemplates.length === 0 ? (
-                <EmptyState text={t("No negative feedback to generate templates from.", "템플릿을 생성할 부정 피드백이 없습니다.")} />
-              ) : (
-                <div className="grid gap-3">
-                  {data.problemSolutionTemplates.map((tpl, i) => (
-                    <div key={i} className="relative group bg-muted/30 rounded-lg p-4 border border-border/50">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
-                        onClick={() => copyText(tpl.copyTemplate)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/20">
-                          {t("Pain Point", "페인 포인트")}: {tpl.problem}
-                        </Badge>
-                        <span className="text-muted-foreground text-xs">→</span>
-                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                          {t("Solution", "해결")}: {tpl.solution.split(" — ")[0]?.slice(0, 30)}
-                        </Badge>
-                      </div>
-                      <pre className="text-sm text-foreground/80 whitespace-pre-wrap font-sans leading-relaxed">
-                        {tpl.copyTemplate}
-                      </pre>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ToolkitSection>
 
             {/* ③ Search Intent Ad Ideas */}
             <ToolkitSection
               icon={<Search className="h-4 w-4" />}
-              number="③"
+              number="①"
               title={t("Search Intent Ad Ideas", "검색 의도 기반 광고 아이디어")}
               subtitle={t("Ad concepts mapped to customer search behavior", "고객 검색 행동에 매핑된 광고 컨셉")}
               onCopy={() => copySection("Search Intent Ads", data.searchIntentAds.map(a => `[${a.intentLabel}] ${a.keyword} → ${a.adIdea}`).join("\n"))}
@@ -185,7 +108,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ④ CRM Segment Insights */}
             <ToolkitSection
               icon={<Users className="h-4 w-4" />}
-              number="④"
+              number="②"
               title={t("Retargeting & CRM Segment Insights", "리타겟팅 & CRM 세그먼트 인사이트")}
               subtitle={t("Behavior-based segments with message, channel, and offer recommendations", "행동 기반 세그먼트별 메시지·채널·오퍼 추천")}
               onCopy={() => copySection("CRM Segments", data.crmSegments.map(s => `[${s.name}]\n${s.description}\nMessage: ${s.message}\nChannel: ${s.channel}\nOffer: ${s.offer}`).join("\n\n"))}
@@ -234,7 +157,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑤ Content Ideas */}
             <ToolkitSection
               icon={<Sparkles className="h-4 w-4" />}
-              number="⑤"
+              number="③"
               title={t("Content Material from Customers", "고객 발 콘텐츠 소재")}
               subtitle={t("Reels, card news, blog topics from real expressions", "실제 표현에서 추출한 릴스·카드뉴스·블로그 주제")}
               onCopy={() => copySection("Content Ideas", data.contentIdeas.map(c => `[${c.contentType}] ${c.expression} → ${c.title}`).join("\n"))}
@@ -270,7 +193,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑥ FAQ Auto-generation */}
             <ToolkitSection
               icon={<HelpCircle className="h-4 w-4" />}
-              number="⑥"
+              number="④"
               title={t("Auto-Generated FAQ", "자동 생성 FAQ")}
               subtitle={t("Top questions from reviews — ready for blog, IG, or YouTube script", "리뷰에서 추출한 반복 질문 TOP N — 블로그·인스타·유튜브 스크립트용")}
               onCopy={() => copySection("FAQ", data.faqItems.map(f => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n"))}
@@ -299,7 +222,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑦ Improvement Points */}
             <ToolkitSection
               icon={<AlertTriangle className="h-4 w-4" />}
-              number="⑦"
+              number="⑤"
               title={t("Customer Improvement Points", "고객이 말하는 개선 포인트")}
               subtitle={t("Categorized improvement areas — shareable insight cards for product teams", "제품팀과 공유 가능한 카테고리별 개선 인사이트 카드")}
               onCopy={() => copySection("Improvement Points", data.improvementPoints.map(p => `[${p.severity.toUpperCase()}] ${p.category}: ${p.point} (${p.mentions} mentions)`).join("\n"))}
