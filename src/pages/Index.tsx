@@ -348,6 +348,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <>
           <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
           <MarketingPanel marketing={item.marketing} />
+          <MarketerToolkit
+            productName={item.product.name}
+            displayName={item.product.displayName}
+            sentiment={item.sentiment}
+            reviews={item.product.reviews}
+          />
           {/* ActionPlanPanel hidden — re-enable when sufficient data is available */}
         </>
       )}
