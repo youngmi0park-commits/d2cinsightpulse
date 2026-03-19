@@ -52,7 +52,7 @@ interface ActionPlanPanelProps {
   displayName: string;
   category: string;
   sentiment: SentimentResult;
-  reviews: { content: string; sentiment?: string }[];
+  reviews: { text: string; sentiment?: string }[];
 }
 
 const channelIcons: Record<string, typeof Target> = {
