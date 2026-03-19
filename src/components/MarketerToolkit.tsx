@@ -157,7 +157,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             {/* ⑤ Content Ideas */}
             <ToolkitSection
               icon={<Sparkles className="h-4 w-4" />}
-              number="⑤"
+              number="③"
               title={t("Content Material from Customers", "고객 발 콘텐츠 소재")}
               subtitle={t("Reels, card news, blog topics from real expressions", "실제 표현에서 추출한 릴스·카드뉴스·블로그 주제")}
               onCopy={() => copySection("Content Ideas", data.contentIdeas.map(c => `[${c.contentType}] ${c.expression} → ${c.title}`).join("\n"))}
