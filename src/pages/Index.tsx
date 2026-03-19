@@ -4,6 +4,7 @@ import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { MarketingPanel } from "@/components/MarketingPanel";
 import { ActionPlanPanel } from "@/components/ActionPlanPanel";
+import { MarketerToolkit } from "@/components/MarketerToolkit";
 import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
@@ -347,6 +348,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <>
           <GeoMarketingPanel geoMessages={item.geoMessages} productName={item.product.name} totalReviews={item.product.reviews.length} />
           <MarketingPanel marketing={item.marketing} />
+          <MarketerToolkit
+            productName={item.product.name}
+            displayName={item.product.displayName}
+            sentiment={item.sentiment}
+            reviews={item.product.reviews}
+          />
           {/* ActionPlanPanel hidden — re-enable when sufficient data is available */}
         </>
       )}
