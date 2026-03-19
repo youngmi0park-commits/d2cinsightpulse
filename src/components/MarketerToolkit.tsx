@@ -49,7 +49,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 export function MarketerToolkit({ productName, displayName, sentiment, reviews }: Props) {
   const { t } = useLang();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const data = useMemo(
     () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews),
