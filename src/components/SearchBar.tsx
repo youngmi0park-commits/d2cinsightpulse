@@ -6,7 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
 import { useProductListWithCounts, ProductWithCount } from "@/hooks/useProductListWithCounts";
-
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 interface SearchBarProps {
   onSearch: (query: string) => void;
   isLoading: boolean;
