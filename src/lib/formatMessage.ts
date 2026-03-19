@@ -178,16 +178,7 @@ export function generateGeoMarketingMessages(
     hashtags: ["#LGPartner", `#${productName.replace(/\s+/g, "")}`, "#Sponsored"],
   });
 
-  const makeInternalBrief = (geo: string): PurposeMessage => ({
-    purpose: "internal",
-    purposeLabel: "내부 커뮤니케이션",
-    channelGroup: "inside",
-    icon: "📋",
-    headline: `[Internal] ${productName} — Customer Voice Summary`,
-    body: `Sentiment Score: ${score}/100 | Positive: ${posPercent}% (${positive}건) | Top Praise: ${pros.join(", ")} | Improvement Areas: ${cons.join(", ") || "None noted"} | Total Reviews: ${total}`,
-    cta: "View Full Report →",
-    hashtags: [],
-  });
+  // Internal communication removed per request
 
   return [
     {
@@ -198,7 +189,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           kicker: bannerKicker("INTRODUCING"),
@@ -208,19 +199,8 @@ export function generateGeoMarketingMessages(
           hashtags: [],
         },
         {
-          purpose: "dotcom_alt1",
-          purposeLabel: "닷컴 카피 (Aspirational)",
-          channelGroup: "inside" as ChannelGroup,
-          icon: "🌐",
-          kicker: bannerKicker("REAL USER REVIEWS"),
-          headline: bannerHeadline(`${productName}. ${pros.slice(0, 2).join(". ")}.`),
-          body: bannerBody(`${topBodyShort}, and built for the way you live. Meet the ${productName}.`),
-          cta: bannerCta("Learn More"),
-          hashtags: [],
-        },
-        {
-          purpose: "dotcom_alt2",
-          purposeLabel: "닷컴 카피 (Promotional)",
+          purpose: "dotcom_promo",
+          purposeLabel: "닷컴 카피_프로모션형",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           kicker: bannerKicker("USER FAVORITES"),
@@ -257,24 +237,13 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           kicker: bannerKicker("CUSTOMER FAVOURITES"),
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Refined"}.`),
           body: bannerBody(`Users describe it as ${topBody}. Experience it at Currys or LGE.com/UK.`),
           cta: bannerCta("Buy Now"),
-          hashtags: [],
-        },
-        {
-          purpose: "dotcom_alt1",
-          purposeLabel: "닷컴 카피 (Playful)",
-          channelGroup: "inside" as ChannelGroup,
-          icon: "🌐",
-          kicker: bannerKicker("Life's Good."),
-          headline: bannerHeadline(getPatternHeadline("playful", productName, pros[0] || "Quality", 3)),
-          body: bannerBody(`${topBodyShort}, and loved by users. Available at Currys, Richer Sounds & LGE.com/UK.`),
-          cta: bannerCta("Discover"),
           hashtags: [],
         },
         {
@@ -297,7 +266,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Reliable"}.`),
@@ -325,7 +294,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Brilliant"}. ${pros[1] || "Efficient"}.`),
@@ -353,7 +322,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualität"} neu definiert.`),
@@ -381,7 +350,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Impressive"}. ${pros[1] || "Innovative"}.`),
@@ -409,7 +378,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualité"} saluée.`),
@@ -437,7 +406,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Qualidade"} comprovada.`),
@@ -465,7 +434,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Kwaliteit"} gewaardeerd.`),
@@ -493,7 +462,7 @@ export function generateGeoMarketingMessages(
       messages: [
         {
           purpose: "dotcom",
-          purposeLabel: "닷컴 카피",
+          purposeLabel: "닷컴 카피_Basic",
           channelGroup: "inside" as ChannelGroup,
           icon: "🌐",
           headline: bannerHeadline(`${productName}. ${pros[0] || "Calidad"} destacada.`),
@@ -515,7 +484,7 @@ export function generateGeoMarketingMessages(
     },
   ].map((geo) => ({
     ...geo,
-    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo), makeInfluencerGuide(geo.geo, geo.language), makeInternalBrief(geo.geo)],
+    messages: [...geo.messages, makeCriteoMsg(geo.geo), makePmaxMsg(geo.geo), makeInfluencerGuide(geo.geo, geo.language)],
   }));
 }
 

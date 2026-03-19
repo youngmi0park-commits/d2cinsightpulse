@@ -152,7 +152,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                 {m.icon} {m.purposeLabel}
               </button>
             ))}
-            {activeChannel === "outside" && toolkitData && (
+            {activeChannel === "inside" && toolkitData && (
               <>
                 <button
                   onClick={() => setActivePurpose("customer_language")}
@@ -162,7 +162,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                       : "bg-background border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  💬 {t("Customer Language Library", "고객 언어 라이브러리")}
+                  💬 {t("닷컴 카피_고객언어활용", "닷컴 카피_고객언어활용")}
                 </button>
                 <button
                   onClick={() => setActivePurpose("problem_solution")}
@@ -172,7 +172,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
                       : "bg-background border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  🧩 {t("Problem → Solution Templates", "문제→해결 템플릿")}
+                  🧩 {t("닷컴 카피_문제해결형", "닷컴 카피_문제해결형")}
                 </button>
               </>
             )}
@@ -323,7 +323,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
           </div>
 
           {/* Purpose-specific guidelines */}
-          {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
+          {(activePurpose === "dotcom" || activePurpose === "dotcom_promo") && (
             <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{t("Dotcom Copy Guidelines", "닷컴 카피 가이드라인")}</span>
               <span className="ml-2">
@@ -421,7 +421,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Headline</span>
-                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
+                {(activePurpose === "dotcom" || activePurpose === "dotcom_promo") && (
                   <span className={`text-[10px] font-mono ${currentMsg.headline.length > 50 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.headline.length}/50)
                   </span>
@@ -447,7 +447,7 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
             <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Body Copy</span>
-                {(activePurpose === "dotcom" || activePurpose?.startsWith("dotcom_alt")) && (
+                {(activePurpose === "dotcom" || activePurpose === "dotcom_promo") && (
                   <span className={`text-[10px] font-mono ${currentMsg.body.length > 120 ? "text-destructive" : "text-green-600"}`}>
                     ({currentMsg.body.length}/120)
                   </span>
