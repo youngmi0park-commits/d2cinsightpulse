@@ -217,7 +217,7 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
         </Button>
       </form>
       <div className="flex gap-2 mt-4 flex-wrap">
-        {quickSearchButtons.map((btn) => (
+        {dynamicButtons.map((btn) => (
           <button
             key={btn.query}
             onClick={() => { setQuery(btn.query); onSearch(btn.query); }}
