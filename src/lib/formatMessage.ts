@@ -178,16 +178,7 @@ export function generateGeoMarketingMessages(
     hashtags: ["#LGPartner", `#${productName.replace(/\s+/g, "")}`, "#Sponsored"],
   });
 
-  const makeInternalBrief = (geo: string): PurposeMessage => ({
-    purpose: "internal",
-    purposeLabel: "내부 커뮤니케이션",
-    channelGroup: "inside",
-    icon: "📋",
-    headline: `[Internal] ${productName} — Customer Voice Summary`,
-    body: `Sentiment Score: ${score}/100 | Positive: ${posPercent}% (${positive}건) | Top Praise: ${pros.join(", ")} | Improvement Areas: ${cons.join(", ") || "None noted"} | Total Reviews: ${total}`,
-    cta: "View Full Report →",
-    hashtags: [],
-  });
+  // Internal communication removed per request
 
   return [
     {
