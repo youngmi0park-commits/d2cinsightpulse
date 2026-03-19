@@ -337,12 +337,12 @@ function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
         <Badge variant="outline" className="text-xs border-primary/30 text-primary">
           {item.product.category}
         </Badge>
-        <h3 className="text-xl font-bold font-heading font-mono">
-          {item.product.name}
+        <h3 className="text-xl font-bold font-heading">
+          {item.product.displayName || item.product.name}
         </h3>
-        {item.product.displayName && (
-          <span className="text-sm text-muted-foreground">{item.product.displayName}</span>
-        )}
+        <span className="text-sm text-muted-foreground font-mono">
+          {item.product.name}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
