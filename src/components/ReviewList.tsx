@@ -167,9 +167,14 @@ export function ReviewList({ reviews }: ReviewListProps) {
 
   return (
     <div className="gradient-card rounded-xl border border-border p-6 space-y-6">
-      <h3 className="text-lg font-semibold font-heading">
-        {t(`Collected Reviews (${reviews.length})`, `수집된 리뷰 (${reviews.length}건)`)}
-      </h3>
+      <div>
+        <h3 className="text-lg font-semibold font-heading">
+          {t(`Real Customer Reviews (${reviews.length})`, `실고객 리뷰 (${reviews.length}건)`)}
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          {t("Discover real user reviews of LG Electronics products.", "고객들의 생생한 LG전자 제품 사용 후기를 만나보세요.")}
+        </p>
+      </div>
 
       {/* Weekly Section */}
       <div className="space-y-3">
