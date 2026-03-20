@@ -147,8 +147,6 @@ export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPa
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  if (reviews.length < 3) return null;
-
   // Group AI FAQs by category
   const faqsByCategory = useMemo(() => {
     if (!aiData) return {};
@@ -163,6 +161,8 @@ export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPa
 
   const categories = Object.keys(faqsByCategory);
   const filteredFaqs = activeCategory ? (faqsByCategory[activeCategory] || []) : (aiData?.faqItems || []);
+
+  if (reviews.length < 3) return null;
 
   // ─── Render ───
   return (
