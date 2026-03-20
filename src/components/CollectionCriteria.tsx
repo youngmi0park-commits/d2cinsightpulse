@@ -27,6 +27,7 @@ const criteria: CriteriaItem[] = [
       "Trustpilot — Direct consumer reviews for appliances/services and CS evaluation",
       "BestReviews — Comprehensive appliance/projector recommendation reviews",
       "YouTube — Video review comments collected via Firecrawl (site:youtube.com search). Captures viewer opinions on product review videos",
+      "ConsumerAffairs — Consumer complaint & review platform focused on home appliances (refrigerators, washers, dryers, dishwashers, ACs). Collects verified buyer reviews and resolution data (US-based)",
     ],
     itemsKo: [
       "LG.com (lg.com/us) — LG USA 공식 제품 페이지, 스펙 및 고객 리뷰 데이터",
@@ -39,6 +40,7 @@ const criteria: CriteriaItem[] = [
       "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가",
       "BestReviews — 가전·프로젝터 종합 추천 리뷰",
       "YouTube — Firecrawl 기반 영상 리뷰 댓글 수집 (site:youtube.com 검색). 제품 리뷰 영상의 시청자 의견 캡처",
+      "ConsumerAffairs — 가전(냉장고, 세탁기, 건조기, 식기세척기, 에어컨) 중심 소비자 불만·리뷰 플랫폼. 구매 인증 리뷰 및 해결 데이터 수집 (US 기반)",
     ],
   },
   {
