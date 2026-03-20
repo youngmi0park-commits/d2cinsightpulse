@@ -29,6 +29,7 @@ const criteria: CriteriaItem[] = [
       "YouTube — Video review comments collected via Firecrawl (site:youtube.com search). Captures viewer opinions on product review videos",
     ],
     itemsKo: [
+      "LG.com (lg.com/us) — LG USA 공식 제품 페이지, 스펙 및 고객 리뷰 데이터",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub 등)",
       "Amazon — 제품별 리뷰 섹션 (US, UK, CA, DE, IN, FR 등 주요 마켓플레이스)",
       "RTINGS — TV·모니터·프로젝터 전문 리뷰 및 측정 데이터",
