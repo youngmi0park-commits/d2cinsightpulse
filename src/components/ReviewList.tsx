@@ -24,6 +24,7 @@ const sourceLabel = (s: string) => {
 
 const sourceStyle = (s: string) => {
   const map: Record<string, string> = {
+    lge_com: "bg-primary/20 text-primary",
     reddit: "bg-accent/20 text-accent",
     amazon: "bg-warning/20 text-warning",
     rtings: "bg-blue-500/20 text-blue-400",
