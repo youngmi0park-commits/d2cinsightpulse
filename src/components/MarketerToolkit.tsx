@@ -190,34 +190,6 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
               )}
             </ToolkitSection>
 
-            {/* ⑥ FAQ Auto-generation */}
-            <ToolkitSection
-              icon={<HelpCircle className="h-4 w-4" />}
-              number="④"
-              title={t("Auto-Generated FAQ", "자동 생성 FAQ")}
-              subtitle={t("Top questions from reviews — ready for blog, IG, or YouTube script", "리뷰에서 추출한 반복 질문 TOP N — 블로그·인스타·유튜브 스크립트용")}
-              onCopy={() => copySection("FAQ", data.faqItems.map(f => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n"))}
-            >
-              <div className="grid gap-3">
-                {data.faqItems.map((faq, i) => (
-                  <div key={i} className="bg-muted/30 rounded-lg p-4 border border-border/50 group relative">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
-                      onClick={() => copyText(`Q: ${faq.question}\nA: ${faq.answer}`)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <FileText className="h-3.5 w-3.5 text-primary" />
-                      <p className="text-sm font-semibold text-foreground/90">Q: {faq.question}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed pl-5">{faq.answer}</p>
-                  </div>
-                ))}
-              </div>
-            </ToolkitSection>
 
             {/* ⑦ Improvement Points */}
             <ToolkitSection
