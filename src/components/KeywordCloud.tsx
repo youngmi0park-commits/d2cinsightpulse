@@ -11,6 +11,7 @@ export function KeywordCloud({ keywords }: KeywordCloudProps) {
   const posCount = keywords.positive.length;
   const negCount = keywords.negative.length;
   const isHighlight = posCount >= 10 && posCount > negCount;
+  const isNegHighlight = negCount >= 10 && negCount > posCount;
 
   return (
     <div className="gradient-card rounded-xl border border-border p-6">
@@ -41,10 +42,21 @@ export function KeywordCloud({ keywords }: KeywordCloudProps) {
           </div>
         </div>
         <div>
-          <p className="text-sm text-destructive font-medium mb-2">{t("Negative Keywords", "부정 키워드")}</p>
+          <p className="text-sm text-destructive font-medium mb-2">
+            {t("Negative Keywords", "부정 키워드")}
+            {isNegHighlight && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-destructive/20 text-destructive animate-pulse">
+                ⚠️ {negCount}
+              </span>
+            )}
+          </p>
           <div className="flex flex-wrap gap-2">
             {negCount > 0 ? keywords.negative.map((kw) => (
-              <span key={kw} className="px-3 py-1.5 rounded-full text-sm bg-destructive/15 text-destructive border border-destructive/20 hover:bg-destructive/25 transition-colors">
+              <span key={kw} className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                isNegHighlight
+                  ? "bg-destructive/25 text-destructive font-semibold border-destructive/40 shadow-[0_0_8px_hsl(var(--destructive)/0.3)]"
+                  : "bg-destructive/15 text-destructive border-destructive/20 hover:bg-destructive/25"
+              }`}>
                 {kw}
               </span>
             )) : <span className="text-sm text-muted-foreground">{t("No data", "데이터 없음")}</span>}
