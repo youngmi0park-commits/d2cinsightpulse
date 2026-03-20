@@ -240,14 +240,23 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
+  const CORE_CATEGORIES_MANUAL = ["TV", "Monitor"];
   let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
+  let isManualCollection = false;
   try {
     const body = await req.json();
     if (body.categories?.length) targetCategories = body.categories;
-    if (body.channels?.length) targetChannels = CHANNELS.filter((c) => body.channels.includes(c.id));
+    if (body.channels?.length) {
+      targetChannels = CHANNELS.filter((c) => body.channels.includes(c.id));
+      isManualCollection = true;
+    }
   } catch {
     // Use defaults
+  }
+  // Manual collection: use only 3 core categories to stay within 60s timeout
+  if (isManualCollection && targetCategories === allDefaultKeywords) {
+    targetCategories = CORE_CATEGORIES_MANUAL;
   }
 
   const { data: logEntry } = await supabase
@@ -274,7 +283,7 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               query: channel.queryTemplate(category),
-              limit: 5,
+              limit: isManualCollection ? 3 : 5,
               scrapeOptions: { formats: ["markdown"] },
             }),
           });
@@ -292,43 +301,18 @@ Deno.serve(async (req) => {
 
           if (results.length === 0) continue;
 
-          for (const result of results) {
-            const url = result.url;
-            if (!url) continue;
+          // For manual collection: batch all results into one AI call to save time
+          if (isManualCollection) {
+            const batchedContent = results
+              .filter((r: any) => r.url)
+              .map((r: any, i: number) => {
+                const content = r.markdown || r.description || "";
+                return content.length >= 50 ? `--- Result ${i + 1} (${r.url}) ---\n${content.slice(0, 3000)}` : null;
+              })
+              .filter(Boolean)
+              .join("\n\n");
 
-            let content = result.markdown || "";
-
-            if (!content || content.length < 200) {
-              try {
-                console.log(`[${channel.label}] Scraping: ${url}`);
-                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    url,
-                    formats: ["markdown"],
-                    onlyMainContent: true,
-                  }),
-                });
-
-                if (scrapeRes.ok) {
-                  const scrapeData = await scrapeRes.json();
-                  content = scrapeData.data?.markdown || scrapeData.markdown || "";
-                } else {
-                  const errText = await scrapeRes.text();
-                  console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
-                  content = result.description || "";
-                }
-              } catch (scrapeErr) {
-                console.error(`[${channel.label}] Scrape error: ${scrapeErr}`);
-                content = result.description || "";
-              }
-            }
-
-            if (content.length < 100) continue;
+            if (batchedContent.length < 100) continue;
 
             try {
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -343,7 +327,7 @@ Deno.serve(async (req) => {
                     { role: "system", content: REVIEW_EXTRACTION_PROMPT },
                     {
                       role: "user",
-                      content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${content.slice(0, 8000)}`,
+                      content: `Source: ${channel.label}\nCategory: ${category}\n\n${batchedContent.slice(0, 12000)}`,
                     },
                   ],
                   temperature: 0.1,
@@ -358,94 +342,88 @@ Deno.serve(async (req) => {
 
               const aiData = await aiRes.json();
               const rawText = aiData.choices?.[0]?.message?.content || "[]";
-
-              let reviews: any[];
-              try {
-                const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-                reviews = JSON.parse(cleaned);
-                if (!Array.isArray(reviews)) reviews = [];
-              } catch {
-                console.error(`Failed to parse AI response for ${channel.label}/${category}`);
-                continue;
-              }
+              const reviews = parseAiReviews(rawText, channel.label, category);
 
               for (const review of reviews) {
-                if (!review.content || review.content.length < 20) continue;
-
-                // Skip noise and non-relevant content
-                if (review.content_type === "noise" || review.brand_relevant === false) {
-                  console.log(`[${channel.label}] Skipped noise/irrelevant: ${review.title?.slice(0, 50)}`);
-                  continue;
-                }
-
-                // Upsert product
-                const modelNum = review.model_number || `LG-${category}-GENERIC`;
-                const { data: existingProduct } = await supabase
-                  .from("products")
-                  .select("id")
-                  .eq("model_number", modelNum)
-                  .maybeSingle();
-
-                let productId: string;
-                if (existingProduct) {
-                  productId = existingProduct.id;
-                } else {
-                  const { data: newProduct } = await supabase
-                    .from("products")
-                    .insert({
-                      model_number: modelNum,
-                      display_name: review.display_name || `LG ${category}`,
-                      category: review.category || category,
-                    })
-                    .select("id")
-                    .single();
-                  productId = newProduct?.id;
-                }
-
-                if (!productId) continue;
-
-                // Generate external_id to avoid duplicates
-                const hashInput = review.content.slice(0, 100);
-                let hash = 0;
-                for (let i = 0; i < hashInput.length; i++) {
-                  const char = hashInput.charCodeAt(i);
-                  hash = ((hash << 5) - hash) + char;
-                  hash |= 0;
-                }
-                const externalId = `${channel.id}-${Math.abs(hash).toString(36)}-${review.content.length}`;
-
-                const { data: existingReview } = await supabase
-                  .from("reviews")
-                  .select("id")
-                  .eq("external_id", externalId)
-                  .maybeSingle();
-
-                if (existingReview) continue;
-
-                await supabase.from("reviews").insert({
-                  product_id: productId,
-                  source: channel.id,
-                  source_url: result.url || null,
-                  external_id: externalId,
-                  title: review.title?.slice(0, 200) || null,
-                  content: review.content.slice(0, 2000),
-                  author: review.author || null,
-                  rating: review.rating || null,
-                  sentiment: review.sentiment || "neutral",
-                  sentiment_score: review.sentiment_score ?? 0.5,
-                  published_at: review.published_at || null,
-                  // Enhanced analysis fields
-                  emotion_category: review.emotion_category || "neutral",
-                  emotion_intensity: review.emotion_intensity || 3,
-                  user_type: review.user_type || "unknown",
-                  content_type: review.content_type || "review",
-                  platform_type: review.platform_type || "unknown",
-                });
-
+                await saveReview(supabase, review, channel, category, null, totalCollected, errors);
                 totalCollected++;
               }
             } catch (aiErr) {
               console.error(`AI processing error: ${aiErr}`);
+            }
+          } else {
+            // Full collection: process each result individually (with optional scraping)
+            for (const result of results) {
+              const url = result.url;
+              if (!url) continue;
+
+              let content = result.markdown || "";
+
+              if (!content || content.length < 200) {
+                try {
+                  console.log(`[${channel.label}] Scraping: ${url}`);
+                  const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+                  });
+
+                  if (scrapeRes.ok) {
+                    const scrapeData = await scrapeRes.json();
+                    content = scrapeData.data?.markdown || scrapeData.markdown || "";
+                  } else {
+                    const errText = await scrapeRes.text();
+                    console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
+                    content = result.description || "";
+                  }
+                } catch (scrapeErr) {
+                  console.error(`[${channel.label}] Scrape error: ${scrapeErr}`);
+                  content = result.description || "";
+                }
+              }
+
+              if (content.length < 100) continue;
+
+              try {
+                const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: "google/gemini-2.5-flash",
+                    messages: [
+                      { role: "system", content: REVIEW_EXTRACTION_PROMPT },
+                      {
+                        role: "user",
+                        content: `Source: ${channel.label}\nURL: ${result.url || "unknown"}\nCategory: ${category}\n\nContent:\n${content.slice(0, 8000)}`,
+                      },
+                    ],
+                    temperature: 0.1,
+                    max_tokens: 6000,
+                  }),
+                });
+
+                if (!aiRes.ok) {
+                  console.error(`AI extraction failed for ${channel.label}/${category}`);
+                  continue;
+                }
+
+                const aiData = await aiRes.json();
+                const rawText = aiData.choices?.[0]?.message?.content || "[]";
+                const reviews = parseAiReviews(rawText, channel.label, category);
+
+                for (const review of reviews) {
+                  await saveReview(supabase, review, channel, category, result.url, totalCollected, errors);
+                  totalCollected++;
+                }
+              } catch (aiErr) {
+                console.error(`AI processing error: ${aiErr}`);
+              }
             }
           }
         } catch (channelErr) {
@@ -455,8 +433,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update trending snapshots
-    await updateTrendingSnapshots(supabase);
+    // Update trending snapshots (skip for manual to save time)
+    if (!isManualCollection) {
+      await updateTrendingSnapshots(supabase);
+    }
 
     if (logId) {
       await supabase.from("collection_logs").update({
@@ -487,6 +467,73 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+function parseAiReviews(rawText: string, channelLabel: string, category: string): any[] {
+  try {
+    const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const reviews = JSON.parse(cleaned);
+    return Array.isArray(reviews) ? reviews : [];
+  } catch {
+    console.error(`Failed to parse AI response for ${channelLabel}/${category}`);
+    return [];
+  }
+}
+
+async function saveReview(supabase: any, review: any, channel: any, category: string, sourceUrl: string | null, _totalCollected: number, _errors: string[]) {
+  if (!review.content || review.content.length < 20) return false;
+  if (review.content_type === "noise" || review.brand_relevant === false) {
+    console.log(`[${channel.label}] Skipped noise/irrelevant: ${review.title?.slice(0, 50)}`);
+    return false;
+  }
+
+  const modelNum = review.model_number || `LG-${category}-GENERIC`;
+  const { data: existingProduct } = await supabase
+    .from("products").select("id").eq("model_number", modelNum).maybeSingle();
+
+  let productId: string;
+  if (existingProduct) {
+    productId = existingProduct.id;
+  } else {
+    const { data: newProduct } = await supabase
+      .from("products")
+      .insert({ model_number: modelNum, display_name: review.display_name || `LG ${category}`, category: review.category || category })
+      .select("id").single();
+    productId = newProduct?.id;
+  }
+  if (!productId) return false;
+
+  const hashInput = review.content.slice(0, 100);
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    hash = ((hash << 5) - hash) + hashInput.charCodeAt(i);
+    hash |= 0;
+  }
+  const externalId = `${channel.id}-${Math.abs(hash).toString(36)}-${review.content.length}`;
+
+  const { data: existingReview } = await supabase
+    .from("reviews").select("id").eq("external_id", externalId).maybeSingle();
+  if (existingReview) return false;
+
+  await supabase.from("reviews").insert({
+    product_id: productId,
+    source: channel.id,
+    source_url: sourceUrl || null,
+    external_id: externalId,
+    title: review.title?.slice(0, 200) || null,
+    content: review.content.slice(0, 2000),
+    author: review.author || null,
+    rating: review.rating || null,
+    sentiment: review.sentiment || "neutral",
+    sentiment_score: review.sentiment_score ?? 0.5,
+    published_at: review.published_at || null,
+    emotion_category: review.emotion_category || "neutral",
+    emotion_intensity: review.emotion_intensity || 3,
+    user_type: review.user_type || "unknown",
+    content_type: review.content_type || "review",
+    platform_type: review.platform_type || "unknown",
+  });
+  return true;
+}
 
 async function updateTrendingSnapshots(supabase: any) {
   try {
