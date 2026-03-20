@@ -141,25 +141,6 @@ const criteria: CriteriaItem[] = [
     ],
   },
   {
-    icon: Filter,
-    titleEn: "Target Products",
-    titleKo: "수집 대상 제품",
-    itemsEn: [
-      "LG OLED evo G5 / C Series — Premium TV",
-      "LG UltraGear evo G9 — Gaming Monitor",
-      "LG gram — Ultralight Laptop",
-      "LG WashTower — Washer-Dryer",
-      "LG CineBeam — Projector",
-    ],
-    itemsKo: [
-      "LG OLED evo G5 / C 시리즈 — 프리미엄 TV",
-      "LG UltraGear evo G9 — 게이밍 모니터",
-      "LG gram — 울트라라이트 노트북",
-      "LG WashTower — 세탁건조기",
-      "LG CineBeam — 프로젝터",
-    ],
-  },
-  {
     icon: TrendingUp,
     titleEn: "lge.com Inbound Keywords Top 100",
     titleKo: "lge.com 유입 키워드 Top 100 활용",
