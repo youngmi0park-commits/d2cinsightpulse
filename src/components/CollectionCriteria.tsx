@@ -17,6 +17,7 @@ const criteria: CriteriaItem[] = [
     titleEn: "Collection Channels",
     titleKo: "수집 채널",
     itemsEn: [
+      "LG.com (lg.com/us) — Official LG USA product pages, specs, and customer review data",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, etc.)",
       "Amazon — Product review sections (US, UK, CA, DE, IN, FR and other major marketplaces)",
       "RTINGS — Professional TV/Monitor/Projector reviews and measurement data",
