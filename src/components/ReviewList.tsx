@@ -14,6 +14,7 @@ interface ReviewListProps {
 
 const sourceLabel = (s: string) => {
   const map: Record<string, string> = {
+    lge_com: "LG.com",
     reddit: "Reddit", amazon: "Amazon", rtings: "RTINGS",
     trusted_reviews: "Trusted Reviews", consumer_reports: "Consumer Reports",
     cnet: "CNET", trustpilot: "Trustpilot", bestreviews: "BestReviews",
