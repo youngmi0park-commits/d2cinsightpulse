@@ -219,6 +219,23 @@ const Index = () => {
           </div>
 
           <div className="space-y-4">
+            <div className="gradient-card rounded-xl border border-border p-4 md:p-5">
+              <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-bold font-heading">
+                    {t("Manual Review Collection", "수동 리뷰 수집")}
+                  </h3>
+                </div>
+                <ReviewCollectButtons />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "Trigger review collection from specific channels. Reviews are also collected automatically daily.",
+                  "특정 채널에서 리뷰 수집을 수동으로 실행합니다. 리뷰는 매일 자동으로도 수집됩니다."
+                )}
+              </p>
+            </div>
             <CollectionCriteria />
             <RedditCountryInsights />
             <NewsletterSubscribe />
