@@ -5,7 +5,7 @@ import { ReviewList } from "@/components/ReviewList";
 import { MarketingHub } from "@/components/MarketingHub";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
-import { ReviewCollectButtons } from "@/components/ReviewCollectButtons";
+
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
