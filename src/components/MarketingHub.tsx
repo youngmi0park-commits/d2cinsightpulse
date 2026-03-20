@@ -32,7 +32,15 @@ export function MarketingHub({
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
       <Tabs defaultValue="channel-copy" className="w-full">
-        <div className="px-5 pt-5 pb-0">
+        <div className="px-5 pt-5 pb-0 space-y-3">
+          <div>
+            <h2 className="text-lg font-bold font-heading text-foreground tracking-tight">
+              Review‑Driven Marketing Toolkit
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t("Real customer reviews → ready-to-use marketing actions", "실제 고객 리뷰 → 바로 쓸 수 있는 마케팅 액션")}
+            </p>
+          </div>
           <TabsList className="w-full h-auto p-1 bg-secondary/50 grid grid-cols-3 gap-1">
             <TabsTrigger
               value="channel-copy"
@@ -55,8 +63,8 @@ export function MarketingHub({
               className="flex items-center gap-1.5 text-xs px-3 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <Star className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("Review Highlights", "리뷰 하이라이트")}</span>
-              <span className="sm:hidden">{t("Highlights", "하이라이트")}</span>
+              <span className="hidden sm:inline">{t("Review Insights", "리뷰 인사이트")}</span>
+              <span className="sm:hidden">{t("Insights", "인사이트")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
