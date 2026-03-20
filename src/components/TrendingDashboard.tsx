@@ -1,5 +1,5 @@
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -196,6 +196,7 @@ const SOURCE_TABS: SourceTabConfig[] = [
   { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, emoji: "🔥" },
   { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🔥" },
   { value: "rtings", label: "RTINGS", icon: <Monitor className="h-4 w-4" />, emoji: "📊" },
+  { value: "consumeraffairs", label: "ConsumerAffairs", icon: <ClipboardList className="h-4 w-4" />, emoji: "📋" },
   { value: "trusted_reviews", label: "Trusted Reviews", icon: <Star className="h-4 w-4" />, emoji: "⭐" },
   { value: "consumer_reports", label: "Consumer Reports", icon: <Shield className="h-4 w-4" />, emoji: "🛡️" },
   { value: "cnet", label: "CNET", icon: <Tv className="h-4 w-4" />, emoji: "📡" },
