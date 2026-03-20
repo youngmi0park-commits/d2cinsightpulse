@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import {
   Copy, Rocket,
   Search, Users, Sparkles,
-  HelpCircle, AlertTriangle, Target, Mail, Video, FileText,
+  AlertTriangle, Target, Mail, Video, FileText,
 } from "lucide-react";
 
 interface Props {
