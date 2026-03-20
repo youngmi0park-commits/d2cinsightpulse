@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
-  const CORE_CATEGORIES_MANUAL = ["TV", "Monitor", "Refrigerator"];
+  const CORE_CATEGORIES_MANUAL = ["TV", "Monitor"];
   let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
   let isManualCollection = false;
