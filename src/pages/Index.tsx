@@ -276,15 +276,31 @@ const Index = () => {
                       {groupKey} ({items.length})
                     </Badge>
                     <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
-                      {items.map((item) => (
-                        <TabsTrigger
-                          key={item.product.name}
-                          value={item.product.name}
-                          className="text-xs px-3 py-1.5"
-                        >
-                          {item.product.displayName || item.product.name}
-                        </TabsTrigger>
-                      ))}
+                      {items.map((item) => {
+                        const posCount = item.sentiment.positive;
+                        const negCount = item.sentiment.negative;
+                        const neuCount = item.sentiment.neutral;
+                        const isHot = posCount >= 10 && posCount > negCount + neuCount;
+                        return (
+                          <TabsTrigger
+                            key={item.product.name}
+                            value={item.product.name}
+                            className={`text-xs px-3 py-1.5 ${
+                              isHot
+                                ? "text-success font-bold shadow-[0_0_8px_hsl(var(--success)/0.3)] border border-success/40"
+                                : ""
+                            }`}
+                          >
+                            {isHot && <span className="mr-1">🔥</span>}
+                            {item.product.displayName || item.product.name}
+                            {isHot && (
+                              <span className="ml-1.5 text-[10px] bg-success/20 text-success px-1.5 py-0.5 rounded-full">
+                                +{posCount}
+                              </span>
+                            )}
+                          </TabsTrigger>
+                        );
+                      })}
                     </TabsList>
                   </div>
                 ))}
