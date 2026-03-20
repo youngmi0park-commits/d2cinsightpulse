@@ -14,6 +14,7 @@ interface ReviewListProps {
 
 const sourceLabel = (s: string) => {
   const map: Record<string, string> = {
+    lge_com: "LG.com",
     reddit: "Reddit", amazon: "Amazon", rtings: "RTINGS",
     trusted_reviews: "Trusted Reviews", consumer_reports: "Consumer Reports",
     cnet: "CNET", trustpilot: "Trustpilot", bestreviews: "BestReviews",
@@ -23,6 +24,7 @@ const sourceLabel = (s: string) => {
 
 const sourceStyle = (s: string) => {
   const map: Record<string, string> = {
+    lge_com: "bg-primary/20 text-primary",
     reddit: "bg-accent/20 text-accent",
     amazon: "bg-warning/20 text-warning",
     rtings: "bg-blue-500/20 text-blue-400",
@@ -105,7 +107,7 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed">{review.text}</p>
+      <p className={`text-sm leading-relaxed ${review.source === "lge_com" ? "italic text-muted-foreground" : ""}`}>{review.text}</p>
 
       {showTranslation && translated && (
         <div className="mt-2 p-3 rounded-md bg-primary/5 border border-primary/20">
