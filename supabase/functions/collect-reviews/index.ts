@@ -21,6 +21,7 @@ const CHANNELS = [
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
   { id: "youtube", label: "YouTube", queryTemplate: (product: string) => `site:youtube.com LG ${product} review` },
   { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
+  { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review refrigerator OR washer OR dryer OR dishwasher OR air conditioner` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
