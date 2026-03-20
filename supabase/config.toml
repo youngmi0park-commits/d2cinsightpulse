@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-faq]
 verify_jwt = false
+
+[functions.collect-reviews]
+verify_jwt = false
