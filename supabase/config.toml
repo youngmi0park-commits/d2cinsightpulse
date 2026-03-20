@@ -2,3 +2,6 @@ project_id = "ygdgbapodmoxklcssjzr"
 
 [functions.generate-action-plan]
 verify_jwt = false
+
+[functions.generate-faq]
+verify_jwt = false
