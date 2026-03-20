@@ -11,6 +11,7 @@ export function KeywordCloud({ keywords }: KeywordCloudProps) {
   const posCount = keywords.positive.length;
   const negCount = keywords.negative.length;
   const isHighlight = posCount >= 10 && posCount > negCount;
+  const isNegHighlight = negCount >= 10 && negCount > posCount;
 
   return (
     <div className="gradient-card rounded-xl border border-border p-6">
