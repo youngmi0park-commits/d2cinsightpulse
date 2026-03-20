@@ -240,8 +240,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const allDefaultKeywords = [...new Set([...LG_CATEGORIES, ...DOTCOM_KEYWORDS])];
-  // For manual (single-channel) collection, use only core categories to avoid timeout
-  const CORE_CATEGORIES = ["TV", "OLED", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Soundbar", "Laptop", "StanbyME", "Robot Vacuum"];
+  const CORE_CATEGORIES_MANUAL = ["TV", "Monitor", "Refrigerator"];
   let targetCategories = allDefaultKeywords;
   let targetChannels = CHANNELS;
   let isManualCollection = false;
@@ -255,9 +254,9 @@ Deno.serve(async (req) => {
   } catch {
     // Use defaults
   }
-  // When triggered manually for specific channels, limit to core categories to stay within timeout
+  // Manual collection: use only 3 core categories to stay within 60s timeout
   if (isManualCollection && targetCategories === allDefaultKeywords) {
-    targetCategories = CORE_CATEGORIES;
+    targetCategories = CORE_CATEGORIES_MANUAL;
   }
 
   const { data: logEntry } = await supabase
