@@ -433,8 +433,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update trending snapshots
-    await updateTrendingSnapshots(supabase);
+    // Update trending snapshots (skip for manual to save time)
+    if (!isManualCollection) {
+      await updateTrendingSnapshots(supabase);
+    }
 
     if (logId) {
       await supabase.from("collection_logs").update({
