@@ -40,6 +40,7 @@ const criteria: CriteriaItem[] = [
       "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가",
       "BestReviews — 가전·프로젝터 종합 추천 리뷰",
       "YouTube — Firecrawl 기반 영상 리뷰 댓글 수집 (site:youtube.com 검색). 제품 리뷰 영상의 시청자 의견 캡처",
+      "ConsumerAffairs — 가전(냉장고, 세탁기, 건조기, 식기세척기, 에어컨) 중심 소비자 불만·리뷰 플랫폼. 구매 인증 리뷰 및 해결 데이터 수집 (US 기반)",
     ],
   },
   {
