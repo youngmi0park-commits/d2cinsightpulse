@@ -1,5 +1,5 @@
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -192,6 +192,7 @@ interface SourceTabConfig {
 }
 
 const SOURCE_TABS: SourceTabConfig[] = [
+  { value: "lge_com", label: "LG.com", icon: <Globe className="h-4 w-4" />, emoji: "🌐" },
   { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, emoji: "🔥" },
   { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🔥" },
   { value: "rtings", label: "RTINGS", icon: <Monitor className="h-4 w-4" />, emoji: "📊" },
