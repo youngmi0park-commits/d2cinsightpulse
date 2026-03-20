@@ -466,6 +466,73 @@ Deno.serve(async (req) => {
   }
 });
 
+function parseAiReviews(rawText: string, channelLabel: string, category: string): any[] {
+  try {
+    const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const reviews = JSON.parse(cleaned);
+    return Array.isArray(reviews) ? reviews : [];
+  } catch {
+    console.error(`Failed to parse AI response for ${channelLabel}/${category}`);
+    return [];
+  }
+}
+
+async function saveReview(supabase: any, review: any, channel: any, category: string, sourceUrl: string | null, _totalCollected: number, _errors: string[]) {
+  if (!review.content || review.content.length < 20) return false;
+  if (review.content_type === "noise" || review.brand_relevant === false) {
+    console.log(`[${channel.label}] Skipped noise/irrelevant: ${review.title?.slice(0, 50)}`);
+    return false;
+  }
+
+  const modelNum = review.model_number || `LG-${category}-GENERIC`;
+  const { data: existingProduct } = await supabase
+    .from("products").select("id").eq("model_number", modelNum).maybeSingle();
+
+  let productId: string;
+  if (existingProduct) {
+    productId = existingProduct.id;
+  } else {
+    const { data: newProduct } = await supabase
+      .from("products")
+      .insert({ model_number: modelNum, display_name: review.display_name || `LG ${category}`, category: review.category || category })
+      .select("id").single();
+    productId = newProduct?.id;
+  }
+  if (!productId) return false;
+
+  const hashInput = review.content.slice(0, 100);
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    hash = ((hash << 5) - hash) + hashInput.charCodeAt(i);
+    hash |= 0;
+  }
+  const externalId = `${channel.id}-${Math.abs(hash).toString(36)}-${review.content.length}`;
+
+  const { data: existingReview } = await supabase
+    .from("reviews").select("id").eq("external_id", externalId).maybeSingle();
+  if (existingReview) return false;
+
+  await supabase.from("reviews").insert({
+    product_id: productId,
+    source: channel.id,
+    source_url: sourceUrl || null,
+    external_id: externalId,
+    title: review.title?.slice(0, 200) || null,
+    content: review.content.slice(0, 2000),
+    author: review.author || null,
+    rating: review.rating || null,
+    sentiment: review.sentiment || "neutral",
+    sentiment_score: review.sentiment_score ?? 0.5,
+    published_at: review.published_at || null,
+    emotion_category: review.emotion_category || "neutral",
+    emotion_intensity: review.emotion_intensity || 3,
+    user_type: review.user_type || "unknown",
+    content_type: review.content_type || "review",
+    platform_type: review.platform_type || "unknown",
+  });
+  return true;
+}
+
 async function updateTrendingSnapshots(supabase: any) {
   try {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
