@@ -178,11 +178,16 @@ export function useProductStats() {
 
 // Convert DB review to the format used by existing components
 export function toReviewFormat(dbReview: DBReview) {
+  const isLgeCom = dbReview.source === "lge_com";
+  const maskedText = isLgeCom
+    ? `[LG.com 리뷰 — 감성: ${dbReview.sentiment || "neutral"}, 점수: ${((dbReview.sentiment_score ?? 0.5) * 100).toFixed(0)}점] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`
+    : dbReview.content;
+
   return {
     id: dbReview.id,
     source: dbReview.source as any,
-    author: dbReview.author || "Anonymous",
-    text: dbReview.content,
+    author: isLgeCom ? "LG.com User" : (dbReview.author || "Anonymous"),
+    text: maskedText,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
     rating: dbReview.rating ?? undefined,
     sentiment: (dbReview.sentiment || "neutral") as "positive" | "negative" | "neutral",
