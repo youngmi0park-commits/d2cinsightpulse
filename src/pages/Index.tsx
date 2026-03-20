@@ -281,6 +281,7 @@ const Index = () => {
                         const negCount = item.sentiment.negative;
                         const neuCount = item.sentiment.neutral;
                         const isHot = posCount >= 10 && posCount > negCount + neuCount;
+                        const isWarn = negCount >= 10 && negCount > posCount + neuCount;
                         return (
                           <TabsTrigger
                             key={item.product.name}
@@ -288,14 +289,22 @@ const Index = () => {
                             className={`text-xs px-3 py-1.5 ${
                               isHot
                                 ? "text-success font-bold shadow-[0_0_8px_hsl(var(--success)/0.3)] border border-success/40"
-                                : ""
+                                : isWarn
+                                  ? "text-destructive font-bold shadow-[0_0_8px_hsl(var(--destructive)/0.3)] border border-destructive/40"
+                                  : ""
                             }`}
                           >
                             {isHot && <span className="mr-1">🔥</span>}
+                            {isWarn && <span className="mr-1">⚠️</span>}
                             {item.product.displayName || item.product.name}
                             {isHot && (
                               <span className="ml-1.5 text-[10px] bg-success/20 text-success px-1.5 py-0.5 rounded-full">
                                 +{posCount}
+                              </span>
+                            )}
+                            {isWarn && (
+                              <span className="ml-1.5 text-[10px] bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-full">
+                                -{negCount}
                               </span>
                             )}
                           </TabsTrigger>
