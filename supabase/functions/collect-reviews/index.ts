@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               query: channel.queryTemplate(category),
-              limit: 5,
+              limit: isManualCollection ? 3 : 5,
               scrapeOptions: { formats: ["markdown"] },
             }),
           });
@@ -301,43 +301,18 @@ Deno.serve(async (req) => {
 
           if (results.length === 0) continue;
 
-          for (const result of results) {
-            const url = result.url;
-            if (!url) continue;
+          // For manual collection: batch all results into one AI call to save time
+          if (isManualCollection) {
+            const batchedContent = results
+              .filter((r: any) => r.url)
+              .map((r: any, i: number) => {
+                const content = r.markdown || r.description || "";
+                return content.length >= 50 ? `--- Result ${i + 1} (${r.url}) ---\n${content.slice(0, 3000)}` : null;
+              })
+              .filter(Boolean)
+              .join("\n\n");
 
-            let content = result.markdown || "";
-
-            if (!content || content.length < 200) {
-              try {
-                console.log(`[${channel.label}] Scraping: ${url}`);
-                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    url,
-                    formats: ["markdown"],
-                    onlyMainContent: true,
-                  }),
-                });
-
-                if (scrapeRes.ok) {
-                  const scrapeData = await scrapeRes.json();
-                  content = scrapeData.data?.markdown || scrapeData.markdown || "";
-                } else {
-                  const errText = await scrapeRes.text();
-                  console.error(`[${channel.label}] Scrape failed (${scrapeRes.status}): ${errText.slice(0, 200)}`);
-                  content = result.description || "";
-                }
-              } catch (scrapeErr) {
-                console.error(`[${channel.label}] Scrape error: ${scrapeErr}`);
-                content = result.description || "";
-              }
-            }
-
-            if (content.length < 100) continue;
+            if (batchedContent.length < 100) continue;
 
             try {
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
