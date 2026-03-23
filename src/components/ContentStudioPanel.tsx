@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   LG_COMPONENT_SPECS,
   CONTENT_TYPES,
-  CHANNEL_TYPES,
+  
   LOCALES,
   TONALITY_OPTIONS,
   type ContentTypeKey,
