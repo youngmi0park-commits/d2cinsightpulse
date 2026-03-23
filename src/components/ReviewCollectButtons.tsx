@@ -23,6 +23,13 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     descriptionKo: "lg.com/us에서 리뷰 및 스펙 수집",
   },
   {
+    id: "lge_com_direct",
+    label: "LG.com US/UK",
+    icon: Globe,
+    description: "Direct crawl LG.com US & UK product pages (Refrigerator, Washer)",
+    descriptionKo: "LG.com US/UK 제품 페이지 직접 크롤링 (냉장고, 세탁기)",
+  },
+  {
     id: "reddit",
     label: "Reddit",
     icon: MessageSquare,
