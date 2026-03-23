@@ -155,19 +155,17 @@ Deno.serve(async (req) => {
           try {
             console.log(`[${region.toUpperCase()}] Searching: ${query}`);
 
-            // Step 1: Search for review pages (no scrapeOptions to avoid timeout)
+            // Search for review pages - use snippets directly (retail sites block scraping)
             const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ query, limit: 3 }),
+              body: JSON.stringify({ query, limit: 5 }),
             });
 
             if (!searchRes.ok) {
-              const errText = await searchRes.text();
-              console.error(`Search failed: ${searchRes.status} ${errText.slice(0, 200)}`);
               errors.push(`Search failed: ${searchRes.status}`);
               continue;
             }
@@ -176,89 +174,57 @@ Deno.serve(async (req) => {
             const results = searchData.data || [];
             console.log(`[${region.toUpperCase()}] Got ${results.length} search results`);
 
-            // Step 2: Scrape each result URL for full content
-            for (const result of results) {
-              const url = result.url || "";
-              if (!url) continue;
+            if (results.length === 0) continue;
 
-              console.log(`[${region.toUpperCase()}] Scraping: ${url}`);
+            // Combine all search snippets into one AI call
+            const snippetsText = results.map((r: any, i: number) =>
+              `[Result ${i+1}] URL: ${r.url}\nTitle: ${r.title || ""}\nSnippet: ${r.description || ""}`
+            ).join("\n\n");
 
-              const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  url,
-                  formats: ["markdown"],
-                  onlyMainContent: true,
-                  waitFor: 3000,
-                }),
-              });
+            const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash",
+                messages: [
+                  { role: "system", content: REVIEW_EXTRACT_PROMPT },
+                  {
+                    role: "user",
+                    content: `Category: ${category}\nRegion: ${region}\nSearch Query: ${query}\n\nSearch Results with Review Snippets:\n${snippetsText}`,
+                  },
+                ],
+                temperature: 0.1,
+                max_tokens: 8000,
+              }),
+            });
 
-              if (!scrapeRes.ok) {
-                console.error(`Scrape failed for ${url}: ${scrapeRes.status}`);
-                continue;
-              }
+            if (!aiRes.ok) {
+              errors.push(`AI failed: ${aiRes.status}`);
+              continue;
+            }
 
-              const scrapeData = await scrapeRes.json();
-              const markdown = scrapeData.data?.markdown || "";
+            const aiData = await aiRes.json();
+            const rawText = aiData.choices?.[0]?.message?.content || "[]";
+            const reviews = parseAiReviews(rawText);
+            console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews`);
 
-              if (markdown.length < 200) {
-                console.log(`[${region.toUpperCase()}] Too short (${markdown.length}), skipping`);
-                continue;
-              }
+            for (const review of reviews) {
+              const issueTags = detectIssueTags(review.content || "", category);
+              const allIssueTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
+              const sourceUrl = results[0]?.url || query;
 
-              console.log(`[${region.toUpperCase()}] Got ${markdown.length} chars from ${url}`);
+              const saved = await saveReview(supabase, {
+                ...review,
+                issue_tags: allIssueTags,
+                source_region: region,
+              }, category, sourceUrl);
 
-              // AI extraction
-              const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  model: "google/gemini-2.5-flash",
-                  messages: [
-                    { role: "system", content: REVIEW_EXTRACT_PROMPT },
-                    {
-                      role: "user",
-                      content: `Source URL: ${url}\nCategory: ${category}\nRegion: ${region}\n\nPage Content:\n${markdown.slice(0, 12000)}`,
-                    },
-                  ],
-                  temperature: 0.1,
-                  max_tokens: 8000,
-                }),
-              });
-
-              if (!aiRes.ok) {
-                console.error(`AI failed: ${aiRes.status}`);
-                errors.push(`AI failed for ${url}`);
-                continue;
-              }
-
-              const aiData = await aiRes.json();
-              const rawText = aiData.choices?.[0]?.message?.content || "[]";
-              const reviews = parseAiReviews(rawText);
-
-              console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews from ${url}`);
-
-              for (const review of reviews) {
-                const issueTags = detectIssueTags(review.content || "", category);
-                const allIssueTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
-
-                const saved = await saveReview(supabase, {
-                  ...review,
-                  issue_tags: allIssueTags,
-                  source_region: region,
-                }, category, url);
-
-                if (saved) {
-                  totalCollected++;
-                  regionStats[category][region]++;
-                }
+              if (saved) {
+                totalCollected++;
+                regionStats[category][region]++;
               }
             }
           } catch (queryErr) {
