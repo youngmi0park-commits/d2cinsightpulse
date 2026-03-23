@@ -462,13 +462,16 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
               <span className="text-[10px] text-muted-foreground font-mono ml-0.5">({s.count.toLocaleString()})</span>
             </TabsTrigger>
           ))}
-          {otherTabs.length > 0 && (
-            <TabsTrigger value="__others__" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
-              <Layers className="h-4 w-4" />
-              <span>{t("Others", "기타")}</span>
-              <span className="text-[10px] text-muted-foreground font-mono ml-0.5">({otherTabs.length})</span>
-            </TabsTrigger>
-          )}
+          {otherTabs.length > 0 && (() => {
+            const othersTotal = otherTabs.reduce((sum, s) => sum + s.count, 0);
+            return (
+              <TabsTrigger value="__others__" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+                <Layers className="h-4 w-4" />
+                <span>{t("Others", "기타")}</span>
+                <span className="text-[10px] text-muted-foreground font-mono ml-0.5">({othersTotal.toLocaleString()})</span>
+              </TabsTrigger>
+            );
+          })()}
         </TabsList>
 
         {mainTabs.map((s) => (
