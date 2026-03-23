@@ -302,8 +302,13 @@ async function searchForProductPages(
   apiKey: string, category: string, region: string, limit: number
 ): Promise<string[]> {
   try {
-    const domain = region === "us" ? "lge.com/us" : "lge.com/uk";
-    const query = `site:${domain} LG ${category.toLowerCase()} reviews`;
+    const categorySlug = region === "us"
+      ? (category === "Refrigerator" ? "refrigerators" : category === "Washer" ? "washers" : "dryers")
+      : (category === "Refrigerator" ? "refrigerators" : category === "Washer" ? "washing-machines" : "dryers");
+    const domain = `www.lge.com/${region}`;
+    const query = `site:${domain}/${categorySlug} LG ${category.toLowerCase()} review`;
+
+    console.log(`[Search] Query: ${query}`);
 
     const res = await fetch("https://api.firecrawl.dev/v1/search", {
       method: "POST",
@@ -311,17 +316,32 @@ async function searchForProductPages(
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, limit }),
+      body: JSON.stringify({ query, limit: limit * 2 }),
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`Search failed: ${res.status}`);
+      return [];
+    }
 
     const data = await res.json();
-    return (data.data || [])
-      .filter((r: any) => r.url && r.url.includes(domain))
+    const urls = (data.data || [])
+      .filter((r: any) => {
+        if (!r.url) return false;
+        const u = r.url.toLowerCase();
+        return u.includes(`lge.com/${region}/`) &&
+               u.includes(categorySlug) &&
+               !u.includes("/compare") &&
+               !u.includes("/accessories") &&
+               !u.includes("partner.lge.com");
+      })
       .map((r: any) => r.url)
       .slice(0, limit);
-  } catch {
+
+    console.log(`[Search] Found ${urls.length} URLs:`, urls.slice(0, 3));
+    return urls;
+  } catch (err) {
+    console.error("Search error:", err);
     return [];
   }
 }
