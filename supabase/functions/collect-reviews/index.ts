@@ -6,22 +6,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Channel definitions with Firecrawl search queries
+// Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
-  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" ${product}` },
-  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup OR flair:"Review & Setups"` },
-  { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
-  { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
-  { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
+  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} (review OR owner OR "just bought") upvotes` },
+  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" noise dB cooling speed` },
+  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup` },
+  { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review "Verified Purchase"` },
+  { id: "bestbuy", label: "Best Buy", queryTemplate: (product: string) => `site:bestbuy.com LG ${product} review` },
+  { id: "costco", label: "Costco", queryTemplate: (product: string) => `site:costco.com LG ${product} review` },
+  { id: "walmart", label: "Walmart", queryTemplate: (product: string) => `site:walmart.com LG ${product} review` },
+  { id: "target", label: "Target", queryTemplate: (product: string) => `site:target.com LG ${product} review` },
+  { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product} "test results" OR measurements OR lab` },
+  { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product} review` },
   { id: "consumer_reports", label: "Consumer Reports", queryTemplate: (product: string) => `site:consumerreports.org LG ${product}` },
   { id: "cnet", label: "CNET", queryTemplate: (product: string) => `site:cnet.com LG ${product} review` },
+  { id: "techradar", label: "TechRadar", queryTemplate: (product: string) => `site:techradar.com LG ${product} review` },
+  { id: "toms_hardware", label: "Tom's Hardware", queryTemplate: (product: string) => `site:tomshardware.com LG ${product} review benchmark` },
+  { id: "notebookcheck", label: "Notebookcheck", queryTemplate: (product: string) => `site:notebookcheck.net LG ${product} review` },
   { id: "trustpilot", label: "Trustpilot", queryTemplate: (product: string) => `site:trustpilot.com LG ${product}` },
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
   { id: "youtube", label: "YouTube", queryTemplate: (product: string) => `site:youtube.com LG ${product} review` },
   { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
-  { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review refrigerator OR washer OR dryer OR dishwasher OR air conditioner` },
+  { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review` },
+  { id: "google_reviews", label: "Google Reviews", queryTemplate: (product: string) => `site:google.com/maps LG store ${product} review` },
+  { id: "lg_community", label: "LG Community", queryTemplate: (product: string) => `site:lgcommunity.us.com LG ${product}` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
@@ -176,7 +185,7 @@ For each review, return a JSON array of objects with these fields:
 ## Core Fields
 - model_number: string (LG model number if found, e.g. "OLED65C4PUA", "27GP850-B", "WM4000HWA". If not found, use category name)
 - display_name: string (full product name, e.g. "LG C4 65-inch OLED TV")
-- category: string (one of: TV, Monitor, Refrigerator, Washer, Dryer, Air Conditioner, Soundbar, Laptop, Projector, Robot Vacuum)
+- category: string (one of: TV, Monitor, Refrigerator, Washer, Dryer, Air Conditioner, Soundbar, Laptop, Projector, Robot Vacuum, Dishwasher)
 - title: string (review title or summary, max 100 chars)
 - content: string (review text, max 500 chars)
 - author: string or null
@@ -184,40 +193,48 @@ For each review, return a JSON array of objects with these fields:
 - published_at: string ISO date or null
 
 ## 1️⃣ Expanded Keyword Detection
-- detected_keywords: string[] (all relevant keywords found: product names, features/specs, sentiment words, comparison phrases, problem/desire expressions — ALL IN ENGLISH)
+- detected_keywords: string[] (all relevant keywords found — ALL IN ENGLISH)
 
 ## 2️⃣ Brand Relevance Check
-- brand_relevant: boolean (true if the mention is specifically about an LG Electronics product)
-- brand_relevance_reason: string (1-2 sentence explanation of why it is/isn't relevant)
+- brand_relevant: boolean (true if specifically about an LG Electronics product)
+- brand_relevance_reason: string
 
 ## 3️⃣ Granular Sentiment Analysis
 - sentiment: "positive" | "negative" | "neutral" | "mixed"
-- sentiment_score: number 0-1 (0=very negative, 1=very positive)
+- sentiment_score: number 0-1
 - emotion_category: string (one of: "satisfaction", "recommendation", "impressed", "neutral", "informational", "question", "complaint", "anger", "disappointment", "mixed")
-- emotion_intensity: number 1-5 (1=very mild, 5=very strong)
-- emotion_evidence: string (the key sentence that supports this emotion classification)
+- emotion_intensity: number 1-5
+- emotion_evidence: string
 
 ## 4️⃣ Noise Filtering
-- content_type: string (one of: "review" = actual product evaluation, "general_mention" = casual mention not evaluating product, "advertisement" = promotional/sponsored content, "noise" = irrelevant mention like "bug" used in gaming context)
-- noise_reason: string or null (if content_type is not "review", explain why)
+- content_type: string ("review" | "general_mention" | "advertisement" | "noise")
+- noise_reason: string or null
 
 ## 5️⃣ User Segment Inference
-- user_type: string (one of: "actual_user" = verified owner/user, "potential_customer" = considering purchase, "reviewer" = professional reviewer, "journalist" = press/media, "unknown")
-- user_region: string or null (country code if detectable, e.g. "US", "UK", "KR")
-- platform_type: string (one of: "community", "review_site", "video", "blog", "news")
+- user_type: string ("actual_user" | "potential_customer" | "reviewer" | "journalist" | "unknown")
+- user_region: string or null (country code)
+- platform_type: string ("community" | "review_site" | "video" | "blog" | "news" | "retailer")
 
 ## 6️⃣ Marketing Message Conversion
-- marketing_message: object with:
-  - original_summary: string (1-sentence summary of the user's opinion)
-  - emotion_label: string (the emotion_category value)
-  - copy: string (1-2 sentence marketing message derived from this review:
-    - positive → recommendation copy
-    - negative → improvement acknowledgment message
-    - mixed → balanced message)
+- marketing_message: object { original_summary, emotion_label, copy }
+
+## 7️⃣ Enhanced Analysis Fields
+- topics: string[] (from: picture_quality, brightness, uniformity, motion, HDR, gaming, sound, build, thermals, battery, noise, energy, cooling_speed, installation, connectivity, software, warranty, delivery, capacity, cleaning_performance, response_time, backlight_bleed, burn_in, upscaling, color_accuracy, VRR, portability)
+- pain_points: array of { type: string, snippet: string, severity: 1-5, evidence_value?: string }
+- strengths: array of { feature: string, snippet: string }
+- claims: array of { metric: string, value: number, unit: string, snippet: string } (capture nits, dB, W, Hz, ms, hours, BTU, sq ft, minutes)
+- competitor_mentions: array of { brand: string, model?: string, direction: "+"|"-"|"neutral", snippet: string }
+- quotes: string[] (1-2 marketing-ready sentences from the review, 30-140 chars, no exaggeration)
+- faq_candidates: array of { q: string, a_draft: string } (convert repeated issues to Q&A format)
+- verified_purchase: boolean or null
+- helpful_count: number or null
+- editor_tested: boolean (true if from professional review site with lab measurements)
 
 RULES:
 - Only include actual user opinions/reviews, not product specs listings
 - ALL keywords must be in ENGLISH regardless of source language
+- Capture quantitative evidence (nits, dB, Hz, ms, hours) whenever present
+- Include trust signals: verified_purchase, helpful_count, editor_tested
 - If no reviews found, return empty array []
 - Return ONLY valid JSON, no markdown`;
 
