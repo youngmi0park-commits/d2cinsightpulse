@@ -71,6 +71,15 @@ const pmaxHL = (text: string) => smartTrim(text, 30);
 const pmaxLongHL = (text: string) => smartTrim(text, 90);
 const pmaxDesc = (text: string) => smartTrim(text, 90);
 
+export interface TargetPersona {
+  emoji: string;
+  label: string;
+  age: string;
+  lifestyle: string;
+  motivation: string;
+  painPoint: string;
+}
+
 export interface MarketingOutput {
   qaList: { question: string; answer: string }[];
   reviewGuide: string;
@@ -80,6 +89,7 @@ export interface MarketingOutput {
   userTips: string[];
   usageScenes: string[];
   durabilityInsights: string[];
+  personas: TargetPersona[];
 }
 
 export type ChannelGroup = "inside" | "outside";
