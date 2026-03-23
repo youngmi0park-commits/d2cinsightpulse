@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   Copy, Check, Wand2, ShieldCheck, AlertTriangle, CheckCircle2,
-  Monitor, Smartphone, Image as ImageIcon, Film, FileText, Palette,
+  Monitor, Image as ImageIcon, Film, FileText, Palette,
   ChevronDown, ChevronRight, Info,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
