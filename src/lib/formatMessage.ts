@@ -688,6 +688,9 @@ ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천"
     ),
   ];
 
+  // Target Personas — generated from review patterns
+  const personas = generatePersonas(productName, sentiment, lang);
+
   // Usage Scenes — extracted from review mentions of places & situations
   const usageScenes = (sentiment.usageScenes || []).length > 0
     ? sentiment.usageScenes.map((scene) => {
