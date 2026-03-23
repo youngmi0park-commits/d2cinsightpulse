@@ -428,6 +428,24 @@ ${mustInclude}`;
         </Collapsible>
       )}
 
+      {/* Linked Copy from Toolkit */}
+      {linkedCopy && (
+        <div className="p-3 rounded-lg border-2 border-accent bg-accent/10 space-y-1.5 text-xs">
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-accent-foreground text-[11px] flex items-center gap-1.5">
+              🔗 {t("Linked from Toolkit", "툴킷에서 연동됨")}
+            </p>
+            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => setLinkedCopy(null)}>
+              ✕ {t("Clear", "해제")}
+            </Button>
+          </div>
+          <div className="space-y-1">
+            <p className="text-muted-foreground"><span className="font-medium">Headline:</span> {linkedCopy.headline}</p>
+            <p className="text-muted-foreground"><span className="font-medium">Body:</span> {linkedCopy.body}</p>
+          </div>
+        </div>
+      )}
+
       {/* Insights Preview */}
       <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-2 text-xs">
         <p className="font-semibold text-primary text-[11px]">
