@@ -1,5 +1,5 @@
 import type { MarketingOutput } from "@/lib/formatMessage";
-import { Copy, ThumbsUp, Lightbulb, Shield, Star, TrendingUp, AlertTriangle, MapPin } from "lucide-react";
+import { Copy, ThumbsUp, Lightbulb, Shield, Star, TrendingUp, AlertTriangle, MapPin, Users } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -101,6 +101,50 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
           ))}
         </div>
       </div>
+
+      {/* Target Personas */}
+      {marketing.personas && marketing.personas.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-violet-500" />
+              {t("Target Personas (Review-Based)", "타겟 페르소나 (리뷰 기반)")}
+            </h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => copyText(marketing.personas.map(p => `${p.emoji} ${p.label} (${p.age})\n  - ${p.lifestyle}\n  - ${p.motivation}\n  - Pain: ${p.painPoint}`).join("\n\n"))}
+              className="text-xs h-7"
+            >
+              <Copy className="h-3 w-3 mr-1" />{t("Copy", "복사")}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t(
+              "Target consumer personas derived from real review patterns — use for ad targeting, creative briefs, and campaign planning.",
+              "실사용 리뷰 패턴에서 도출된 타겟 소비자 페르소나 — 광고 타겟팅, 크리에이티브 브리프, 캠페인 기획에 활용하세요."
+            )}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {marketing.personas.map((persona, i) => (
+              <div key={i} className="p-4 rounded-lg border border-violet-500/20 bg-violet-500/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{persona.emoji}</span>
+                  <div>
+                    <p className="font-semibold text-sm">{persona.label}</p>
+                    <p className="text-xs text-muted-foreground">{t("Age", "연령")}: {persona.age}</p>
+                  </div>
+                </div>
+                <div className="space-y-1.5 text-xs text-foreground/80">
+                  <p><span className="font-medium text-foreground/90">🎯 {t("Lifestyle", "라이프스타일")}:</span> {persona.lifestyle}</p>
+                  <p><span className="font-medium text-foreground/90">💡 {t("Motivation", "구매 동기")}:</span> {persona.motivation}</p>
+                  <p><span className="font-medium text-destructive/80">⚡ {t("Pain Point", "페인 포인트")}:</span> {persona.painPoint}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Customer Real Using Scene */}
       <div className="space-y-3">
