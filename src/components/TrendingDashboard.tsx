@@ -219,7 +219,7 @@ const ALL_SOURCE_TABS: SourceTabConfig[] = [
   { value: "blog", label: "Blog", icon: <BookOpen className="h-4 w-4" />, emoji: "📝" },
 ];
 
-const REVIEW_THRESHOLD = 100;
+const REVIEW_THRESHOLD = 50;
 
 function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
   const { data: products = [], isLoading: productsLoading } = useTrendingProducts(source.value);
