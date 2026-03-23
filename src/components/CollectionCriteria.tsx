@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search } from "lucide-react";
+import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, FlaskConical } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { useLang } from "@/contexts/LanguageContext";
@@ -304,6 +304,66 @@ const criteria: CriteriaItem[] = [
       "노이즈 필터링: 게임 용어 'bug', 일반 브랜드 언급, 광고 태깅 및 제외",
       "신뢰도 시그널 추적: verified_purchase, helpful_count/upvotes, editor_tested",
       "출처: WorldPopulationReview, ExpertBeacon, SimilarWeb 기반 검증",
+    ],
+  },
+  {
+    icon: HelpCircle,
+    titleEn: "FAQ Generation Pipeline (Conversion-Optimized)",
+    titleKo: "FAQ 생성 파이프라인 (전환 최적화)",
+    itemsEn: [
+      "🎯 Goal: Generate conversion-optimized FAQs from reviews with Evidence, CIS scoring, and legal compliance gate",
+      "📥 Input: Reviews (up to 40), official LG product specs (via Firecrawl from lg.com/us), CS ticket patterns",
+      "🔍 Q/A Extraction: Identifies question patterns, repeated issues, and conversion barriers (anxiety, info gaps, comparisons, setup concerns) from reviews",
+      "📊 Evidence Engine (min 2 per FAQ): quotes[] (30-100 char anonymized excerpts), claims[] (nits/dB/Hz/ms quantitative data), pattern (\"X% of reviews mention [topic]\")",
+      "⚡ CIS Formula: 100 × (0.30×freq + 0.20×neg_ratio + 0.20×intent_weight + 0.15×cs_overlap + 0.10×pdp_drop + 0.05×evidence)",
+      "🏷️ Priority: P0 (≥80) → P1 (65-79) → P2 (50-64) → Backlog (<50)",
+      "🔐 Legal Gate (LGE Checklist): No unsubstantiated superlatives, no competitor comparisons, data source disclosed, genuine UGC only",
+      "✅ Publishable Rule: publishable=true ONLY when legal_review=pass AND evidence≥2 items",
+      "📋 Weekly Action List: Top 3-5 actions sorted by CIS with ready-to-use PDP highlight & exit popup copy",
+      "🗺️ CS Heatmap: Issue × (review frequency, CS frequency, CIS) matrix with action_required flags",
+      "📍 PDP Presence: Tracks FAQ implementation status (implemented / missing / outdated ≥90 days)",
+      "🧪 A/B Test Suggestions: Position (above-fold vs ATC), count (3 vs 6 FAQs), tone (customer vs official)",
+    ],
+    itemsKo: [
+      "🎯 목표: 리뷰 기반 전환 최적화 FAQ 생성 — Evidence·CIS 점수·법무 검토 게이트 포함",
+      "📥 입력: 리뷰 (최대 40건), LG 공식 제품 스펙 (lg.com/us Firecrawl 수집), CS 티켓 패턴",
+      "🔍 Q/A 추출: 리뷰에서 질문형 패턴, 반복 이슈, 전환 장애물(불안·정보부족·비교·설치) 식별",
+      "📊 Evidence Engine (FAQ당 최소 2개): quotes[] (30-100자 비식별 인용), claims[] (nits/dB/Hz/ms 정량 데이터), pattern (\"리뷰의 X%가 [토픽] 언급\")",
+      "⚡ CIS 공식: 100 × (0.30×빈도 + 0.20×부정비율 + 0.20×의도가중치 + 0.15×CS중복 + 0.10×PDP이탈매칭 + 0.05×증거점수)",
+      "🏷️ 우선순위: P0 (≥80) → P1 (65-79) → P2 (50-64) → Backlog (<50)",
+      "🔐 법무 게이트 (LGE 체크리스트): 근거 없는 최상급 금지, 경쟁사 비교 금지, 데이터 출처 공개, 실제 UGC만 사용",
+      "✅ 발행 규칙: publishable=true는 legal_review=pass AND evidence≥2건일 때만",
+      "📋 주간 액션리스트: CIS 순 상위 3-5개 액션 + PDP 하이라이트·이탈 팝업 즉시 사용 문구",
+      "🗺️ CS 히트맵: 이슈 × (리뷰 빈도, CS 빈도, CIS) 매트릭스 + action_required 플래그",
+      "📍 PDP 반영 상태: FAQ 구현 상태 추적 (implemented / missing / outdated ≥90일)",
+      "🧪 A/B 테스트 추천: 위치(Above-fold vs ATC 근처), 개수(3문 vs 6문), 문구톤(고객언어 vs 공식톤)",
+    ],
+  },
+  {
+    icon: Scale,
+    titleEn: "FAQ Legal Compliance (Ad Review Checklist)",
+    titleKo: "FAQ 법무 컴플라이언스 (광고 검토 체크리스트)",
+    itemsEn: [
+      "[General #7] All factual claims substantiated by verifiable review data",
+      "[General #9] No unsubstantiated superlatives (best, #1, unprecedented)",
+      "[General #28] Data source, collection period, and methodology disclosed",
+      "[General #3] Content does not mislead reasonable consumers",
+      "[General #4] No unauthorized use of third-party IP, trademarks, or personal data",
+      "[General #21] Cited reviews are genuine user-generated content from public sources",
+      "[Comparative #31] No direct comparative claims against competitor products",
+      "Status: pass → publishable | needs_revision → edit required | fail → blocked",
+      "All FAQ items must pass legal gate + have ≥2 evidence items to be marked publishable",
+    ],
+    itemsKo: [
+      "[General #7] 모든 사실적 주장은 검증 가능한 리뷰 데이터로 뒷받침",
+      "[General #9] 근거 없는 최상급 표현 사용 금지 (최고, 1위, 전례없는)",
+      "[General #28] 데이터 출처, 수집 기간 및 방법론 공개",
+      "[General #3] 합리적인 소비자를 오도하는 내용 포함 금지",
+      "[General #4] 제3자 IP, 상표, 개인정보 무단 사용 금지",
+      "[General #21] 인용된 리뷰는 공개 출처의 실제 사용자 생성 콘텐츠",
+      "[Comparative #31] 경쟁사 제품에 대한 직접적인 비교 주장 금지",
+      "상태: pass → 발행가능 | needs_revision → 수정 필요 | fail → 차단",
+      "모든 FAQ 항목은 법무 검토 통과 + evidence ≥2건이어야 publishable=true",
     ],
   },
   {
