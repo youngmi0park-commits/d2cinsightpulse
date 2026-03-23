@@ -18,7 +18,7 @@ import {
   TONALITY_OPTIONS,
   type ContentTypeKey,
 } from "@/data/lgContentSpecs";
-import { getComplianceChecks, type ComplianceCheck } from "@/lib/adComplianceRules";
+import { getComplianceChecks } from "@/lib/adComplianceRules";
 import type { SentimentResult } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 
