@@ -253,12 +253,19 @@ function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConf
 
 /** Others tab that aggregates multiple low-count sources */
 function OthersTabContent({ sources, sourceCounts, t }: { sources: SourceTabConfig[]; sourceCounts: Record<string, number>; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
+  const totalOthersReviews = sources.reduce((sum, s) => sum + (sourceCounts[s.value] || 0), 0);
+
   return (
     <div className="space-y-6">
       <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
-        <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
-          📦 {t("Other Channels", "기타 채널")}
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            📦 {t("Other Channels", "기타 채널")}
+          </h3>
+          <Badge variant="secondary" className="text-xs gap-1 font-mono">
+            {t("Total", "합계")} {totalOthersReviews.toLocaleString()} {t("reviews", "리뷰")}
+          </Badge>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
           {sources.map((s) => (
             <div key={s.value} className="rounded-lg border border-border bg-muted/20 p-3 text-center">
@@ -273,8 +280,8 @@ function OthersTabContent({ sources, sourceCounts, t }: { sources: SourceTabConf
         </div>
         <p className="text-xs text-muted-foreground text-center">
           {t(
-            "Channels with fewer than 100 reviews are grouped here. As more reviews are collected, they will be promoted to individual tabs.",
-            "리뷰 100건 미만 채널은 이곳에 표시됩니다. 리뷰가 더 수집되면 개별 탭으로 승격됩니다."
+            `${sources.length} channels · ${totalOthersReviews.toLocaleString()} reviews total. Channels with fewer than 100 reviews are grouped here.`,
+            `${sources.length}개 채널 · 총 ${totalOthersReviews.toLocaleString()}건. 리뷰 100건 미만 채널은 이곳에 표시됩니다.`
           )}
         </p>
       </div>
