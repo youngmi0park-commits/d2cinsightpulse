@@ -1,9 +1,10 @@
+import { useMemo } from "react";
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList, Layers, BookOpen, Laptop, Headphones, Home, PenTool, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
-import { useTrendingProducts, useTrendingKeywords, useProductStats, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
@@ -184,14 +185,17 @@ function KeywordPanel({ keywords, t }: { keywords: DBTrendingKeyword[]; t: (en: 
   );
 }
 
+// ── Source tab config with all known sources ──
 interface SourceTabConfig {
   value: string;
   label: string;
   icon: React.ReactNode;
   emoji: string;
+  /** Source keys in the reviews table that map to this tab (for "others" grouping) */
+  sourceKeys?: string[];
 }
 
-const SOURCE_TABS: SourceTabConfig[] = [
+const ALL_SOURCE_TABS: SourceTabConfig[] = [
   { value: "lge_com", label: "LG.com", icon: <Globe className="h-4 w-4" />, emoji: "🌐" },
   { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, emoji: "🔥" },
   { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🔥" },
@@ -203,7 +207,19 @@ const SOURCE_TABS: SourceTabConfig[] = [
   { value: "trustpilot", label: "Trustpilot", icon: <Award className="h-4 w-4" />, emoji: "💬" },
   { value: "bestreviews", label: "BestReviews", icon: <BarChart3 className="h-4 w-4" />, emoji: "🏆" },
   { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4" />, emoji: "🎬" },
+  { value: "bestbuy", label: "Best Buy", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🛒" },
+  { value: "houzz", label: "Houzz", icon: <Home className="h-4 w-4" />, emoji: "🏠" },
+  { value: "notebookcheck", label: "Notebookcheck", icon: <Laptop className="h-4 w-4" />, emoji: "💻" },
+  { value: "techradar", label: "TechRadar", icon: <Monitor className="h-4 w-4" />, emoji: "📡" },
+  { value: "lemon8", label: "Lemon8", icon: <PenTool className="h-4 w-4" />, emoji: "🍋" },
+  { value: "walmart", label: "Walmart", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🛒" },
+  { value: "pcmag", label: "PCMag", icon: <FileText className="h-4 w-4" />, emoji: "📰" },
+  { value: "theverge", label: "The Verge", icon: <FileText className="h-4 w-4" />, emoji: "📰" },
+  { value: "soundguys", label: "SoundGuys", icon: <Headphones className="h-4 w-4" />, emoji: "🎧" },
+  { value: "blog", label: "Blog", icon: <BookOpen className="h-4 w-4" />, emoji: "📝" },
 ];
+
+const REVIEW_THRESHOLD = 100;
 
 function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
   const { data: products = [], isLoading: productsLoading } = useTrendingProducts(source.value);
@@ -235,11 +251,43 @@ function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConf
   );
 }
 
+/** Others tab that aggregates multiple low-count sources */
+function OthersTabContent({ sources, sourceCounts, t }: { sources: SourceTabConfig[]; sourceCounts: Record<string, number>; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
+  return (
+    <div className="space-y-6">
+      <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+          📦 {t("Other Channels", "기타 채널")}
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+          {sources.map((s) => (
+            <div key={s.value} className="rounded-lg border border-border bg-muted/20 p-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                {s.icon}
+                <span className="text-xs font-medium">{s.label}</span>
+              </div>
+              <span className="text-lg font-bold font-mono text-primary">{(sourceCounts[s.value] || 0).toLocaleString()}</span>
+              <p className="text-[10px] text-muted-foreground">{t("reviews", "리뷰")}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          {t(
+            "Channels with fewer than 100 reviews are grouped here. As more reviews are collected, they will be promoted to individual tabs.",
+            "리뷰 100건 미만 채널은 이곳에 표시됩니다. 리뷰가 더 수집되면 개별 탭으로 승격됩니다."
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const { t } = useLang();
   const { data: allTrendingProducts = [], isLoading } = useTrendingProducts();
   const { data: allKeywords = [] } = useTrendingKeywords();
   const { data: stats } = useProductStats();
+  const { data: sourceCounts = {} } = useSourceCounts();
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at
@@ -252,6 +300,54 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const lastSyncLabel = lastCollectedAt
     ? format(lastCollectedAt, "yyyy.MM.dd HH:mm")
     : null;
+
+  // Build dynamic tabs: LG.com first, then sorted by review count desc, threshold 100
+  const { mainTabs, otherTabs, totalPlatforms } = useMemo(() => {
+    const main: (SourceTabConfig & { count: number })[] = [];
+    const other: (SourceTabConfig & { count: number })[] = [];
+
+    for (const tab of ALL_SOURCE_TABS) {
+      const count = sourceCounts[tab.value] || 0;
+      if (tab.value === "lge_com") {
+        // LG.com always in main, regardless of count
+        main.push({ ...tab, count });
+      } else if (count >= REVIEW_THRESHOLD) {
+        main.push({ ...tab, count });
+      } else if (count > 0) {
+        other.push({ ...tab, count });
+      }
+    }
+
+    // Also check for sources in DB not in ALL_SOURCE_TABS
+    const knownValues = new Set(ALL_SOURCE_TABS.map((t) => t.value));
+    for (const [src, cnt] of Object.entries(sourceCounts)) {
+      if (!knownValues.has(src) && cnt > 0) {
+        const tab: SourceTabConfig & { count: number } = {
+          value: src,
+          label: src.charAt(0).toUpperCase() + src.slice(1).replace(/_/g, " "),
+          icon: <FileText className="h-4 w-4" />,
+          emoji: "📄",
+          count: cnt,
+        };
+        if (cnt >= REVIEW_THRESHOLD) main.push(tab);
+        else other.push(tab);
+      }
+    }
+
+    // Sort main: LG.com first, then by count desc
+    main.sort((a, b) => {
+      if (a.value === "lge_com") return -1;
+      if (b.value === "lge_com") return 1;
+      return b.count - a.count;
+    });
+
+    // Sort other by count desc
+    other.sort((a, b) => b.count - a.count);
+
+    const totalPlatforms = main.length + other.length;
+
+    return { mainTabs: main, otherTabs: other, totalPlatforms };
+  }, [sourceCounts]);
 
   const totalMentions = allTrendingProducts.reduce((sum, p) => sum + p.mentions, 0);
   const avgSentiment = allTrendingProducts.length > 0
@@ -282,8 +378,8 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
   const insights = totalMentions > 0 ? [
     collectionStatusLine,
     t(
-      `📊 A total of ${totalMentions.toLocaleString()} product mentions were collected across ${SOURCE_TABS.length} channels, with an average sentiment score of ${avgSentiment}.`,
-      `📊 전체 ${SOURCE_TABS.length}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`
+      `📊 A total of ${totalMentions.toLocaleString()} product mentions were collected across ${totalPlatforms} channels, with an average sentiment score of ${avgSentiment}.`,
+      `📊 전체 ${totalPlatforms}개 채널에서 총 ${totalMentions.toLocaleString()}건의 제품 언급이 수집되었으며, 평균 감성점수는 ${avgSentiment}점입니다.`
     ),
     top3.length > 0 ? t(
       `🏆 Weekly Mentions TOP 3: ${top3.map((p, i) => `#${i + 1} ${p.displayName} (${p.mentions.toLocaleString()})`).join(", ")}`,
@@ -309,6 +405,9 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
     ),
   ];
 
+  // Default tab: first main tab with most reviews (skip lge_com if it has fewer)
+  const defaultTab = mainTabs.length > 1 ? mainTabs[1].value : mainTabs[0]?.value || "reddit";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 flex-wrap">
@@ -317,6 +416,10 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
         <Badge variant="secondary" className="text-xs gap-1">
           <Database className="h-3 w-3" />
           {t(`Live · Weekly (${dateRangeLabel})`, `Live · 주간 집계 (${dateRangeLabel})`)}
+        </Badge>
+        <Badge variant="outline" className="text-xs gap-1.5 border-primary/30 text-primary">
+          <Layers className="h-3 w-3" />
+          {t(`${totalPlatforms} platforms collecting`, `${totalPlatforms}개 플랫폼 수집중`)}
         </Badge>
         {lastSyncLabel && (
           <Badge variant="outline" className="text-xs gap-1">
@@ -342,22 +445,35 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
         )}
       </div>
 
-      <Tabs defaultValue="amazon" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1 p-1">
-          {SOURCE_TABS.map((s) => (
+          {mainTabs.map((s) => (
             <TabsTrigger key={s.value} value={s.value} className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
               {s.icon}
               <span className="hidden sm:inline">{s.label}</span>
               <span className="sm:hidden">{s.label.split(" ")[0]}</span>
+              <span className="text-[10px] text-muted-foreground font-mono ml-0.5">({s.count.toLocaleString()})</span>
             </TabsTrigger>
           ))}
+          {otherTabs.length > 0 && (
+            <TabsTrigger value="__others__" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+              <Layers className="h-4 w-4" />
+              <span>{t("Others", "기타")}</span>
+              <span className="text-[10px] text-muted-foreground font-mono ml-0.5">({otherTabs.length})</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
-        {SOURCE_TABS.map((s) => (
-          <TabsContent key={s.value} value={s.value} className="space-y-6 mt-4">
+        {mainTabs.map((s) => (
+          <TabsContent key={s.value} value={s.value}>
             <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
           </TabsContent>
         ))}
+        {otherTabs.length > 0 && (
+          <TabsContent value="__others__">
+            <OthersTabContent sources={otherTabs} sourceCounts={sourceCounts} onProductClick={onProductClick} t={t} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

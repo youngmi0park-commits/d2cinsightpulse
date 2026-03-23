@@ -147,6 +147,30 @@ export function useTrendingKeywords(source?: string) {
   });
 }
 
+// Fetch review counts grouped by source
+export function useSourceCounts() {
+  return useQuery({
+    queryKey: ["source-counts"],
+    queryFn: async () => {
+      // We need to aggregate review counts by source
+      // Since we can't do GROUP BY with the JS client, fetch all sources
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("source");
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      for (const row of data || []) {
+        // Normalize reddit variants
+        const src = row.source.startsWith("reddit") ? "reddit" : row.source;
+        counts[src] = (counts[src] || 0) + 1;
+      }
+      return counts;
+    },
+    staleTime: 60_000,
+  });
+}
+
 // Fetch all products summary (for landing page stats)
 export function useProductStats() {
   return useQuery({
