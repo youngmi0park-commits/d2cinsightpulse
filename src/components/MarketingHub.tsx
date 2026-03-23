@@ -107,6 +107,7 @@ export function MarketingHub({
             displayName={displayName}
             sentiment={sentiment}
             reviews={reviews}
+            onGoToStudio={handleGoToStudio}
           />
           <MarketerToolkit
             productName={productName}
@@ -123,6 +124,7 @@ export function MarketingHub({
             sentiment={sentiment}
             reviews={reviews}
             marketing={marketing}
+            initialCopy={studioCopy}
           />
         </TabsContent>
       </Tabs>
