@@ -178,6 +178,14 @@ export function ContentStudioPanel({
 
     const mustInclude = `\n\n✅ Must Include:\n- Data source disclosure: "Based on ${total} user reviews"\n- Disclaimer reference (ST0010 footer area)\n- ${channelType === "outside" ? "'Ad' label for SNS content" : "Product page link"}`;
 
+    const linkedSection = linkedCopy
+      ? `\n\n🔗 Linked Copy from Toolkit (use as base):\n- Headline: ${linkedCopy.headline}\n- Body: ${linkedCopy.body}\n\n📌 Instruction: Use the above copy as the foundation. Adapt tone, length, and format to fit the selected content type while preserving the core message.`
+      : "";
+
+    const reviewHighlightNote = tonality === "review_highlight"
+      ? `\n\n⭐ Review Highlight Tone:\n- Lead with real customer quotes and expressions\n- Use "Users say..." / "Customers love..." framing\n- Prioritize authentic voice over polished marketing language\n- Include star ratings or sentiment stats where appropriate`
+      : "";
+
     const finalPrompt = `🎯 Objective: Create ${ctLabel} for ${displayName || productName}
 📍 Target: ${localeLabel} consumers via ${chLabel}
 🎨 Tone & Manner: ${toneLabel ? (lang === "en" ? toneLabel.labelEn : toneLabel.labelKo) : tonality}
@@ -198,7 +206,7 @@ ${evidence}
 ${specInfo}
 ${channelGuidance}
 ${forbiddenPhrases}
-${mustInclude}`;
+${mustInclude}${linkedSection}${reviewHighlightNote}`;
 
     // Generate visual guidance based on content type
     let visualGuidance = "";
