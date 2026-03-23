@@ -155,18 +155,14 @@ Deno.serve(async (req) => {
           try {
             console.log(`[${region.toUpperCase()}] Searching: ${query}`);
 
-            // Use Firecrawl search which returns scraped content directly
+            // Step 1: Search for review pages (no scrapeOptions to avoid timeout)
             const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                query,
-                limit: 3,
-                scrapeOptions: { formats: ["markdown"] },
-              }),
+              body: JSON.stringify({ query, limit: 3 }),
             });
 
             if (!searchRes.ok) {
@@ -180,13 +176,41 @@ Deno.serve(async (req) => {
             const results = searchData.data || [];
             console.log(`[${region.toUpperCase()}] Got ${results.length} search results`);
 
+            // Step 2: Scrape each result URL for full content
             for (const result of results) {
-              const markdown = result.markdown || result.content || "";
               const url = result.url || "";
+              if (!url) continue;
 
-              if (markdown.length < 100) continue;
+              console.log(`[${region.toUpperCase()}] Scraping: ${url}`);
 
-              console.log(`[${region.toUpperCase()}] Processing: ${url} (${markdown.length} chars)`);
+              const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  url,
+                  formats: ["markdown"],
+                  onlyMainContent: true,
+                  waitFor: 3000,
+                }),
+              });
+
+              if (!scrapeRes.ok) {
+                console.error(`Scrape failed for ${url}: ${scrapeRes.status}`);
+                continue;
+              }
+
+              const scrapeData = await scrapeRes.json();
+              const markdown = scrapeData.data?.markdown || "";
+
+              if (markdown.length < 200) {
+                console.log(`[${region.toUpperCase()}] Too short (${markdown.length}), skipping`);
+                continue;
+              }
+
+              console.log(`[${region.toUpperCase()}] Got ${markdown.length} chars from ${url}`);
 
               // AI extraction
               const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
