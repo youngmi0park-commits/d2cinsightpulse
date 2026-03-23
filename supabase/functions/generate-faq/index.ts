@@ -6,71 +6,303 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/**
- * Try to fetch official product info from LG USA via Firecrawl search + scrape.
- * Returns markdown string or empty string on failure.
- */
+// ── Firecrawl helper ──
 async function fetchLgOfficialInfo(productName: string): Promise<string> {
   const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
-  if (!FIRECRAWL_API_KEY) {
-    console.warn("FIRECRAWL_API_KEY not set — skipping official product info lookup");
-    return "";
-  }
-
+  if (!FIRECRAWL_API_KEY) return "";
   try {
-    // Step 1: Search LG USA site for the product
-    const searchQuery = `site:lg.com/us ${productName}`;
-    console.log("Firecrawl search:", searchQuery);
-
     const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        query: searchQuery,
+        query: `site:lg.com/us ${productName}`,
         limit: 3,
         scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
       }),
     });
-
-    if (!searchRes.ok) {
-      console.warn("Firecrawl search failed:", searchRes.status);
-      return "";
-    }
-
+    if (!searchRes.ok) return "";
     const searchData = await searchRes.json();
     const results = searchData?.data || searchData?.results || [];
-
-    if (!results.length) {
-      console.log("No LG USA results found for:", productName);
-      return "";
-    }
-
-    // Collect markdown from search results (already scraped via scrapeOptions)
     const chunks: string[] = [];
-    for (const result of results.slice(0, 2)) {
-      const md = result.markdown || result.content || "";
-      const title = result.title || result.metadata?.title || "";
-      const url = result.url || result.metadata?.sourceURL || "";
-      if (md) {
-        chunks.push(`### ${title}\nSource: ${url}\n\n${md.slice(0, 3000)}`);
-      }
+    for (const r of results.slice(0, 2)) {
+      const md = r.markdown || r.content || "";
+      if (md) chunks.push(`### ${r.title || ""}\nSource: ${r.url || ""}\n\n${md.slice(0, 3000)}`);
     }
+    return chunks.join("\n\n---\n\n").slice(0, 6000);
+  } catch { return ""; }
+}
 
-    if (chunks.length === 0) {
-      console.log("No markdown content from LG search results");
-      return "";
-    }
+// ── Tool schema for structured output ──
+function buildToolSchema() {
+  return {
+    type: "function",
+    function: {
+      name: "generate_faq_insights",
+      description: "Generate conversion-optimized FAQs with Evidence Engine, CIS scoring, legal gate, and action list from product reviews",
+      parameters: {
+        type: "object",
+        properties: {
+          faq_cards: {
+            type: "array",
+            description: "Conversion-optimized FAQ cards with evidence, CIS, legal review",
+            items: {
+              type: "object",
+              properties: {
+                faq_id: { type: "string", description: "Unique FAQ identifier e.g. auto-c4-burnin-001" },
+                product_family: { type: "string", description: "e.g. TV_OLED, UltraGear, HomeAppliances_WM" },
+                question: { type: "string", description: "Customer-language FAQ question" },
+                answer: { type: "string", description: "Fact-based 2-3 sentence answer, no exaggeration" },
+                category: {
+                  type: "string",
+                  enum: ["installation", "initial_setup", "display_sound", "connectivity", "usability", "compatibility", "features", "pricing", "reliability", "other"],
+                },
+                sourceType: {
+                  type: "string",
+                  enum: ["question", "issue_resolution", "pain_point", "feature_inquiry", "conversion_barrier"],
+                },
+                topics: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Multi-select topic tags: picture_quality, brightness, uniformity, response_time, noise, energy_saving, installation, burn_in, etc."
+                },
+                evidence: {
+                  type: "object",
+                  properties: {
+                    quotes: { type: "array", items: { type: "string" }, description: "30-100 char anonymized review quotes" },
+                    claims: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          metric: { type: "string" },
+                          value: { type: "number" },
+                          unit: { type: "string" },
+                        },
+                        required: ["metric", "value", "unit"],
+                        additionalProperties: false,
+                      },
+                    },
+                    pattern: { type: "string", description: "e.g. 'Last 6 months: 14% of reviews mention overshoot'" },
+                  },
+                  required: ["quotes", "claims", "pattern"],
+                  additionalProperties: false,
+                },
+                cis: { type: "number", description: "Conversion Impact Score 0-100" },
+                priority: { type: "string", enum: ["P0", "P1", "P2", "Backlog"] },
+                intent_type: { type: "string", enum: ["anxiety", "info_gap", "comparison", "setup"], description: "Conversion barrier type" },
+                pdp_presence: {
+                  type: "object",
+                  properties: {
+                    status: { type: "string", enum: ["implemented", "missing", "outdated"] },
+                    last_updated_days: { type: "number", description: "Days since last PDP update, null if unknown" },
+                  },
+                  required: ["status"],
+                  additionalProperties: false,
+                },
+                legal_review: {
+                  type: "object",
+                  properties: {
+                    status: { type: "string", enum: ["pass", "needs_revision", "fail"] },
+                    violations: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          item_id: { type: "string" },
+                          note: { type: "string" },
+                        },
+                        required: ["item_id", "note"],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: ["status", "violations"],
+                  additionalProperties: false,
+                },
+                publishable: { type: "boolean", description: "true only if legal pass AND evidence >= 2 quotes/claims" },
+                ab_test_suggestion: {
+                  type: "object",
+                  properties: {
+                    variation: { type: "string" },
+                    expected_lift: {
+                      type: "object",
+                      properties: { pdp_to_atc_pct: { type: "array", items: { type: "number" } } },
+                      required: ["pdp_to_atc_pct"],
+                      additionalProperties: false,
+                    },
+                  },
+                  required: ["variation", "expected_lift"],
+                  additionalProperties: false,
+                },
+              },
+              required: ["faq_id", "product_family", "question", "answer", "category", "sourceType", "topics", "evidence", "cis", "priority", "intent_type", "pdp_presence", "legal_review", "publishable"],
+              additionalProperties: false,
+            },
+          },
+          weekly_action_list: {
+            type: "array",
+            description: "Top priority actions sorted by CIS",
+            items: {
+              type: "object",
+              properties: {
+                priority: { type: "string", enum: ["P0", "P1", "P2"] },
+                product_family: { type: "string" },
+                faq_id: { type: "string" },
+                what: { type: "string" },
+                why: { type: "string" },
+                impact: {
+                  type: "object",
+                  properties: { expected_lift_cvr_pct: { type: "array", items: { type: "number" } } },
+                  required: ["expected_lift_cvr_pct"],
+                  additionalProperties: false,
+                },
+                ready_to_use_copy: {
+                  type: "object",
+                  properties: {
+                    pdp_highlight: { type: "string" },
+                    exit_popup: { type: "string" },
+                  },
+                  required: ["pdp_highlight", "exit_popup"],
+                  additionalProperties: false,
+                },
+                publishable: { type: "boolean" },
+              },
+              required: ["priority", "product_family", "faq_id", "what", "why", "impact", "ready_to_use_copy", "publishable"],
+              additionalProperties: false,
+            },
+          },
+          cs_heatmap: {
+            type: "array",
+            description: "Issue x frequency matrix",
+            items: {
+              type: "object",
+              properties: {
+                issue: { type: "string" },
+                review_freq: { type: "number" },
+                cis_avg: { type: "number" },
+                action_required: { type: "boolean" },
+              },
+              required: ["issue", "review_freq", "cis_avg", "action_required"],
+              additionalProperties: false,
+            },
+          },
+          reviewTopics: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                topic: { type: "string" },
+                category: { type: "string", enum: ["installation", "compatibility", "usability", "feature_issue", "improvement_request", "praise"] },
+                sentiment: { type: "string", enum: ["positive", "negative", "mixed"] },
+                mentionCount: { type: "number" },
+                summary: { type: "string" },
+              },
+              required: ["topic", "category", "sentiment", "mentionCount", "summary"],
+              additionalProperties: false,
+            },
+          },
+          painPoints: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                issue: { type: "string" },
+                severity: { type: "string", enum: ["high", "medium", "low"] },
+                frequency: { type: "number" },
+                userWorkaround: { type: "string" },
+                category: { type: "string" },
+              },
+              required: ["issue", "severity", "frequency", "userWorkaround", "category"],
+              additionalProperties: false,
+            },
+          },
+          dataSources: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { source: { type: "string" }, count: { type: "number" } },
+              required: ["source", "count"],
+              additionalProperties: false,
+            },
+          },
+          summary: {
+            type: "object",
+            properties: {
+              total_faq: { type: "number" },
+              p0: { type: "number" },
+              p1: { type: "number" },
+              p2: { type: "number" },
+              publishable_count: { type: "number" },
+            },
+            required: ["total_faq", "p0", "p1", "p2", "publishable_count"],
+            additionalProperties: false,
+          },
+        },
+        required: ["faq_cards", "weekly_action_list", "cs_heatmap", "reviewTopics", "painPoints", "dataSources", "summary"],
+        additionalProperties: false,
+      },
+    },
+  };
+}
 
-    const combined = chunks.join("\n\n---\n\n");
-    console.log(`Fetched ${combined.length} chars of official LG product info`);
-    return combined.slice(0, 6000); // cap to avoid token overflow
-  } catch (err) {
-    console.warn("Error fetching LG official info:", err);
-    return "";
-  }
+// ── System prompt ──
+function buildSystemPrompt() {
+  return `You are an expert D2C Insight Pulse FAQ Orchestrator for LG Electronics consumer products.
+
+## YOUR MISSION
+Analyze customer reviews and generate **conversion-optimized FAQ cards** with full evidence, scoring, and legal review.
+
+## CIS (Conversion Impact Score) FORMULA (0-100)
+CIS = 100 × (0.30×freq_norm + 0.20×neg_ratio + 0.20×intent_weight + 0.15×cs_overlap + 0.10×pdp_drop_match + 0.05×evidence_score)
+
+- freq_norm: How often this issue appears in reviews (0-1)
+- neg_ratio: Negative sentiment ratio for this topic (0-1)
+- intent_weight: anxiety=1.0, info_gap=0.8, comparison=0.7, setup=0.6
+- cs_overlap: Estimate if this would generate CS tickets (0-1)
+- pdp_drop_match: Would this FAQ reduce PDP exit rate? (0/1)
+- evidence_score: Quality of supporting evidence (0-1)
+
+Priority: P0(≥80), P1(65-79), P2(50-64), Backlog(<50)
+
+## EVIDENCE ENGINE RULES
+Each FAQ MUST have:
+- quotes[]: 30-100 char anonymized review excerpts (minimum 2)
+- claims[]: Quantitative data (nits/dB/Hz/ms/min etc.) when available
+- pattern: "Last N months: X% of reviews mention [topic]" with methodology note
+
+## LEGAL REVIEW RULES (LGE Ad Compliance Checklist)
+Apply these checks to each FAQ:
+- No unsubstantiated superlatives (best, #1, unprecedented)
+- All factual claims backed by verifiable data
+- No direct competitor comparisons (use "some alternatives" instead)
+- No misleading content
+- Data source disclosed
+- Genuine user-generated content only
+- No unauthorized third-party IP
+
+legal_review.status:
+- "pass": All checks clear
+- "needs_revision": Minor issues fixable with edits
+- "fail": Cannot be published
+
+## PUBLISHABLE RULE
+publishable = true ONLY when:
+1. legal_review.status == "pass"
+2. evidence has >= 2 items (quotes + claims combined)
+
+## FAQ GENERATION RULES
+- Extract questions from: direct questions, repeated issues, conversion barriers (anxiety, info gaps, comparisons, setup concerns)
+- Answers: fact-based 2-3 sentences, specify conditions, NO exaggeration
+- Use customer language, not marketing speak
+- Topics: multi-select from predefined list
+
+## WEEKLY ACTION LIST
+Generate top 3-5 actions sorted by CIS, each with:
+- what/why/impact
+- ready_to_use_copy: pdp_highlight + exit_popup text
+
+## OUTPUT
+Return structured JSON via tool calling. All output in English.`;
 }
 
 serve(async (req) => {
@@ -78,182 +310,75 @@ serve(async (req) => {
 
   try {
     const { productName, reviews } = await req.json();
-
     if (!productName || !reviews?.length) {
       return new Response(JSON.stringify({ error: "productName and reviews required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Fetch official LG product info in parallel with review preparation
     const officialInfoPromise = fetchLgOfficialInfo(productName);
 
-    // Prepare a compact review summary (limit to 40 reviews to stay within token limits)
     const reviewTexts = reviews.slice(0, 40).map((r: any, i: number) => {
       const src = r.source ? ` [${r.source}]` : "";
       const sent = r.sentiment ? ` (${r.sentiment})` : "";
-      return `${i + 1}.${src}${sent} ${r.text}`;
+      const rating = r.rating ? ` ★${r.rating}` : "";
+      return `${i + 1}.${src}${sent}${rating} ${r.text}`;
     }).join("\n");
 
     const officialInfo = await officialInfoPromise;
-
     const officialInfoBlock = officialInfo
-      ? `\n\n## Official Product Information (from lg.com/us)\nUse this official data to supplement and verify FAQ answers. Prefer official specs over user claims when they conflict.\n\n${officialInfo}`
+      ? `\n\n## Official Product Information (from lg.com/us)\n${officialInfo}`
       : "";
-
-    const systemPrompt = `You are an expert product analyst for consumer electronics. Analyze the provided customer reviews and generate structured FAQ and insights data.
-
-IMPORTANT RULES:
-- All output must be in English
-- Extract REAL questions and pain points from the reviews — do NOT fabricate
-- Merge duplicate/similar questions into single FAQ items
-- Categorize every FAQ into exactly one category
-- Be specific to the product — reference actual features mentioned in reviews
-- When official product information from lg.com is provided, USE IT to enrich and verify your FAQ answers with accurate specs, features, and official guidance
-- Combine real user experiences with official product data for comprehensive answers`;
 
     const userPrompt = `Product: ${productName}
 Reviews (${reviews.length} total, showing ${Math.min(40, reviews.length)}):
 
 ${reviewTexts}${officialInfoBlock}
 
-Analyze these reviews and return structured JSON with tool calling.`;
+Analyze these reviews and generate conversion-optimized FAQ cards with Evidence, CIS scoring, legal review, and weekly action list.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: buildSystemPrompt() },
           { role: "user", content: userPrompt },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "generate_faq_insights",
-              description: "Generate categorized FAQs, review topics, and pain points from product reviews",
-              parameters: {
-                type: "object",
-                properties: {
-                  faqItems: {
-                    type: "array",
-                    description: "FAQ items extracted and generated from reviews",
-                    items: {
-                      type: "object",
-                      properties: {
-                        question: { type: "string", description: "The FAQ question" },
-                        answer: { type: "string", description: "Answer based on review experiences and official product specs" },
-                        category: {
-                          type: "string",
-                          enum: ["installation", "initial_setup", "display_sound", "connectivity", "usability", "compatibility", "features", "pricing", "reliability", "other"],
-                          description: "FAQ category",
-                        },
-                        sourceType: {
-                          type: "string",
-                          enum: ["question", "issue_resolution", "pain_point", "feature_inquiry"],
-                          description: "How this FAQ was derived",
-                        },
-                        mentionCount: { type: "number", description: "Estimated number of reviews mentioning this topic" },
-                        confidence: { type: "number", description: "Confidence score 0-1 of relevance" },
-                      },
-                      required: ["question", "answer", "category", "sourceType", "mentionCount", "confidence"],
-                      additionalProperties: false,
-                    },
-                  },
-                  reviewTopics: {
-                    type: "array",
-                    description: "Key review topics for this product",
-                    items: {
-                      type: "object",
-                      properties: {
-                        topic: { type: "string", description: "Topic name" },
-                        category: {
-                          type: "string",
-                          enum: ["installation", "compatibility", "usability", "feature_issue", "improvement_request", "praise"],
-                        },
-                        sentiment: { type: "string", enum: ["positive", "negative", "mixed"] },
-                        mentionCount: { type: "number" },
-                        summary: { type: "string", description: "Brief summary of what reviewers say about this topic" },
-                      },
-                      required: ["topic", "category", "sentiment", "mentionCount", "summary"],
-                      additionalProperties: false,
-                    },
-                  },
-                  painPoints: {
-                    type: "array",
-                    description: "Frequently mentioned pain points",
-                    items: {
-                      type: "object",
-                      properties: {
-                        issue: { type: "string", description: "The pain point" },
-                        severity: { type: "string", enum: ["high", "medium", "low"] },
-                        frequency: { type: "number", description: "How many reviews mention this" },
-                        userWorkaround: { type: "string", description: "Any workaround users found, or empty string" },
-                        category: { type: "string" },
-                      },
-                      required: ["issue", "severity", "frequency", "userWorkaround", "category"],
-                      additionalProperties: false,
-                    },
-                  },
-                  dataSources: {
-                    type: "array",
-                    description: "Summary of review sources analyzed",
-                    items: {
-                      type: "object",
-                      properties: {
-                        source: { type: "string" },
-                        count: { type: "number" },
-                      },
-                      required: ["source", "count"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["faqItems", "reviewTopics", "painPoints", "dataSources"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
+        tools: [buildToolSchema()],
         tool_choice: { type: "function", function: { name: "generate_faq_insights" } },
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
+      if (response.status === 429) return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (response.status === 402) return new Response(JSON.stringify({ error: "Credits exhausted" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const aiData = await response.json();
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall?.function?.arguments) {
-      throw new Error("No structured output from AI");
-    }
+    if (!toolCall?.function?.arguments) throw new Error("No structured output from AI");
 
     const result = JSON.parse(toolCall.function.arguments);
+
+    // Backward compat: map faq_cards → faqItems for existing UI
+    if (result.faq_cards && !result.faqItems) {
+      result.faqItems = result.faq_cards.map((c: any) => ({
+        question: c.question,
+        answer: c.answer,
+        category: c.category,
+        sourceType: c.sourceType,
+        mentionCount: c.evidence?.quotes?.length || 0,
+        confidence: (c.cis || 50) / 100,
+        // Enhanced fields pass through
+        ...c,
+      }));
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
