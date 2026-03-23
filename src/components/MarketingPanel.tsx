@@ -1,5 +1,5 @@
 import type { MarketingOutput } from "@/lib/formatMessage";
-import { Copy, ThumbsUp, Lightbulb, Shield, Star, TrendingUp, AlertTriangle, MapPin } from "lucide-react";
+import { Copy, ThumbsUp, Lightbulb, Shield, Star, TrendingUp, AlertTriangle, MapPin, Users } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
