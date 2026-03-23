@@ -162,7 +162,7 @@ const SOURCE_TYPE_LABEL: Record<string, { en: string; ko: string }> = {
 };
 
 export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPanelProps) {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const [aiData, setAiData] = useState<AiFaqData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
