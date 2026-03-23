@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
 import { MarketerToolkit } from "@/components/MarketerToolkit";
 import { MarketingPanel } from "@/components/MarketingPanel";
@@ -30,10 +31,17 @@ export function MarketingHub({
   reviews,
 }: MarketingHubProps) {
   const { t } = useLang();
+  const [activeTab, setActiveTab] = useState("insights");
+  const [studioCopy, setStudioCopy] = useState<{ headline: string; body: string; channel: "inside" | "outside" } | null>(null);
+
+  const handleGoToStudio = useCallback((copy: { headline: string; body: string; channel: "inside" | "outside" }) => {
+    setStudioCopy(copy);
+    setActiveTab("studio");
+  }, []);
 
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
-      <Tabs defaultValue="insights" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-5 pt-5 pb-0 space-y-3">
           <div>
             <h2 className="text-lg font-bold font-heading text-foreground tracking-tight">
