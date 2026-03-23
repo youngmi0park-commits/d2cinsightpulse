@@ -112,6 +112,7 @@ export const LOCALES = [
 
 export const TONALITY_OPTIONS = [
   { key: "technical", labelEn: "Technical", labelKo: "기술 중심" },
+  { key: "review_highlight", labelEn: "Review Highlight", labelKo: "리뷰 강조형" },
   { key: "aspirational", labelEn: "Aspirational", labelKo: "영감 중심" },
   { key: "promotional", labelEn: "Promotional", labelKo: "프로모션형" },
   { key: "emotional", labelEn: "Emotional", labelKo: "감성형" },

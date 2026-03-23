@@ -28,6 +28,7 @@ interface ContentStudioPanelProps {
   sentiment: SentimentResult;
   reviews: { text: string; sentiment?: string }[];
   marketing: MarketingOutput;
+  initialCopy?: { headline: string; body: string; channel: "inside" | "outside" } | null;
 }
 
 interface GeneratedPrompt {
@@ -54,6 +55,7 @@ export function ContentStudioPanel({
   sentiment,
   reviews,
   marketing: _marketing,
+  initialCopy,
 }: ContentStudioPanelProps) {
   const { t, lang } = useLang();
   const [contentType, setContentType] = useState<ContentTypeKey>("pdp_banner");
@@ -64,6 +66,22 @@ export function ContentStudioPanel({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [linkedCopy, setLinkedCopy] = useState<{ headline: string; body: string } | null>(null);
+
+  // Apply initialCopy when it changes (from Toolkit → Studio link)
+  const [lastAppliedCopy, setLastAppliedCopy] = useState<typeof initialCopy>(null);
+  if (initialCopy && initialCopy !== lastAppliedCopy) {
+    setLastAppliedCopy(initialCopy);
+    setChannelType(initialCopy.channel);
+    setLinkedCopy({ headline: initialCopy.headline, body: initialCopy.body });
+    setTonality("review_highlight");
+    if (initialCopy.channel === "inside") {
+      setContentType("pdp_banner");
+    } else {
+      setContentType("sns_card");
+    }
+    setGenerated(null);
+  }
 
   const selectedContentType = CONTENT_TYPES.find((c) => c.key === contentType);
   const spec = selectedContentType?.spec
@@ -160,6 +178,14 @@ export function ContentStudioPanel({
 
     const mustInclude = `\n\n✅ Must Include:\n- Data source disclosure: "Based on ${total} user reviews"\n- Disclaimer reference (ST0010 footer area)\n- ${channelType === "outside" ? "'Ad' label for SNS content" : "Product page link"}`;
 
+    const linkedSection = linkedCopy
+      ? `\n\n🔗 Linked Copy from Toolkit (use as base):\n- Headline: ${linkedCopy.headline}\n- Body: ${linkedCopy.body}\n\n📌 Instruction: Use the above copy as the foundation. Adapt tone, length, and format to fit the selected content type while preserving the core message.`
+      : "";
+
+    const reviewHighlightNote = tonality === "review_highlight"
+      ? `\n\n⭐ Review Highlight Tone:\n- Lead with real customer quotes and expressions\n- Use "Users say..." / "Customers love..." framing\n- Prioritize authentic voice over polished marketing language\n- Include star ratings or sentiment stats where appropriate`
+      : "";
+
     const finalPrompt = `🎯 Objective: Create ${ctLabel} for ${displayName || productName}
 📍 Target: ${localeLabel} consumers via ${chLabel}
 🎨 Tone & Manner: ${toneLabel ? (lang === "en" ? toneLabel.labelEn : toneLabel.labelKo) : tonality}
@@ -180,7 +206,7 @@ ${evidence}
 ${specInfo}
 ${channelGuidance}
 ${forbiddenPhrases}
-${mustInclude}`;
+${mustInclude}${linkedSection}${reviewHighlightNote}`;
 
     // Generate visual guidance based on content type
     let visualGuidance = "";
@@ -408,6 +434,24 @@ ${mustInclude}`;
             <p className="text-muted-foreground mt-1"><Info className="h-3 w-3 inline mr-1" />{spec.notes}</p>
           </CollapsibleContent>
         </Collapsible>
+      )}
+
+      {/* Linked Copy from Toolkit */}
+      {linkedCopy && (
+        <div className="p-3 rounded-lg border-2 border-accent bg-accent/10 space-y-1.5 text-xs">
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-accent-foreground text-[11px] flex items-center gap-1.5">
+              🔗 {t("Linked from Toolkit", "툴킷에서 연동됨")}
+            </p>
+            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => setLinkedCopy(null)}>
+              ✕ {t("Clear", "해제")}
+            </Button>
+          </div>
+          <div className="space-y-1">
+            <p className="text-muted-foreground"><span className="font-medium">Headline:</span> {linkedCopy.headline}</p>
+            <p className="text-muted-foreground"><span className="font-medium">Body:</span> {linkedCopy.body}</p>
+          </div>
+        </div>
       )}
 
       {/* Insights Preview */}
