@@ -48,9 +48,12 @@ export function ReviewCollectButtons() {
     setResults((prev) => ({ ...prev, [channelId]: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke("collect-reviews", {
-        body: { channels: [channelId] },
-      });
+      const functionName = channelId === "lge_com_direct" ? "crawl-lge-reviews" : "collect-reviews";
+      const body = channelId === "lge_com_direct" 
+        ? { categories: ["Refrigerator", "Washer"], regions: ["us", "uk"], maxPages: 3 }
+        : { channels: [channelId] };
+
+      const { data, error } = await supabase.functions.invoke(functionName, { body });
 
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || "Collection failed");
