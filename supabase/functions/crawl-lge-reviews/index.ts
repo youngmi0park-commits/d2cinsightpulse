@@ -33,64 +33,67 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
   ],
 };
 
-// ── LG.com 카테고리별 URL 패턴 ──
-const LGE_CATEGORY_PATHS: Record<string, { us: string; uk: string }> = {
+// ── Search queries per category+region ──
+const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   Refrigerator: {
-    us: "https://www.lge.com/us/refrigerators",
-    uk: "https://www.lge.com/uk/refrigerators",
+    us: [
+      '"LG refrigerator" review verified purchase 2024 2025',
+      'LG french door refrigerator owner review compressor',
+      'LG InstaView refrigerator review ice maker',
+    ],
+    uk: [
+      '"LG fridge" review UK owner experience 2024 2025',
+      'LG american style fridge freezer review UK',
+    ],
   },
   Washer: {
-    us: "https://www.lge.com/us/washers",
-    uk: "https://www.lge.com/uk/washing-machines",
-  },
-  Dryer: {
-    us: "https://www.lge.com/us/dryers",
-    uk: "https://www.lge.com/uk/dryers",
+    us: [
+      '"LG washer" review verified purchase 2024 2025',
+      'LG WashTower review owner experience noise',
+      'LG front load washer ThinQ review AI wash',
+    ],
+    uk: [
+      '"LG washing machine" review UK owner 2024 2025',
+      'LG washing machine review UK ThinQ',
+    ],
   },
 };
 
-// ── AI Prompt for LGE review extraction ──
-const LGE_REVIEW_PROMPT = `You are an expert data scientist analyzing LG Electronics product reviews from the official LG.com website.
+// ── AI Prompt ──
+const REVIEW_EXTRACT_PROMPT = `You are an expert data scientist extracting LG Electronics product reviews.
 
-Extract EVERY individual user review from the page content. For each review, return a JSON object:
+From the page content, extract EVERY individual user review about LG products. For each review return:
 
-## Required Fields
-- model_number: string (LG model number from the page URL or content, e.g. "LRFXS2503S", "WM4000HWA")
-- display_name: string (full product name)
-- category: string (Refrigerator, Washer, Dryer, etc.)
-- review_id: string (unique identifier from the page, or generate from author+date)
-- author: string (reviewer name/ID — anonymize if real name detected, use initials or "LG.com User")
-- rating: number 1-5
-- date: string (YYYY-MM-DD format)
-- content: string (full review text, max 1000 chars)
-- verified_purchase: boolean or null
-- helpful_count: number or null
-
-## Analysis Fields
-- sentiment: "positive" | "negative" | "neutral" | "mixed"
-- sentiment_score: number 0-1 (0=very negative, 1=very positive)
-- emotion_category: string (satisfaction, recommendation, impressed, complaint, anger, disappointment, mixed, neutral)
-- emotion_intensity: number 1-5
-
-## Issue & Insight Fields
-- highlight_keywords: string[] (key feature/issue terms found in review)
-- issue_tags: string[] (from predefined set: Compressor_Issue, Cooling_Issue, Class_Action, Food_Spoilage, Ice_Maker_Issue, ThinQ_App_Issue, WashTower, AI_Wash_Feature, Noise_Issue, Smart_Diagnosis, Direct_Drive, TurboWash_Feature, Steam_Cycle, HeatPump_Feature)
-- marketing_point: string (one-sentence marketing-ready strength summary if positive, null if negative)
-- pain_points: array of { type: string, snippet: string, severity: 1-5 }
-- user_tips: string[] (any setup tips, workarounds, or solutions shared by the reviewer)
-- competitor_mentions: array of { brand: string, direction: "+"|"-"|"neutral", snippet: string }
-
-## Contextual Fields
-- source_region: string ("us" or "uk" — infer from URL or language/spelling cues)
-- experience_duration: string or null (how long they've owned the product, e.g. "6 months", "2 years")
+{
+  "model_number": "string (LG model if mentioned, or 'LG-CATEGORY-GENERIC')",
+  "display_name": "string (product name)",
+  "category": "string",
+  "review_id": "string (unique)",
+  "author": "string (anonymized, e.g. 'User_abc')",
+  "rating": "number 1-5 or null",
+  "date": "YYYY-MM-DD or null",
+  "content": "string (full review text, max 1000 chars)",
+  "verified_purchase": "boolean or null",
+  "helpful_count": "number or null",
+  "sentiment": "positive|negative|neutral|mixed",
+  "sentiment_score": "number 0-1",
+  "emotion_category": "string",
+  "emotion_intensity": "number 1-5",
+  "highlight_keywords": ["string array"],
+  "issue_tags": ["string array from predefined set"],
+  "marketing_point": "string or null",
+  "pain_points": [{"type":"string","snippet":"string","severity":1}],
+  "user_tips": ["string array"],
+  "competitor_mentions": [{"brand":"string","direction":"+|-|neutral","snippet":"string"}],
+  "source_region": "us|uk",
+  "experience_duration": "string or null"
+}
 
 RULES:
-- Extract ALL individual reviews, not summaries
-- Preserve specific user experiences and quantitative details (temperatures, dB levels, dimensions)
-- Mark verified purchases when indicated
-- Detect issue_tags by checking review text against known issue keywords
-- For LG.com reviews: anonymize author names (use "LG.com User" + last 3 chars of original)
-- Return ONLY valid JSON array, no markdown wrapping`;
+- Only extract REAL user reviews, not editorial/expert content
+- If no user reviews found, return []
+- Prioritize reviews with specific details over generic praise
+- Return ONLY valid JSON array, no markdown`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -111,24 +114,22 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Parse request body
   let categories = ["Refrigerator", "Washer"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
-  let maxPagesPerCategory = 5;
+  let maxQueriesPerCategory = 2;
 
   try {
     const body = await req.json();
     if (body.categories?.length) categories = body.categories;
     if (body.regions?.length) regions = body.regions;
-    if (body.maxPages) maxPagesPerCategory = body.maxPages;
+    if (body.maxQueries) maxQueriesPerCategory = body.maxQueries;
   } catch {
-    // Use defaults
+    // defaults
   }
 
-  // Create collection log
   const { data: logEntry } = await supabase
     .from("collection_logs")
-    .insert({ source: "lge_com_direct", status: "running" })
+    .insert({ source: "lge_reviews", status: "running" })
     .select()
     .single();
   const logId = logEntry?.id;
@@ -139,106 +140,47 @@ Deno.serve(async (req) => {
 
   try {
     for (const category of categories) {
-      const paths = LGE_CATEGORY_PATHS[category];
-      if (!paths) {
-        errors.push(`Unknown category: ${category}`);
-        continue;
-      }
-
       regionStats[category] = { us: 0, uk: 0 };
 
       for (const region of regions) {
-        const baseUrl = paths[region];
-        console.log(`\n=== [${region.toUpperCase()}] ${category} — Mapping: ${baseUrl} ===`);
+        console.log(`\n=== [${region.toUpperCase()}] ${category} ===`);
 
-        // Step 1: Map the category page to discover product URLs
-        let productUrls: string[] = [];
-        try {
-          const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              url: baseUrl,
-              limit: 100,
-              includeSubdomains: false,
-            }),
-          });
-
-          if (mapRes.ok) {
-            const mapData = await mapRes.json();
-            const allLinks = mapData.links || mapData.data?.links || [];
-            // Filter to product detail pages (PDPs) — they typically have model slugs
-            productUrls = allLinks
-              .filter((link: string) => {
-                const lowerLink = link.toLowerCase();
-                // Must be under the category path and look like a PDP
-                const categorySlug = region === "us" 
-                  ? (category === "Refrigerator" ? "/us/refrigerators/" : category === "Washer" ? "/us/washers/" : "/us/dryers/")
-                  : (category === "Refrigerator" ? "/uk/refrigerators/" : category === "Washer" ? "/uk/washing-machines/" : "/uk/dryers/");
-                return lowerLink.includes(categorySlug) && 
-                       !lowerLink.includes("/compare") &&
-                       !lowerLink.includes("/accessories") &&
-                       !lowerLink.includes("/filter") &&
-                       link !== baseUrl &&
-                       // Must have a model slug (usually has dashes and alphanumeric chars)
-                       link.split("/").length > 5;
-              })
-              .slice(0, maxPagesPerCategory);
-            
-            console.log(`[${region.toUpperCase()}] Found ${productUrls.length} product pages for ${category}`);
-          } else {
-            console.error(`Map failed for ${baseUrl}: ${mapRes.status}`);
-            // Fallback: use search
-            productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
-          }
-        } catch (mapErr) {
-          console.error(`Map error for ${baseUrl}:`, mapErr);
-          productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
+        const queries = (SEARCH_QUERIES[category]?.[region] || []).slice(0, maxQueriesPerCategory);
+        if (queries.length === 0) {
+          errors.push(`No queries for ${category}/${region}`);
+          continue;
         }
 
-        if (productUrls.length === 0) {
-          console.log(`[${region.toUpperCase()}] No product URLs found for ${category}, trying search fallback`);
-          productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
-        }
-
-        // Step 2: Scrape each product page for reviews
-        for (const url of productUrls) {
+        for (const query of queries) {
           try {
-            console.log(`[${region.toUpperCase()}] Scraping reviews: ${url}`);
+            console.log(`[${region.toUpperCase()}] Searching: ${query}`);
 
-            const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            // Search for review pages - use snippets directly (retail sites block scraping)
+            const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
               method: "POST",
               headers: {
                 Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                url,
-                formats: ["markdown"],
-                onlyMainContent: false, // Need full page to get review section
-                waitFor: 3000, // Wait for JS-rendered reviews
-              }),
+              body: JSON.stringify({ query, limit: 5 }),
             });
 
-            if (!scrapeRes.ok) {
-              const errText = await scrapeRes.text();
-              console.error(`Scrape failed for ${url}: ${scrapeRes.status} ${errText.slice(0, 200)}`);
-              errors.push(`Scrape ${url}: ${scrapeRes.status}`);
+            if (!searchRes.ok) {
+              errors.push(`Search failed: ${searchRes.status}`);
               continue;
             }
 
-            const scrapeData = await scrapeRes.json();
-            const markdown = scrapeData.data?.markdown || scrapeData.markdown || "";
+            const searchData = await searchRes.json();
+            const results = searchData.data || [];
+            console.log(`[${region.toUpperCase()}] Got ${results.length} search results`);
 
-            if (markdown.length < 200) {
-              console.log(`[${region.toUpperCase()}] Page too short, skipping: ${url}`);
-              continue;
-            }
+            if (results.length === 0) continue;
 
-            // Step 3: AI extraction of reviews
+            // Combine all search snippets into one AI call
+            const snippetsText = results.map((r: any, i: number) =>
+              `[Result ${i+1}] URL: ${r.url}\nTitle: ${r.title || ""}\nSnippet: ${r.description || ""}`
+            ).join("\n\n");
+
             const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
               method: "POST",
               headers: {
@@ -248,10 +190,10 @@ Deno.serve(async (req) => {
               body: JSON.stringify({
                 model: "google/gemini-2.5-flash",
                 messages: [
-                  { role: "system", content: LGE_REVIEW_PROMPT },
+                  { role: "system", content: REVIEW_EXTRACT_PROMPT },
                   {
                     role: "user",
-                    content: `Source: LG.com ${region.toUpperCase()}\nURL: ${url}\nCategory: ${category}\nRegion: ${region}\n\nPage Content:\n${markdown.slice(0, 15000)}`,
+                    content: `Category: ${category}\nRegion: ${region}\nSearch Query: ${query}\n\nSearch Results with Review Snippets:\n${snippetsText}`,
                   },
                 ],
                 temperature: 0.1,
@@ -260,48 +202,42 @@ Deno.serve(async (req) => {
             });
 
             if (!aiRes.ok) {
-              console.error(`AI extraction failed for ${url}`);
-              errors.push(`AI failed: ${url}`);
+              errors.push(`AI failed: ${aiRes.status}`);
               continue;
             }
 
             const aiData = await aiRes.json();
             const rawText = aiData.choices?.[0]?.message?.content || "[]";
             const reviews = parseAiReviews(rawText);
+            console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews`);
 
-            console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews from ${url}`);
-
-            // Step 4: Save reviews with issue tags
             for (const review of reviews) {
-              // Apply issue tag detection
               const issueTags = detectIssueTags(review.content || "", category);
               const allIssueTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
+              const sourceUrl = results[0]?.url || query;
 
               const saved = await saveReview(supabase, {
                 ...review,
                 issue_tags: allIssueTags,
                 source_region: region,
-              }, category, url);
+              }, category, sourceUrl);
 
               if (saved) {
                 totalCollected++;
                 regionStats[category][region]++;
               }
             }
-          } catch (pageErr) {
-            console.error(`Error processing ${url}:`, pageErr);
-            errors.push(`${url}: ${pageErr}`);
+          } catch (queryErr) {
+            console.error(`Error with query "${query}":`, queryErr);
+            errors.push(`Query error: ${queryErr}`);
           }
         }
       }
     }
 
-    // Step 5: Generate region comparison analysis
-    const regionComparison = await generateRegionComparison(
-      supabase, LOVABLE_API_KEY, categories, regionStats
-    );
+    // Region comparison
+    const regionComparison = await generateRegionComparison(supabase, LOVABLE_API_KEY, categories, regionStats);
 
-    // Update collection log
     if (logId) {
       await supabase.from("collection_logs").update({
         status: errors.length > 0 ? "partial" : "completed",
@@ -316,6 +252,7 @@ Deno.serve(async (req) => {
         success: true,
         collected: totalCollected,
         errors: errors.length,
+        error_details: errors.slice(0, 5),
         region_stats: regionStats,
         region_comparison: regionComparison,
       }),
@@ -338,47 +275,16 @@ Deno.serve(async (req) => {
   }
 });
 
-// ── Fallback: search for product pages ──
-async function searchForProductPages(
-  apiKey: string, category: string, region: string, limit: number
-): Promise<string[]> {
-  try {
-    const domain = region === "us" ? "lge.com/us" : "lge.com/uk";
-    const query = `site:${domain} LG ${category.toLowerCase()} reviews`;
-
-    const res = await fetch("https://api.firecrawl.dev/v1/search", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query, limit }),
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    return (data.data || [])
-      .filter((r: any) => r.url && r.url.includes(domain))
-      .map((r: any) => r.url)
-      .slice(0, limit);
-  } catch {
-    return [];
-  }
-}
-
 // ── Issue tag detection ──
 function detectIssueTags(content: string, category: string): string[] {
   const tags: string[] = [];
   const lowerContent = content.toLowerCase();
   const categoryTags = ISSUE_TAG_MAP[category] || [];
-
   for (const { keywords, tag } of categoryTags) {
     if (keywords.some(kw => lowerContent.includes(kw.toLowerCase()))) {
       tags.push(tag);
     }
   }
-
   return tags;
 }
 
@@ -386,9 +292,10 @@ function detectIssueTags(content: string, category: string): string[] {
 function parseAiReviews(rawText: string): any[] {
   try {
     const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return Array.isArray(JSON.parse(cleaned)) ? JSON.parse(cleaned) : [];
+    const parsed = JSON.parse(cleaned);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    console.error("Failed to parse AI review response");
+    console.error("Failed to parse AI reviews:", rawText.slice(0, 300));
     return [];
   }
 }
@@ -401,7 +308,6 @@ async function saveReview(
 
   const modelNum = review.model_number || `LG-${category}-GENERIC`;
 
-  // Find or create product
   const { data: existing } = await supabase
     .from("products").select("id").eq("model_number", modelNum).maybeSingle();
 
@@ -421,7 +327,7 @@ async function saveReview(
   }
   if (!productId) return false;
 
-  // Dedup check
+  // Dedup
   const hashInput = review.content.slice(0, 100);
   let hash = 0;
   for (let i = 0; i < hashInput.length; i++) {
@@ -434,9 +340,9 @@ async function saveReview(
     .from("reviews").select("id").eq("external_id", externalId).maybeSingle();
   if (existingReview) return false;
 
-  // Masking for LG.com reviews (privacy policy)
+  // Privacy masking for LG.com reviews
   const issueTags = (review.issue_tags || []).join(", ");
-  const maskedContent = `[LG.com 리뷰 — 감성: ${review.sentiment || "neutral"}, 점수: ${((review.sentiment_score ?? 0.5) * 100).toFixed(0)}점${issueTags ? `, 이슈: ${issueTags}` : ""}] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`;
+  const maskedContent = `[LG 리뷰 — 감성: ${review.sentiment || "neutral"}, 점수: ${((review.sentiment_score ?? 0.5) * 100).toFixed(0)}점${issueTags ? `, 이슈: ${issueTags}` : ""}] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`;
 
   await supabase.from("reviews").insert({
     product_id: productId,
@@ -445,7 +351,7 @@ async function saveReview(
     external_id: externalId,
     title: review.marketing_point?.slice(0, 200) || review.highlight_keywords?.join(", ")?.slice(0, 200) || null,
     content: maskedContent,
-    author: "LG.com User",
+    author: "LG Review User",
     rating: review.rating || null,
     sentiment: review.sentiment || "neutral",
     sentiment_score: review.sentiment_score ?? 0.5,
@@ -460,12 +366,11 @@ async function saveReview(
   return true;
 }
 
-// ── Region comparison analysis ──
+// ── Region comparison ──
 async function generateRegionComparison(
   supabase: any, lovableApiKey: string, categories: string[], regionStats: Record<string, { us: number; uk: number }>
 ): Promise<any> {
   try {
-    // Fetch recent LGE reviews for comparison
     const { data: usReviews } = await supabase
       .from("reviews")
       .select("content, sentiment, sentiment_score, emotion_category, title")
@@ -480,19 +385,17 @@ async function generateRegionComparison(
       .order("collected_at", { ascending: false })
       .limit(50);
 
-    if ((!usReviews?.length && !ukReviews?.length)) {
+    if (!usReviews?.length && !ukReviews?.length) {
       return { message: "Not enough data for comparison yet" };
     }
 
     const usSummary = (usReviews || []).map((r: any) => `[${r.sentiment}/${r.emotion_category}] ${r.title || ""}`).join("\n");
     const ukSummary = (ukReviews || []).map((r: any) => `[${r.sentiment}/${r.emotion_category}] ${r.title || ""}`).join("\n");
 
-    const usAvgScore = usReviews?.length
-      ? (usReviews.reduce((s: number, r: any) => s + (r.sentiment_score || 0.5), 0) / usReviews.length * 100).toFixed(0)
-      : "N/A";
-    const ukAvgScore = ukReviews?.length
-      ? (ukReviews.reduce((s: number, r: any) => s + (r.sentiment_score || 0.5), 0) / ukReviews.length * 100).toFixed(0)
-      : "N/A";
+    const usAvg = usReviews?.length
+      ? (usReviews.reduce((s: number, r: any) => s + (r.sentiment_score || 0.5), 0) / usReviews.length * 100).toFixed(0) : "N/A";
+    const ukAvg = ukReviews?.length
+      ? (ukReviews.reduce((s: number, r: any) => s + (r.sentiment_score || 0.5), 0) / ukReviews.length * 100).toFixed(0) : "N/A";
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -505,48 +408,30 @@ async function generateRegionComparison(
         messages: [
           {
             role: "system",
-            content: `You are a global brand strategist for LG Electronics. Compare US and UK customer sentiment for the given product categories. Return JSON:
-{
-  "us_vs_uk_sentiment": "string — one paragraph comparing satisfaction levels",
-  "us_avg_score": number,
-  "uk_avg_score": number,
-  "common_praise": ["string array of shared positive themes"],
-  "common_complaints": ["string array of shared negative themes"],
-  "us_unique_insights": ["insights unique to US market"],
-  "uk_unique_insights": ["insights unique to UK market"],
-  "marketing_recommendations": ["actionable marketing recommendations based on regional differences"]
-}
+            content: `Compare US vs UK LG customer sentiment. Return JSON:
+{"us_vs_uk_sentiment":"string","us_avg_score":number,"uk_avg_score":number,"common_praise":[],"common_complaints":[],"us_unique_insights":[],"uk_unique_insights":[],"marketing_recommendations":[]}
 Return ONLY valid JSON.`,
           },
           {
             role: "user",
-            content: `Categories: ${categories.join(", ")}
-Collection stats: ${JSON.stringify(regionStats)}
-
-US Reviews (avg score: ${usAvgScore}):
-${usSummary.slice(0, 3000)}
-
-UK Reviews (avg score: ${ukAvgScore}):
-${ukSummary.slice(0, 3000)}`,
+            content: `Categories: ${categories.join(", ")}\nStats: ${JSON.stringify(regionStats)}\n\nUS (avg:${usAvg}):\n${usSummary.slice(0, 2000)}\n\nUK (avg:${ukAvg}):\n${ukSummary.slice(0, 2000)}`,
           },
         ],
         temperature: 0.2,
-        max_tokens: 2000,
+        max_tokens: 1500,
       }),
     });
 
     if (aiRes.ok) {
       const aiData = await aiRes.json();
-      const rawText = aiData.choices?.[0]?.message?.content || "{}";
+      const raw = aiData.choices?.[0]?.message?.content || "{}";
       try {
-        const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        return JSON.parse(cleaned);
+        return JSON.parse(raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
       } catch {
-        return { raw: rawText };
+        return { raw };
       }
     }
-
-    return { message: "Region comparison AI call failed" };
+    return { message: "Region comparison failed" };
   } catch (err) {
     console.error("Region comparison error:", err);
     return { error: String(err) };
