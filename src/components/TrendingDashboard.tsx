@@ -252,7 +252,7 @@ function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConf
 }
 
 /** Others tab that aggregates multiple low-count sources */
-function OthersTabContent({ sources, sourceCounts, onProductClick, t }: { sources: SourceTabConfig[]; sourceCounts: Record<string, number>; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
+function OthersTabContent({ sources, sourceCounts, t }: { sources: SourceTabConfig[]; sourceCounts: Record<string, number>; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
   return (
     <div className="space-y-6">
       <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
