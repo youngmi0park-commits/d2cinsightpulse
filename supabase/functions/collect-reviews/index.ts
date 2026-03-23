@@ -6,22 +6,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Channel definitions with Firecrawl search queries
+// Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} review OR r/LG_UserHub ${product}` },
-  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" ${product}` },
-  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup OR flair:"Review & Setups"` },
-  { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review` },
-  { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product}` },
-  { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product}` },
+  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} (review OR owner OR "just bought") upvotes` },
+  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" noise dB cooling speed` },
+  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup` },
+  { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review "Verified Purchase"` },
+  { id: "bestbuy", label: "Best Buy", queryTemplate: (product: string) => `site:bestbuy.com LG ${product} review` },
+  { id: "costco", label: "Costco", queryTemplate: (product: string) => `site:costco.com LG ${product} review` },
+  { id: "walmart", label: "Walmart", queryTemplate: (product: string) => `site:walmart.com LG ${product} review` },
+  { id: "target", label: "Target", queryTemplate: (product: string) => `site:target.com LG ${product} review` },
+  { id: "rtings", label: "RTINGS", queryTemplate: (product: string) => `site:rtings.com LG ${product} "test results" OR measurements OR lab` },
+  { id: "trusted_reviews", label: "Trusted Reviews", queryTemplate: (product: string) => `site:trustedreviews.com LG ${product} review` },
   { id: "consumer_reports", label: "Consumer Reports", queryTemplate: (product: string) => `site:consumerreports.org LG ${product}` },
   { id: "cnet", label: "CNET", queryTemplate: (product: string) => `site:cnet.com LG ${product} review` },
+  { id: "techradar", label: "TechRadar", queryTemplate: (product: string) => `site:techradar.com LG ${product} review` },
+  { id: "toms_hardware", label: "Tom's Hardware", queryTemplate: (product: string) => `site:tomshardware.com LG ${product} review benchmark` },
+  { id: "notebookcheck", label: "Notebookcheck", queryTemplate: (product: string) => `site:notebookcheck.net LG ${product} review` },
   { id: "trustpilot", label: "Trustpilot", queryTemplate: (product: string) => `site:trustpilot.com LG ${product}` },
   { id: "bestreviews", label: "BestReviews", queryTemplate: (product: string) => `site:bestreviews.com LG ${product}` },
   { id: "youtube", label: "YouTube", queryTemplate: (product: string) => `site:youtube.com LG ${product} review` },
   { id: "lemon8", label: "Lemon8", queryTemplate: (product: string) => `site:lemon8-app.com LG ${product}` },
-  { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review refrigerator OR washer OR dryer OR dishwasher OR air conditioner` },
+  { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review` },
+  { id: "google_reviews", label: "Google Reviews", queryTemplate: (product: string) => `site:google.com/maps LG store ${product} review` },
+  { id: "lg_community", label: "LG Community", queryTemplate: (product: string) => `site:lgcommunity.us.com LG ${product}` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];
