@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   LG_COMPONENT_SPECS,
   CONTENT_TYPES,
-  CHANNEL_TYPES,
+  
   LOCALES,
   TONALITY_OPTIONS,
   type ContentTypeKey,
@@ -256,56 +256,98 @@ ${mustInclude}`;
         )}
       </p>
 
-      {/* Configuration */}
+      {/* Channel → Content Type Selection */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Inside Channel */}
+        <div className={`rounded-xl border-2 p-4 space-y-3 transition-all cursor-pointer ${
+          channelType === "inside"
+            ? "border-primary bg-primary/5 shadow-sm"
+            : "border-border bg-secondary/10 hover:border-primary/30"
+        }`}
+          onClick={() => {
+            setChannelType("inside");
+            if (!["pdp_banner", "pdp_feature"].includes(contentType)) setContentType("pdp_banner");
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Monitor className="h-4 w-4 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">Inside Channel</p>
+              <p className="text-[10px] text-muted-foreground">LG.com PDP / Email / Paid Search</p>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { key: "pdp_banner" as ContentTypeKey, icon: "🖼️", en: "PDP Banner (Hero)", ko: "PDP 배너 히어로" },
+              { key: "pdp_feature" as ContentTypeKey, icon: "📐", en: "PDP Feature Block", ko: "PDP 피처 블록" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={(e) => { e.stopPropagation(); setChannelType("inside"); setContentType(item.key); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-xs font-medium border transition-all ${
+                  contentType === item.key && channelType === "inside"
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-background border-border text-foreground/80 hover:border-primary/40 hover:bg-primary/5"
+                }`}
+              >
+                <span>{item.icon}</span>
+                {lang === "en" ? item.en : item.ko}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground italic">
+            {t("Fact-driven, spec-focused. LG.com CCG compliant.", "팩트 중심, 스펙 중심. LG.com CCG 준수.")}
+          </p>
+        </div>
+
+        {/* Outside Channel */}
+        <div className={`rounded-xl border-2 p-4 space-y-3 transition-all cursor-pointer ${
+          channelType === "outside"
+            ? "border-primary bg-primary/5 shadow-sm"
+            : "border-border bg-secondary/10 hover:border-primary/30"
+        }`}
+          onClick={() => {
+            setChannelType("outside");
+            if (["pdp_banner", "pdp_feature"].includes(contentType)) setContentType("sns_card");
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Film className="h-4 w-4 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">Outside Channel</p>
+              <p className="text-[10px] text-muted-foreground">SNS / YouTube / Display / Blog</p>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { key: "sns_card" as ContentTypeKey, icon: "📱", en: "SNS Card / Image", ko: "SNS 카드/이미지" },
+              { key: "youtube_script" as ContentTypeKey, icon: "🎬", en: "YouTube Script (Shorts)", ko: "유튜브 스크립트 (쇼츠)" },
+              { key: "blog_review" as ContentTypeKey, icon: "📝", en: "Blog Review", ko: "블로그 리뷰" },
+              { key: "ab_copy" as ContentTypeKey, icon: "🔀", en: "A/B Test Copy Set", ko: "A/B 테스트 카피 세트" },
+              { key: "brand_story" as ContentTypeKey, icon: "✨", en: "Brand Storytelling", ko: "브랜드 스토리텔링" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={(e) => { e.stopPropagation(); setChannelType("outside"); setContentType(item.key); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left text-xs font-medium border transition-all ${
+                  contentType === item.key && channelType === "outside"
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-background border-border text-foreground/80 hover:border-primary/40 hover:bg-primary/5"
+                }`}
+              >
+                <span>{item.icon}</span>
+                {lang === "en" ? item.en : item.ko}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground italic">
+            {t("Emotion-driven, story-led. 'Ad' label required.", "감성/스토리 중심. '광고' 표기 필수.")}
+          </p>
+        </div>
+      </div>
+
+      {/* Locale & Tonality — compact row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Content Type */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            {t("Content Type", "콘텐츠 유형")}
-          </label>
-          <div className="flex flex-wrap gap-1.5">
-            {CONTENT_TYPES.map((ct) => (
-              <button
-                key={ct.key}
-                onClick={() => setContentType(ct.key)}
-                className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium border transition-all ${
-                  contentType === ct.key
-                    ? "bg-primary border-primary/50 text-primary-foreground"
-                    : "bg-background border-border text-muted-foreground hover:border-primary/30"
-                }`}
-              >
-                {lang === "en" ? ct.labelEn : ct.labelKo}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Channel Type */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            {t("Channel", "채널")}
-          </label>
-          <div className="flex gap-2">
-            {CHANNEL_TYPES.map((ch) => (
-              <button
-                key={ch.key}
-                onClick={() => setChannelType(ch.key as "inside" | "outside")}
-                className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border-2 transition-all text-left ${
-                  channelType === ch.key
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-secondary/20 hover:border-primary/30"
-                }`}
-              >
-                <span className={channelType === ch.key ? "text-primary" : "text-foreground/80"}>
-                  {lang === "en" ? ch.labelEn : ch.labelKo}
-                </span>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{ch.desc}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Locale */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Locale</label>
           <div className="flex flex-wrap gap-1.5">
@@ -324,8 +366,6 @@ ${mustInclude}`;
             ))}
           </div>
         </div>
-
-        {/* Tonality */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">
             {t("Tone & Manner", "톤앤매너")}
