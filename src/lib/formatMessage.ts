@@ -706,5 +706,130 @@ ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천"
         ),
       ];
 
-  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, usageScenes, durabilityInsights };
+  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, usageScenes, durabilityInsights, personas };
+}
+
+function generatePersonas(
+  productName: string,
+  sentiment: SentimentResult,
+  lang: "en" | "ko"
+): TargetPersona[] {
+  const t = (en: string, ko: string) => (lang === "en" ? en : ko);
+  const pros = sentiment.keywords.positive.slice(0, 5);
+  const cons = sentiment.keywords.negative.slice(0, 3);
+  const scenes = sentiment.usageScenes || [];
+
+  // Detect product category hints from keywords/scenes
+  const allText = [...pros, ...cons, ...scenes].join(" ").toLowerCase();
+  const isTV = /tv|oled|display|screen|picture|gaming|movie|streaming|4k|hdr/i.test(allText + " " + productName);
+  const isAppliance = /wash|laundry|fridge|refrigerator|cooling|kitchen|cook|clean|dryer|dishwasher/i.test(allText + " " + productName);
+  const isAC = /air conditioner|ac|cooling|btu|temperature/i.test(allText + " " + productName);
+  const isAudio = /sound|speaker|audio|bass|music|podcast/i.test(allText + " " + productName);
+
+  const personas: TargetPersona[] = [];
+
+  if (isTV) {
+    personas.push(
+      {
+        emoji: "🎮",
+        label: t("Tech-Savvy Gamer", "테크 게이머"),
+        age: "25–35",
+        lifestyle: t("Loves gaming & streaming, values low input lag and high refresh rate", "게이밍과 스트리밍을 즐기며, 낮은 입력 지연과 높은 주사율을 중시"),
+        motivation: t(`Chose ${productName} for immersive visuals and smooth gameplay`, `몰입감 있는 화면과 부드러운 게임 플레이를 위해 ${productName} 선택`),
+        painPoint: cons[0] ? t(`Concerned about ${cons[0]}`, `${cons[0]}에 대한 우려`) : t("Wants even faster response times", "더 빠른 응답 속도를 원함"),
+      },
+      {
+        emoji: "🎬",
+        label: t("Home Cinema Enthusiast", "홈시네마 매니아"),
+        age: "35–50",
+        lifestyle: t("Dedicated movie room setup, prioritizes picture quality and HDR", "전용 영화방 구성, 화질과 HDR을 최우선시"),
+        motivation: t(`Impressed by ${pros[0] || "picture quality"} for cinematic experience`, `시네마틱 경험을 위한 ${pros[0] || "화질"}에 감동`),
+        painPoint: cons[1] ? t(`Wishes for better ${cons[1]}`, `${cons[1]} 개선 희망`) : t("Seeks better sound integration", "사운드 연동 개선 희망"),
+      },
+      {
+        emoji: "👨‍👩‍👧‍👦",
+        label: t("Family-First Smart Home", "가족 중심 스마트홈"),
+        age: "30–45",
+        lifestyle: t("Uses smart features daily — streaming, voice control, family content", "스트리밍, 음성 제어, 가족 콘텐츠 등 스마트 기능 일상 활용"),
+        motivation: t(`Values ${pros[1] || "ease of use"} and family-friendly features`, `${pros[1] || "사용 편의성"}과 가족 친화적 기능을 중시`),
+        painPoint: t("Wants simpler setup and parental controls", "더 쉬운 설정과 자녀 보호 기능을 원함"),
+      }
+    );
+  } else if (isAppliance) {
+    personas.push(
+      {
+        emoji: "🏡",
+        label: t("Busy Homemaker", "바쁜 살림꾼"),
+        age: "30–45",
+        lifestyle: t("Manages household chores efficiently, values time-saving features", "가사를 효율적으로 관리하며 시간 절약 기능을 중시"),
+        motivation: t(`Chose ${productName} for ${pros[0] || "reliability"} and convenience`, `${pros[0] || "신뢰성"}과 편의성을 위해 ${productName} 선택`),
+        painPoint: cons[0] ? t(`Frustrated by ${cons[0]}`, `${cons[0]}에 대한 불만`) : t("Wants quieter operation", "더 조용한 작동을 원함"),
+      },
+      {
+        emoji: "🌿",
+        label: t("Eco-Conscious Consumer", "친환경 소비자"),
+        age: "25–40",
+        lifestyle: t("Prioritizes energy efficiency and sustainable living", "에너지 효율과 지속 가능한 생활을 우선시"),
+        motivation: t(`Attracted by energy efficiency and ${pros[1] || "smart features"}`, `에너지 효율과 ${pros[1] || "스마트 기능"}에 매력을 느낌`),
+        painPoint: t("Wants more eco-mode options", "더 많은 에코 모드 옵션을 원함"),
+      },
+      {
+        emoji: "👩‍💼",
+        label: t("Working Professional", "워킹 프로페셔널"),
+        age: "28–42",
+        lifestyle: t("Limited time for chores, needs reliable & fast appliance cycles", "가사에 시간이 부족하며, 빠르고 신뢰할 수 있는 가전 사이클이 필요"),
+        motivation: t(`Needs ${productName} to fit a tight schedule`, `빡빡한 일정에 맞는 ${productName}이 필요`),
+        painPoint: cons[1] ? t(`Concerned about ${cons[1]}`, `${cons[1]}에 대한 우려`) : t("Wants shorter cycle times", "더 짧은 사이클 시간을 원함"),
+      }
+    );
+  } else if (isAC) {
+    personas.push(
+      {
+        emoji: "🌡️",
+        label: t("Heat-Sensitive Homeworker", "더위 민감 재택러"),
+        age: "25–40",
+        lifestyle: t("Works from home, needs consistent cooling and quiet operation", "재택근무 중 일관된 냉방과 저소음 필요"),
+        motivation: t(`Chose ${productName} for ${pros[0] || "cooling power"} during WFH`, `재택근무 시 ${pros[0] || "냉방 성능"}을 위해 ${productName} 선택`),
+        painPoint: cons[0] ? t(`Bothered by ${cons[0]}`, `${cons[0]}이 불편`) : t("Wants better energy tracking", "에너지 추적 기능 개선 원함"),
+      },
+      {
+        emoji: "😴",
+        label: t("Light Sleeper", "잠이 얕은 사용자"),
+        age: "30–55",
+        lifestyle: t("Prioritizes quiet nighttime operation and sleep comfort", "야간 저소음 작동과 수면 쾌적함을 최우선시"),
+        motivation: t(`Needs whisper-quiet cooling for restful sleep`, `편안한 수면을 위한 초저소음 냉방이 필요`),
+        painPoint: t("Sensitive to any noise above ambient level", "주변 소음 이상의 소리에 민감"),
+      }
+    );
+  } else {
+    // Generic product personas
+    personas.push(
+      {
+        emoji: "🔍",
+        label: t("Research-Driven Buyer", "꼼꼼 비교형 구매자"),
+        age: "30–45",
+        lifestyle: t("Compares specs and reviews extensively before purchasing", "구매 전 스펙과 리뷰를 철저히 비교 분석"),
+        motivation: t(`Chose ${productName} after thorough review analysis for ${pros[0] || "quality"}`, `${pros[0] || "품질"}을 위해 철저한 리뷰 분석 후 ${productName} 선택`),
+        painPoint: cons[0] ? t(`Watchful about ${cons[0]}`, `${cons[0]}을 주시 중`) : t("Wants more detailed specs", "더 자세한 스펙 정보를 원함"),
+      },
+      {
+        emoji: "💡",
+        label: t("Early Adopter", "얼리어답터"),
+        age: "25–38",
+        lifestyle: t("Always gets the latest tech, values innovation and smart features", "항상 최신 기술을 추구하며 혁신과 스마트 기능을 중시"),
+        motivation: t(`Excited about ${pros[1] || "innovative features"} in ${productName}`, `${productName}의 ${pros[1] || "혁신적 기능"}에 기대`),
+        painPoint: t("Wants faster software updates", "더 빠른 소프트웨어 업데이트를 원함"),
+      },
+      {
+        emoji: "💰",
+        label: t("Value Seeker", "가성비 추구형"),
+        age: "28–50",
+        lifestyle: t("Balances quality and price, looks for long-term value", "품질과 가격의 균형을 맞추며 장기적 가치를 추구"),
+        motivation: t(`Sees ${productName} as offering strong value for ${pros[0] || "performance"}`, `${productName}이 ${pros[0] || "성능"} 대비 높은 가치를 제공한다고 판단`),
+        painPoint: cons[0] ? t(`Price-sensitive about ${cons[0]} trade-offs`, `${cons[0]} 관련 가격 대비 트레이드오프에 민감`) : t("Wants more bundle deals", "더 많은 번들 혜택을 원함"),
+      }
+    );
+  }
+
+  return personas;
 }
