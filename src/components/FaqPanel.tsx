@@ -11,7 +11,7 @@ import {
   Copy, HelpCircle, FileText, Sparkles, Loader2,
   AlertTriangle, TrendingUp, ChevronDown, ChevronRight,
   Wrench, Monitor, Wifi, Settings, Package, DollarSign, Shield, Tag,
-  CheckCircle2, XCircle, Clock, Zap, BarChart3, ListChecks,
+  CheckCircle2, XCircle, Clock, Zap, BarChart3,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
