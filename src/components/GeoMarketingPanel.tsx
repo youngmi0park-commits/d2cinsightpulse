@@ -26,6 +26,7 @@ interface GeoMarketingPanelProps {
   displayName?: string;
   sentiment?: SentimentResult;
   reviews?: { text: string; sentiment?: string }[];
+  onGoToStudio?: (copy: { headline: string; body: string; channel: "inside" | "outside" }) => void;
 }
 
 const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: string; labelKo: string; descEn: string; descKo: string }[] = [
@@ -47,7 +48,7 @@ const CHANNEL_GROUPS: { key: ChannelGroup; icon: typeof Building2; labelEn: stri
   },
 ];
 
-export function GeoMarketingPanel({ geoMessages, productName, totalReviews, displayName, sentiment, reviews }: GeoMarketingPanelProps) {
+export function GeoMarketingPanel({ geoMessages, productName, totalReviews, displayName, sentiment, reviews, onGoToStudio }: GeoMarketingPanelProps) {
   const [activeGeo, setActiveGeo] = useState(geoMessages[0]?.geo ?? "LGEUS");
   const [activeChannel, setActiveChannel] = useState<ChannelGroup>("inside");
   const [activePurpose, setActivePurpose] = useState("dotcom");
@@ -531,18 +532,32 @@ export function GeoMarketingPanel({ geoMessages, productName, totalReviews, disp
           )}
 
           {/* Copy Full */}
-          <button
-            onClick={() =>
-              copyText(
-                `[${currentMsg.purposeLabel}] — ${currentGeo?.geoLabel}\n\n📌 Headline:\n${currentMsg.headline}\n\n📝 Body:\n${currentMsg.body}\n\n🔗 CTA:\n${currentMsg.cta}${currentMsg.hashtags.length > 0 ? `\n\n# Hashtags:\n${currentMsg.hashtags.join(" ")}` : ""}`,
-                "full"
-              )
-            }
-            className="w-full py-3 rounded-lg border border-primary/30 bg-primary/5 text-primary text-sm font-medium hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
-          >
-            {copiedKey === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {t("Copy Full Message", "전체 메시지 복사")}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() =>
+                copyText(
+                  `[${currentMsg.purposeLabel}] — ${currentGeo?.geoLabel}\n\n📌 Headline:\n${currentMsg.headline}\n\n📝 Body:\n${currentMsg.body}\n\n🔗 CTA:\n${currentMsg.cta}${currentMsg.hashtags.length > 0 ? `\n\n# Hashtags:\n${currentMsg.hashtags.join(" ")}` : ""}`,
+                  "full"
+                )
+              }
+              className="flex-1 py-3 rounded-lg border border-primary/30 bg-primary/5 text-primary text-sm font-medium hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+            >
+              {copiedKey === "full" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {t("Copy Full Message", "전체 메시지 복사")}
+            </button>
+            {onGoToStudio && (
+              <button
+                onClick={() => onGoToStudio({
+                  headline: currentMsg.headline,
+                  body: currentMsg.body,
+                  channel: activeChannel,
+                })}
+                className="py-3 px-5 rounded-lg border border-primary bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+              >
+                🎨 {t("Go to Studio", "스튜디오로 제작")}
+              </button>
+            )}
+          </div>
 
           {/* Ad Compliance Notice */}
           <AdComplianceNotice

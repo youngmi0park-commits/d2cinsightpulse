@@ -28,6 +28,7 @@ interface ContentStudioPanelProps {
   sentiment: SentimentResult;
   reviews: { text: string; sentiment?: string }[];
   marketing: MarketingOutput;
+  initialCopy?: { headline: string; body: string; channel: "inside" | "outside" } | null;
 }
 
 interface GeneratedPrompt {
@@ -54,6 +55,7 @@ export function ContentStudioPanel({
   sentiment,
   reviews,
   marketing: _marketing,
+  initialCopy,
 }: ContentStudioPanelProps) {
   const { t, lang } = useLang();
   const [contentType, setContentType] = useState<ContentTypeKey>("pdp_banner");
@@ -64,6 +66,22 @@ export function ContentStudioPanel({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [linkedCopy, setLinkedCopy] = useState<{ headline: string; body: string } | null>(null);
+
+  // Apply initialCopy when it changes (from Toolkit → Studio link)
+  const [lastAppliedCopy, setLastAppliedCopy] = useState<typeof initialCopy>(null);
+  if (initialCopy && initialCopy !== lastAppliedCopy) {
+    setLastAppliedCopy(initialCopy);
+    setChannelType(initialCopy.channel);
+    setLinkedCopy({ headline: initialCopy.headline, body: initialCopy.body });
+    setTonality("review_highlight");
+    if (initialCopy.channel === "inside") {
+      setContentType("pdp_banner");
+    } else {
+      setContentType("sns_card");
+    }
+    setGenerated(null);
+  }
 
   const selectedContentType = CONTENT_TYPES.find((c) => c.key === contentType);
   const spec = selectedContentType?.spec
