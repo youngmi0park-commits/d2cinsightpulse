@@ -53,7 +53,7 @@ export function ContentStudioPanel({
   displayName,
   sentiment,
   reviews,
-  marketing,
+  marketing: _marketing,
 }: ContentStudioPanelProps) {
   const { t, lang } = useLang();
   const [contentType, setContentType] = useState<ContentTypeKey>("pdp_banner");
