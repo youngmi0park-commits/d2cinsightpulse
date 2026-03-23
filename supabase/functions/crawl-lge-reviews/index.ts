@@ -153,55 +153,14 @@ Deno.serve(async (req) => {
 
         // Step 1: Map the category page to discover product URLs
         let productUrls: string[] = [];
-        try {
-          const mapRes = await fetch("https://api.firecrawl.dev/v1/map", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              url: baseUrl,
-              limit: 100,
-              includeSubdomains: false,
-            }),
-          });
-
-          if (mapRes.ok) {
-            const mapData = await mapRes.json();
-            const allLinks = mapData.links || mapData.data?.links || [];
-            // Filter to product detail pages (PDPs) — they typically have model slugs
-            productUrls = allLinks
-              .filter((link: string) => {
-                const lowerLink = link.toLowerCase();
-                // Must be under the category path and look like a PDP
-                const categorySlug = region === "us" 
-                  ? (category === "Refrigerator" ? "/us/refrigerators/" : category === "Washer" ? "/us/washers/" : "/us/dryers/")
-                  : (category === "Refrigerator" ? "/uk/refrigerators/" : category === "Washer" ? "/uk/washing-machines/" : "/uk/dryers/");
-                return lowerLink.includes(categorySlug) && 
-                       !lowerLink.includes("/compare") &&
-                       !lowerLink.includes("/accessories") &&
-                       !lowerLink.includes("/filter") &&
-                       link !== baseUrl &&
-                       // Must have a model slug (usually has dashes and alphanumeric chars)
-                       link.split("/").length > 5;
-              })
-              .slice(0, maxPagesPerCategory);
-            
-            console.log(`[${region.toUpperCase()}] Found ${productUrls.length} product pages for ${category}`);
-          } else {
-            console.error(`Map failed for ${baseUrl}: ${mapRes.status}`);
-            // Fallback: use search
-            productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
-          }
-        } catch (mapErr) {
-          console.error(`Map error for ${baseUrl}:`, mapErr);
-          productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
-        }
+        
+        // Use search directly since map returns partner.lge.com URLs
+        productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
 
         if (productUrls.length === 0) {
-          console.log(`[${region.toUpperCase()}] No product URLs found for ${category}, trying search fallback`);
-          productUrls = await searchForProductPages(FIRECRAWL_API_KEY, category, region, maxPagesPerCategory);
+          // Fallback: construct known PDP URLs from search
+          console.log(`[${region.toUpperCase()}] No product URLs found for ${category} via search, trying direct scrape of category page`);
+          productUrls = [baseUrl];
         }
 
         // Step 2: Scrape each product page for reviews
