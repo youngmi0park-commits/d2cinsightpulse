@@ -14,6 +14,3 @@ verify_jwt = false
 
 [functions.collect-youtube-comments]
 verify_jwt = false
-
-[functions.collect-bazaarvoice-uk]
-verify_jwt = false

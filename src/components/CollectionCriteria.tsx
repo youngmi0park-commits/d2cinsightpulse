@@ -18,7 +18,6 @@ const criteria: CriteriaItem[] = [
     titleKo: "수집 채널",
     itemsEn: [
       "LG.com (lg.com/us, lg.com/uk) — Official LG product pages, specs, and customer review data",
-      "🆕 Bazaarvoice UK API — Direct LG.com UK review collection via Conversations API (lgelectronics-en client, D2C INSIGHT_UK project)",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
       "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR)",
       "Best Buy — Retailer product reviews and ratings (US)",
@@ -45,7 +44,6 @@ const criteria: CriteriaItem[] = [
     ],
     itemsKo: [
       "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지, 스펙 및 고객 리뷰 데이터",
-      "🆕 Bazaarvoice UK API — Conversations API를 통한 LG.com UK 리뷰 직접 수집 (lgelectronics-en 클라이언트, D2C INSIGHT_UK 프로젝트)",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
       "Amazon — 'Verified Purchase' 신뢰 시그널 포함 제품 리뷰 (US, UK, CA, DE, IN, FR)",
       "Best Buy — 리테일러 제품 리뷰 및 평점 (US)",
@@ -190,7 +188,7 @@ const criteria: CriteriaItem[] = [
     titleKo: "수집 주기 및 대시보드 동기화",
     itemsEn: [
       "⏰ Automated daily collection at 07:00 AM KST (22:00 UTC) via pg_cron scheduled job",
-      "📦 collect-reviews 07:00 KST → collect-youtube-comments 07:05 KST → collect-bazaarvoice-uk 07:10 KST (Bazaarvoice API)",
+      "📦 collect-reviews runs at 07:00 KST → collect-youtube-comments follows at 07:05 KST",
       "Trending dashboard updates automatically after each collection cycle (same timing)",
       "Weekly aggregation period: Last 7 days rolling window for trend snapshots & keywords",
       "Based on last 12 months data for long-term analysis (rolling update)",
@@ -198,7 +196,7 @@ const criteria: CriteriaItem[] = [
     ],
     itemsKo: [
       "⏰ 매일 오전 7:00 KST (UTC 22:00)에 pg_cron 스케줄링으로 자동 일괄 수집",
-      "📦 collect-reviews 07:00 KST 실행 → collect-youtube-comments 07:05 KST → collect-bazaarvoice-uk 07:10 KST (Bazaarvoice API) 순차 실행",
+      "📦 collect-reviews 07:00 KST 실행 → collect-youtube-comments 07:05 KST 후속 실행",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
       "주간 집계 기간: 최근 7일 롤링 윈도우 기준 트렌드 스냅샷 및 키워드 추출",
       "장기 분석을 위한 최근 12개월 데이터 기준 (롤링 업데이트)",

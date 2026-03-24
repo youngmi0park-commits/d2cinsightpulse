@@ -43,13 +43,6 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     description: "Collect comments from LG official YouTube channels (US, UK, Global, India, AU)",
     descriptionKo: "LG 공식 YouTube 채널 댓글 수집 (US, UK, Global, India, AU — 한국 제외)",
   },
-  {
-    id: "bazaarvoice_uk",
-    label: "BV UK",
-    icon: Globe,
-    description: "Collect LG UK reviews via Bazaarvoice Conversations API",
-    descriptionKo: "Bazaarvoice API를 통한 LG.com UK 리뷰 수집",
-  },
 ];
 
 export function ReviewCollectButtons() {
@@ -66,16 +59,12 @@ export function ReviewCollectButtons() {
         ? "crawl-lge-reviews" 
         : channelId === "youtube_comments"
           ? "collect-youtube-comments"
-          : channelId === "bazaarvoice_uk"
-            ? "collect-bazaarvoice-uk"
-            : "collect-reviews";
+          : "collect-reviews";
       const body = channelId === "lge_com_direct" 
         ? { categories: ["Refrigerator", "Washer"], regions: ["us", "uk"], maxPages: 3 }
         : channelId === "youtube_comments"
           ? { maxPerChannel: 3 }
-          : channelId === "bazaarvoice_uk"
-            ? { maxPerCategory: 20 }
-            : { channels: [channelId] };
+          : { channels: [channelId] };
 
       const { data, error } = await supabase.functions.invoke(functionName, { body });
 
