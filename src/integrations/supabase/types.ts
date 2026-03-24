@@ -236,7 +236,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_source_counts: {
+        Args: never
+        Returns: {
+          count: number
+          source: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
