@@ -47,6 +47,13 @@ export interface ImprovementPoint {
   severity: "high" | "medium" | "low";
 }
 
+export interface PdpTestimonial {
+  quote: string;
+  theme: string;
+  themeKo: string;
+  source: string;
+}
+
 export interface MarketerToolkitData {
   customerExpressions: CustomerExpression[];
   problemSolutionTemplates: ProblemSolutionTemplate[];
@@ -55,6 +62,7 @@ export interface MarketerToolkitData {
   contentIdeas: ContentIdea[];
   faqItems: FaqItem[];
   improvementPoints: ImprovementPoint[];
+  pdpTestimonials: PdpTestimonial[];
 }
 
 // ─── Expression extraction patterns ───
