@@ -197,8 +197,6 @@ interface SourceTabConfig {
 
 const ALL_SOURCE_TABS: SourceTabConfig[] = [
   { value: "lge_com", label: "LG.com", icon: <Globe className="h-4 w-4" />, emoji: "🌐" },
-  { value: "lge_com_us", label: "LG.com US", icon: <Globe className="h-4 w-4" />, emoji: "🇺🇸" },
-  { value: "lge_com_uk", label: "LG.com UK", icon: <Globe className="h-4 w-4" />, emoji: "🇬🇧" },
   { value: "reddit", label: "Reddit", icon: <MessageSquare className="h-4 w-4" />, emoji: "🔥" },
   { value: "amazon", label: "Amazon", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🔥" },
   { value: "rtings", label: "RTINGS", icon: <Monitor className="h-4 w-4" />, emoji: "📊" },
@@ -219,7 +217,7 @@ const ALL_SOURCE_TABS: SourceTabConfig[] = [
   { value: "soundguys", label: "SoundGuys", icon: <Headphones className="h-4 w-4" />, emoji: "🎧" },
 ];
 
-const REVIEW_THRESHOLD = 50;
+const REVIEW_THRESHOLD = 100;
 
 function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
   const { data: products = [], isLoading: productsLoading } = useTrendingProducts(source.value);
