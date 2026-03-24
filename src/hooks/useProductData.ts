@@ -147,24 +147,17 @@ export function useTrendingKeywords(source?: string) {
   });
 }
 
-// Fetch review counts grouped by source
+// Fetch review counts grouped by source (server-side aggregation)
 export function useSourceCounts() {
   return useQuery({
     queryKey: ["source-counts"],
     queryFn: async () => {
-      // We need to aggregate review counts by source
-      // Since we can't do GROUP BY with the JS client, fetch all sources
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("source");
+      const { data, error } = await supabase.rpc("get_source_counts");
       if (error) throw error;
 
       const counts: Record<string, number> = {};
-      for (const row of data || []) {
-        // Normalize reddit and youtube variants
-        const raw = row.source;
-        const src = raw.startsWith("reddit") ? "reddit" : raw.startsWith("youtube") ? "youtube" : raw;
-        counts[src] = (counts[src] || 0) + 1;
+      for (const row of (data || []) as { source: string; count: number }[]) {
+        counts[row.source] = row.count;
       }
       return counts;
     },
