@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.crawl-lge-reviews]
 verify_jwt = false
+
+[functions.collect-youtube-comments]
+verify_jwt = false

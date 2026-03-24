@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, Globe, MessageSquare } from "lucide-react";
+import { Loader2, Download, Globe, MessageSquare, Youtube } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
@@ -36,6 +36,13 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     description: "Collect from Reddit communities",
     descriptionKo: "Reddit 커뮤니티에서 수집",
   },
+  {
+    id: "youtube_comments",
+    label: "YouTube",
+    icon: Youtube,
+    description: "Collect comments from LG official YouTube channels (US, UK, Global, India, AU)",
+    descriptionKo: "LG 공식 YouTube 채널 댓글 수집 (US, UK, Global, India, AU — 한국 제외)",
+  },
 ];
 
 export function ReviewCollectButtons() {
@@ -48,10 +55,16 @@ export function ReviewCollectButtons() {
     setResults((prev) => ({ ...prev, [channelId]: null }));
 
     try {
-      const functionName = channelId === "lge_com_direct" ? "crawl-lge-reviews" : "collect-reviews";
+      const functionName = channelId === "lge_com_direct" 
+        ? "crawl-lge-reviews" 
+        : channelId === "youtube_comments"
+          ? "collect-youtube-comments"
+          : "collect-reviews";
       const body = channelId === "lge_com_direct" 
         ? { categories: ["Refrigerator", "Washer"], regions: ["us", "uk"], maxPages: 3 }
-        : { channels: [channelId] };
+        : channelId === "youtube_comments"
+          ? { maxPerChannel: 3 }
+          : { channels: [channelId] };
 
       const { data, error } = await supabase.functions.invoke(functionName, { body });
 
