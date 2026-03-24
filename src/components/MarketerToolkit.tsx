@@ -10,6 +10,7 @@ import {
   Copy, Rocket,
   Search, Users, Sparkles,
   AlertTriangle, Target, Mail, Video,
+  Quote, ShieldCheck,
 } from "lucide-react";
 
 interface Props {
@@ -191,7 +192,68 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
             </ToolkitSection>
 
 
-            {/* ⑦ Improvement Points */}
+            {/* ④ PDP Customer Testimonials */}
+            <ToolkitSection
+              icon={<Quote className="h-4 w-4" />}
+              number="④"
+              title={t("PDP Customer Testimonials", "상세페이지용 고객 만족후기")}
+              subtitle={t(
+                "Compliance-checked, copy-ready quotes for product detail pages — no PII, no superlatives, no competitor mentions",
+                "법무 검토 완료, 상세페이지에 바로 복사해서 쓸 수 있는 고객 후기 — 개인정보·최상급표현·경쟁사 언급 제거"
+              )}
+              onCopy={() =>
+                copySection(
+                  "PDP Testimonials",
+                  data.pdpTestimonials
+                    .map((t) => `[${t.theme}] "${t.quote}" — ${t.source}`)
+                    .join("\n\n")
+                )
+              }
+            >
+              {data.pdpTestimonials.length === 0 ? (
+                <EmptyState text={t("Not enough positive reviews for testimonials.", "추천 후기 생성을 위한 긍정 리뷰가 부족합니다.")} />
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 bg-emerald-500/10 rounded-lg px-3 py-2 border border-emerald-500/20">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <p className="text-[11px] text-emerald-400">
+                      {t(
+                        "All quotes are auto-sanitized: PII removed, superlatives replaced, competitor names filtered. Ready for legal review.",
+                        "모든 인용문은 자동 정제됨: 개인정보 제거, 최상급 표현 대체, 경쟁사명 필터링. 법무 검토 준비 완료."
+                      )}
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    {data.pdpTestimonials.map((testimonial, i) => (
+                      <div
+                        key={i}
+                        className="bg-muted/30 rounded-lg p-4 border border-border/50 group relative"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
+                          onClick={() => copyText(`"${testimonial.quote}" — ${testimonial.source}`)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                            {t(testimonial.theme, testimonial.themeKo)}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">— {testimonial.source}</span>
+                        </div>
+                        <p className="text-sm text-foreground/90 italic leading-relaxed">
+                          "{testimonial.quote}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </ToolkitSection>
+
+            {/* ⑤ Improvement Points */}
             <ToolkitSection
               icon={<AlertTriangle className="h-4 w-4" />}
               number="⑤"
