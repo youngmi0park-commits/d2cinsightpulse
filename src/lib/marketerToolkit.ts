@@ -47,6 +47,13 @@ export interface ImprovementPoint {
   severity: "high" | "medium" | "low";
 }
 
+export interface PdpTestimonial {
+  quote: string;
+  theme: string;
+  themeKo: string;
+  source: string;
+}
+
 export interface MarketerToolkitData {
   customerExpressions: CustomerExpression[];
   problemSolutionTemplates: ProblemSolutionTemplate[];
@@ -55,6 +62,7 @@ export interface MarketerToolkitData {
   contentIdeas: ContentIdea[];
   faqItems: FaqItem[];
   improvementPoints: ImprovementPoint[];
+  pdpTestimonials: PdpTestimonial[];
 }
 
 // ─── Expression extraction patterns ───
@@ -398,6 +406,78 @@ function generateImprovementPoints(
   return points;
 }
 
+// ─── Blocklist for compliance-safe testimonials ───
+const SUPERLATIVE_RE = /\b(best|#1|number one|greatest|unprecedented|unmatched|unbeatable|first ever|world'?s?\s+first)\b/gi;
+const COMPETITOR_RE = /\b(samsung|sony|panasonic|hisense|tcl|philips|bose|apple|dyson|whirlpool|bosch|siemens|electrolux|haier)\b/gi;
+const PII_RE = /\b[A-Z][a-z]+ [A-Z][a-z]+\b/g; // simple name pattern
+
+const THEME_MAP: { pattern: RegExp; en: string; ko: string }[] = [
+  { pattern: /picture|image|display|color|screen|visual|bright|vivid|hdr|oled/i, en: "Picture Quality", ko: "화질" },
+  { pattern: /sound|audio|bass|speaker|dolby|atmos|volume/i, en: "Sound", ko: "사운드" },
+  { pattern: /design|slim|sleek|look|aesthetic|beautiful|stylish|thin/i, en: "Design", ko: "디자인" },
+  { pattern: /smart|app|webos|thinq|voice|alexa|google|remote|ui/i, en: "Smart Features", ko: "스마트 기능" },
+  { pattern: /install|setup|easy|simple|intuitive|user.?friendly/i, en: "Ease of Use", ko: "사용 편의" },
+  { pattern: /clean|wash|dry|quiet|noise|efficient|energy|water/i, en: "Performance", ko: "성능" },
+  { pattern: /value|price|worth|money|affordable|bang for/i, en: "Value", ko: "가성비" },
+  { pattern: /durable|reliable|sturdy|solid|built|quality|last/i, en: "Build Quality", ko: "내구성" },
+];
+
+function detectTheme(text: string): { en: string; ko: string } {
+  for (const t of THEME_MAP) {
+    if (t.pattern.test(text)) return { en: t.en, ko: t.ko };
+  }
+  return { en: "Overall Satisfaction", ko: "전반 만족" };
+}
+
+function sanitizeQuote(text: string): string | null {
+  // Remove PII
+  let clean = text.replace(PII_RE, "a user");
+  // Reject if contains competitor names
+  if (COMPETITOR_RE.test(clean)) return null;
+  // Remove superlatives
+  clean = clean.replace(SUPERLATIVE_RE, "excellent");
+  // Trim to sentence boundary, max ~120 chars
+  const sentences = clean.match(/[^.!?]+[.!?]+/g);
+  if (!sentences) return null;
+  let result = "";
+  for (const s of sentences) {
+    if ((result + s).length > 140) break;
+    result += s;
+  }
+  return result.trim() || null;
+}
+
+function generatePdpTestimonials(
+  reviews: { text: string; sentiment?: string }[]
+): PdpTestimonial[] {
+  const positiveReviews = reviews.filter(
+    (r) => r.sentiment === "positive" || (!r.sentiment && r.text.length > 20)
+  );
+
+  const testimonials: PdpTestimonial[] = [];
+  const usedThemes = new Set<string>();
+
+  for (const review of positiveReviews) {
+    if (testimonials.length >= 6) break;
+    const sanitized = sanitizeQuote(review.text);
+    if (!sanitized || sanitized.length < 20) continue;
+
+    const theme = detectTheme(sanitized);
+    // Prefer theme diversity
+    if (usedThemes.has(theme.en) && testimonials.length > 3) continue;
+    usedThemes.add(theme.en);
+
+    testimonials.push({
+      quote: sanitized,
+      theme: theme.en,
+      themeKo: theme.ko,
+      source: "Verified User Review",
+    });
+  }
+
+  return testimonials;
+}
+
 /**
  * Generate the full marketer toolkit data from existing analysis outputs.
  */
@@ -414,5 +494,6 @@ export function generateMarketerToolkit(
     contentIdeas: generateContentIdeas(sentiment, productName),
     faqItems: generateFaqItems(sentiment, productName),
     improvementPoints: generateImprovementPoints(sentiment),
+    pdpTestimonials: generatePdpTestimonials(reviews),
   };
 }
