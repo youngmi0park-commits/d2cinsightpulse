@@ -161,8 +161,9 @@ export function useSourceCounts() {
 
       const counts: Record<string, number> = {};
       for (const row of data || []) {
-        // Normalize reddit variants
-        const src = row.source.startsWith("reddit") ? "reddit" : row.source;
+        // Normalize reddit and youtube variants
+        const raw = row.source;
+        const src = raw.startsWith("reddit") ? "reddit" : raw.startsWith("youtube") ? "youtube" : raw;
         counts[src] = (counts[src] || 0) + 1;
       }
       return counts;
