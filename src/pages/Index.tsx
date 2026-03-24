@@ -37,6 +37,7 @@ const Index = () => {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang, toggleLang } = useLang();
   const { data: stats } = useProductStats();
+  const { data: sourceCounts = {} } = useSourceCounts();
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
