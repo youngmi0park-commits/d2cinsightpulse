@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList, Layers, BookOpen, Laptop, Headphones, Home, PenTool, FileText } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList, Layers, Laptop, Headphones, Home, PenTool, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
