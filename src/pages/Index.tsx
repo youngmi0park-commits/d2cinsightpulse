@@ -12,7 +12,7 @@ import { TrendingDashboard } from "@/components/TrendingDashboard";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
-import { useProductStats, useSourceCounts, toReviewFormat } from "@/hooks/useProductData";
+import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { Activity, BarChart3, Zap, Globe, Database, AlertCircle } from "lucide-react";
@@ -37,7 +37,7 @@ const Index = () => {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang, toggleLang } = useLang();
   const { data: stats } = useProductStats();
-  const { data: sourceCounts = {} } = useSourceCounts();
+  
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
