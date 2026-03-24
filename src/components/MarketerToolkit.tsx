@@ -62,7 +62,7 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
           {t("Marketer's Actionable Toolkit", "마케터 실행 툴킷")}
         </h3>
         <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-          4 {t("Tools", "항목")}
+          5 {t("Tools", "항목")}
         </Badge>
       </div>
             <p className="text-sm text-muted-foreground">
