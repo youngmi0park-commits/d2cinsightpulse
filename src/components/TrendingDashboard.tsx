@@ -216,9 +216,7 @@ const ALL_SOURCE_TABS: SourceTabConfig[] = [
   { value: "lemon8", label: "Lemon8", icon: <PenTool className="h-4 w-4" />, emoji: "🍋" },
   { value: "walmart", label: "Walmart", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🛒" },
   { value: "pcmag", label: "PCMag", icon: <FileText className="h-4 w-4" />, emoji: "📰" },
-  { value: "theverge", label: "The Verge", icon: <FileText className="h-4 w-4" />, emoji: "📰" },
   { value: "soundguys", label: "SoundGuys", icon: <Headphones className="h-4 w-4" />, emoji: "🎧" },
-  { value: "blog", label: "Blog", icon: <BookOpen className="h-4 w-4" />, emoji: "📝" },
 ];
 
 const REVIEW_THRESHOLD = 50;
