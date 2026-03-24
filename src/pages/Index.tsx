@@ -12,7 +12,7 @@ import { TrendingDashboard } from "@/components/TrendingDashboard";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
-import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
+import { useProductStats, useSourceCounts, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { Activity, BarChart3, Zap, Globe, Database, AlertCircle } from "lucide-react";
@@ -37,6 +37,7 @@ const Index = () => {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang, toggleLang } = useLang();
   const { data: stats } = useProductStats();
+  const { data: sourceCounts = {} } = useSourceCounts();
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -179,7 +180,7 @@ const Index = () => {
               )}
             </p>
             {stats && (
-              <div className="flex items-center justify-center gap-2 mt-4">
+              <div className="flex flex-col items-center gap-2 mt-4">
                 <Badge variant="outline" className="gap-1.5 text-xs border-primary/30">
                   <Database className="h-3 w-3" />
                   {stats.reviewCount > 0
@@ -192,6 +193,39 @@ const Index = () => {
                         `${stats.productCount}개 제품 등록됨 · 첫 수집 대기 중`
                       )}
                 </Badge>
+                {Object.keys(sourceCounts).length > 0 && (
+                  <div className="flex flex-wrap items-center justify-center gap-1.5">
+                    {(() => {
+                      const channelOrder = [
+                        { key: "trustpilot", label: "Trustpilot", emoji: "💬" },
+                        { key: "reddit", label: "Reddit", emoji: "🔥" },
+                        { key: "bestreviews", label: "BestReviews", emoji: "🏆" },
+                        { key: "consumer_reports", label: "Consumer Reports", emoji: "🛡️" },
+                        { key: "amazon", label: "Amazon", emoji: "🛒" },
+                        { key: "cnet", label: "CNET", emoji: "📡" },
+                        { key: "rtings", label: "RTINGS", emoji: "📊" },
+                        { key: "trusted_reviews", label: "Trusted Reviews", emoji: "⭐" },
+                        { key: "houzz", label: "Houzz", emoji: "🏠" },
+                        { key: "youtube", label: "YouTube", emoji: "🎬" },
+                        { key: "lge_com", label: "LG.com", emoji: "🌐" },
+                      ];
+                      const activeChannels = channelOrder.filter(ch => (sourceCounts[ch.key] || 0) > 0);
+                      const totalChannels = Object.keys(sourceCounts).length;
+                      return (
+                        <>
+                          <Badge variant="secondary" className="text-[10px] gap-1 font-mono">
+                            {t(`${totalChannels} channels active`, `${totalChannels}개 채널 수집중`)}
+                          </Badge>
+                          {activeChannels.map(ch => (
+                            <Badge key={ch.key} variant="outline" className="text-[10px] gap-1 border-border/50">
+                              {ch.emoji} {ch.label} <span className="font-mono text-primary">{(sourceCounts[ch.key] || 0).toLocaleString()}</span>
+                            </Badge>
+                          ))}
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             )}
           </div>
