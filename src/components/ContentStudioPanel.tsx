@@ -94,17 +94,25 @@ export function ContentStudioPanel({
   const strengths = useMemo(() => {
     const phrases = sentiment.phrases?.positive || [];
     const kw = sentiment.keywords.positive || [];
-    return phrases.length >= 3 ? phrases.slice(0, 3) : [...phrases, ...kw].slice(0, 3);
+    return phrases.length >= 3 ? phrases.slice(0, 5) : [...phrases, ...kw].slice(0, 5);
   }, [sentiment]);
 
   const painPoints = useMemo(() => {
     const neg = sentiment.keywords.negative || [];
     const negPhrases = sentiment.phrases?.negative || [];
-    return negPhrases.length > 0 ? negPhrases.slice(0, 2) : neg.slice(0, 2);
+    return negPhrases.length > 0 ? negPhrases.slice(0, 3) : neg.slice(0, 3);
   }, [sentiment]);
 
   const usingScenes = useMemo(() => {
-    return (sentiment.usageScenes || []).slice(0, 4).map((s) => s.replace(/\s*\(\d+x\)$/, ""));
+    return (sentiment.usageScenes || []).slice(0, 6).map((s) => s.replace(/\s*\(\d+x\)$/, ""));
+  }, [sentiment]);
+
+  // Extract USP keywords for banner prompts
+  const uspKeywords = useMemo(() => {
+    const allPositive = [...(sentiment.phrases?.positive || []), ...(sentiment.keywords.positive || [])];
+    return allPositive
+      .filter((k) => k.length > 3 && k.length < 40)
+      .slice(0, 8);
   }, [sentiment]);
 
   const total = sentiment.positive + sentiment.negative + sentiment.neutral;
