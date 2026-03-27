@@ -9,7 +9,7 @@ interface FaqToolkitPanelProps {
   productName: string;
   displayName: string;
   sentiment: SentimentResult;
-  reviews: { text: string; sentiment?: string }[];
+  reviews: { text: string; sentiment?: string; source?: string }[];
 }
 
 export function FaqToolkitPanel({ productName, displayName, sentiment, reviews }: FaqToolkitPanelProps) {

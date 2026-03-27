@@ -16,7 +16,7 @@ interface MarketingHubProps {
   totalReviews: number;
   marketing: MarketingOutput;
   sentiment: SentimentResult;
-  reviews: { text: string; sentiment?: string }[];
+  reviews: { text: string; sentiment?: string; source?: string }[];
 }
 
 export function MarketingHub({
