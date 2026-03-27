@@ -464,7 +464,7 @@ export const CollectionCriteria = () => {
                 <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_UK.toLocaleString()} reviews · Collected: ${counts.uk.toLocaleString()}`, `전체 누적: ${BV_TOTAL_UK.toLocaleString()}건 · 수집 완료: ${counts.uk.toLocaleString()}건`)}</span>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All product categories · Batch pagination collection", "출처: Bazaarvoice Conversations API (Production) · 전 제품 카테고리 · 배치 페이지네이션 수집")}</p>
+            <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes reviews <20 chars & duplicates", "출처: Bazaarvoice Conversations API (Production) · 전 카테고리 · 20자 미만 콘텐츠 및 중복 리뷰 제외")}</p>
           </div>
           <p className="text-sm text-muted-foreground mb-6">
             {t(
