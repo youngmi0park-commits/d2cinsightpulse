@@ -92,10 +92,17 @@ function ProductRankTable({
               </td>
               <td className="py-2.5 px-2">
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-medium text-foreground text-xs leading-tight">
-                    {p.display_name || p.model_number}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">{p.model_number}</span>
+                  {(() => {
+                    const isGeneric = !p.display_name || /^LG Product/i.test(p.display_name) || /GENERIC/i.test(p.display_name);
+                    const primaryName = isGeneric ? p.model_number : p.display_name;
+                    const secondaryName = isGeneric ? p.category : p.model_number;
+                    return (
+                      <>
+                        <span className="font-medium text-foreground text-xs leading-tight">{primaryName}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{secondaryName}</span>
+                      </>
+                    );
+                  })()}
                 </div>
               </td>
               <td className="py-2.5 px-2 hidden sm:table-cell">
