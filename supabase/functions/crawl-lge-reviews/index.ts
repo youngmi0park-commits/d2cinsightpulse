@@ -116,9 +116,7 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  const since = new Date();
-  since.setDate(since.getDate() - 90);
-  url.searchParams.append("Filter", `SubmissionTime:gte:${since.getTime()}`);
+  // Note: no date filter — BV returns latest reviews sorted by SubmissionTime desc
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
