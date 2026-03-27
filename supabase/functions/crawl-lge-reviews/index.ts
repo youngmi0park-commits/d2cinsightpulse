@@ -118,7 +118,7 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Offset", String(offset));
   const since = new Date();
   since.setDate(since.getDate() - 90);
-  url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
+  url.searchParams.append("Filter", `SubmissionTime:gte:${since.getTime()}`);
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
