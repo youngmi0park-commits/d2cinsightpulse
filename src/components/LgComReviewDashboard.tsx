@@ -5,7 +5,7 @@ import { useLang } from "@/contexts/LanguageContext";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Loader2, Store, Flag } from "lucide-react";
+import { ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Loader2, Store, Flag } from "lucide-react";
 
 interface LgComProduct {
   product_id: string;
