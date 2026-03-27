@@ -88,6 +88,7 @@ export type Database = {
           product_id: string
           published_at: string | null
           rating: number | null
+          review_type: string | null
           sentiment: string | null
           sentiment_score: number | null
           source: string
@@ -108,6 +109,7 @@ export type Database = {
           product_id: string
           published_at?: string | null
           rating?: number | null
+          review_type?: string | null
           sentiment?: string | null
           sentiment_score?: number | null
           source: string
@@ -128,6 +130,7 @@ export type Database = {
           product_id?: string
           published_at?: string | null
           rating?: number | null
+          review_type?: string | null
           sentiment?: string | null
           sentiment_score?: number | null
           source?: string
@@ -236,6 +239,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_lgcom_weekly_top_products: {
+        Args: { p_limit?: number; p_region?: string; p_sentiment?: string }
+        Returns: {
+          avg_score: number
+          category: string
+          display_name: string
+          keywords: string[]
+          model_number: string
+          product_id: string
+          region: string
+          review_count: number
+        }[]
+      }
       get_source_counts: {
         Args: never
         Returns: {

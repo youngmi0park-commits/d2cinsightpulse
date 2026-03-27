@@ -9,6 +9,7 @@ import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
+import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
@@ -204,6 +205,8 @@ const Index = () => {
       {!hasResults && !error && (
         <div className="container mx-auto px-4 py-12 space-y-10">
           <TrendingDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
+
+          <LgComReviewDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
