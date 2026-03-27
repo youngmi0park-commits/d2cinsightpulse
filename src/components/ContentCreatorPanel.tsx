@@ -89,7 +89,7 @@ const CONTENT_PURPOSES: ContentPurpose[] = [
   { key: "sns_short", icon: "📱", labelEn: "SNS Shorts", labelKo: "SNS 숏폼", channel: "outside" },
   { key: "youtube_trueview", icon: "🎬", labelEn: "YouTube TrueView Ad", labelKo: "YouTube TrueView 광고", channel: "outside" },
   { key: "meta_ad", icon: "📘", labelEn: "Meta Ad (Facebook/Instagram)", labelKo: "Meta 광고 (Facebook/Instagram)", channel: "outside" },
-  { key: "criteo_ad", icon: "🟠", labelEn: "Criteo Dynamic Ad", labelKo: "Criteo 다이내믹 광고", channel: "outside" },
+  { key: "criteo_pmax", icon: "🟠", labelEn: "Criteo / PMax Campaign", labelKo: "Criteo / PMax 캠페인", channel: "outside" },
   { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN)", labelKo: "디스플레이 광고 (GDN)", channel: "outside" },
   { key: "store_promo", icon: "🏬", labelEn: "Store Promo KV", labelKo: "스토어 프로모션용 KV", channel: "outside" },
 ];
@@ -111,7 +111,8 @@ interface GeneratedContent {
   imageGuide: string;
   insideVersion: string;
   outsideVersion: string;
-  exportPrompts: { tool: string; prompt: string; url?: string }[];
+  pmaxAssets?: { headlines: string[]; longHeadline: string; descriptions: string[] };
+  exportPrompts: { tool: string; prompt: string; url?: string; isAI?: boolean }[];
   legalStatus: "pass" | "needs_revision" | "fail";
   legalViolations: string[];
   fullPrompt: string;
