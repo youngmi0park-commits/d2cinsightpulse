@@ -95,6 +95,72 @@ RULES:
 - Prioritize reviews with specific details over generic praise
 - Return ONLY valid JSON array, no markdown`;
 
+// ── Bazaarvoice Conversations API (Staging) for UK ──
+const BV_API_BASE = "https://stg.api.bazaarvoice.com/data";
+const BV_CLIENT = "lgelectronics-en";
+
+async function fetchBazaarvoiceReviews(
+  apiKey: string,
+  category: string,
+  offset = 0,
+  limit = 20
+): Promise<any[]> {
+  const url = new URL(`${BV_API_BASE}/reviews.json`);
+  url.searchParams.set("apiversion", "5.4");
+  url.searchParams.set("passkey", apiKey);
+  url.searchParams.set("Filter", `ProductId:eq:*`);
+  url.searchParams.set("Include", "Products");
+  url.searchParams.set("Sort", "SubmissionTime:desc");
+  url.searchParams.set("Limit", String(limit));
+  url.searchParams.set("Offset", String(offset));
+  // Filter by recent reviews only
+  const since = new Date();
+  since.setDate(since.getDate() - 30);
+  url.searchParams.set("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
+
+  console.log(`[BV-UK] Fetching reviews offset=${offset} limit=${limit}`);
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Bazaarvoice API error [${res.status}]: ${errText.slice(0, 500)}`);
+  }
+
+  const data = await res.json();
+  console.log(`[BV-UK] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}`);
+  return data.Results || [];
+}
+
+function mapBvReviewToInternal(bvReview: any): any {
+  const rating = bvReview.Rating || null;
+  // Simple sentiment from rating
+  let sentiment = "neutral";
+  let sentimentScore = 0.5;
+  if (rating !== null) {
+    if (rating >= 4) { sentiment = "positive"; sentimentScore = 0.7 + (rating - 4) * 0.15; }
+    else if (rating <= 2) { sentiment = "negative"; sentimentScore = 0.1 + (rating - 1) * 0.15; }
+    else { sentiment = "neutral"; sentimentScore = 0.5; }
+  }
+
+  return {
+    model_number: bvReview.ProductId || "LG-UK-GENERIC",
+    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (UK)`,
+    category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
+    review_id: bvReview.Id,
+    author: null, // PII removed
+    rating,
+    date: bvReview.SubmissionTime?.split("T")[0] || null,
+    content: bvReview.ReviewText || "",
+    title: bvReview.Title || null,
+    sentiment,
+    sentiment_score: sentimentScore,
+    emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
+    emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
+    source_region: "uk",
+    issue_tags: [],
+    verified_purchase: bvReview.BadgesOrder?.includes("verifiedPurchaser") || false,
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -104,6 +170,7 @@ Deno.serve(async (req) => {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const BAZAARVOICE_UK_API_KEY = Deno.env.get("BAZAARVOICE_UK_API_KEY");
 
   if (!FIRECRAWL_API_KEY || !LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
@@ -145,93 +212,40 @@ Deno.serve(async (req) => {
       for (const region of regions) {
         console.log(`\n=== [${region.toUpperCase()}] ${category} ===`);
 
-        const queries = (SEARCH_QUERIES[category]?.[region] || []).slice(0, maxQueriesPerCategory);
-        if (queries.length === 0) {
-          errors.push(`No queries for ${category}/${region}`);
+        // ── UK: Use Bazaarvoice API ──
+        if (region === "uk" && BAZAARVOICE_UK_API_KEY) {
+          console.log(`[UK] Using Bazaarvoice Conversations API (Staging)`);
+          try {
+            const bvReviews = await fetchBazaarvoiceReviews(BAZAARVOICE_UK_API_KEY, category, 0, 50);
+            console.log(`[BV-UK] Got ${bvReviews.length} reviews for ${category}`);
+
+            for (const bvReview of bvReviews) {
+              const review = mapBvReviewToInternal(bvReview);
+              if (!review.content || review.content.length < 20) continue;
+
+              const issueTags = detectIssueTags(review.content, category);
+              review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
+
+              const saved = await saveReview(supabase, review, category, `bazaarvoice://${BV_CLIENT}/${bvReview.Id}`);
+              if (saved) {
+                totalCollected++;
+                regionStats[category].uk++;
+              }
+            }
+          } catch (bvErr) {
+            console.error(`[BV-UK] Error:`, bvErr);
+            errors.push(`Bazaarvoice UK error: ${bvErr}`);
+            // Fallback to Firecrawl for UK
+            console.log(`[UK] Falling back to Firecrawl search`);
+            await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
+            totalCollected += regionStats[category].uk;
+          }
           continue;
         }
 
-        for (const query of queries) {
-          try {
-            console.log(`[${region.toUpperCase()}] Searching: ${query}`);
-
-            // Search for review pages - use snippets directly (retail sites block scraping)
-            const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ query, limit: 5 }),
-            });
-
-            if (!searchRes.ok) {
-              errors.push(`Search failed: ${searchRes.status}`);
-              continue;
-            }
-
-            const searchData = await searchRes.json();
-            const results = searchData.data || [];
-            console.log(`[${region.toUpperCase()}] Got ${results.length} search results`);
-
-            if (results.length === 0) continue;
-
-            // Combine all search snippets into one AI call
-            const snippetsText = results.map((r: any, i: number) =>
-              `[Result ${i+1}] URL: ${r.url}\nTitle: ${r.title || ""}\nSnippet: ${r.description || ""}`
-            ).join("\n\n");
-
-            const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
-                messages: [
-                  { role: "system", content: REVIEW_EXTRACT_PROMPT },
-                  {
-                    role: "user",
-                    content: `Category: ${category}\nRegion: ${region}\nSearch Query: ${query}\n\nSearch Results with Review Snippets:\n${snippetsText}`,
-                  },
-                ],
-                temperature: 0.1,
-                max_tokens: 8000,
-              }),
-            });
-
-            if (!aiRes.ok) {
-              errors.push(`AI failed: ${aiRes.status}`);
-              continue;
-            }
-
-            const aiData = await aiRes.json();
-            const rawText = aiData.choices?.[0]?.message?.content || "[]";
-            const reviews = parseAiReviews(rawText);
-            console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews`);
-
-            for (const review of reviews) {
-              const issueTags = detectIssueTags(review.content || "", category);
-              const allIssueTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
-              const sourceUrl = results[0]?.url || query;
-
-              const saved = await saveReview(supabase, {
-                ...review,
-                issue_tags: allIssueTags,
-                source_region: region,
-              }, category, sourceUrl);
-
-              if (saved) {
-                totalCollected++;
-                regionStats[category][region]++;
-              }
-            }
-          } catch (queryErr) {
-            console.error(`Error with query "${query}":`, queryErr);
-            errors.push(`Query error: ${queryErr}`);
-          }
-        }
+        // ── US + fallback: Use Firecrawl ──
+        const collected = await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
+        totalCollected += collected;
       }
     }
 
@@ -255,6 +269,7 @@ Deno.serve(async (req) => {
         error_details: errors.slice(0, 5),
         region_stats: regionStats,
         region_comparison: regionComparison,
+        bazaarvoice_uk: !!BAZAARVOICE_UK_API_KEY,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -274,6 +289,101 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// ── Firecrawl-based collection (US + fallback) ──
+async function collectViaFirecrawl(
+  supabase: any, firecrawlKey: string, lovableKey: string,
+  category: string, region: string, maxQueries: number,
+  regionStats: Record<string, { us: number; uk: number }>, errors: string[]
+): Promise<number> {
+  let collected = 0;
+  const queries = (SEARCH_QUERIES[category]?.[region] || []).slice(0, maxQueries);
+  if (queries.length === 0) {
+    errors.push(`No queries for ${category}/${region}`);
+    return 0;
+  }
+
+  for (const query of queries) {
+    try {
+      console.log(`[${region.toUpperCase()}] Searching: ${query}`);
+
+      const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firecrawlKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query, limit: 5 }),
+      });
+
+      if (!searchRes.ok) {
+        errors.push(`Search failed: ${searchRes.status}`);
+        continue;
+      }
+
+      const searchData = await searchRes.json();
+      const results = searchData.data || [];
+      console.log(`[${region.toUpperCase()}] Got ${results.length} search results`);
+
+      if (results.length === 0) continue;
+
+      const snippetsText = results.map((r: any, i: number) =>
+        `[Result ${i+1}] URL: ${r.url}\nTitle: ${r.title || ""}\nSnippet: ${r.description || ""}`
+      ).join("\n\n");
+
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: REVIEW_EXTRACT_PROMPT },
+            {
+              role: "user",
+              content: `Category: ${category}\nRegion: ${region}\nSearch Query: ${query}\n\nSearch Results with Review Snippets:\n${snippetsText}`,
+            },
+          ],
+          temperature: 0.1,
+          max_tokens: 8000,
+        }),
+      });
+
+      if (!aiRes.ok) {
+        errors.push(`AI failed: ${aiRes.status}`);
+        continue;
+      }
+
+      const aiData = await aiRes.json();
+      const rawText = aiData.choices?.[0]?.message?.content || "[]";
+      const reviews = parseAiReviews(rawText);
+      console.log(`[${region.toUpperCase()}] Extracted ${reviews.length} reviews`);
+
+      for (const review of reviews) {
+        const issueTags = detectIssueTags(review.content || "", category);
+        const allIssueTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
+        const sourceUrl = results[0]?.url || query;
+
+        const saved = await saveReview(supabase, {
+          ...review,
+          issue_tags: allIssueTags,
+          source_region: region,
+        }, category, sourceUrl);
+
+        if (saved) {
+          collected++;
+          regionStats[category][region as "us" | "uk"]++;
+        }
+      }
+    } catch (queryErr) {
+      console.error(`Error with query "${query}":`, queryErr);
+      errors.push(`Query error: ${queryErr}`);
+    }
+  }
+  return collected;
+}
 
 // ── Issue tag detection ──
 function detectIssueTags(content: string, category: string): string[] {
