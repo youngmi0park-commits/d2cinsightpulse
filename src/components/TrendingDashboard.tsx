@@ -343,7 +343,7 @@ function LgComTabContent({ source, onProductClick, t }: { source: SourceTabConfi
             <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
               💬 {source.label} {country !== "all" ? `(${country.toUpperCase()}) ` : ""}{t("Key Positive & Negative Keywords", "주요 긍·부정 키워드")}
             </h3>
-            <KeywordPanel keywords={keywords} t={t} />
+            <KeywordPanel keywords={lgcomKeywords} t={t} />
           </div>
         </>
       )}
