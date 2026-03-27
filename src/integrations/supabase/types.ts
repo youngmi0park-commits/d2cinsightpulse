@@ -239,6 +239,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_lgcom_country_counts: {
+        Args: never
+        Returns: {
+          count: number
+          country: string
+        }[]
+      }
       get_lgcom_weekly_top_products: {
         Args: { p_limit?: number; p_region?: string; p_sentiment?: string }
         Returns: {
