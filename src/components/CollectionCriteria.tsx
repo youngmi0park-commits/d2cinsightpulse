@@ -14,19 +14,29 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  const [counts, setCounts] = useState<{ us: number; uk: number; us2025: number; uk2025: number }>({ us: 0, uk: 0, us2025: 0, uk2025: 0 });
   useEffect(() => {
-    supabase.rpc("get_lgcom_country_counts").then(({ data }) => {
-      if (data) {
-        const us = data.find((d: any) => d.country === "US")?.count || 0;
-        const uk = data.find((d: any) => d.country === "UK")?.count || 0;
-        setCounts({ us: Number(us), uk: Number(uk) });
-      }
+    Promise.all([
+      supabase.rpc("get_lgcom_country_counts"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2025-01-01"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2025-01-01"),
+    ]).then(([countRes, us2025Res, uk2025Res]) => {
+      const data = countRes.data || [];
+      const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
+      const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
+      setCounts({
+        us, uk,
+        us2025: us2025Res.count || 0,
+        uk2025: uk2025Res.count || 0,
+      });
     });
   }, []);
   return counts;
 }
 
+// Estimated total reviews since Jan 2025 (from BV API offset analysis)
+const BV_2025_US = 10800;
+const BV_2025_UK = 5700;
 const BV_TOTAL_US = 435995;
 const BV_TOTAL_UK = 48093;
 
@@ -419,8 +429,6 @@ export const CollectionCriteria = () => {
   const { t } = useLang();
   const counts = useLgComCounts();
 
-  const pctUs = ((counts.us / BV_TOTAL_US) * 100).toFixed(1);
-  const pctUk = ((counts.uk / BV_TOTAL_UK) * 100).toFixed(1);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -436,18 +444,24 @@ export const CollectionCriteria = () => {
           {/* Live collection stats */}
           <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
             <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
-                <span className="font-bold text-foreground">{counts.us.toLocaleString()}</span>
-                <span className="text-muted-foreground"> / {BV_TOTAL_US.toLocaleString()}{t(" reviews", "건")}</span>
-                <span className="ml-1 text-primary font-semibold">({pctUs}%)</span>
+            <div className="grid grid-cols-1 gap-3 text-xs">
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
+                  <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}</span>
+                  <span className="text-muted-foreground"> / ~{BV_2025_US.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                  <span className="ml-1 text-primary font-semibold">({((counts.us2025 / BV_2025_US) * 100).toFixed(1)}%)</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_US.toLocaleString()} reviews · Collected: ${counts.us.toLocaleString()}`, `전체 누적: ${BV_TOTAL_US.toLocaleString()}건 · 수집 완료: ${counts.us.toLocaleString()}건`)}</span>
               </div>
-              <div>
-                <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
-                <span className="font-bold text-foreground">{counts.uk.toLocaleString()}</span>
-                <span className="text-muted-foreground"> / {BV_TOTAL_UK.toLocaleString()}{t(" reviews", "건")}</span>
-                <span className="ml-1 text-primary font-semibold">({pctUk}%)</span>
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
+                  <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}</span>
+                  <span className="text-muted-foreground"> / ~{BV_2025_UK.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                  <span className="ml-1 text-primary font-semibold">({((counts.uk2025 / BV_2025_UK) * 100).toFixed(1)}%)</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_UK.toLocaleString()} reviews · Collected: ${counts.uk.toLocaleString()}`, `전체 누적: ${BV_TOTAL_UK.toLocaleString()}건 · 수집 완료: ${counts.uk.toLocaleString()}건`)}</span>
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All product categories · Batch pagination collection", "출처: Bazaarvoice Conversations API (Production) · 전 제품 카테고리 · 배치 페이지네이션 수집")}</p>
