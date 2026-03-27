@@ -184,15 +184,19 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["Refrigerator", "Washer"];
+  let categories = ["Refrigerator", "Washer", "Dryer", "Dishwasher"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
+  let bvPages = 5; // pages of 100 reviews each per category per region
+  let bvOffset = 0; // starting offset for BV pagination
 
   try {
     const body = await req.json();
     if (body.categories?.length) categories = body.categories;
     if (body.regions?.length) regions = body.regions;
     if (body.maxQueries) maxQueriesPerCategory = body.maxQueries;
+    if (body.bvPages != null) bvPages = body.bvPages;
+    if (body.bvOffset != null) bvOffset = body.bvOffset;
   } catch {
     // defaults
   }
