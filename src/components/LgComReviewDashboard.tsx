@@ -22,17 +22,51 @@ interface LgComReviewDashboardProps {
   onProductClick?: (modelNumber: string) => void;
 }
 
-function useLgComWeeklyTop(region: string, sentiment: string) {
+function useLgComTop(region: string, sentiment: string, period: string) {
   return useQuery({
-    queryKey: ["lgcom-weekly-top", region, sentiment],
+    queryKey: ["lgcom-top", region, sentiment, period],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_lgcom_weekly_top_products", {
-        p_region: region,
-        p_sentiment: sentiment,
-        p_limit: 10,
-      });
+      if (period === "weekly") {
+        const { data, error } = await supabase.rpc("get_lgcom_weekly_top_products", {
+          p_region: region,
+          p_sentiment: sentiment,
+          p_limit: 10,
+        });
+        if (error) throw error;
+        return (data || []) as LgComProduct[];
+      }
+      // Cumulative: query all reviews (no date filter) - use same RPC but we'll create a wider window
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("product_id, products!inner(model_number, display_name, category, is_active)")
+        .like("source", `lge_com_${region === "all" ? "%" : region.toLowerCase()}`)
+        .eq("sentiment", sentiment)
+        .limit(1000);
       if (error) throw error;
-      return (data || []) as LgComProduct[];
+
+      // Aggregate by product
+      const prodMap: Record<string, LgComProduct> = {};
+      for (const r of data || []) {
+        const prod = r.products as any;
+        if (!prod?.is_active) continue;
+        const pid = r.product_id;
+        if (!prodMap[pid]) {
+          prodMap[pid] = {
+            product_id: pid,
+            model_number: prod.model_number,
+            display_name: prod.display_name,
+            category: prod.category,
+            region: region === "all" ? "ALL" : region,
+            review_count: 0,
+            avg_score: 0,
+            keywords: [],
+          };
+        }
+        prodMap[pid].review_count++;
+      }
+      return Object.values(prodMap)
+        .sort((a, b) => b.review_count - a.review_count)
+        .slice(0, 10);
     },
     staleTime: 1000 * 60 * 30,
   });
