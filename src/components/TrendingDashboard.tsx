@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, subDays } from "date-fns";
-import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList, Layers, Laptop, Headphones, Home, PenTool, FileText } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { TrendingUp, TrendingDown, Minus, ExternalLink, MessageSquare, ShoppingCart, ThumbsUp, ThumbsDown, BarChart3, ArrowUpRight, ArrowDownRight, Monitor, Tv, Star, Shield, Award, Loader2, Database, Youtube, Globe, ClipboardList, Layers, Laptop, Headphones, Home, PenTool, FileText, Flag } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingProduct, type DBTrendingKeyword } from "@/hooks/useProductData";
 
 interface TrendingDashboardProps {
@@ -245,6 +247,85 @@ function SourceTabContent({ source, onProductClick, t }: { source: SourceTabConf
         </h3>
         <KeywordPanel keywords={keywords} t={t} />
       </div>
+    </div>
+  );
+}
+
+/** LG.com tab with US/UK country filter */
+function LgComTabContent({ source, onProductClick, t }: { source: SourceTabConfig; onProductClick?: (m: string) => void; t: (en: string, ko: string) => string }) {
+  const [country, setCountry] = useState<"all" | "us" | "uk">("all");
+
+  // Country counts
+  const { data: countryCounts = {} } = useQuery({
+    queryKey: ["lgcom-country-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_lgcom_country_counts");
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const row of (data || []) as { country: string; count: number }[]) {
+        counts[row.country] = row.count;
+      }
+      return counts;
+    },
+    staleTime: 60_000,
+  });
+
+  // Use source filter based on country selection
+  const sourceFilter = country === "all" ? "lge_com" : country === "us" ? "lge_com_us" : "lge_com_uk";
+  const { data: products = [], isLoading: productsLoading } = useTrendingProducts(sourceFilter);
+  const { data: keywords = [], isLoading: keywordsLoading } = useTrendingKeywords(sourceFilter);
+
+  const totalCount = (countryCounts["US"] || 0) + (countryCounts["UK"] || 0);
+
+  const countryButtons = [
+    { value: "all" as const, label: t("All", "전체"), flag: "🌐", count: totalCount },
+    { value: "us" as const, label: "US", flag: "🇺🇸", count: countryCounts["US"] || 0 },
+    { value: "uk" as const, label: "UK", flag: "🇬🇧", count: countryCounts["UK"] || 0 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Country filter buttons */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Flag className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground font-medium">{t("Country", "국가")}:</span>
+        {countryButtons.map((btn) => (
+          <button
+            key={btn.value}
+            onClick={() => setCountry(btn.value)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              country === btn.value
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            <span>{btn.flag}</span>
+            <span>{btn.label}</span>
+            <span className="font-mono font-bold">{btn.count.toLocaleString()}</span>
+          </button>
+        ))}
+      </div>
+
+      {productsLoading || keywordsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+              {source.emoji} {source.label} {country !== "all" ? `(${country.toUpperCase()}) ` : ""}{t(`Mentions TOP ${Math.max(products.length, 10)}`, `언급량 TOP ${Math.max(products.length, 10)}`)}
+            </h3>
+            <ProductTable products={products} onProductClick={onProductClick} t={t} />
+          </div>
+          <div className="gradient-card rounded-xl border border-border p-4 sm:p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+              💬 {source.label} {country !== "all" ? `(${country.toUpperCase()}) ` : ""}{t("Key Positive & Negative Keywords", "주요 긍·부정 키워드")}
+            </h3>
+            <KeywordPanel keywords={keywords} t={t} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -491,7 +572,11 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
 
         {mainTabs.map((s) => (
           <TabsContent key={s.value} value={s.value}>
-            <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
+            {s.value === "lge_com" ? (
+              <LgComTabContent source={s} onProductClick={onProductClick} t={t} />
+            ) : (
+              <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
+            )}
           </TabsContent>
         ))}
         {otherTabs.length > 0 && (
