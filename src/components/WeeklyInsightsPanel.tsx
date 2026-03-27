@@ -303,6 +303,16 @@ export function WeeklyInsightsPanel() {
 
               {/* === Framework 2: JTBD === */}
               <TabsContent value="jtbd" className="space-y-3 mt-3">
+                <div className="bg-muted/40 border border-border rounded-lg p-3 flex items-start gap-2">
+                  <Briefcase className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <strong className="text-foreground">JTBD (Jobs to be Done)</strong>{" "}
+                    {t(
+                      "— Focuses on the 'job' customers are trying to accomplish. Instead of asking 'who is the customer?', it asks 'what problem are they hiring this product to solve?'",
+                      "— 고객이 제품을 '고용'해서 해결하려는 과제에 집중하는 분석법입니다. '누가 사는가'가 아닌 '왜, 어떤 문제를 해결하려고 사는가'를 파악합니다."
+                    )}
+                  </p>
+                </div>
                 <InsightCard
                   icon={ShieldAlert}
                   title={t("Pre-Purchase Anxiety", "구매 전 불안 요소 (Anxiety)")}
