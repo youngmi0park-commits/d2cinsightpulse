@@ -9,6 +9,7 @@ import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
+import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
