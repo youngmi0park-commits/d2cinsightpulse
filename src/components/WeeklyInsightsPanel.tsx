@@ -183,10 +183,35 @@ export function WeeklyInsightsPanel() {
       </CardHeader>
 
       <CardContent className="pt-0">
+        {/* Category quick-analysis buttons */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            { cat: "all", icon: Sparkles, label: t("All Products", "전체 제품"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+            { cat: "TV", icon: Tv, label: "TV / OLED", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+            { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
+            { cat: "Washer", icon: WashingMachine, label: t("Washer/Dryer", "세탁기/건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+          ].map((item) => (
+            <button
+              key={item.cat}
+              onClick={() => runAnalysis(item.cat)}
+              disabled={isLoading}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all disabled:opacity-50 ${
+                category === item.cat && result
+                  ? item.color + " ring-1 ring-primary/30"
+                  : item.color
+              }`}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              {item.label}
+              {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
+            </button>
+          ))}
+        </div>
+
         {!ins && !isLoading && (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-8 text-muted-foreground">
             <Brain className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{t("Click 'Run Analysis' to generate deep insights", "'인사이트 분석' 버튼을 클릭하여 분석을 시작하세요")}</p>
+            <p className="text-sm">{t("Select a category above to analyze", "위 카테고리를 선택하여 분석을 시작하세요")}</p>
           </div>
         )}
 
