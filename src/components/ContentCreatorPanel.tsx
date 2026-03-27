@@ -324,12 +324,23 @@ export function ContentCreatorPanel({
       ? `\n🖼️ Image Style: ${selectedBannerStyle.labelEn}\n  ${selectedBannerStyle.descEn}`
       : "";
 
+    // Channel format rule
+    const formatRule = CHANNEL_FORMAT_RULES[contentPurpose];
+    const formatRuleText = formatRule ? `\n📏 ${lang === "en" ? formatRule.en : formatRule.ko}` : "";
+
     const fullPrompt = `🎯 Content Creation Brief
 ━━━━━━━━━━━━━━━━━━━━━━
 📦 Product: ${prName}
 📍 Target: ${localeLabel} via ${channelLabel}
 🏷️ Message Type: ${lang === "en" ? msgTypeInfo.labelEn : msgTypeInfo.labelKo}
 📄 Content Purpose: ${purposeLabel}
+${formatRuleText}
+
+── Copy Quality Rules ──
+✅ Rewrite review keywords into emotional, compelling language (no keyword listing)
+✅ Include social proof: "Verified buyers report..." / "${sentiment.positive} users praised..."
+🚫 Auto-remove superlatives: best, #1, unmatched, ultimate
+✅ Generate A/B versions (A: benefit-led, B: social-proof-led)
 
 ── Review-Driven Insights (Auto-Extracted) ──
 
@@ -349,13 +360,13 @@ ${uspKeywords.join(", ") || "N/A"}
 ${evidence}
 ${specInfo}${bannerInfo}
 
-── Generated Content ──
+── Generated Content (Version A) ──
 
 ▣ Headline:
-${msg.headline}
+${removeSuperlatves(msg.headline)}
 
 ▣ Sub Message:
-${msg.sub}
+${removeSuperlatves(msg.sub)}
 ${msg.faqQ ? `\n▣ FAQ:\nQ. ${msg.faqQ}\nA. ${msg.faqA}` : ""}
 
 ── Locale Rules: ${localeLabel} ──
@@ -407,6 +418,21 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
         break;
       case "store_promo":
         imageGuide = `KV layout: Product center, promotional overlay (badge/sticker). Space for price/offer callout. Print-ready 300dpi or digital 72dpi.`;
+        break;
+      case "amazon_aplus":
+        imageGuide = `Amazon A+ Content: Module hero 970×600. Comparison chart 150×150 per cell. Lifestyle 970×300. Product on white background. Follow Amazon image guidelines. No promotional text in images.`;
+        break;
+      case "amazon_sb":
+        imageGuide = `Amazon Sponsored Brand: Logo 400×400. Custom image 1200×628. Product collection 300×300 each. White/clean background. Brand-consistent styling.`;
+        break;
+      case "bestbuy_walmart":
+        imageGuide = `Retailer PDP: Hero 1500×1500 square. Gallery 6-8 images. Infographic overlays allowed. Feature callouts. Comparison charts. Lifestyle shots.`;
+        break;
+      case "currys_uk":
+        imageGuide = `Currys UK: Hero 1200×1200. Gallery 800×800. White background product shots. Feature highlight infographics. Energy rating badge placement.`;
+        break;
+      case "pinterest_ad":
+        imageGuide = `Pinterest: Standard Pin 1000×1500 (2:3). Video Pin 1000×1500. Carousel 1000×1500 per card. Warm lifestyle imagery. Text overlay max 20% area. "Ad" label auto-applied.`;
         break;
     }
 
