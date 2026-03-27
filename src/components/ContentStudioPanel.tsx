@@ -290,11 +290,13 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
     // Long version for detailed content
     const longVersion = `${displayName || productName}: Users highlight ${strengths.join(", ")} as standout features. ${painPoints.length > 0 ? `Addressing concerns like ${painPoints[0]}, ` : ""}real users describe their experience in ${usingScenes.join(", ") || "everyday settings"}. ${evidence}`;
 
-    // Export formats
-    const mjPrompt = `${displayName || productName} product photography, ${tonality} mood, ${usingScenes[0] || "studio"} setting, professional lighting, 8k, photorealistic --ar ${contentType === "pdp_banner" ? "8:3" : contentType === "sns_card" ? "1:1" : "16:9"} --v 6`;
-    const fireflyPrompt = `Professional product shot of ${displayName || productName} in ${usingScenes[0] || "modern"} environment. Style: ${tonality}. Lighting: studio. Background: ${tonality === "technical" ? "dark gradient" : "lifestyle setting"}.`;
-    const runwayPrompt = `Slow reveal of ${displayName || productName} in ${usingScenes[0] || "a modern home"}. Camera: dolly in. Duration: 5s. Style: ${tonality}, cinematic. End frame: product hero shot with feature highlight "${strengths[0] || "quality"}".`;
-    const canvaPrompt = `Template: ${contentType === "sns_card" ? "Instagram Post" : contentType === "pdp_banner" ? "Website Banner" : "Presentation"}. Brand: LG Electronics. Colors: #A50034 (LG Red), #1A1A1A. Headline: "${shortVersion}". Image: product lifestyle.`;
+    // Export formats — adapt to banner style
+    const styleScene = bannerStyle === "lifestyle_cut" ? (usingScenes[0] || "modern living room") : bannerStyle === "usp_feature" ? "detail close-up" : (usingScenes[0] || "studio");
+    const styleMood = bannerStyle === "lifestyle_cut" ? "warm lifestyle, natural light" : bannerStyle === "usp_feature" ? "dramatic, precision macro" : bannerStyle === "before_after" ? "split composition, transformation" : `${tonality} mood`;
+    const mjPrompt = `${displayName || productName} product photography, ${styleMood}, ${styleScene} setting, professional lighting, 8k, photorealistic --ar ${contentType === "pdp_banner" ? "8:3" : contentType === "sns_card" ? "1:1" : "16:9"} --v 6`;
+    const fireflyPrompt = `Professional ${bannerStyle === "lifestyle_cut" ? "lifestyle" : "product"} shot of ${displayName || productName} in ${styleScene} environment. Style: ${tonality}. Lighting: ${bannerStyle === "lifestyle_cut" ? "natural, warm" : "studio"}. Background: ${bannerStyle === "lifestyle_cut" ? "real home environment" : tonality === "technical" ? "dark gradient" : "clean studio"}.`;
+    const runwayPrompt = `Slow reveal of ${displayName || productName} in ${styleScene}. Camera: ${bannerStyle === "lifestyle_cut" ? "slow pan across room" : "dolly in"}. Duration: 5s. Style: ${tonality}, cinematic. End frame: ${bannerStyle === "lifestyle_cut" ? "product in context, lifestyle moment" : `product hero shot with feature highlight "${strengths[0] || "quality"}"`}.`;
+    const canvaPrompt = `Template: ${contentType === "sns_card" ? "Instagram Post" : contentType === "pdp_banner" ? "Website Banner" : "Presentation"}. Brand: LG Electronics. Colors: #A50034 (LG Red), #1A1A1A. Headline: "${shortVersion}". Image: ${bannerStyle === "lifestyle_cut" ? "lifestyle photography" : "product hero"}.`;
 
     const legal = runLegalCheck(finalPrompt + shortVersion + longVersion);
 
