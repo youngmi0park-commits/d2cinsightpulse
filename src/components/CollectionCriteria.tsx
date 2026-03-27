@@ -14,19 +14,29 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  const [counts, setCounts] = useState<{ us: number; uk: number; us2025: number; uk2025: number }>({ us: 0, uk: 0, us2025: 0, uk2025: 0 });
   useEffect(() => {
-    supabase.rpc("get_lgcom_country_counts").then(({ data }) => {
-      if (data) {
-        const us = data.find((d: any) => d.country === "US")?.count || 0;
-        const uk = data.find((d: any) => d.country === "UK")?.count || 0;
-        setCounts({ us: Number(us), uk: Number(uk) });
-      }
+    Promise.all([
+      supabase.rpc("get_lgcom_country_counts"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2025-01-01"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2025-01-01"),
+    ]).then(([countRes, us2025Res, uk2025Res]) => {
+      const data = countRes.data || [];
+      const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
+      const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
+      setCounts({
+        us, uk,
+        us2025: us2025Res.count || 0,
+        uk2025: uk2025Res.count || 0,
+      });
     });
   }, []);
   return counts;
 }
 
+// Estimated total reviews since Jan 2025 (from BV API offset analysis)
+const BV_2025_US = 10800;
+const BV_2025_UK = 5700;
 const BV_TOTAL_US = 435995;
 const BV_TOTAL_UK = 48093;
 
