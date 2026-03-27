@@ -102,6 +102,11 @@ export function MarketingHub({
             marketing={marketing}
           />
         </TabsContent>
+        <TabsContent value="weekly_report" className="mt-0 focus-visible:ring-0">
+          <div className="p-5">
+            <WeeklyReportPanel />
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
