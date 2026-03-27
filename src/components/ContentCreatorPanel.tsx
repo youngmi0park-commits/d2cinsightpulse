@@ -355,8 +355,14 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       case "youtube_trueview":
         imageGuide = `16:9 (1920×1080). First 5s must hook: "${messageType === "using_scene" ? `Product in ${sceneRef}` : msg.headline}". Show real usage → product reveal → CTA.`;
         break;
+      case "meta_ad":
+        imageGuide = `Meta Ads: Feed (1080×1080 square, 1200×628 landscape), Stories/Reels (1080×1920 vertical). Product hero + bold benefit text. Primary text max 125 chars, headline max 40 chars. "Ad" label auto-applied by platform. High contrast CTA button.`;
+        break;
+      case "criteo_ad":
+        imageGuide = `Criteo Dynamic Ads: Standard sizes 300×250, 728×90, 160×600, 320×50 (mobile). Product image center, price/offer overlay optional. Headline max 25 chars, description max 45 chars. Auto-optimized by Criteo engine — provide clean product shot + 2-3 benefit lines. Logo placement top-left.`;
+        break;
       case "display_ad":
-        imageGuide = `Multiple sizes: 1200×628 (landscape), 1200×1200 (square), 960×1200 (portrait). Product hero + 1 line text. Brand consistent. "Ad" label.`;
+        imageGuide = `GDN Display: Multiple sizes — 300×250, 728×90, 160×600, 336×280, responsive. Product hero + 1 line benefit text. Brand consistent. High contrast CTA.`;
         break;
       case "store_promo":
         imageGuide = `KV layout: Product center, promotional overlay (badge/sticker). Space for price/offer callout. Print-ready 300dpi or digital 72dpi.`;
