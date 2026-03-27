@@ -1,7 +1,8 @@
 import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, FlaskConical } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -10,6 +11,24 @@ interface CriteriaItem {
   itemsEn: string[];
   itemsKo: string[];
 }
+
+// Live collection counts hook
+function useLgComCounts() {
+  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  useEffect(() => {
+    supabase.rpc("get_lgcom_country_counts").then(({ data }) => {
+      if (data) {
+        const us = data.find((d: any) => d.country === "US")?.count || 0;
+        const uk = data.find((d: any) => d.country === "UK")?.count || 0;
+        setCounts({ us: Number(us), uk: Number(uk) });
+      }
+    });
+  }, []);
+  return counts;
+}
+
+const BV_TOTAL_US = 435995;
+const BV_TOTAL_UK = 48093;
 
 const criteria: CriteriaItem[] = [
   {
@@ -398,6 +417,10 @@ const criteria: CriteriaItem[] = [
 export const CollectionCriteria = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLang();
+  const counts = useLgComCounts();
+
+  const pctUs = ((counts.us / BV_TOTAL_US) * 100).toFixed(1);
+  const pctUk = ((counts.uk / BV_TOTAL_UK) * 100).toFixed(1);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -410,6 +433,25 @@ export const CollectionCriteria = () => {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
+          {/* Live collection stats */}
+          <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
+            <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
+                <span className="font-bold text-foreground">{counts.us.toLocaleString()}</span>
+                <span className="text-muted-foreground"> / {BV_TOTAL_US.toLocaleString()}{t(" reviews", "건")}</span>
+                <span className="ml-1 text-primary font-semibold">({pctUs}%)</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
+                <span className="font-bold text-foreground">{counts.uk.toLocaleString()}</span>
+                <span className="text-muted-foreground"> / {BV_TOTAL_UK.toLocaleString()}{t(" reviews", "건")}</span>
+                <span className="ml-1 text-primary font-semibold">({pctUk}%)</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All product categories · Batch pagination collection", "출처: Bazaarvoice Conversations API (Production) · 전 제품 카테고리 · 배치 페이지네이션 수집")}</p>
+          </div>
           <p className="text-sm text-muted-foreground mb-6">
             {t(
               "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. Top 10 countries were selected by combining Reddit user counts (WorldPopulationReview), English usage proportion, and lg.com traffic (SimilarWeb).",
