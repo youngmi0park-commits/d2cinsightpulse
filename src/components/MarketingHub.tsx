@@ -1,12 +1,10 @@
-import { useState, useCallback } from "react";
-import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
-import { MarketerToolkit } from "@/components/MarketerToolkit";
+import { useState } from "react";
 import { MarketingPanel } from "@/components/MarketingPanel";
-import { FaqPanel } from "@/components/FaqPanel";
-import { ContentStudioPanel } from "@/components/ContentStudioPanel";
+import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
+import { ContentCreatorPanel } from "@/components/ContentCreatorPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLang } from "@/contexts/LanguageContext";
-import { HelpCircle, Rocket, Star, Palette } from "lucide-react";
+import { Star, Wrench, Palette } from "lucide-react";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { SentimentResult } from "@/lib/sentiment";
