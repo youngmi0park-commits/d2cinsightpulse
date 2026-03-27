@@ -572,7 +572,11 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
 
         {mainTabs.map((s) => (
           <TabsContent key={s.value} value={s.value}>
-            <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
+            {s.value === "lge_com" ? (
+              <LgComTabContent source={s} onProductClick={onProductClick} t={t} />
+            ) : (
+              <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
+            )}
           </TabsContent>
         ))}
         {otherTabs.length > 0 && (
