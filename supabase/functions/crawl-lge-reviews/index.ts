@@ -232,20 +232,71 @@ Deno.serve(async (req) => {
               
               if (bvReviews.length === 0) break;
 
+              // Batch process: map all reviews first
+              const reviewRows: any[] = [];
+              const productCache: Record<string, string> = {};
+
               for (const bvReview of bvReviews) {
                 const review = mapBvReviewToInternal(bvReview, region);
                 if (!review.content || review.content.length < 20) continue;
 
                 const issueTags = detectIssueTags(review.content, category);
-                review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
-
+                const allTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
+                const modelNum = review.model_number || `LG-${category}-GENERIC`;
                 const bvClient = BV_CONFIG[region].client;
-                const saved = await saveReview(supabase, review, category, `bazaarvoice://${bvClient}/${bvReview.Id}`);
-                if (saved) {
-                  totalCollected++;
-                  regionStats[category][region]++;
+                const externalId = `bv_${region}_${bvReview.Id}`;
+                const tagStr = allTags.join(", ");
+                const maskedContent = `[LG 리뷰 — 감성: ${review.sentiment || "neutral"}, 점수: ${((review.sentiment_score ?? 0.5) * 100).toFixed(0)}점${tagStr ? `, 이슈: ${tagStr}` : ""}] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`;
+
+                // Cache product lookup
+                if (!productCache[modelNum]) {
+                  const { data: existing } = await supabase
+                    .from("products").select("id").eq("model_number", modelNum).maybeSingle();
+                  if (existing) {
+                    productCache[modelNum] = existing.id;
+                  } else {
+                    const { data: newProd } = await supabase
+                      .from("products")
+                      .insert({ model_number: modelNum, display_name: review.display_name || `LG ${category}`, category: review.category || category })
+                      .select("id").single();
+                    if (newProd) productCache[modelNum] = newProd.id;
+                  }
                 }
+                const productId = productCache[modelNum];
+                if (!productId) continue;
+
+                reviewRows.push({
+                  product_id: productId,
+                  source: `lge_com_${region}`,
+                  source_url: `bazaarvoice://${bvClient}/${bvReview.Id}`,
+                  external_id: externalId,
+                  title: review.marketing_point?.slice(0, 200) || review.highlight_keywords?.join(", ")?.slice(0, 200) || null,
+                  content: maskedContent,
+                  author: "LG Review User",
+                  rating: review.rating || null,
+                  sentiment: review.sentiment || "neutral",
+                  sentiment_score: review.sentiment_score ?? 0.5,
+                  published_at: review.date || null,
+                  emotion_category: review.emotion_category || "neutral",
+                  emotion_intensity: review.emotion_intensity || 3,
+                  user_type: review.verified_purchase ? "actual_user" : "unknown",
+                  content_type: "review",
+                  platform_type: "retailer",
+                });
               }
+
+              // Bulk upsert — skip conflicts on external_id
+              if (reviewRows.length > 0) {
+                const { data: inserted, error: insertErr } = await supabase
+                  .from("reviews")
+                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: true })
+                  .select("id");
+                const savedCount = inserted?.length || 0;
+                console.log(`[BV-${region.toUpperCase()}] Bulk saved ${savedCount}/${reviewRows.length} reviews (err: ${insertErr?.message || "none"})`);
+                totalCollected += savedCount;
+                regionStats[category][region] += savedCount;
+              }
+
               pageOffset += 100;
             }
             continue; // Skip Firecrawl if BV succeeded
