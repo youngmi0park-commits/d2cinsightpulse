@@ -6,50 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// BV API passkeys
-const BV_KEYS: Record<string, { passkey: string; locale: string }> = {
-  US: { passkey: "caKNy3kJRH1fKEOTfMOQnbPIQuOvXOJMnKxMaavqA2lMo", locale: "en_US" },
-  UK: { passkey: "caqHXiNo5l43EpMQz1mzSoBjx42Sw7IEzFO07ifyMlx0Y", locale: "en_GB" },
-};
-
-// Category mapping from BV category IDs
 const CATEGORY_MAP: Record<string, string> = {
-  televisions: "TV",
-  tv: "TV",
-  monitors: "Monitor",
-  monitor: "Monitor",
-  laptops: "Laptop",
-  laptop: "Laptop",
-  gram: "Laptop",
-  refrigerators: "Refrigerator",
-  refrigerator: "Refrigerator",
-  washers: "Washer",
-  washer: "Washer",
-  dryers: "Dryer",
-  dryer: "Dryer",
-  dishwashers: "Dishwasher",
-  dishwasher: "Dishwasher",
-  ranges: "Range",
-  range: "Range",
-  air_conditioners: "Air Conditioner",
-  air_conditioner: "Air Conditioner",
-  soundbars: "Audio",
-  soundbar: "Audio",
-  speakers: "Audio",
-  headphones: "Audio",
-  earbuds: "Audio",
-  vacuums: "Vacuum",
-  vacuum: "Vacuum",
+  televisions: "TV", tv: "TV", oled: "TV", qned: "TV", nanocell: "TV",
+  monitors: "Monitor", monitor: "Monitor", ultragear: "Monitor", ultrawide: "Monitor",
+  laptops: "Laptop", laptop: "Laptop", gram: "Laptop",
+  refrigerators: "Refrigerator", refrigerator: "Refrigerator", instaview: "Refrigerator",
+  washers: "Washer", washer: "Washer", washtower: "Washer",
+  dryers: "Dryer", dryer: "Dryer",
+  dishwashers: "Dishwasher", dishwasher: "Dishwasher",
+  ranges: "Range", range: "Range",
+  air: "Air Conditioner",
+  soundbars: "Audio", soundbar: "Audio", speakers: "Audio", headphones: "Audio", earbuds: "Audio", tone: "Audio", xboom: "Audio",
+  vacuums: "Vacuum", vacuum: "Vacuum", cordzero: "Vacuum",
   styler: "Styler",
-  microwave: "Microwave",
-  microwaves: "Microwave",
+  microwave: "Microwave", microwaves: "Microwave",
+  projector: "Projector", projectors: "Projector", cinebeam: "Projector",
+  dehumidifier: "Dehumidifier", purifier: "Air Purifier", puricare: "Air Purifier",
 };
 
-function mapCategory(bvCategoryId: string | undefined): string | null {
-  if (!bvCategoryId) return null;
-  const lower = bvCategoryId.toLowerCase();
+function mapCategory(bvCategoryId: string | undefined, bvName: string | undefined): string | null {
+  const text = `${bvCategoryId || ""} ${bvName || ""}`.toLowerCase();
   for (const [key, val] of Object.entries(CATEGORY_MAP)) {
-    if (lower.includes(key)) return val;
+    if (text.includes(key)) return val;
   }
   return null;
 }
@@ -64,11 +42,17 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const BAZAARVOICE_US_API_KEY = Deno.env.get("BAZAARVOICE_US_API_KEY");
+    const BAZAARVOICE_UK_API_KEY = Deno.env.get("BAZAARVOICE_UK_API_KEY");
+
     const { region = "US", batch_size = 20, offset = 0 } = await req.json().catch(() => ({}));
     const regionUpper = region.toUpperCase();
-    const bvConfig = BV_KEYS[regionUpper];
-    if (!bvConfig) {
-      return new Response(JSON.stringify({ error: `Unknown region: ${region}` }), {
+
+    const apiKey = regionUpper === "UK" ? BAZAARVOICE_UK_API_KEY : BAZAARVOICE_US_API_KEY;
+    const locale = regionUpper === "UK" ? "en_GB" : "en_US";
+
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: `BAZAARVOICE_${regionUpper}_API_KEY not set` }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -95,80 +79,67 @@ Deno.serve(async (req) => {
     let skipped = 0;
     const results: Array<{ model: string; name: string; category: string }> = [];
 
-    // Process in chunks of 5 to avoid BV rate limits
-    for (let i = 0; i < products.length; i += 5) {
-      const chunk = products.slice(i, i + 5);
-      
-      // Build filter for multiple products
-      const productIds = chunk.map(p => p.model_number).join(",");
-      
-      const bvUrl = `https://api.bazaarvoice.com/data/products.json?apiversion=5.5&passkey=${bvConfig.passkey}&locale=${bvConfig.locale}&filter=id:${encodeURIComponent(productIds)}&include=Categories&stats=Reviews&limit=${chunk.length}`;
+    // Process individually since BV filter syntax for multiple IDs can be tricky
+    for (let i = 0; i < products.length; i++) {
+      const prod = products[i];
+
+      const bvUrl = `https://api.bazaarvoice.com/data/reviews.json?apiversion=5.5&passkey=${apiKey}&locale=${locale}&filter=productid:eq:${encodeURIComponent(prod.model_number)}&include=Products&limit=1`;
 
       try {
         const resp = await fetch(bvUrl);
         if (!resp.ok) {
-          console.warn(`BV API error: ${resp.status}`);
-          skipped += chunk.length;
+          console.warn(`BV API error for ${prod.model_number}: ${resp.status}`);
+          skipped++;
           continue;
         }
 
         const bvData = await resp.json();
-        const bvResults = bvData.Results || [];
-
-        // Map BV results by ID
-        const bvMap: Record<string, any> = {};
-        for (const bvProd of bvResults) {
-          bvMap[bvProd.Id] = bvProd;
+        
+        // Get product info from Includes.Products
+        const includedProducts = bvData.Includes?.Products || {};
+        const prodKeys = Object.keys(includedProducts);
+        
+        if (prodKeys.length === 0) {
+          // No product found in BV - try using the product endpoint directly
+          skipped++;
+          continue;
         }
 
-        for (const prod of chunk) {
-          const bvProd = bvMap[prod.model_number];
-          if (!bvProd) {
-            // Try case-insensitive match
-            const found = bvResults.find((b: any) => b.Id.toLowerCase() === prod.model_number.toLowerCase());
-            if (!found) {
-              skipped++;
-              continue;
-            }
-            bvMap[prod.model_number] = found;
-          }
+        const bvProd = includedProducts[prodKeys[0]];
+        const realName = bvProd?.Name || bvProd?.Description;
 
-          const matched = bvMap[prod.model_number] || bvResults.find((b: any) => b.Id.toLowerCase() === prod.model_number.toLowerCase());
-          if (!matched) {
-            skipped++;
-            continue;
-          }
+        if (!realName || /^LG Product/i.test(realName)) {
+          skipped++;
+          continue;
+        }
 
-          const realName = matched.Name || matched.Description || prod.model_number;
-          const bvCatId = matched.CategoryId || (matched.Categories?.length > 0 ? matched.Categories[0]?.Id : null);
-          const mappedCategory = mapCategory(bvCatId) || prod.category;
+        const bvCatId = bvProd?.CategoryId;
+        const mappedCategory = mapCategory(bvCatId, realName) || prod.category;
 
-          // Update product
-          const { error: updateErr } = await supabase
-            .from("products")
-            .update({
-              display_name: realName.slice(0, 255),
-              category: mappedCategory,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", prod.id);
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            display_name: realName.slice(0, 255),
+            category: mappedCategory !== "General" ? mappedCategory : prod.category,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", prod.id);
 
-          if (updateErr) {
-            console.warn(`Update failed for ${prod.model_number}: ${updateErr.message}`);
-            skipped++;
-          } else {
-            updated++;
-            results.push({ model: prod.model_number, name: realName.slice(0, 80), category: mappedCategory });
-          }
+        if (updateErr) {
+          console.warn(`Update failed for ${prod.model_number}: ${updateErr.message}`);
+          skipped++;
+        } else {
+          updated++;
+          results.push({ model: prod.model_number, name: realName.slice(0, 80), category: mappedCategory });
         }
       } catch (e) {
-        console.warn(`BV fetch error for chunk: ${e.message}`);
-        skipped += chunk.length;
+        console.warn(`BV fetch error for ${prod.model_number}: ${e.message}`);
+        skipped++;
       }
 
-      // Small delay between chunks
-      if (i + 5 < products.length) {
-        await new Promise(r => setTimeout(r, 300));
+      // Small delay to avoid rate limits
+      if (i < products.length - 1) {
+        await new Promise(r => setTimeout(r, 200));
       }
     }
 
