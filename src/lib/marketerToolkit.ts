@@ -484,7 +484,8 @@ function generatePdpTestimonials(
 export function generateMarketerToolkit(
   productName: string,
   sentiment: SentimentResult,
-  reviews: { text: string; sentiment?: string }[]
+  reviews: { text: string; sentiment?: string }[],
+  testimonialReviews?: { text: string; sentiment?: string }[]
 ): MarketerToolkitData {
   return {
     customerExpressions: extractExpressions(reviews),
@@ -494,6 +495,6 @@ export function generateMarketerToolkit(
     contentIdeas: generateContentIdeas(sentiment, productName),
     faqItems: generateFaqItems(sentiment, productName),
     improvementPoints: generateImprovementPoints(sentiment),
-    pdpTestimonials: generatePdpTestimonials(reviews),
+    pdpTestimonials: generatePdpTestimonials(testimonialReviews || reviews),
   };
 }
