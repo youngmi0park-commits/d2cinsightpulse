@@ -32,6 +32,15 @@ function mapCategory(bvCategoryId: string | undefined, bvName: string | undefine
   return null;
 }
 
+// Check if a name is actually a real product name (not just a model number)
+function isRealName(name: string | null | undefined, modelNumber: string): boolean {
+  if (!name) return false;
+  if (/^LG Product/i.test(name)) return false;
+  // If the name is basically the same as model number, it's not a "real" name but still useful
+  // Accept any name from BV that isn't the generic placeholder
+  return true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -58,13 +67,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get generic products for this region
-    const likePattern = `LG Product (${regionUpper})`;
+    // Always use offset 0 since updated products drop out of the filter
     const { data: products, error: fetchErr } = await supabase
       .from("products")
       .select("id, model_number, display_name, category")
-      .eq("display_name", likePattern)
-      .range(offset, offset + batch_size - 1);
+      .eq("display_name", `LG Product (${regionUpper})`)
+      .order("model_number")
+      .range(0, batch_size - 1);
 
     if (fetchErr) throw fetchErr;
     if (!products || products.length === 0) {
@@ -73,59 +82,78 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`[${regionUpper}] Processing ${products.length} products (offset ${offset})`);
+    console.log(`[${regionUpper}] Processing ${products.length} generic products`);
 
     let updated = 0;
     let skipped = 0;
     const results: Array<{ model: string; name: string; category: string }> = [];
 
-    // Process individually
     for (let i = 0; i < products.length; i++) {
       const prod = products[i];
 
-      // Use reviews endpoint with Products include to get full product info
-      const bvUrl = `https://api.bazaarvoice.com/data/reviews.json?apiversion=5.5&passkey=${apiKey}&locale=${locale}&filter=productid:eq:${encodeURIComponent(prod.model_number)}&include=Products&limit=1`;
-
+      // Try Products API directly first (more reliable for product info)
+      const productsUrl = `https://api.bazaarvoice.com/data/products.json?apiversion=5.5&passkey=${apiKey}&locale=${locale}&filter=id:eq:${encodeURIComponent(prod.model_number)}&Stats=Reviews`;
+      
       try {
-        const resp = await fetch(bvUrl);
+        const resp = await fetch(productsUrl);
         if (!resp.ok) {
-          console.warn(`BV API error for ${prod.model_number}: ${resp.status}`);
-          skipped++;
+          // Fallback to reviews endpoint
+          const fallbackUrl = `https://api.bazaarvoice.com/data/reviews.json?apiversion=5.5&passkey=${apiKey}&locale=${locale}&filter=productid:eq:${encodeURIComponent(prod.model_number)}&include=Products&limit=1`;
+          const fallbackResp = await fetch(fallbackUrl);
+          if (!fallbackResp.ok) { skipped++; continue; }
+          
+          const fbData = await fallbackResp.json();
+          const fbProds = fbData.Includes?.Products || {};
+          const fbKeys = Object.keys(fbProds);
+          if (fbKeys.length === 0) { skipped++; continue; }
+          
+          const fbProd = fbProds[fbKeys[0]];
+          const fbName = fbProd?.Description || fbProd?.Name;
+          if (!isRealName(fbName, prod.model_number)) { skipped++; continue; }
+          
+          const cat = mapCategory(fbProd?.CategoryId, fbName) || prod.category;
+          await supabase.from("products").update({
+            display_name: fbName.slice(0, 255),
+            category: cat !== "General" ? cat : prod.category,
+            updated_at: new Date().toISOString(),
+          }).eq("id", prod.id);
+          updated++;
+          results.push({ model: prod.model_number, name: fbName.slice(0, 80), category: cat });
           continue;
         }
 
         const bvData = await resp.json();
+        const bvResults = bvData.Results || [];
         
-        // Get product info from Includes.Products
-        const includedProducts = bvData.Includes?.Products || {};
-        const prodKeys = Object.keys(includedProducts);
-        
-        if (prodKeys.length === 0) {
-          skipped++;
+        if (bvResults.length === 0) {
+          // No product found in BV — update with model number as name to stop retrying
+          const modelCat = mapCategory(undefined, prod.model_number);
+          await supabase.from("products").update({
+            display_name: `LG ${prod.model_number}`,
+            category: modelCat || prod.category,
+            updated_at: new Date().toISOString(),
+          }).eq("id", prod.id);
+          updated++;
+          results.push({ model: prod.model_number, name: `LG ${prod.model_number}`, category: modelCat || prod.category });
           continue;
         }
 
-        const bvProd = includedProducts[prodKeys[0]];
-        // Try Description first (usually has full product name), then Name
+        const bvProd = bvResults[0];
+        // Priority: Description > Name > Brand+Name
         let realName = bvProd?.Description || bvProd?.Name;
         
-        // If Description/Name is too short or looks like a model number, try Brand + Name
-        if (realName && realName.length < 10 && bvProd?.Brand?.Name) {
+        if (!realName) {
+          realName = `LG ${prod.model_number}`;
+        } else if (realName.length < 10 && bvProd?.Brand?.Name) {
           realName = `${bvProd.Brand.Name} ${realName}`;
-        }
-
-        if (!realName || /^LG Product/i.test(realName)) {
-          skipped++;
-          continue;
-        }
-        
-        // Log the first few for debugging
-        if (i < 3) {
-          console.log(`[${regionUpper}] ${prod.model_number} → Name: ${bvProd?.Name}, Desc: ${bvProd?.Description}, Cat: ${bvProd?.CategoryId}`);
         }
 
         const bvCatId = bvProd?.CategoryId;
         const mappedCategory = mapCategory(bvCatId, realName) || prod.category;
+
+        if (i < 3) {
+          console.log(`[${regionUpper}] ${prod.model_number} → Name: ${bvProd?.Name}, Desc: ${bvProd?.Description}, Cat: ${bvCatId}`);
+        }
 
         const { error: updateErr } = await supabase
           .from("products")
@@ -148,13 +176,18 @@ Deno.serve(async (req) => {
         skipped++;
       }
 
-      // Small delay to avoid rate limits
       if (i < products.length - 1) {
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 150));
       }
     }
 
-    console.log(`[${regionUpper}] Updated: ${updated}, Skipped: ${skipped}`);
+    // Check remaining
+    const { count: remaining } = await supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("display_name", `LG Product (${regionUpper})`);
+
+    console.log(`[${regionUpper}] Updated: ${updated}, Skipped: ${skipped}, Remaining: ${remaining}`);
 
     return new Response(
       JSON.stringify({
@@ -162,7 +195,7 @@ Deno.serve(async (req) => {
         processed: products.length,
         updated,
         skipped,
-        remaining_offset: offset + products.length,
+        remaining: remaining || 0,
         sample_results: results.slice(0, 10),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
