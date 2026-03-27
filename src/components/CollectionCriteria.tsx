@@ -429,8 +429,6 @@ export const CollectionCriteria = () => {
   const { t } = useLang();
   const counts = useLgComCounts();
 
-  const pctUs = ((counts.us / BV_TOTAL_US) * 100).toFixed(1);
-  const pctUk = ((counts.uk / BV_TOTAL_UK) * 100).toFixed(1);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
