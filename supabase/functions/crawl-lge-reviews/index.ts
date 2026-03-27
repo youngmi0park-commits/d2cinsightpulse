@@ -95,46 +95,48 @@ RULES:
 - Prioritize reviews with specific details over generic praise
 - Return ONLY valid JSON array, no markdown`;
 
-// ── Bazaarvoice Conversations API (Staging) for UK ──
-const BV_API_BASE = "https://stg.api.bazaarvoice.com/data";
-const BV_CLIENT = "lgelectronics-en";
+// ── Bazaarvoice Conversations API ──
+const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
+  us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
+  uk: { baseUrl: "https://stg.api.bazaarvoice.com/data", client: "lgelectronics-en" },
+};
 
 async function fetchBazaarvoiceReviews(
   apiKey: string,
+  region: "us" | "uk",
   category: string,
   offset = 0,
   limit = 20
 ): Promise<any[]> {
-  const url = new URL(`${BV_API_BASE}/reviews.json`);
+  const config = BV_CONFIG[region];
+  const url = new URL(`${config.baseUrl}/reviews.json`);
   url.searchParams.set("apiversion", "5.4");
   url.searchParams.set("passkey", apiKey);
   url.searchParams.set("Include", "Products");
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  // Filter by recent reviews (last 90 days) - use append to allow multiple filters
   const since = new Date();
   since.setDate(since.getDate() - 90);
   url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
 
   const fullUrl = url.toString();
-  console.log(`[BV-UK] Request URL: ${fullUrl}`);
+  console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
   const res = await fetch(fullUrl);
   const rawBody = await res.text();
-  console.log(`[BV-UK] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
+  console.log(`[BV-${region.toUpperCase()}] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
   
   if (!res.ok) {
     throw new Error(`Bazaarvoice API error [${res.status}]: ${rawBody.slice(0, 500)}`);
   }
 
   const data = JSON.parse(rawBody);
-  console.log(`[BV-UK] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
+  console.log(`[BV-${region.toUpperCase()}] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
   return data.Results || [];
 }
 
-function mapBvReviewToInternal(bvReview: any): any {
+function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
   const rating = bvReview.Rating || null;
-  // Simple sentiment from rating
   let sentiment = "neutral";
   let sentimentScore = 0.5;
   if (rating !== null) {
@@ -144,11 +146,11 @@ function mapBvReviewToInternal(bvReview: any): any {
   }
 
   return {
-    model_number: bvReview.ProductId || "LG-UK-GENERIC",
-    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (UK)`,
+    model_number: bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`,
+    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`,
     category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
     review_id: bvReview.Id,
-    author: null, // PII removed
+    author: null,
     rating,
     date: bvReview.SubmissionTime?.split("T")[0] || null,
     content: bvReview.ReviewText || "",
@@ -157,7 +159,7 @@ function mapBvReviewToInternal(bvReview: any): any {
     sentiment_score: sentimentScore,
     emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
     emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
-    source_region: "uk",
+    source_region: region,
     issue_tags: [],
     verified_purchase: bvReview.BadgesOrder?.includes("verifiedPurchaser") || false,
   };
@@ -173,6 +175,7 @@ Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const BAZAARVOICE_UK_API_KEY = Deno.env.get("BAZAARVOICE_UK_API_KEY");
+  const BAZAARVOICE_US_API_KEY = Deno.env.get("BAZAARVOICE_US_API_KEY");
 
   if (!FIRECRAWL_API_KEY || !LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
@@ -214,38 +217,38 @@ Deno.serve(async (req) => {
       for (const region of regions) {
         console.log(`\n=== [${region.toUpperCase()}] ${category} ===`);
 
-        // ── UK: Use Bazaarvoice API ──
-        if (region === "uk" && BAZAARVOICE_UK_API_KEY) {
-          console.log(`[UK] Using Bazaarvoice Conversations API (Staging)`);
+        // ── Try Bazaarvoice API first for both regions ──
+        const bvApiKey = region === "uk" ? BAZAARVOICE_UK_API_KEY : BAZAARVOICE_US_API_KEY;
+        
+        if (bvApiKey) {
+          console.log(`[${region.toUpperCase()}] Using Bazaarvoice Conversations API (${region === "uk" ? "Staging" : "Production"})`);
           try {
-            const bvReviews = await fetchBazaarvoiceReviews(BAZAARVOICE_UK_API_KEY, category, 0, 50);
-            console.log(`[BV-UK] Got ${bvReviews.length} reviews for ${category}`);
+            const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, 0, 50);
+            console.log(`[BV-${region.toUpperCase()}] Got ${bvReviews.length} reviews for ${category}`);
 
             for (const bvReview of bvReviews) {
-              const review = mapBvReviewToInternal(bvReview);
+              const review = mapBvReviewToInternal(bvReview, region);
               if (!review.content || review.content.length < 20) continue;
 
               const issueTags = detectIssueTags(review.content, category);
               review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
 
-              const saved = await saveReview(supabase, review, category, `bazaarvoice://${BV_CLIENT}/${bvReview.Id}`);
+              const bvClient = BV_CONFIG[region].client;
+              const saved = await saveReview(supabase, review, category, `bazaarvoice://${bvClient}/${bvReview.Id}`);
               if (saved) {
                 totalCollected++;
-                regionStats[category].uk++;
+                regionStats[category][region]++;
               }
             }
+            continue; // Skip Firecrawl if BV succeeded
           } catch (bvErr) {
-            console.error(`[BV-UK] Error:`, bvErr);
-            errors.push(`Bazaarvoice UK error: ${bvErr}`);
-            // Fallback to Firecrawl for UK
-            console.log(`[UK] Falling back to Firecrawl search`);
-            await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
-            totalCollected += regionStats[category].uk;
+            console.error(`[BV-${region.toUpperCase()}] Error:`, bvErr);
+            errors.push(`Bazaarvoice ${region.toUpperCase()} error: ${bvErr}`);
+            console.log(`[${region.toUpperCase()}] Falling back to Firecrawl search`);
           }
-          continue;
         }
 
-        // ── US + fallback: Use Firecrawl ──
+        // ── Fallback: Firecrawl ──
         const collected = await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
         totalCollected += collected;
       }
@@ -271,6 +274,7 @@ Deno.serve(async (req) => {
         error_details: errors.slice(0, 5),
         region_stats: regionStats,
         region_comparison: regionComparison,
+        bazaarvoice_us: !!BAZAARVOICE_US_API_KEY,
         bazaarvoice_uk: !!BAZAARVOICE_UK_API_KEY,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
