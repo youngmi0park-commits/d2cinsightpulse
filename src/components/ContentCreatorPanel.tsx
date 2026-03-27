@@ -397,7 +397,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       },
       {
         tool: "Canva",
-        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
+        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_ad" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
         url: "https://www.canva.com",
       },
     ];
