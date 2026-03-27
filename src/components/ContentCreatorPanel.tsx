@@ -397,7 +397,12 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
 
     // Export prompts with bridges
     const styleScene = bannerStyle === "lifestyle_cut" ? sceneRef : "studio";
-    const exportPrompts = [
+    const exportPrompts: GeneratedContent["exportPrompts"] = [
+      {
+        tool: "Nano Banana (AI)",
+        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} photography of ${prName}. ${messageType === "using_scene" ? `Scene: ${sceneRef}, warm natural lighting, real-home atmosphere.` : `Studio setting, premium finish, dark gradient background.`} ${contentPurpose === "meta_ad" ? "Square 1:1 composition." : contentPurpose === "criteo_pmax" ? "Clean product hero, white background, no text overlay." : "16:9 hero composition."} High quality, photorealistic, 8K detail.`,
+        isAI: true,
+      },
       {
         tool: "Midjourney",
         prompt: `${prName} product photography, ${messageType === "using_scene" ? `warm lifestyle, ${sceneRef}` : "studio, premium"}, professional lighting, 8k, photorealistic --ar ${contentPurpose === "pdp_hero" ? "8:3" : contentPurpose === "sns_short" ? "9:16" : "16:9"} --v 6`,
@@ -415,7 +420,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       },
       {
         tool: "Canva",
-        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_ad" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
+        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_pmax" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
         url: "https://www.canva.com",
       },
     ];
@@ -430,6 +435,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       imageGuide,
       insideVersion,
       outsideVersion,
+      pmaxAssets,
       exportPrompts,
       legalStatus: legal.status,
       legalViolations: legal.violations,
