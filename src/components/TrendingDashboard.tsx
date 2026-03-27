@@ -272,8 +272,29 @@ function LgComTabContent({ source, onProductClick, t }: { source: SourceTabConfi
 
   // Use source filter based on country selection
   const sourceFilter = country === "all" ? "lge_com" : country === "us" ? "lge_com_us" : "lge_com_uk";
+  const regionParam = country === "all" ? "all" : country.toUpperCase();
   const { data: products = [], isLoading: productsLoading } = useTrendingProducts(sourceFilter);
-  const { data: keywords = [], isLoading: keywordsLoading } = useTrendingKeywords(sourceFilter);
+
+  // Fetch LG.com keywords from reviews via RPC
+  const { data: lgcomKeywords = [], isLoading: keywordsLoading } = useQuery({
+    queryKey: ["lgcom-keywords", regionParam],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_lgcom_keywords", {
+        p_region: regionParam,
+        p_limit: 30,
+      });
+      if (error) throw error;
+      return (data || []).map((row: any) => ({
+        keyword: row.keyword,
+        count: Number(row.count),
+        sentiment: row.sentiment as "positive" | "negative" | "neutral",
+        change: 0,
+        relatedProducts: [],
+        relatedCountries: [row.region],
+      })) as DBTrendingKeyword[];
+    },
+    staleTime: 60_000,
+  });
 
   const totalCount = (countryCounts["US"] || 0) + (countryCounts["UK"] || 0);
 
