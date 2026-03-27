@@ -92,6 +92,11 @@ const CONTENT_PURPOSES: ContentPurpose[] = [
   { key: "criteo_pmax", icon: "🟠", labelEn: "Criteo / PMax Campaign", labelKo: "Criteo / PMax 캠페인", channel: "outside" },
   { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN)", labelKo: "디스플레이 광고 (GDN)", channel: "outside" },
   { key: "store_promo", icon: "🏬", labelEn: "Store Promo KV", labelKo: "스토어 프로모션용 KV", channel: "outside" },
+  { key: "amazon_aplus", icon: "🛒", labelEn: "Amazon A+ Content", labelKo: "Amazon A+ 콘텐츠", channel: "outside" },
+  { key: "amazon_sb", icon: "🛒", labelEn: "Amazon Sponsored Brand", labelKo: "Amazon Sponsored Brand", channel: "outside" },
+  { key: "bestbuy_walmart", icon: "🏪", labelEn: "Best Buy / Walmart PDP", labelKo: "Best Buy / Walmart PDP", channel: "outside" },
+  { key: "currys_uk", icon: "🏪", labelEn: "Currys (UK)", labelKo: "Currys (UK)", channel: "outside" },
+  { key: "pinterest_ad", icon: "📌", labelEn: "Pinterest Ad", labelKo: "Pinterest 광고", channel: "outside" },
 ];
 
 // ─── Props ───
@@ -103,6 +108,34 @@ interface ContentCreatorPanelProps {
   marketing: MarketingOutput;
 }
 
+// ─── Channel-specific format rules ───
+const CHANNEL_FORMAT_RULES: Record<string, { en: string; ko: string }> = {
+  pdp_hero: {
+    en: "Format: Headline ≤8 words / Sub-copy ≤15 words / CTA exactly 3 words",
+    ko: "포맷: 헤드라인 8단어 이내 / 서브카피 15단어 이내 / CTA 3단어",
+  },
+  amazon_aplus: {
+    en: "Format: Module 1 Headline (max 70 chars) + Body (max 300 chars) + 3 bullet points",
+    ko: "포맷: Module 1 헤드라인(최대 70자) + 본문(최대 300자) + 불릿포인트 3개",
+  },
+  amazon_sb: {
+    en: "Format: Headline (max 50 chars) / Sub-line (max 30 chars)",
+    ko: "포맷: 헤드라인(최대 50자) / 서브라인(최대 30자)",
+  },
+  meta_ad: {
+    en: "Format: Primary text ≤125 chars / Headline ≤40 chars / CTA button selection",
+    ko: "포맷: Primary text 125자 이내 / 헤드라인 40자 이내 / CTA 버튼 선택",
+  },
+  youtube_trueview: {
+    en: "Format: Hook (first 5s script) + Body (30s script)",
+    ko: "포맷: Hook(첫 5초 스크립트) + 본문 30초 스크립트",
+  },
+  sns_short: {
+    en: "Format: Caption ≤150 chars + 5 hashtags",
+    ko: "포맷: 캡션 150자 이내 + 해시태그 5개",
+  },
+};
+
 // ─── Generated output shape ───
 interface GeneratedContent {
   headline: string;
@@ -111,7 +144,10 @@ interface GeneratedContent {
   imageGuide: string;
   insideVersion: string;
   outsideVersion: string;
+  versionB?: { headline: string; subMessage: string; insideVersion: string; outsideVersion: string };
   pmaxAssets?: { headlines: string[]; longHeadline: string; descriptions: string[] };
+  amazonAplus?: { headline: string; body: string; bullets: string[] };
+  amazonSB?: { headline: string; subline: string };
   exportPrompts: { tool: string; prompt: string; url?: string; isAI?: boolean }[];
   legalStatus: "pass" | "needs_revision" | "fail";
   legalViolations: string[];
