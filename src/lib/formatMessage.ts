@@ -80,6 +80,18 @@ export interface TargetPersona {
   painPoint: string;
 }
 
+export interface JTBDInsight {
+  anxiety: string;
+  delight: string;
+  switchingPoint: string;
+}
+
+export interface CRMInsight {
+  expectationGap: string;
+  serviceOpportunity: string;
+  crmResponse: string;
+}
+
 export interface MarketingOutput {
   qaList: { question: string; answer: string }[];
   reviewGuide: string;
@@ -90,6 +102,8 @@ export interface MarketingOutput {
   usageScenes: string[];
   durabilityInsights: string[];
   personas: TargetPersona[];
+  jtbdInsights: JTBDInsight;
+  crmInsights: CRMInsight;
 }
 
 export type ChannelGroup = "inside" | "outside";
