@@ -323,6 +323,33 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
               </button>
             ))}
           </div>
+          {/* Banner Image Style - only for PDP Banner */}
+          {channelType === "inside" && contentType === "pdp_banner" && (
+            <div className="space-y-1.5 mt-2">
+              <p className="text-[10px] font-medium text-muted-foreground">
+                {t("Image Style", "이미지 스타일")}
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                {BANNER_IMAGE_STYLES.map((style) => (
+                  <button
+                    key={style.key}
+                    onClick={(e) => { e.stopPropagation(); setBannerStyle(style.key as BannerImageStyleKey); }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-[11px] border transition-all ${
+                      bannerStyle === style.key
+                        ? "bg-accent text-accent-foreground border-accent shadow-sm"
+                        : "bg-background border-border text-foreground/70 hover:border-accent/40"
+                    }`}
+                  >
+                    <span className="text-sm">{style.icon}</span>
+                    <div className="min-w-0">
+                      <span className="font-medium">{lang === "en" ? style.labelEn : style.labelKo}</span>
+                      <p className="text-[9px] text-muted-foreground truncate">{lang === "en" ? style.descEn : style.descKo}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <p className="text-[10px] text-muted-foreground italic">
             {t("Fact-driven, spec-focused. LG.com CCG compliant.", "팩트 중심, 스펙 중심. LG.com CCG 준수.")}
           </p>
