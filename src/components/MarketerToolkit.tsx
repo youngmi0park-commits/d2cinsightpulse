@@ -17,7 +17,7 @@ interface Props {
   productName: string;
   displayName: string;
   sentiment: SentimentResult;
-  reviews: { text: string; sentiment?: string }[];
+  reviews: { text: string; sentiment?: string; source?: string }[];
 }
 
 
@@ -38,9 +38,12 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
   const { t } = useLang();
   
 
+  // LG.com 리뷰는 분석 전용 — 마케팅 후기 활용에서 제외
+  const nonLgComReviews = reviews.filter((r) => !r.source?.startsWith("lge_com"));
+
   const data = useMemo(
-    () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews),
-    [productName, displayName, sentiment, reviews]
+    () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, nonLgComReviews),
+    [productName, displayName, sentiment, nonLgComReviews]
   );
 
   const copyText = (text: string) => {
