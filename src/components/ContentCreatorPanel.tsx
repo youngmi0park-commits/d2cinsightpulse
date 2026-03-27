@@ -279,10 +279,14 @@ export function ContentCreatorPanel({
     </Button>
   );
 
-  // ─── Legal check ───
+  // ─── Legal check + copy quality ───
+  const removeSuperlatves = (text: string): string => {
+    return text.replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "").replace(/\s{2,}/g, " ").trim();
+  };
+
   const runLegalCheck = (text: string): { status: "pass" | "needs_revision" | "fail"; violations: string[] } => {
     const violations: string[] = [];
-    const superlatives = ["best", "#1", "unprecedented", "most reliable", "top-rated", "number one", "world's first"];
+    const superlatives = ["best", "#1", "unprecedented", "most reliable", "top-rated", "number one", "world's first", "unmatched", "ultimate"];
     const comparatives = ["better than", "superior to", "beats", "outperforms", "compared to"];
     const lower = text.toLowerCase();
     for (const s of superlatives) {
