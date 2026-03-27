@@ -217,38 +217,38 @@ Deno.serve(async (req) => {
       for (const region of regions) {
         console.log(`\n=== [${region.toUpperCase()}] ${category} ===`);
 
-        // ── UK: Use Bazaarvoice API ──
-        if (region === "uk" && BAZAARVOICE_UK_API_KEY) {
-          console.log(`[UK] Using Bazaarvoice Conversations API (Staging)`);
+        // ── Try Bazaarvoice API first for both regions ──
+        const bvApiKey = region === "uk" ? BAZAARVOICE_UK_API_KEY : BAZAARVOICE_US_API_KEY;
+        
+        if (bvApiKey) {
+          console.log(`[${region.toUpperCase()}] Using Bazaarvoice Conversations API (${region === "uk" ? "Staging" : "Production"})`);
           try {
-            const bvReviews = await fetchBazaarvoiceReviews(BAZAARVOICE_UK_API_KEY, category, 0, 50);
-            console.log(`[BV-UK] Got ${bvReviews.length} reviews for ${category}`);
+            const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, 0, 50);
+            console.log(`[BV-${region.toUpperCase()}] Got ${bvReviews.length} reviews for ${category}`);
 
             for (const bvReview of bvReviews) {
-              const review = mapBvReviewToInternal(bvReview);
+              const review = mapBvReviewToInternal(bvReview, region);
               if (!review.content || review.content.length < 20) continue;
 
               const issueTags = detectIssueTags(review.content, category);
               review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
 
-              const saved = await saveReview(supabase, review, category, `bazaarvoice://${BV_CLIENT}/${bvReview.Id}`);
+              const bvClient = BV_CONFIG[region].client;
+              const saved = await saveReview(supabase, review, category, `bazaarvoice://${bvClient}/${bvReview.Id}`);
               if (saved) {
                 totalCollected++;
-                regionStats[category].uk++;
+                regionStats[category][region]++;
               }
             }
+            continue; // Skip Firecrawl if BV succeeded
           } catch (bvErr) {
-            console.error(`[BV-UK] Error:`, bvErr);
-            errors.push(`Bazaarvoice UK error: ${bvErr}`);
-            // Fallback to Firecrawl for UK
-            console.log(`[UK] Falling back to Firecrawl search`);
-            await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
-            totalCollected += regionStats[category].uk;
+            console.error(`[BV-${region.toUpperCase()}] Error:`, bvErr);
+            errors.push(`Bazaarvoice ${region.toUpperCase()} error: ${bvErr}`);
+            console.log(`[${region.toUpperCase()}] Falling back to Firecrawl search`);
           }
-          continue;
         }
 
-        // ── US + fallback: Use Firecrawl ──
+        // ── Fallback: Firecrawl ──
         const collected = await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
         totalCollected += collected;
       }
