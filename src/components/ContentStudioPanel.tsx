@@ -13,10 +13,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   LG_COMPONENT_SPECS,
   CONTENT_TYPES,
-  
   LOCALES,
   TONALITY_OPTIONS,
+  BANNER_IMAGE_STYLES,
   type ContentTypeKey,
+  type BannerImageStyleKey,
 } from "@/data/lgContentSpecs";
 import { getComplianceChecks } from "@/lib/adComplianceRules";
 import type { SentimentResult } from "@/lib/sentiment";
