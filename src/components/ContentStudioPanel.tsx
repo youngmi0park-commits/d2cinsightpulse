@@ -173,6 +173,7 @@ export function ContentStudioPanel({
     const strengthsList = strengths.map((s, i) => `${i + 1}. ${s}`).join("\n");
     const painList = painPoints.map((p, i) => `${i + 1}. ${p}`).join("\n");
     const sceneList = usingScenes.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    const uspList = uspKeywords.map((k, i) => `${i + 1}. ${k}`).join("\n");
     const evidence = `Based on analysis of ${total} user reviews. Positive: ${sentiment.positive}, Negative: ${sentiment.negative}, Neutral: ${sentiment.neutral}. Avg score: ${(sentiment.averageScore * 100).toFixed(0)}/100.`;
 
     // Spec info
@@ -196,13 +197,34 @@ export function ContentStudioPanel({
       ? `\n\n⭐ Review Highlight Tone:\n- Lead with real customer quotes and expressions\n- Use "Users say..." / "Customers love..." framing\n- Prioritize authentic voice over polished marketing language\n- Include star ratings or sentiment stats where appropriate`
       : "";
 
+    // Banner image style section for PDP banners
+    const selectedBannerStyle = BANNER_IMAGE_STYLES.find((s) => s.key === bannerStyle);
+    const bannerStyleSection = contentType === "pdp_banner" && selectedBannerStyle
+      ? `\n\n🖼️ Banner Image Style: ${selectedBannerStyle.labelEn} (${selectedBannerStyle.labelKo})\n- ${selectedBannerStyle.descEn}\n${
+        bannerStyle === "lifestyle_cut"
+          ? `- Scene references from reviews: ${usingScenes.slice(0, 3).join(", ") || "modern living space"}\n- Show product naturally integrated into customer's real-life environment\n- Warm, inviting atmosphere — NOT studio shot\n- Customer-validated usage context makes imagery more relatable`
+          : bannerStyle === "usp_feature"
+          ? `- Key USP from reviews: "${strengths[0] || "Quality"}"\n- Close-up or macro detail shot emphasizing the differentiating feature\n- Technical precision with dramatic lighting\n- Overlay-ready composition with clear text area`
+          : bannerStyle === "before_after"
+          ? `- Problem (from pain points): "${painPoints[0] || "common frustration"}"\n- Solution: Product as the hero resolving this pain point\n- Split/comparison composition or sequence flow\n- Clear visual transformation narrative`
+          : bannerStyle === "promo_highlight"
+          ? `- Promotional badge/sticker overlay area reserved\n- Product at center with space for offer callout\n- High contrast, attention-grabbing composition\n- Clear hierarchy: Offer → Product → CTA`
+          : `- Clean studio/gradient background\n- Product hero shot at center-right\n- Generous text area on left for copy overlay\n- Focus on product design, form factor, premium finish`
+      }`
+      : "";
+
+    // Enhanced USP & keyword section
+    const uspSection = uspKeywords.length > 0
+      ? `\n\n🔑 USP Keywords (from customer reviews):\n${uspList}\n📌 Use these authentic customer expressions in headlines and body copy for higher relatability.`
+      : "";
+
     const finalPrompt = `🎯 Objective: Create ${ctLabel} for ${displayName || productName}
 📍 Target: ${localeLabel} consumers via ${chLabel}
 🎨 Tone & Manner: ${toneLabel ? (lang === "en" ? toneLabel.labelEn : toneLabel.labelKo) : tonality}
 
 ── Review-Driven Insights ──
 
-💪 Core Strengths (Top 3):
+💪 Core Strengths (Top ${strengths.length}):
 ${strengthsList || "N/A"}
 
 🔧 Pain Point Resolution Messages:
@@ -210,20 +232,38 @@ ${painList || "N/A"}
 
 🏠 Real Using Scenes (Top ${usingScenes.length}):
 ${sceneList || "N/A"}
+${uspSection}
 
 📊 Evidence:
 ${evidence}
-${specInfo}
+${specInfo}${bannerStyleSection}
 ${channelGuidance}
 ${forbiddenPhrases}
 ${mustInclude}${linkedSection}${reviewHighlightNote}`;
 
-    // Generate visual guidance based on content type
+    // Generate visual guidance based on content type + banner style
     let visualGuidance = "";
     switch (contentType) {
-      case "pdp_banner":
-        visualGuidance = `Product hero shot on ${tonality === "technical" ? "clean dark/gradient" : "lifestyle"} background. Desktop: ${spec?.desktopSize || "1920×720"}. Mobile: ${spec?.mobileSize || "720×960"}. Product at center-right, text area left. No text in image — overlay via AEM component.`;
+      case "pdp_banner": {
+        const baseSpec = `Desktop: ${spec?.desktopSize || "1920×720"}. Mobile: ${spec?.mobileSize || "720×960"}. No text in image — overlay via AEM component.`;
+        switch (bannerStyle) {
+          case "lifestyle_cut":
+            visualGuidance = `Lifestyle photography: Product naturally placed in ${usingScenes[0] || "a modern living room"}. Warm natural lighting, real-home atmosphere. ${baseSpec} Show product being used/enjoyed — NOT posed. Scene inspired by customer review: "${strengths[0] || "everyday convenience"}".`;
+            break;
+          case "usp_feature":
+            visualGuidance = `Feature close-up: Dramatic macro/detail shot highlighting "${strengths[0] || "key feature"}". Dark gradient or clean background. Precision lighting to emphasize texture/technology. ${baseSpec} Product detail at 60-70% frame, text area on opposite side.`;
+            break;
+          case "before_after":
+            visualGuidance = `Split composition: Left side shows problem scenario ("${painPoints[0] || "frustration"}"), right side shows solution with product. Clear visual transformation. ${baseSpec} Divider line or gradient transition between halves.`;
+            break;
+          case "promo_highlight":
+            visualGuidance = `Product hero on clean gradient. Space reserved for promotional badge/sticker (top-right or corner). High-contrast composition. ${baseSpec} Product at center-right, promo callout area top-left, CTA bottom-left.`;
+            break;
+          default:
+            visualGuidance = `Clean product hero shot on dark gradient or studio background. ${baseSpec} Product at center-right, text area left. Premium finish, studio lighting.`;
+        }
         break;
+      }
       case "pdp_feature":
         visualGuidance = `Split layout — product detail shot on one side, feature text on other. Highlight the primary strength: "${strengths[0] || "Quality"}". Close-up detail shots for key features.`;
         break;
