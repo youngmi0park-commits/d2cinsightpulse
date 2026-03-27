@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const productReviews: Record<string, { product: any; positive: any[]; negative: any[] }> = {};
 
     for (const pid of allProductIds) {
-      const prodInfo = [...(topProducts || []), ...(negProducts || [])].find(
+      const prodInfo = [...filteredPos, ...filteredNeg].find(
         (p: any) => p.product_id === pid
       );
 

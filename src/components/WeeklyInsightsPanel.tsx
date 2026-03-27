@@ -102,27 +102,33 @@ function ProductTag({ name }: { name: string }) {
 export function WeeklyInsightsPanel() {
   const { t } = useLang();
   const [region, setRegion] = useState("all");
+  const [category, setCategory] = useState("all");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (cat?: string) => {
+    const targetCategory = cat ?? category;
     setIsLoading(true);
+    setLoadingCategory(targetCategory);
+    setCategory(targetCategory);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
-        body: { region, limit: 5 },
+        body: { region, limit: 5, category: targetCategory },
       });
       if (error) throw error;
       if (data?.insights) {
         setResult(data);
         toast.success(t("Analysis complete!", "분석 완료!"));
       } else {
-        toast.info(t("No weekly review data available", "이번 주 리뷰 데이터가 없습니다"));
+        toast.info(t("No review data available for this category", "해당 카테고리의 리뷰 데이터가 없습니다"));
       }
     } catch (err: any) {
       console.error(err);
       toast.error(t("Analysis failed", "분석 실패") + ": " + (err.message || "Unknown"));
     } finally {
       setIsLoading(false);
+      setLoadingCategory(null);
     }
   };
 
