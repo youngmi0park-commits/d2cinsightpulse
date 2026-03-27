@@ -63,7 +63,7 @@ export function ContentStudioPanel({
   const [channelType, setChannelType] = useState<"inside" | "outside">("inside");
   const [locale, setLocale] = useState("en-US");
   const [tonality, setTonality] = useState("technical");
-  const [generated, setGenerated] = useState<GeneratedPrompt | null>(null);
+  const [bannerStyle, setBannerStyle] = useState<BannerImageStyleKey>("product_solo");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
