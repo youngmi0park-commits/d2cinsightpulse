@@ -246,6 +246,15 @@ export type Database = {
           country: string
         }[]
       }
+      get_lgcom_keywords: {
+        Args: { p_limit?: number; p_region?: string }
+        Returns: {
+          count: number
+          keyword: string
+          region: string
+          sentiment: string
+        }[]
+      }
       get_lgcom_weekly_top_products: {
         Args: { p_limit?: number; p_region?: string; p_sentiment?: string }
         Returns: {
