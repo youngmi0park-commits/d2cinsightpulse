@@ -79,10 +79,11 @@ Deno.serve(async (req) => {
     let skipped = 0;
     const results: Array<{ model: string; name: string; category: string }> = [];
 
-    // Process individually since BV filter syntax for multiple IDs can be tricky
+    // Process individually
     for (let i = 0; i < products.length; i++) {
       const prod = products[i];
 
+      // Use reviews endpoint with Products include to get full product info
       const bvUrl = `https://api.bazaarvoice.com/data/reviews.json?apiversion=5.5&passkey=${apiKey}&locale=${locale}&filter=productid:eq:${encodeURIComponent(prod.model_number)}&include=Products&limit=1`;
 
       try {
@@ -100,17 +101,27 @@ Deno.serve(async (req) => {
         const prodKeys = Object.keys(includedProducts);
         
         if (prodKeys.length === 0) {
-          // No product found in BV - try using the product endpoint directly
           skipped++;
           continue;
         }
 
         const bvProd = includedProducts[prodKeys[0]];
-        const realName = bvProd?.Name || bvProd?.Description;
+        // Try Description first (usually has full product name), then Name
+        let realName = bvProd?.Description || bvProd?.Name;
+        
+        // If Description/Name is too short or looks like a model number, try Brand + Name
+        if (realName && realName.length < 10 && bvProd?.Brand?.Name) {
+          realName = `${bvProd.Brand.Name} ${realName}`;
+        }
 
         if (!realName || /^LG Product/i.test(realName)) {
           skipped++;
           continue;
+        }
+        
+        // Log the first few for debugging
+        if (i < 3) {
+          console.log(`[${regionUpper}] ${prod.model_number} → Name: ${bvProd?.Name}, Desc: ${bvProd?.Description}, Cat: ${bvProd?.CategoryId}`);
         }
 
         const bvCatId = bvProd?.CategoryId;
