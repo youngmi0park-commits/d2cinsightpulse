@@ -83,7 +83,7 @@ function ProductRankTable({
                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                   i < 3
                     ? isPositive
-                      ? "bg-green-500/20 text-green-400"
+                      ? "bg-emerald-800/15 text-emerald-800"
                       : "bg-red-500/20 text-red-400"
                     : "bg-muted text-muted-foreground"
                 }`}>
@@ -111,7 +111,7 @@ function ProductRankTable({
                 <div className="flex items-center gap-1.5">
                   <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${isPositive ? "bg-green-500" : "bg-red-500"}`}
+                      className={`h-full rounded-full ${isPositive ? "bg-emerald-700/70" : "bg-red-500"}`}
                       style={{ width: `${Math.min(p.avg_score || 0, 100)}%` }}
                     />
                   </div>
@@ -128,7 +128,7 @@ function ProductRankTable({
                       variant="secondary"
                       className={`text-[9px] px-1.5 py-0 ${
                         isPositive
-                          ? "bg-green-500/10 text-green-400 border-green-500/20"
+                          ? "bg-emerald-800/10 text-emerald-800 border-emerald-800/15"
                           : "bg-red-500/10 text-red-400 border-red-500/20"
                       }`}
                     >
@@ -204,15 +204,15 @@ export function LgComReviewDashboard({ onProductClick }: LgComReviewDashboardPro
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {/* Positive Top 10 */}
-            <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3">
+            <div className="rounded-lg border border-emerald-800/15 bg-emerald-800/5 p-3">
               <div className="flex items-center gap-2 mb-3">
-                <ThumbsUp className="h-4 w-4 text-green-500" />
-                <h4 className="font-semibold text-sm text-green-400">
+                <ThumbsUp className="h-4 w-4 text-emerald-700" />
+                <h4 className="font-semibold text-sm text-emerald-800">
                   {t("Top 10 Positive", "긍정 리뷰 Top 10")}
                 </h4>
-                <TrendingUp className="h-3.5 w-3.5 text-green-500/60" />
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-700/50" />
                 {positiveProducts && positiveProducts.length > 0 && (
-                  <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-400 ml-auto">
+                  <Badge variant="secondary" className="text-[10px] bg-emerald-800/10 text-emerald-800 ml-auto">
                     {positiveProducts.reduce((s, p) => s + p.review_count, 0)} {t("reviews", "건")}
                   </Badge>
                 )}
