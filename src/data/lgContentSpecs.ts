@@ -118,3 +118,49 @@ export const TONALITY_OPTIONS = [
   { key: "emotional", labelEn: "Emotional", labelKo: "감성형" },
   { key: "playful", labelEn: "Playful", labelKo: "캐주얼" },
 ] as const;
+
+/** Banner image style options for lg.com PDP banners */
+export const BANNER_IMAGE_STYLES = [
+  {
+    key: "product_solo",
+    labelEn: "Product Solo",
+    labelKo: "제품 단독 노출",
+    icon: "📦",
+    descEn: "Clean product hero shot on gradient/studio background. Focus on design & form factor.",
+    descKo: "그라데이션/스튜디오 배경에 제품 단독 노출. 디자인과 폼팩터 강조.",
+  },
+  {
+    key: "promo_highlight",
+    labelEn: "Promo Highlight",
+    labelKo: "프로모션 강조형",
+    icon: "🏷️",
+    descEn: "Product with promotional badge/overlay (cashback, bundle deal, limited offer).",
+    descKo: "프로모션 배지/오버레이와 함께 노출 (캐시백, 번들 딜, 한정 혜택).",
+  },
+  {
+    key: "lifestyle_cut",
+    labelEn: "Lifestyle Cut",
+    labelKo: "라이프스타일 컷",
+    icon: "🏠",
+    descEn: "Product naturally integrated into real-life usage scene from customer reviews.",
+    descKo: "고객 리뷰에서 추출한 실제 사용 상황에 자연스럽게 배치된 제품.",
+  },
+  {
+    key: "usp_feature",
+    labelEn: "USP Feature Focus",
+    labelKo: "USP 기능 강조형",
+    icon: "⚡",
+    descEn: "Close-up or detail shot highlighting the key differentiator mentioned in reviews.",
+    descKo: "리뷰에서 언급된 핵심 차별화 기능을 클로즈업/디테일 샷으로 강조.",
+  },
+  {
+    key: "before_after",
+    labelEn: "Before & After",
+    labelKo: "비포&애프터",
+    icon: "🔄",
+    descEn: "Split composition showing problem → solution with the product as hero.",
+    descKo: "문제 → 해결의 스플릿 구성. 제품이 솔루션 히어로로 등장.",
+  },
+] as const;
+
+export type BannerImageStyleKey = typeof BANNER_IMAGE_STYLES[number]["key"];
