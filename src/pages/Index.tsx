@@ -205,6 +205,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-12 space-y-10">
           <TrendingDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
 
+          <LgComReviewDashboard onProductClick={(modelNumber) => handleSearch(modelNumber)} />
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { icon: BarChart3, title: t("Sentiment Analysis", "감성 분석"), desc: t("Automatic positive/negative/neutral classification & scoring", "긍정·부정·중립 자동 분류 및 점수화") },
