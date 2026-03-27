@@ -146,7 +146,7 @@ ${reviewSummary}
 
     // 4. Call AI
     const aiResponse = await fetch(
-      "https://api.lovable.dev/v1/chat/completions",
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
         headers: {
