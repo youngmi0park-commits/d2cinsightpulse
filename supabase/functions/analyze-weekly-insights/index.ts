@@ -20,29 +20,48 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const region = body.region || "all";
     const limit = body.limit || 5;
+    const category = body.category || "all"; // "all", "TV", "Refrigerator", "Washer"
 
-    // 1. Get top 5 weekly products by review count
+    // Category matching patterns
+    const categoryPatterns: Record<string, string[]> = {
+      TV: ["TV", "OLED", "QNED", "NanoCell", "LED"],
+      Refrigerator: ["Refrigerator", "Fridge", "InstaView"],
+      Washer: ["Washer", "Dryer", "WashTower", "Laundry"],
+    };
+
+    // 1. Get top products by review count (fetch more to filter by category)
+    const fetchLimit = category === "all" ? limit : 50;
     const { data: topProducts, error: topErr } = await sb.rpc(
       "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "positive", p_limit: limit }
+      { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
     );
     if (topErr) throw topErr;
 
-    // Also get negative top for framework 3
     const { data: negProducts } = await sb.rpc(
       "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "negative", p_limit: limit }
+      { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
     );
+
+    // Filter by category if specified
+    const matchesCategory = (p: any) => {
+      if (category === "all") return true;
+      const patterns = categoryPatterns[category] || [category];
+      const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
+      return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
+    };
+
+    const filteredPos = (topProducts || []).filter(matchesCategory).slice(0, limit);
+    const filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
 
     // Collect all unique product IDs
     const allProductIds = new Set<string>();
-    for (const p of [...(topProducts || []), ...(negProducts || [])]) {
+    for (const p of [...filteredPos, ...filteredNeg]) {
       allProductIds.add(p.product_id);
     }
 
     if (allProductIds.size === 0) {
       return new Response(
-        JSON.stringify({ insights: null, message: "No weekly review data available" }),
+        JSON.stringify({ insights: null, message: `No weekly review data for ${category}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
