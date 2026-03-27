@@ -135,9 +135,8 @@ async function fetchBazaarvoiceReviews(
   return data.Results || [];
 }
 
-function mapBvReviewToInternal(bvReview: any): any {
+function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
   const rating = bvReview.Rating || null;
-  // Simple sentiment from rating
   let sentiment = "neutral";
   let sentimentScore = 0.5;
   if (rating !== null) {
@@ -147,11 +146,11 @@ function mapBvReviewToInternal(bvReview: any): any {
   }
 
   return {
-    model_number: bvReview.ProductId || "LG-UK-GENERIC",
-    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (UK)`,
+    model_number: bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`,
+    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`,
     category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
     review_id: bvReview.Id,
-    author: null, // PII removed
+    author: null,
     rating,
     date: bvReview.SubmissionTime?.split("T")[0] || null,
     content: bvReview.ReviewText || "",
@@ -160,7 +159,7 @@ function mapBvReviewToInternal(bvReview: any): any {
     sentiment_score: sentimentScore,
     emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
     emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
-    source_region: "uk",
+    source_region: region,
     issue_tags: [],
     verified_purchase: bvReview.BadgesOrder?.includes("verifiedPurchaser") || false,
   };
