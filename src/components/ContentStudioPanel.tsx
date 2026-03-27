@@ -13,10 +13,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import {
   LG_COMPONENT_SPECS,
   CONTENT_TYPES,
-  
   LOCALES,
   TONALITY_OPTIONS,
+  BANNER_IMAGE_STYLES,
   type ContentTypeKey,
+  type BannerImageStyleKey,
 } from "@/data/lgContentSpecs";
 import { getComplianceChecks } from "@/lib/adComplianceRules";
 import type { SentimentResult } from "@/lib/sentiment";
@@ -62,6 +63,7 @@ export function ContentStudioPanel({
   const [channelType, setChannelType] = useState<"inside" | "outside">("inside");
   const [locale, setLocale] = useState("en-US");
   const [tonality, setTonality] = useState("technical");
+  const [bannerStyle, setBannerStyle] = useState<BannerImageStyleKey>("product_solo");
   const [generated, setGenerated] = useState<GeneratedPrompt | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
@@ -92,17 +94,25 @@ export function ContentStudioPanel({
   const strengths = useMemo(() => {
     const phrases = sentiment.phrases?.positive || [];
     const kw = sentiment.keywords.positive || [];
-    return phrases.length >= 3 ? phrases.slice(0, 3) : [...phrases, ...kw].slice(0, 3);
+    return phrases.length >= 3 ? phrases.slice(0, 5) : [...phrases, ...kw].slice(0, 5);
   }, [sentiment]);
 
   const painPoints = useMemo(() => {
     const neg = sentiment.keywords.negative || [];
     const negPhrases = sentiment.phrases?.negative || [];
-    return negPhrases.length > 0 ? negPhrases.slice(0, 2) : neg.slice(0, 2);
+    return negPhrases.length > 0 ? negPhrases.slice(0, 3) : neg.slice(0, 3);
   }, [sentiment]);
 
   const usingScenes = useMemo(() => {
-    return (sentiment.usageScenes || []).slice(0, 4).map((s) => s.replace(/\s*\(\d+x\)$/, ""));
+    return (sentiment.usageScenes || []).slice(0, 6).map((s) => s.replace(/\s*\(\d+x\)$/, ""));
+  }, [sentiment]);
+
+  // Extract USP keywords for banner prompts
+  const uspKeywords = useMemo(() => {
+    const allPositive = [...(sentiment.phrases?.positive || []), ...(sentiment.keywords.positive || [])];
+    return allPositive
+      .filter((k) => k.length > 3 && k.length < 40)
+      .slice(0, 8);
   }, [sentiment]);
 
   const total = sentiment.positive + sentiment.negative + sentiment.neutral;
@@ -163,6 +173,7 @@ export function ContentStudioPanel({
     const strengthsList = strengths.map((s, i) => `${i + 1}. ${s}`).join("\n");
     const painList = painPoints.map((p, i) => `${i + 1}. ${p}`).join("\n");
     const sceneList = usingScenes.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    const uspList = uspKeywords.map((k, i) => `${i + 1}. ${k}`).join("\n");
     const evidence = `Based on analysis of ${total} user reviews. Positive: ${sentiment.positive}, Negative: ${sentiment.negative}, Neutral: ${sentiment.neutral}. Avg score: ${(sentiment.averageScore * 100).toFixed(0)}/100.`;
 
     // Spec info
@@ -186,13 +197,34 @@ export function ContentStudioPanel({
       ? `\n\n⭐ Review Highlight Tone:\n- Lead with real customer quotes and expressions\n- Use "Users say..." / "Customers love..." framing\n- Prioritize authentic voice over polished marketing language\n- Include star ratings or sentiment stats where appropriate`
       : "";
 
+    // Banner image style section for PDP banners
+    const selectedBannerStyle = BANNER_IMAGE_STYLES.find((s) => s.key === bannerStyle);
+    const bannerStyleSection = contentType === "pdp_banner" && selectedBannerStyle
+      ? `\n\n🖼️ Banner Image Style: ${selectedBannerStyle.labelEn} (${selectedBannerStyle.labelKo})\n- ${selectedBannerStyle.descEn}\n${
+        bannerStyle === "lifestyle_cut"
+          ? `- Scene references from reviews: ${usingScenes.slice(0, 3).join(", ") || "modern living space"}\n- Show product naturally integrated into customer's real-life environment\n- Warm, inviting atmosphere — NOT studio shot\n- Customer-validated usage context makes imagery more relatable`
+          : bannerStyle === "usp_feature"
+          ? `- Key USP from reviews: "${strengths[0] || "Quality"}"\n- Close-up or macro detail shot emphasizing the differentiating feature\n- Technical precision with dramatic lighting\n- Overlay-ready composition with clear text area`
+          : bannerStyle === "before_after"
+          ? `- Problem (from pain points): "${painPoints[0] || "common frustration"}"\n- Solution: Product as the hero resolving this pain point\n- Split/comparison composition or sequence flow\n- Clear visual transformation narrative`
+          : bannerStyle === "promo_highlight"
+          ? `- Promotional badge/sticker overlay area reserved\n- Product at center with space for offer callout\n- High contrast, attention-grabbing composition\n- Clear hierarchy: Offer → Product → CTA`
+          : `- Clean studio/gradient background\n- Product hero shot at center-right\n- Generous text area on left for copy overlay\n- Focus on product design, form factor, premium finish`
+      }`
+      : "";
+
+    // Enhanced USP & keyword section
+    const uspSection = uspKeywords.length > 0
+      ? `\n\n🔑 USP Keywords (from customer reviews):\n${uspList}\n📌 Use these authentic customer expressions in headlines and body copy for higher relatability.`
+      : "";
+
     const finalPrompt = `🎯 Objective: Create ${ctLabel} for ${displayName || productName}
 📍 Target: ${localeLabel} consumers via ${chLabel}
 🎨 Tone & Manner: ${toneLabel ? (lang === "en" ? toneLabel.labelEn : toneLabel.labelKo) : tonality}
 
 ── Review-Driven Insights ──
 
-💪 Core Strengths (Top 3):
+💪 Core Strengths (Top ${strengths.length}):
 ${strengthsList || "N/A"}
 
 🔧 Pain Point Resolution Messages:
@@ -200,20 +232,38 @@ ${painList || "N/A"}
 
 🏠 Real Using Scenes (Top ${usingScenes.length}):
 ${sceneList || "N/A"}
+${uspSection}
 
 📊 Evidence:
 ${evidence}
-${specInfo}
+${specInfo}${bannerStyleSection}
 ${channelGuidance}
 ${forbiddenPhrases}
 ${mustInclude}${linkedSection}${reviewHighlightNote}`;
 
-    // Generate visual guidance based on content type
+    // Generate visual guidance based on content type + banner style
     let visualGuidance = "";
     switch (contentType) {
-      case "pdp_banner":
-        visualGuidance = `Product hero shot on ${tonality === "technical" ? "clean dark/gradient" : "lifestyle"} background. Desktop: ${spec?.desktopSize || "1920×720"}. Mobile: ${spec?.mobileSize || "720×960"}. Product at center-right, text area left. No text in image — overlay via AEM component.`;
+      case "pdp_banner": {
+        const baseSpec = `Desktop: ${spec?.desktopSize || "1920×720"}. Mobile: ${spec?.mobileSize || "720×960"}. No text in image — overlay via AEM component.`;
+        switch (bannerStyle) {
+          case "lifestyle_cut":
+            visualGuidance = `Lifestyle photography: Product naturally placed in ${usingScenes[0] || "a modern living room"}. Warm natural lighting, real-home atmosphere. ${baseSpec} Show product being used/enjoyed — NOT posed. Scene inspired by customer review: "${strengths[0] || "everyday convenience"}".`;
+            break;
+          case "usp_feature":
+            visualGuidance = `Feature close-up: Dramatic macro/detail shot highlighting "${strengths[0] || "key feature"}". Dark gradient or clean background. Precision lighting to emphasize texture/technology. ${baseSpec} Product detail at 60-70% frame, text area on opposite side.`;
+            break;
+          case "before_after":
+            visualGuidance = `Split composition: Left side shows problem scenario ("${painPoints[0] || "frustration"}"), right side shows solution with product. Clear visual transformation. ${baseSpec} Divider line or gradient transition between halves.`;
+            break;
+          case "promo_highlight":
+            visualGuidance = `Product hero on clean gradient. Space reserved for promotional badge/sticker (top-right or corner). High-contrast composition. ${baseSpec} Product at center-right, promo callout area top-left, CTA bottom-left.`;
+            break;
+          default:
+            visualGuidance = `Clean product hero shot on dark gradient or studio background. ${baseSpec} Product at center-right, text area left. Premium finish, studio lighting.`;
+        }
         break;
+      }
       case "pdp_feature":
         visualGuidance = `Split layout — product detail shot on one side, feature text on other. Highlight the primary strength: "${strengths[0] || "Quality"}". Close-up detail shots for key features.`;
         break;
@@ -240,11 +290,13 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
     // Long version for detailed content
     const longVersion = `${displayName || productName}: Users highlight ${strengths.join(", ")} as standout features. ${painPoints.length > 0 ? `Addressing concerns like ${painPoints[0]}, ` : ""}real users describe their experience in ${usingScenes.join(", ") || "everyday settings"}. ${evidence}`;
 
-    // Export formats
-    const mjPrompt = `${displayName || productName} product photography, ${tonality} mood, ${usingScenes[0] || "studio"} setting, professional lighting, 8k, photorealistic --ar ${contentType === "pdp_banner" ? "8:3" : contentType === "sns_card" ? "1:1" : "16:9"} --v 6`;
-    const fireflyPrompt = `Professional product shot of ${displayName || productName} in ${usingScenes[0] || "modern"} environment. Style: ${tonality}. Lighting: studio. Background: ${tonality === "technical" ? "dark gradient" : "lifestyle setting"}.`;
-    const runwayPrompt = `Slow reveal of ${displayName || productName} in ${usingScenes[0] || "a modern home"}. Camera: dolly in. Duration: 5s. Style: ${tonality}, cinematic. End frame: product hero shot with feature highlight "${strengths[0] || "quality"}".`;
-    const canvaPrompt = `Template: ${contentType === "sns_card" ? "Instagram Post" : contentType === "pdp_banner" ? "Website Banner" : "Presentation"}. Brand: LG Electronics. Colors: #A50034 (LG Red), #1A1A1A. Headline: "${shortVersion}". Image: product lifestyle.`;
+    // Export formats — adapt to banner style
+    const styleScene = bannerStyle === "lifestyle_cut" ? (usingScenes[0] || "modern living room") : bannerStyle === "usp_feature" ? "detail close-up" : (usingScenes[0] || "studio");
+    const styleMood = bannerStyle === "lifestyle_cut" ? "warm lifestyle, natural light" : bannerStyle === "usp_feature" ? "dramatic, precision macro" : bannerStyle === "before_after" ? "split composition, transformation" : `${tonality} mood`;
+    const mjPrompt = `${displayName || productName} product photography, ${styleMood}, ${styleScene} setting, professional lighting, 8k, photorealistic --ar ${contentType === "pdp_banner" ? "8:3" : contentType === "sns_card" ? "1:1" : "16:9"} --v 6`;
+    const fireflyPrompt = `Professional ${bannerStyle === "lifestyle_cut" ? "lifestyle" : "product"} shot of ${displayName || productName} in ${styleScene} environment. Style: ${tonality}. Lighting: ${bannerStyle === "lifestyle_cut" ? "natural, warm" : "studio"}. Background: ${bannerStyle === "lifestyle_cut" ? "real home environment" : tonality === "technical" ? "dark gradient" : "clean studio"}.`;
+    const runwayPrompt = `Slow reveal of ${displayName || productName} in ${styleScene}. Camera: ${bannerStyle === "lifestyle_cut" ? "slow pan across room" : "dolly in"}. Duration: 5s. Style: ${tonality}, cinematic. End frame: ${bannerStyle === "lifestyle_cut" ? "product in context, lifestyle moment" : `product hero shot with feature highlight "${strengths[0] || "quality"}"`}.`;
+    const canvaPrompt = `Template: ${contentType === "sns_card" ? "Instagram Post" : contentType === "pdp_banner" ? "Website Banner" : "Presentation"}. Brand: LG Electronics. Colors: #A50034 (LG Red), #1A1A1A. Headline: "${shortVersion}". Image: ${bannerStyle === "lifestyle_cut" ? "lifestyle photography" : "product hero"}.`;
 
     const legal = runLegalCheck(finalPrompt + shortVersion + longVersion);
 
@@ -321,6 +373,33 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
               </button>
             ))}
           </div>
+          {/* Banner Image Style - only for PDP Banner */}
+          {channelType === "inside" && contentType === "pdp_banner" && (
+            <div className="space-y-1.5 mt-2">
+              <p className="text-[10px] font-medium text-muted-foreground">
+                {t("Image Style", "이미지 스타일")}
+              </p>
+              <div className="grid grid-cols-1 gap-1">
+                {BANNER_IMAGE_STYLES.map((style) => (
+                  <button
+                    key={style.key}
+                    onClick={(e) => { e.stopPropagation(); setBannerStyle(style.key as BannerImageStyleKey); }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-[11px] border transition-all ${
+                      bannerStyle === style.key
+                        ? "bg-accent text-accent-foreground border-accent shadow-sm"
+                        : "bg-background border-border text-foreground/70 hover:border-accent/40"
+                    }`}
+                  >
+                    <span className="text-sm">{style.icon}</span>
+                    <div className="min-w-0">
+                      <span className="font-medium">{lang === "en" ? style.labelEn : style.labelKo}</span>
+                      <p className="text-[9px] text-muted-foreground truncate">{lang === "en" ? style.descEn : style.descKo}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <p className="text-[10px] text-muted-foreground italic">
             {t("Fact-driven, spec-focused. LG.com CCG compliant.", "팩트 중심, 스펙 중심. LG.com CCG 준수.")}
           </p>
