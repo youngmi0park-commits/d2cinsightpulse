@@ -95,40 +95,43 @@ RULES:
 - Prioritize reviews with specific details over generic praise
 - Return ONLY valid JSON array, no markdown`;
 
-// ── Bazaarvoice Conversations API (Staging) for UK ──
-const BV_API_BASE = "https://stg.api.bazaarvoice.com/data";
-const BV_CLIENT = "lgelectronics-en";
+// ── Bazaarvoice Conversations API ──
+const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
+  us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
+  uk: { baseUrl: "https://stg.api.bazaarvoice.com/data", client: "lgelectronics-en" },
+};
 
 async function fetchBazaarvoiceReviews(
   apiKey: string,
+  region: "us" | "uk",
   category: string,
   offset = 0,
   limit = 20
 ): Promise<any[]> {
-  const url = new URL(`${BV_API_BASE}/reviews.json`);
+  const config = BV_CONFIG[region];
+  const url = new URL(`${config.baseUrl}/reviews.json`);
   url.searchParams.set("apiversion", "5.4");
   url.searchParams.set("passkey", apiKey);
   url.searchParams.set("Include", "Products");
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  // Filter by recent reviews (last 90 days) - use append to allow multiple filters
   const since = new Date();
   since.setDate(since.getDate() - 90);
   url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
 
   const fullUrl = url.toString();
-  console.log(`[BV-UK] Request URL: ${fullUrl}`);
+  console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
   const res = await fetch(fullUrl);
   const rawBody = await res.text();
-  console.log(`[BV-UK] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
+  console.log(`[BV-${region.toUpperCase()}] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
   
   if (!res.ok) {
     throw new Error(`Bazaarvoice API error [${res.status}]: ${rawBody.slice(0, 500)}`);
   }
 
   const data = JSON.parse(rawBody);
-  console.log(`[BV-UK] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
+  console.log(`[BV-${region.toUpperCase()}] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
   return data.Results || [];
 }
 
