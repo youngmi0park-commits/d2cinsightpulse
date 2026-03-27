@@ -44,7 +44,7 @@ export function MarketingHub({
               {t("Real customer reviews → ready-to-use marketing actions", "실제 고객 리뷰 → 바로 쓸 수 있는 마케팅 액션")}
             </p>
           </div>
-          <TabsList className="w-full h-auto p-1 bg-secondary/50 grid grid-cols-3 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-secondary/50 grid grid-cols-4 gap-1">
             <TabsTrigger
               value="insights"
               className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -68,6 +68,14 @@ export function MarketingHub({
               <Palette className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{t("Content Creator", "컨텐츠 제작")}</span>
               <span className="sm:hidden">{t("Creator", "제작")}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="weekly_report"
+              className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("Weekly Report", "주간 리포트")}</span>
+              <span className="sm:hidden">{t("Report", "리포트")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
