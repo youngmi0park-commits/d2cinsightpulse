@@ -374,9 +374,26 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
     const insideVersion = `${prName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${strengths[2] || "Design"}.\n${evidence}`;
     const outsideVersion = contentPurpose === "meta_ad"
       ? `[Ad] ${msg.headline}\n\nPrimary text (125 chars): ${(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`
-      : contentPurpose === "criteo_ad"
-      ? `Criteo Dynamic Ad\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nProduct image: Clean hero shot\nCTA: Learn More`
+      : contentPurpose === "criteo_pmax"
+      ? `── Criteo ──\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nCTA: Learn More\n\n── PMax ──\nHeadline 1: ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 30)}\nHeadline 2: ${(strengths[1] || "Performance").slice(0, 30)}\nHeadline 3: ${(strengths[2] || "Design").slice(0, 30)}\nLong headline: ${(msg.headline).slice(0, 90)}\nDescription 1: ${(msg.sub).slice(0, 90)}\nDescription 2: ${(strengths.slice(0, 3).join(". ") + ".").slice(0, 90)}`
       : `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
+
+    // PMax asset set for criteo_pmax
+    const pmaxAssets = contentPurpose === "criteo_pmax" ? {
+      headlines: [
+        (prName + " — " + (strengths[0] || "Quality")).slice(0, 30),
+        (strengths[1] || "Performance You'll Love").slice(0, 30),
+        (strengths[2] || "Designed for You").slice(0, 30),
+        ("Discover " + prName).slice(0, 30),
+        (strengths[0] || "Quality" + " Meets " + (strengths[1] || "Style")).slice(0, 30),
+      ],
+      longHeadline: (msg.headline).slice(0, 90),
+      descriptions: [
+        (msg.sub).slice(0, 90),
+        (strengths.slice(0, 3).join(". ") + ". " + evidence).slice(0, 90),
+        (`Experience ${prName}. ${strengths[0] || "Quality"} that customers love.`).slice(0, 90),
+      ],
+    } : undefined;
 
     // Export prompts with bridges
     const styleScene = bannerStyle === "lifestyle_cut" ? sceneRef : "studio";
