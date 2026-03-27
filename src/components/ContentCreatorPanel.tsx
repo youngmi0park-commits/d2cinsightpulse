@@ -371,7 +371,11 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
 
     // Inside vs Outside channel versions
     const insideVersion = `${prName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${strengths[2] || "Design"}.\n${evidence}`;
-    const outsideVersion = `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
+    const outsideVersion = contentPurpose === "meta_ad"
+      ? `[Ad] ${msg.headline}\n\nPrimary text (125 chars): ${(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`
+      : contentPurpose === "criteo_ad"
+      ? `Criteo Dynamic Ad\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nProduct image: Clean hero shot\nCTA: Learn More`
+      : `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
 
     // Export prompts with bridges
     const styleScene = bannerStyle === "lifestyle_cut" ? sceneRef : "studio";
