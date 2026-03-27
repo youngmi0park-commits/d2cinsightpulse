@@ -126,7 +126,6 @@ export function WeeklyInsightsPanel() {
       toast.error(t("Analysis failed", "분석 실패") + ": " + (err.message || "Unknown"));
     } finally {
       setIsLoading(false);
-      setLoadingCategory(null);
     }
   };
 
@@ -163,7 +162,7 @@ export function WeeklyInsightsPanel() {
               ))}
             </div>
             <button
-              onClick={runAnalysis}
+              onClick={() => runAnalysis()}
               disabled={isLoading}
               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
