@@ -12,6 +12,24 @@ interface CriteriaItem {
   itemsKo: string[];
 }
 
+// Live collection counts hook
+function useLgComCounts() {
+  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  useEffect(() => {
+    supabase.rpc("get_lgcom_country_counts").then(({ data }) => {
+      if (data) {
+        const us = data.find((d: any) => d.country === "US")?.count || 0;
+        const uk = data.find((d: any) => d.country === "UK")?.count || 0;
+        setCounts({ us: Number(us), uk: Number(uk) });
+      }
+    });
+  }, []);
+  return counts;
+}
+
+const BV_TOTAL_US = 435995;
+const BV_TOTAL_UK = 48093;
+
 const criteria: CriteriaItem[] = [
   {
     icon: Globe,
