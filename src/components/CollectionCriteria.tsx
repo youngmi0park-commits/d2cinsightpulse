@@ -34,9 +34,9 @@ function useLgComCounts() {
   return counts;
 }
 
-// Estimated total reviews since Jan 2025 (from BV API offset analysis)
-const BV_2025_US = 10800;
-const BV_2025_UK = 5700;
+// Estimated collectible reviews since Jan 2025 (excluding <20 char content & duplicates)
+const BV_2025_US = 9500;
+const BV_2025_UK = 5400;
 const BV_TOTAL_US = 435995;
 const BV_TOTAL_UK = 48093;
 
