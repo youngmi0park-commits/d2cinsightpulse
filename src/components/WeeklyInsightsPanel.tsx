@@ -105,12 +105,10 @@ export function WeeklyInsightsPanel() {
   const [category, setCategory] = useState("all");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
 
   const runAnalysis = async (cat?: string) => {
     const targetCategory = cat ?? category;
     setIsLoading(true);
-    setLoadingCategory(targetCategory);
     setCategory(targetCategory);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
