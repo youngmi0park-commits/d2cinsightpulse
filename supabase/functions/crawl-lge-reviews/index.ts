@@ -477,6 +477,7 @@ async function saveReview(
     user_type: review.verified_purchase ? "actual_user" : "unknown",
     content_type: "review",
     platform_type: "retailer",
+    review_type: review.verified_purchase ? "organic" : (review.syndicated ? "syndication" : "organic"),
   });
 
   return true;
