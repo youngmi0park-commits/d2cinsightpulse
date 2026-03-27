@@ -446,18 +446,24 @@ export const CollectionCriteria = () => {
           {/* Live collection stats */}
           <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
             <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
-                <span className="font-bold text-foreground">{counts.us.toLocaleString()}</span>
-                <span className="text-muted-foreground"> / {BV_TOTAL_US.toLocaleString()}{t(" reviews", "건")}</span>
-                <span className="ml-1 text-primary font-semibold">({pctUs}%)</span>
+            <div className="grid grid-cols-1 gap-3 text-xs">
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
+                  <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}</span>
+                  <span className="text-muted-foreground"> / ~{BV_2025_US.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                  <span className="ml-1 text-primary font-semibold">({((counts.us2025 / BV_2025_US) * 100).toFixed(1)}%)</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_US.toLocaleString()} reviews · Collected: ${counts.us.toLocaleString()}`, `전체 누적: ${BV_TOTAL_US.toLocaleString()}건 · 수집 완료: ${counts.us.toLocaleString()}건`)}</span>
               </div>
-              <div>
-                <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
-                <span className="font-bold text-foreground">{counts.uk.toLocaleString()}</span>
-                <span className="text-muted-foreground"> / {BV_TOTAL_UK.toLocaleString()}{t(" reviews", "건")}</span>
-                <span className="ml-1 text-primary font-semibold">({pctUk}%)</span>
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
+                  <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}</span>
+                  <span className="text-muted-foreground"> / ~{BV_2025_UK.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                  <span className="ml-1 text-primary font-semibold">({((counts.uk2025 / BV_2025_UK) * 100).toFixed(1)}%)</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_UK.toLocaleString()} reviews · Collected: ${counts.uk.toLocaleString()}`, `전체 누적: ${BV_TOTAL_UK.toLocaleString()}건 · 수집 완료: ${counts.uk.toLocaleString()}건`)}</span>
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All product categories · Batch pagination collection", "출처: Bazaarvoice Conversations API (Production) · 전 제품 카테고리 · 배치 페이지네이션 수집")}</p>
