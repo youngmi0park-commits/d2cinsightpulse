@@ -72,130 +72,10 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
               )}
             </p>
 
-            {/* ① & ② moved to Channel Marketing Copy → Outside Channel */}
-
-
-            {/* ③ Search Intent Ad Ideas */}
-            <ToolkitSection
-              icon={<Search className="h-4 w-4" />}
-              number="①"
-              title={t("Search Intent Ad Ideas", "검색 의도 기반 광고 아이디어")}
-              subtitle={t("Ad concepts mapped to customer search behavior", "고객 검색 행동에 매핑된 광고 컨셉")}
-              onCopy={() => copySection("Search Intent Ads", data.searchIntentAds.map(a => `[${a.intentLabel}] ${a.keyword} → ${a.adIdea}`).join("\n"))}
-            >
-              <div className="grid gap-2">
-                {data.searchIntentAds.map((ad, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3 border border-border/50 group">
-                    <Badge variant="outline" className={`text-[10px] shrink-0 mt-0.5 ${INTENT_COLORS[ad.intent]}`}>
-                      {ad.intentLabel}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground/90">{ad.keyword}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{ad.adIdea}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 shrink-0"
-                      onClick={() => copyText(`${ad.keyword}: ${ad.adIdea}`)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </ToolkitSection>
-
-            {/* ④ CRM Segment Insights */}
-            <ToolkitSection
-              icon={<Users className="h-4 w-4" />}
-              number="②"
-              title={t("Retargeting & CRM Segment Insights", "리타겟팅 & CRM 세그먼트 인사이트")}
-              subtitle={t("Behavior-based segments with message, channel, and offer recommendations", "행동 기반 세그먼트별 메시지·채널·오퍼 추천")}
-              onCopy={() => copySection("CRM Segments", data.crmSegments.map(s => `[${s.name}]\n${s.description}\nMessage: ${s.message}\nChannel: ${s.channel}\nOffer: ${s.offer}`).join("\n\n"))}
-            >
-              <div className="grid gap-3">
-                {data.crmSegments.map((seg, i) => (
-                  <div key={i} className="bg-muted/30 rounded-lg p-4 border border-border/50 space-y-2 group relative">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
-                      onClick={() => copyText(`[${seg.name}]\n${seg.description}\nMessage: ${seg.message}\nChannel: ${seg.channel}\nOffer: ${seg.offer}`)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <div className="flex items-center gap-2">
-                      <Target className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-sm font-semibold text-foreground/90">{seg.name}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{seg.description}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
-                      <div className="bg-background/50 rounded p-2">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                          <Mail className="h-3 w-3 inline mr-1" />{t("Message", "메시지")}
-                        </p>
-                        <p className="text-xs text-foreground/80">{seg.message}</p>
-                      </div>
-                      <div className="bg-background/50 rounded p-2">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                          {t("Channel", "채널")}
-                        </p>
-                        <p className="text-xs text-foreground/80">{seg.channel}</p>
-                      </div>
-                      <div className="bg-background/50 rounded p-2">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                          {t("Offer", "오퍼")}
-                        </p>
-                        <p className="text-xs text-foreground/80">{seg.offer}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ToolkitSection>
-
-            {/* ⑤ Content Ideas */}
-            <ToolkitSection
-              icon={<Sparkles className="h-4 w-4" />}
-              number="③"
-              title={t("Content Material from Customers", "고객 발 콘텐츠 소재")}
-              subtitle={t("Reels, card news, blog topics from real expressions", "실제 표현에서 추출한 릴스·카드뉴스·블로그 주제")}
-              onCopy={() => copySection("Content Ideas", data.contentIdeas.map(c => `[${c.contentType}] ${c.expression} → ${c.title}`).join("\n"))}
-            >
-              {data.contentIdeas.length === 0 ? (
-                <EmptyState text={t("Not enough data for content suggestions.", "콘텐츠 제안을 위한 데이터가 부족합니다.")} />
-              ) : (
-                <div className="grid gap-2">
-                  {data.contentIdeas.map((idea, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3 border border-border/50 group">
-                      <Badge variant="outline" className="text-[10px] shrink-0 mt-0.5 border-primary/30 text-primary">
-                        <Video className="h-3 w-3 mr-1" />
-                        {idea.contentType}
-                      </Badge>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">"{idea.expression}"</p>
-                        <p className="text-sm font-medium text-foreground/90 mt-0.5">→ {idea.title}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 shrink-0"
-                        onClick={() => copyText(idea.title)}
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ToolkitSection>
-
-
-            {/* ④ PDP Customer Testimonials */}
+            {/* ① PDP Customer Testimonials — top priority */}
             <ToolkitSection
               icon={<Quote className="h-4 w-4" />}
-              number="④"
+              number="①"
               title={t("PDP Customer Testimonials", "상세페이지용 고객 만족후기")}
               subtitle={t(
                 "Compliance-checked, copy-ready quotes for product detail pages — no PII, no superlatives, no competitor mentions",
@@ -249,6 +129,122 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </ToolkitSection>
+
+            {/* ② Search Intent Ad Ideas */}
+            <ToolkitSection
+              icon={<Search className="h-4 w-4" />}
+              number="②"
+              title={t("Search Intent Ad Ideas", "검색 의도 기반 광고 아이디어")}
+              subtitle={t("Ad concepts mapped to customer search behavior", "고객 검색 행동에 매핑된 광고 컨셉")}
+              onCopy={() => copySection("Search Intent Ads", data.searchIntentAds.map(a => `[${a.intentLabel}] ${a.keyword} → ${a.adIdea}`).join("\n"))}
+            >
+              <div className="grid gap-2">
+                {data.searchIntentAds.map((ad, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3 border border-border/50 group">
+                    <Badge variant="outline" className={`text-[10px] shrink-0 mt-0.5 ${INTENT_COLORS[ad.intent]}`}>
+                      {ad.intentLabel}
+                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground/90">{ad.keyword}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ad.adIdea}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 shrink-0"
+                      onClick={() => copyText(`${ad.keyword}: ${ad.adIdea}`)}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ToolkitSection>
+
+            {/* ③ CRM Segment Insights */}
+            <ToolkitSection
+              icon={<Users className="h-4 w-4" />}
+              number="③"
+              title={t("Retargeting & CRM Segment Insights", "리타겟팅 & CRM 세그먼트 인사이트")}
+              subtitle={t("Behavior-based segments with message, channel, and offer recommendations", "행동 기반 세그먼트별 메시지·채널·오퍼 추천")}
+              onCopy={() => copySection("CRM Segments", data.crmSegments.map(s => `[${s.name}]\n${s.description}\nMessage: ${s.message}\nChannel: ${s.channel}\nOffer: ${s.offer}`).join("\n\n"))}
+            >
+              <div className="grid gap-3">
+                {data.crmSegments.map((seg, i) => (
+                  <div key={i} className="bg-muted/30 rounded-lg p-4 border border-border/50 space-y-2 group relative">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0"
+                      onClick={() => copyText(`[${seg.name}]\n${seg.description}\nMessage: ${seg.message}\nChannel: ${seg.channel}\nOffer: ${seg.offer}`)}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-sm font-semibold text-foreground/90">{seg.name}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{seg.description}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+                      <div className="bg-background/50 rounded p-2">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                          <Mail className="h-3 w-3 inline mr-1" />{t("Message", "메시지")}
+                        </p>
+                        <p className="text-xs text-foreground/80">{seg.message}</p>
+                      </div>
+                      <div className="bg-background/50 rounded p-2">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                          {t("Channel", "채널")}
+                        </p>
+                        <p className="text-xs text-foreground/80">{seg.channel}</p>
+                      </div>
+                      <div className="bg-background/50 rounded p-2">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                          {t("Offer", "오퍼")}
+                        </p>
+                        <p className="text-xs text-foreground/80">{seg.offer}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ToolkitSection>
+
+            {/* ④ Content Ideas */}
+            <ToolkitSection
+              icon={<Sparkles className="h-4 w-4" />}
+              number="④"
+              title={t("Content Material from Customers", "고객 발 콘텐츠 소재")}
+              subtitle={t("Reels, card news, blog topics from real expressions", "실제 표현에서 추출한 릴스·카드뉴스·블로그 주제")}
+              onCopy={() => copySection("Content Ideas", data.contentIdeas.map(c => `[${c.contentType}] ${c.expression} → ${c.title}`).join("\n"))}
+            >
+              {data.contentIdeas.length === 0 ? (
+                <EmptyState text={t("Not enough data for content suggestions.", "콘텐츠 제안을 위한 데이터가 부족합니다.")} />
+              ) : (
+                <div className="grid gap-2">
+                  {data.contentIdeas.map((idea, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-muted/30 rounded-lg p-3 border border-border/50 group">
+                      <Badge variant="outline" className="text-[10px] shrink-0 mt-0.5 border-primary/30 text-primary">
+                        <Video className="h-3 w-3 mr-1" />
+                        {idea.contentType}
+                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground">"{idea.expression}"</p>
+                        <p className="text-sm font-medium text-foreground/90 mt-0.5">→ {idea.title}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 shrink-0"
+                        onClick={() => copyText(idea.title)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </ToolkitSection>
