@@ -189,9 +189,10 @@ function ProductRankTable({
 export function LgComReviewDashboard({ onProductClick }: LgComReviewDashboardProps) {
   const { t } = useLang();
   const [region, setRegion] = useState("all");
+  const [period, setPeriod] = useState<"weekly" | "cumulative">("weekly");
 
-  const { data: positiveProducts, isLoading: posLoading } = useLgComWeeklyTop(region, "positive");
-  const { data: negativeProducts, isLoading: negLoading } = useLgComWeeklyTop(region, "negative");
+  const { data: positiveProducts, isLoading: posLoading } = useLgComTop(region, "positive", period);
+  const { data: negativeProducts, isLoading: negLoading } = useLgComTop(region, "negative", period);
 
   const isLoading = posLoading || negLoading;
 
