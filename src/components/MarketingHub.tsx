@@ -1,12 +1,10 @@
-import { useState, useCallback } from "react";
-import { GeoMarketingPanel } from "@/components/GeoMarketingPanel";
-import { MarketerToolkit } from "@/components/MarketerToolkit";
+import { useState } from "react";
 import { MarketingPanel } from "@/components/MarketingPanel";
-import { FaqPanel } from "@/components/FaqPanel";
-import { ContentStudioPanel } from "@/components/ContentStudioPanel";
+import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
+import { ContentCreatorPanel } from "@/components/ContentCreatorPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLang } from "@/contexts/LanguageContext";
-import { HelpCircle, Rocket, Star, Palette } from "lucide-react";
+import { Star, Wrench, Palette } from "lucide-react";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { SentimentResult } from "@/lib/sentiment";
@@ -32,12 +30,6 @@ export function MarketingHub({
 }: MarketingHubProps) {
   const { t } = useLang();
   const [activeTab, setActiveTab] = useState("insights");
-  const [studioCopy, setStudioCopy] = useState<{ headline: string; body: string; channel: "inside" | "outside" } | null>(null);
-
-  const handleGoToStudio = useCallback((copy: { headline: string; body: string; channel: "inside" | "outside" }) => {
-    setStudioCopy(copy);
-    setActiveTab("studio");
-  }, []);
 
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
@@ -51,7 +43,7 @@ export function MarketingHub({
               {t("Real customer reviews → ready-to-use marketing actions", "실제 고객 리뷰 → 바로 쓸 수 있는 마케팅 액션")}
             </p>
           </div>
-          <TabsList className="w-full h-auto p-1 bg-secondary/50 grid grid-cols-4 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-secondary/50 grid grid-cols-3 gap-1">
             <TabsTrigger
               value="insights"
               className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -61,27 +53,20 @@ export function MarketingHub({
               <span className="sm:hidden">{t("Insights", "인사이트")}</span>
             </TabsTrigger>
             <TabsTrigger
-              value="faq"
+              value="faq_toolkit"
               className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>FAQ</span>
+              <Wrench className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("FAQ & Toolkit", "FAQ & 툴킷")}</span>
+              <span className="sm:hidden">{t("FAQ", "FAQ")}</span>
             </TabsTrigger>
             <TabsTrigger
-              value="toolkit"
-              className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Rocket className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("Tool Kit", "실행 툴킷")}</span>
-              <span className="sm:hidden">{t("Toolkit", "툴킷")}</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="studio"
+              value="creator"
               className="flex items-center gap-1.5 text-xs px-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <Palette className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("Contents Studio", "컨텐츠 스튜디오")}</span>
-              <span className="sm:hidden">{t("Studio", "스튜디오")}</span>
+              <span className="hidden sm:inline">{t("Content Creator", "컨텐츠 제작")}</span>
+              <span className="sm:hidden">{t("Creator", "제작")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -90,8 +75,8 @@ export function MarketingHub({
           <MarketingPanel marketing={marketing} />
         </TabsContent>
 
-        <TabsContent value="faq" className="mt-0 focus-visible:ring-0">
-          <FaqPanel
+        <TabsContent value="faq_toolkit" className="mt-0 focus-visible:ring-0">
+          <FaqToolkitPanel
             productName={productName}
             displayName={displayName}
             sentiment={sentiment}
@@ -99,32 +84,13 @@ export function MarketingHub({
           />
         </TabsContent>
 
-        <TabsContent value="toolkit" className="mt-0 focus-visible:ring-0">
-          <GeoMarketingPanel
-            geoMessages={geoMessages}
-            productName={productName}
-            totalReviews={totalReviews}
-            displayName={displayName}
-            sentiment={sentiment}
-            reviews={reviews}
-            onGoToStudio={handleGoToStudio}
-          />
-          <MarketerToolkit
-            productName={productName}
-            displayName={displayName}
-            sentiment={sentiment}
-            reviews={reviews}
-          />
-        </TabsContent>
-
-        <TabsContent value="studio" className="mt-0 focus-visible:ring-0">
-          <ContentStudioPanel
+        <TabsContent value="creator" className="mt-0 focus-visible:ring-0">
+          <ContentCreatorPanel
             productName={productName}
             displayName={displayName}
             sentiment={sentiment}
             reviews={reviews}
             marketing={marketing}
-            initialCopy={studioCopy}
           />
         </TabsContent>
       </Tabs>
