@@ -38,12 +38,12 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
   const { t } = useLang();
   
 
-  // LG.com 리뷰는 분석 전용 — 마케팅 후기 활용에서 제외
+  // LG.com 리뷰: 키워드·카피·QNA 등 분석 소스로는 활용, 원문 인용(PDP 후기)에서만 제외
   const nonLgComReviews = reviews.filter((r) => !r.source?.startsWith("lge_com"));
 
   const data = useMemo(
-    () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, nonLgComReviews),
-    [productName, displayName, sentiment, nonLgComReviews]
+    () => generateMarketerToolkit(toPRName(displayName || productName), sentiment, reviews, nonLgComReviews),
+    [productName, displayName, sentiment, reviews, nonLgComReviews]
   );
 
   const copyText = (text: string) => {
