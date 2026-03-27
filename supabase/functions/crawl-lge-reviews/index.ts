@@ -117,15 +117,18 @@ async function fetchBazaarvoiceReviews(
   since.setDate(since.getDate() - 90);
   url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
 
-  console.log(`[BV-UK] Fetching reviews offset=${offset} limit=${limit}`);
-  const res = await fetch(url.toString());
+  const fullUrl = url.toString();
+  console.log(`[BV-UK] Request URL: ${fullUrl}`);
+  const res = await fetch(fullUrl);
+  const rawBody = await res.text();
+  console.log(`[BV-UK] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
+  
   if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Bazaarvoice API error [${res.status}]: ${errText.slice(0, 500)}`);
+    throw new Error(`Bazaarvoice API error [${res.status}]: ${rawBody.slice(0, 500)}`);
   }
 
-  const data = await res.json();
-  console.log(`[BV-UK] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}`);
+  const data = JSON.parse(rawBody);
+  console.log(`[BV-UK] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
   return data.Results || [];
 }
 
