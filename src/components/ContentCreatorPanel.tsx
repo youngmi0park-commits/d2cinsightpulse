@@ -832,14 +832,19 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
               <h4 className="text-sm font-bold">{t("📝 Text Copy — Ready to Use", "📝 텍스트 카피 — 바로 사용")}</h4>
             </div>
 
-            {/* Headline */}
-            <div className="p-4 rounded-lg border border-border bg-secondary/30">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline</span>
-                <CopyBtn text={generated.headline} id="headline" />
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Version A</Badge>
+                <span className="text-[10px] text-muted-foreground">{t("Benefit-led", "베네핏 중심")}</span>
               </div>
-              <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
-            </div>
+
+              {/* Headline */}
+              <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline</span>
+                  <CopyBtn text={generated.headline} id="headline" />
+                </div>
+                <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
+              </div>
 
             {/* Sub Message */}
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
@@ -936,6 +941,95 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Amazon A+ Content */}
+            {generated.amazonAplus && (
+              <div className="p-4 rounded-lg border border-amber-600/20 bg-amber-600/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                    🛒 Amazon A+ Content
+                  </span>
+                  <CopyBtn
+                    text={`Headline:\n${generated.amazonAplus.headline}\n\nBody:\n${generated.amazonAplus.body}\n\nBullet Points:\n${generated.amazonAplus.bullets.map((b, i) => `${i + 1}. ${b}`).join("\n")}`}
+                    id="aplus_all"
+                    label={t("Copy All", "전체 복사")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Headline (max 70 chars)</p>
+                    <p className="text-xs text-foreground/80">{generated.amazonAplus.headline} <span className="text-muted-foreground">({generated.amazonAplus.headline.length})</span></p>
+                  </div>
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Body (max 300 chars)</p>
+                    <p className="text-xs text-foreground/80">{generated.amazonAplus.body} <span className="text-muted-foreground">({generated.amazonAplus.body.length})</span></p>
+                  </div>
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-1">Bullet Points</p>
+                    <ul className="text-xs text-foreground/80 space-y-0.5">
+                      {generated.amazonAplus.bullets.map((b, i) => <li key={i}>• {b}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Amazon Sponsored Brand */}
+            {generated.amazonSB && (
+              <div className="p-4 rounded-lg border border-amber-600/20 bg-amber-600/5 space-y-2">
+                <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                  🛒 Amazon Sponsored Brand
+                </span>
+                <div className="bg-background/50 rounded px-2.5 py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Headline (max 50 chars)</p>
+                  <p className="text-xs text-foreground/80">{generated.amazonSB.headline} <span className="text-muted-foreground">({generated.amazonSB.headline.length})</span></p>
+                </div>
+                <div className="bg-background/50 rounded px-2.5 py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Sub-line (max 30 chars)</p>
+                  <p className="text-xs text-foreground/80">{generated.amazonSB.subline} <span className="text-muted-foreground">({generated.amazonSB.subline.length})</span></p>
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Version B: Social-Proof-Led ═══ */}
+            {generated.versionB && (
+              <div className="space-y-3 border-t border-dashed border-border pt-4">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-accent/80 text-accent-foreground text-[10px]">Version B</Badge>
+                  <span className="text-[10px] text-muted-foreground">{t("Social-proof-led", "사회적 증거 중심")}</span>
+                </div>
+                <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline B</span>
+                    <CopyBtn text={generated.versionB.headline} id="headline_b" />
+                  </div>
+                  <p className="text-lg font-bold font-heading leading-snug">{generated.versionB.headline}</p>
+                </div>
+                <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Sub Message B</span>
+                    <CopyBtn text={generated.versionB.subMessage} id="sub_b" />
+                  </div>
+                  <p className="text-sm text-foreground/90 leading-relaxed">{generated.versionB.subMessage}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1"><Monitor className="h-3 w-3" /> Inside B</span>
+                      <CopyBtn text={generated.versionB.insideVersion} id="inside_b" />
+                    </div>
+                    <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">{generated.versionB.insideVersion}</div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1"><Film className="h-3 w-3" /> Outside B</span>
+                      <CopyBtn text={generated.versionB.outsideVersion} id="outside_b" />
+                    </div>
+                    <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">{generated.versionB.outsideVersion}</div>
                   </div>
                 </div>
               </div>
