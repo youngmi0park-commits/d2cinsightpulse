@@ -120,7 +120,7 @@ export function ContentCreatorPanel({
   displayName,
   sentiment,
   reviews,
-  marketing,
+  marketing: _marketing,
 }: ContentCreatorPanelProps) {
   const { t, lang } = useLang();
   const [messageType, setMessageType] = useState<MessageType>("usp_highlight");

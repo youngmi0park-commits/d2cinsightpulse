@@ -1,8 +1,7 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState } from "react";
 import { FaqPanel } from "@/components/FaqPanel";
 import { MarketerToolkit } from "@/components/MarketerToolkit";
 import { useLang } from "@/contexts/LanguageContext";
-import { Badge } from "@/components/ui/badge";
 import { HelpCircle, Rocket } from "lucide-react";
 import type { SentimentResult } from "@/lib/sentiment";
 
