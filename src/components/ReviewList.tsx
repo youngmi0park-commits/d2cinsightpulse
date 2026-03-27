@@ -155,13 +155,13 @@ export function ReviewList({ reviews }: ReviewListProps) {
   const weekAgo = subDays(now, 7);
   const weekLabel = `${format(weekAgo, "MM.dd")} ~ ${format(now, "MM.dd")}`;
 
-  const weeklyReviews = reviews.filter((r) => {
+  const weeklyReviews = filteredReviews.filter((r) => {
     if (!r.date) return false;
     const d = new Date(r.date);
     return d >= weekAgo;
   });
 
-  const olderReviews = reviews.filter((r) => {
+  const olderReviews = filteredReviews.filter((r) => {
     if (!r.date) return true;
     const d = new Date(r.date);
     return d < weekAgo;
@@ -171,7 +171,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
     <div className="gradient-card rounded-xl border border-border p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold font-heading">
-          {t(`Real Customer Reviews (${reviews.length})`, `실고객 리뷰 (${reviews.length}건)`)}
+          {t(`Real Customer Reviews (${filteredReviews.length})`, `실고객 리뷰 (${filteredReviews.length}건)`)}
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
           {t("Discover real user reviews of LG Electronics products.", "고객들의 생생한 LG전자 제품 사용 후기를 만나보세요.")}
