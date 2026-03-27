@@ -64,6 +64,7 @@ export function ContentStudioPanel({
   const [locale, setLocale] = useState("en-US");
   const [tonality, setTonality] = useState("technical");
   const [bannerStyle, setBannerStyle] = useState<BannerImageStyleKey>("product_solo");
+  const [generated, setGenerated] = useState<GeneratedPrompt | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showSpecs, setShowSpecs] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
