@@ -274,6 +274,7 @@ Deno.serve(async (req) => {
         error_details: errors.slice(0, 5),
         region_stats: regionStats,
         region_comparison: regionComparison,
+        bazaarvoice_us: !!BAZAARVOICE_US_API_KEY,
         bazaarvoice_uk: !!BAZAARVOICE_UK_API_KEY,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
