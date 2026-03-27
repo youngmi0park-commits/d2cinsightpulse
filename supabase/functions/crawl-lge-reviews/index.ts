@@ -108,15 +108,14 @@ async function fetchBazaarvoiceReviews(
   const url = new URL(`${BV_API_BASE}/reviews.json`);
   url.searchParams.set("apiversion", "5.4");
   url.searchParams.set("passkey", apiKey);
-  url.searchParams.set("Filter", `ProductId:eq:*`);
   url.searchParams.set("Include", "Products");
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  // Filter by recent reviews only
+  // Filter by recent reviews (last 90 days) - use append to allow multiple filters
   const since = new Date();
-  since.setDate(since.getDate() - 30);
-  url.searchParams.set("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
+  since.setDate(since.getDate() - 90);
+  url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
 
   console.log(`[BV-UK] Fetching reviews offset=${offset} limit=${limit}`);
   const res = await fetch(url.toString());
