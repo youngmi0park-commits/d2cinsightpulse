@@ -359,8 +359,8 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       case "meta_ad":
         imageGuide = `Meta Ads: Feed (1080×1080 square, 1200×628 landscape), Stories/Reels (1080×1920 vertical). Product hero + bold benefit text. Primary text max 125 chars, headline max 40 chars. "Ad" label auto-applied by platform. High contrast CTA button.`;
         break;
-      case "criteo_ad":
-        imageGuide = `Criteo Dynamic Ads: Standard sizes 300×250, 728×90, 160×600, 320×50 (mobile). Product image center, price/offer overlay optional. Headline max 25 chars, description max 45 chars. Auto-optimized by Criteo engine — provide clean product shot + 2-3 benefit lines. Logo placement top-left.`;
+      case "criteo_pmax":
+        imageGuide = `Criteo: 300×250, 728×90, 160×600, 320×50. Product center, price/offer overlay. Headline max 25 chars, desc max 45 chars.\nPMax: Responsive — landscape 1200×628, square 1200×1200, portrait 960×1200. Headlines (max 30 chars ×15), long headline (max 90 chars), descriptions (max 90 chars ×5). Clean product hero + lifestyle variants.`;
         break;
       case "display_ad":
         imageGuide = `GDN Display: Multiple sizes — 300×250, 728×90, 160×600, 336×280, responsive. Product hero + 1 line benefit text. Brand consistent. High contrast CTA.`;
