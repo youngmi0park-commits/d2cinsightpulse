@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users, Briefcase, AlertTriangle, Loader2, Brain, Lightbulb,
   Target, ShieldAlert, Heart, ArrowRightLeft, TrendingUp, Sparkles,
-  ChevronDown, ChevronUp, Copy, Check
+  ChevronDown, ChevronUp, Copy, Check, Tv, Refrigerator, WashingMachine
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -102,21 +102,24 @@ function ProductTag({ name }: { name: string }) {
 export function WeeklyInsightsPanel() {
   const { t } = useLang();
   const [region, setRegion] = useState("all");
+  const [category, setCategory] = useState("all");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (cat?: string) => {
+    const targetCategory = cat ?? category;
     setIsLoading(true);
+    setCategory(targetCategory);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
-        body: { region, limit: 5 },
+        body: { region, limit: 5, category: targetCategory },
       });
       if (error) throw error;
       if (data?.insights) {
         setResult(data);
         toast.success(t("Analysis complete!", "분석 완료!"));
       } else {
-        toast.info(t("No weekly review data available", "이번 주 리뷰 데이터가 없습니다"));
+        toast.info(t("No review data available for this category", "해당 카테고리의 리뷰 데이터가 없습니다"));
       }
     } catch (err: any) {
       console.error(err);
@@ -159,7 +162,7 @@ export function WeeklyInsightsPanel() {
               ))}
             </div>
             <button
-              onClick={runAnalysis}
+              onClick={() => runAnalysis()}
               disabled={isLoading}
               className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
@@ -180,10 +183,35 @@ export function WeeklyInsightsPanel() {
       </CardHeader>
 
       <CardContent className="pt-0">
+        {/* Category quick-analysis buttons */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            { cat: "all", icon: Sparkles, label: t("All Products", "전체 제품"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+            { cat: "TV", icon: Tv, label: "TV / OLED", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+            { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
+            { cat: "Washer", icon: WashingMachine, label: t("Washer/Dryer", "세탁기/건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+          ].map((item) => (
+            <button
+              key={item.cat}
+              onClick={() => runAnalysis(item.cat)}
+              disabled={isLoading}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all disabled:opacity-50 ${
+                category === item.cat && result
+                  ? item.color + " ring-1 ring-primary/30"
+                  : item.color
+              }`}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              {item.label}
+              {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
+            </button>
+          ))}
+        </div>
+
         {!ins && !isLoading && (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-8 text-muted-foreground">
             <Brain className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{t("Click 'Run Analysis' to generate deep insights", "'인사이트 분석' 버튼을 클릭하여 분석을 시작하세요")}</p>
+            <p className="text-sm">{t("Select a category above to analyze", "위 카테고리를 선택하여 분석을 시작하세요")}</p>
           </div>
         )}
 
