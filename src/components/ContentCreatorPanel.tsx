@@ -88,7 +88,9 @@ const CONTENT_PURPOSES: ContentPurpose[] = [
   { key: "remarketing", icon: "🎯", labelEn: "Remarketing Banner", labelKo: "리마케팅 배너", channel: "inside" },
   { key: "sns_short", icon: "📱", labelEn: "SNS Shorts", labelKo: "SNS 숏폼", channel: "outside" },
   { key: "youtube_trueview", icon: "🎬", labelEn: "YouTube TrueView Ad", labelKo: "YouTube TrueView 광고", channel: "outside" },
-  { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN, Meta)", labelKo: "디스플레이 광고 (GDN, Meta)", channel: "outside" },
+  { key: "meta_ad", icon: "📘", labelEn: "Meta Ad (Facebook/Instagram)", labelKo: "Meta 광고 (Facebook/Instagram)", channel: "outside" },
+  { key: "criteo_ad", icon: "🟠", labelEn: "Criteo Dynamic Ad", labelKo: "Criteo 다이내믹 광고", channel: "outside" },
+  { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN)", labelKo: "디스플레이 광고 (GDN)", channel: "outside" },
   { key: "store_promo", icon: "🏬", labelEn: "Store Promo KV", labelKo: "스토어 프로모션용 KV", channel: "outside" },
 ];
 
@@ -353,8 +355,14 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       case "youtube_trueview":
         imageGuide = `16:9 (1920×1080). First 5s must hook: "${messageType === "using_scene" ? `Product in ${sceneRef}` : msg.headline}". Show real usage → product reveal → CTA.`;
         break;
+      case "meta_ad":
+        imageGuide = `Meta Ads: Feed (1080×1080 square, 1200×628 landscape), Stories/Reels (1080×1920 vertical). Product hero + bold benefit text. Primary text max 125 chars, headline max 40 chars. "Ad" label auto-applied by platform. High contrast CTA button.`;
+        break;
+      case "criteo_ad":
+        imageGuide = `Criteo Dynamic Ads: Standard sizes 300×250, 728×90, 160×600, 320×50 (mobile). Product image center, price/offer overlay optional. Headline max 25 chars, description max 45 chars. Auto-optimized by Criteo engine — provide clean product shot + 2-3 benefit lines. Logo placement top-left.`;
+        break;
       case "display_ad":
-        imageGuide = `Multiple sizes: 1200×628 (landscape), 1200×1200 (square), 960×1200 (portrait). Product hero + 1 line text. Brand consistent. "Ad" label.`;
+        imageGuide = `GDN Display: Multiple sizes — 300×250, 728×90, 160×600, 336×280, responsive. Product hero + 1 line benefit text. Brand consistent. High contrast CTA.`;
         break;
       case "store_promo":
         imageGuide = `KV layout: Product center, promotional overlay (badge/sticker). Space for price/offer callout. Print-ready 300dpi or digital 72dpi.`;
@@ -363,7 +371,11 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
 
     // Inside vs Outside channel versions
     const insideVersion = `${prName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${strengths[2] || "Design"}.\n${evidence}`;
-    const outsideVersion = `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
+    const outsideVersion = contentPurpose === "meta_ad"
+      ? `[Ad] ${msg.headline}\n\nPrimary text (125 chars): ${(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`
+      : contentPurpose === "criteo_ad"
+      ? `Criteo Dynamic Ad\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nProduct image: Clean hero shot\nCTA: Learn More`
+      : `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
 
     // Export prompts with bridges
     const styleScene = bannerStyle === "lifestyle_cut" ? sceneRef : "studio";
@@ -385,7 +397,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       },
       {
         tool: "Canva",
-        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
+        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_ad" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
         url: "https://www.canva.com",
       },
     ];
