@@ -17,7 +17,7 @@ const criteria: CriteriaItem[] = [
     titleEn: "Collection Channels",
     titleKo: "수집 채널",
     itemsEn: [
-      "LG.com (lg.com/us, lg.com/uk) — Official LG product pages, specs, and customer review data",
+      "LG.com (lg.com/us, lg.com/uk) — Official LG product pages & customer reviews (UK: Bazaarvoice Conversations API Staging 연동, US: Firecrawl)",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
       "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR)",
       "Best Buy — Retailer product reviews and ratings (US)",
@@ -43,7 +43,7 @@ const criteria: CriteriaItem[] = [
       "PCMag — Professional tech product reviews and ratings",
     ],
     itemsKo: [
-      "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지, 스펙 및 고객 리뷰 데이터",
+      "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지 및 고객 리뷰 (UK: Bazaarvoice Conversations API Staging 연동, US: Firecrawl)",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
       "Amazon — 'Verified Purchase' 신뢰 시그널 포함 제품 리뷰 (US, UK, CA, DE, IN, FR)",
       "Best Buy — 리테일러 제품 리뷰 및 평점 (US)",
