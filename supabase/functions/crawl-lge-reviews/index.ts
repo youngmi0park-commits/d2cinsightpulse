@@ -223,24 +223,30 @@ Deno.serve(async (req) => {
         const bvApiKey = region === "uk" ? BAZAARVOICE_UK_API_KEY : BAZAARVOICE_US_API_KEY;
         
         if (bvApiKey) {
-          console.log(`[${region.toUpperCase()}] Using Bazaarvoice Conversations API (${region === "uk" ? "Staging" : "Production"})`);
+          console.log(`[${region.toUpperCase()}] Using Bazaarvoice API — pages=${bvPages}, startOffset=${bvOffset}`);
           try {
-            const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, 0, 50);
-            console.log(`[BV-${region.toUpperCase()}] Got ${bvReviews.length} reviews for ${category}`);
+            let pageOffset = bvOffset;
+            for (let page = 0; page < bvPages; page++) {
+              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100);
+              console.log(`[BV-${region.toUpperCase()}] Page ${page + 1}/${bvPages}: ${bvReviews.length} reviews for ${category} (offset=${pageOffset})`);
+              
+              if (bvReviews.length === 0) break;
 
-            for (const bvReview of bvReviews) {
-              const review = mapBvReviewToInternal(bvReview, region);
-              if (!review.content || review.content.length < 20) continue;
+              for (const bvReview of bvReviews) {
+                const review = mapBvReviewToInternal(bvReview, region);
+                if (!review.content || review.content.length < 20) continue;
 
-              const issueTags = detectIssueTags(review.content, category);
-              review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
+                const issueTags = detectIssueTags(review.content, category);
+                review.issue_tags = [...new Set([...review.issue_tags, ...issueTags])];
 
-              const bvClient = BV_CONFIG[region].client;
-              const saved = await saveReview(supabase, review, category, `bazaarvoice://${bvClient}/${bvReview.Id}`);
-              if (saved) {
-                totalCollected++;
-                regionStats[category][region]++;
+                const bvClient = BV_CONFIG[region].client;
+                const saved = await saveReview(supabase, review, category, `bazaarvoice://${bvClient}/${bvReview.Id}`);
+                if (saved) {
+                  totalCollected++;
+                  regionStats[category][region]++;
+                }
               }
+              pageOffset += 100;
             }
             continue; // Skip Firecrawl if BV succeeded
           } catch (bvErr) {
