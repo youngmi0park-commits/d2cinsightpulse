@@ -5,7 +5,7 @@ import { useLang } from "@/contexts/LanguageContext";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Loader2, Store, Flag } from "lucide-react";
+import { ThumbsUp, ThumbsDown, TrendingUp, TrendingDown, Loader2, Store, Flag } from "lucide-react";
 
 interface LgComProduct {
   product_id: string;
@@ -22,17 +22,51 @@ interface LgComReviewDashboardProps {
   onProductClick?: (modelNumber: string) => void;
 }
 
-function useLgComWeeklyTop(region: string, sentiment: string) {
+function useLgComTop(region: string, sentiment: string, period: string) {
   return useQuery({
-    queryKey: ["lgcom-weekly-top", region, sentiment],
+    queryKey: ["lgcom-top", region, sentiment, period],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_lgcom_weekly_top_products", {
-        p_region: region,
-        p_sentiment: sentiment,
-        p_limit: 10,
-      });
+      if (period === "weekly") {
+        const { data, error } = await supabase.rpc("get_lgcom_weekly_top_products", {
+          p_region: region,
+          p_sentiment: sentiment,
+          p_limit: 10,
+        });
+        if (error) throw error;
+        return (data || []) as LgComProduct[];
+      }
+      // Cumulative: query all reviews (no date filter) - use same RPC but we'll create a wider window
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("product_id, products!inner(model_number, display_name, category, is_active)")
+        .like("source", `lge_com_${region === "all" ? "%" : region.toLowerCase()}`)
+        .eq("sentiment", sentiment)
+        .limit(1000);
       if (error) throw error;
-      return (data || []) as LgComProduct[];
+
+      // Aggregate by product
+      const prodMap: Record<string, LgComProduct> = {};
+      for (const r of data || []) {
+        const prod = r.products as any;
+        if (!prod?.is_active) continue;
+        const pid = r.product_id;
+        if (!prodMap[pid]) {
+          prodMap[pid] = {
+            product_id: pid,
+            model_number: prod.model_number,
+            display_name: prod.display_name,
+            category: prod.category,
+            region: region === "all" ? "ALL" : region,
+            review_count: 0,
+            avg_score: 0,
+            keywords: [],
+          };
+        }
+        prodMap[pid].review_count++;
+      }
+      return Object.values(prodMap)
+        .sort((a, b) => b.review_count - a.review_count)
+        .slice(0, 10);
     },
     staleTime: 1000 * 60 * 30,
   });
@@ -155,9 +189,10 @@ function ProductRankTable({
 export function LgComReviewDashboard({ onProductClick }: LgComReviewDashboardProps) {
   const { t } = useLang();
   const [region, setRegion] = useState("all");
+  const [period, setPeriod] = useState<"weekly" | "cumulative">("weekly");
 
-  const { data: positiveProducts, isLoading: posLoading } = useLgComWeeklyTop(region, "positive");
-  const { data: negativeProducts, isLoading: negLoading } = useLgComWeeklyTop(region, "negative");
+  const { data: positiveProducts, isLoading: posLoading } = useLgComTop(region, "positive", period);
+  const { data: negativeProducts, isLoading: negLoading } = useLgComTop(region, "negative", period);
 
   const isLoading = posLoading || negLoading;
 
@@ -170,36 +205,53 @@ export function LgComReviewDashboard({ onProductClick }: LgComReviewDashboardPro
             <CardTitle className="text-lg font-heading">
               {t("LG.com Review Dashboard", "LG.com 리뷰 대시보드")}
             </CardTitle>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary gap-1">
-              <Globe className="h-2.5 w-2.5" />
-              {t("Weekly", "주간")}
-            </Badge>
           </div>
-          <div className="flex gap-1">
-            {[
-              { value: "all", label: t("All", "전체") },
-              { value: "US", label: "US" },
-              { value: "UK", label: "UK" },
-            ].map((r) => (
-              <button
-                key={r.value}
-                onClick={() => setRegion(r.value)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  region === r.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-1.5">
+            {/* Period toggle */}
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+              {[
+                { value: "weekly" as const, label: t("Weekly", "주간") },
+                { value: "cumulative" as const, label: t("Cumulative", "누적") },
+              ].map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => setPeriod(p.value)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    period === p.value
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {/* Region toggle */}
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+              {[
+                { value: "all", label: t("All", "전체") },
+                { value: "US", label: "US" },
+                { value: "UK", label: "UK" },
+              ].map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setRegion(r.value)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    region === r.value
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {t(
-            "Top 10 products by positive/negative reviews collected from LG.com (Bazaarvoice) this week",
-            "이번 주 LG.com(Bazaarvoice)에서 수집된 긍정/부정 리뷰 기준 Top 10 제품"
-          )}
+          {period === "weekly"
+            ? t("Top 10 products by positive/negative reviews this week", "이번 주 긍정/부정 리뷰 기준 Top 10 제품")
+            : t("Top 10 products by cumulative positive/negative reviews", "누적 긍정/부정 리뷰 기준 Top 10 제품")}
         </p>
       </CardHeader>
       <CardContent className="pt-0">
