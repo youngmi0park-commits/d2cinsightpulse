@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   Copy, Check, Wand2, ShieldCheck, AlertTriangle, CheckCircle2,
   Monitor, Film, Palette, ChevronDown, ChevronRight, Info,
-  Zap, Heart, Home, Scale, ExternalLink,
+  Zap, Heart, Home, Scale, ExternalLink, FileText,
   Image as ImageIcon,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -89,7 +89,7 @@ const CONTENT_PURPOSES: ContentPurpose[] = [
   { key: "sns_short", icon: "📱", labelEn: "SNS Shorts", labelKo: "SNS 숏폼", channel: "outside" },
   { key: "youtube_trueview", icon: "🎬", labelEn: "YouTube TrueView Ad", labelKo: "YouTube TrueView 광고", channel: "outside" },
   { key: "meta_ad", icon: "📘", labelEn: "Meta Ad (Facebook/Instagram)", labelKo: "Meta 광고 (Facebook/Instagram)", channel: "outside" },
-  { key: "criteo_ad", icon: "🟠", labelEn: "Criteo Dynamic Ad", labelKo: "Criteo 다이내믹 광고", channel: "outside" },
+  { key: "criteo_pmax", icon: "🟠", labelEn: "Criteo / PMax Campaign", labelKo: "Criteo / PMax 캠페인", channel: "outside" },
   { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN)", labelKo: "디스플레이 광고 (GDN)", channel: "outside" },
   { key: "store_promo", icon: "🏬", labelEn: "Store Promo KV", labelKo: "스토어 프로모션용 KV", channel: "outside" },
 ];
@@ -111,7 +111,8 @@ interface GeneratedContent {
   imageGuide: string;
   insideVersion: string;
   outsideVersion: string;
-  exportPrompts: { tool: string; prompt: string; url?: string }[];
+  pmaxAssets?: { headlines: string[]; longHeadline: string; descriptions: string[] };
+  exportPrompts: { tool: string; prompt: string; url?: string; isAI?: boolean }[];
   legalStatus: "pass" | "needs_revision" | "fail";
   legalViolations: string[];
   fullPrompt: string;
@@ -358,8 +359,8 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       case "meta_ad":
         imageGuide = `Meta Ads: Feed (1080×1080 square, 1200×628 landscape), Stories/Reels (1080×1920 vertical). Product hero + bold benefit text. Primary text max 125 chars, headline max 40 chars. "Ad" label auto-applied by platform. High contrast CTA button.`;
         break;
-      case "criteo_ad":
-        imageGuide = `Criteo Dynamic Ads: Standard sizes 300×250, 728×90, 160×600, 320×50 (mobile). Product image center, price/offer overlay optional. Headline max 25 chars, description max 45 chars. Auto-optimized by Criteo engine — provide clean product shot + 2-3 benefit lines. Logo placement top-left.`;
+      case "criteo_pmax":
+        imageGuide = `Criteo: 300×250, 728×90, 160×600, 320×50. Product center, price/offer overlay. Headline max 25 chars, desc max 45 chars.\nPMax: Responsive — landscape 1200×628, square 1200×1200, portrait 960×1200. Headlines (max 30 chars ×15), long headline (max 90 chars), descriptions (max 90 chars ×5). Clean product hero + lifestyle variants.`;
         break;
       case "display_ad":
         imageGuide = `GDN Display: Multiple sizes — 300×250, 728×90, 160×600, 336×280, responsive. Product hero + 1 line benefit text. Brand consistent. High contrast CTA.`;
@@ -373,13 +374,35 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
     const insideVersion = `${prName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${strengths[2] || "Design"}.\n${evidence}`;
     const outsideVersion = contentPurpose === "meta_ad"
       ? `[Ad] ${msg.headline}\n\nPrimary text (125 chars): ${(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`
-      : contentPurpose === "criteo_ad"
-      ? `Criteo Dynamic Ad\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nProduct image: Clean hero shot\nCTA: Learn More`
+      : contentPurpose === "criteo_pmax"
+      ? `── Criteo ──\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nCTA: Learn More\n\n── PMax ──\nHeadline 1: ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 30)}\nHeadline 2: ${(strengths[1] || "Performance").slice(0, 30)}\nHeadline 3: ${(strengths[2] || "Design").slice(0, 30)}\nLong headline: ${(msg.headline).slice(0, 90)}\nDescription 1: ${(msg.sub).slice(0, 90)}\nDescription 2: ${(strengths.slice(0, 3).join(". ") + ".").slice(0, 90)}`
       : `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
+
+    // PMax asset set for criteo_pmax
+    const pmaxAssets = contentPurpose === "criteo_pmax" ? {
+      headlines: [
+        (prName + " — " + (strengths[0] || "Quality")).slice(0, 30),
+        (strengths[1] || "Performance You'll Love").slice(0, 30),
+        (strengths[2] || "Designed for You").slice(0, 30),
+        ("Discover " + prName).slice(0, 30),
+        (strengths[0] || "Quality" + " Meets " + (strengths[1] || "Style")).slice(0, 30),
+      ],
+      longHeadline: (msg.headline).slice(0, 90),
+      descriptions: [
+        (msg.sub).slice(0, 90),
+        (strengths.slice(0, 3).join(". ") + ". " + evidence).slice(0, 90),
+        (`Experience ${prName}. ${strengths[0] || "Quality"} that customers love.`).slice(0, 90),
+      ],
+    } : undefined;
 
     // Export prompts with bridges
     const styleScene = bannerStyle === "lifestyle_cut" ? sceneRef : "studio";
-    const exportPrompts = [
+    const exportPrompts: GeneratedContent["exportPrompts"] = [
+      {
+        tool: "Nano Banana (AI)",
+        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} photography of ${prName}. ${messageType === "using_scene" ? `Scene: ${sceneRef}, warm natural lighting, real-home atmosphere.` : `Studio setting, premium finish, dark gradient background.`} ${contentPurpose === "meta_ad" ? "Square 1:1 composition." : contentPurpose === "criteo_pmax" ? "Clean product hero, white background, no text overlay." : "16:9 hero composition."} High quality, photorealistic, 8K detail.`,
+        isAI: true,
+      },
       {
         tool: "Midjourney",
         prompt: `${prName} product photography, ${messageType === "using_scene" ? `warm lifestyle, ${sceneRef}` : "studio, premium"}, professional lighting, 8k, photorealistic --ar ${contentPurpose === "pdp_hero" ? "8:3" : contentPurpose === "sns_short" ? "9:16" : "16:9"} --v 6`,
@@ -397,7 +420,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       },
       {
         tool: "Canva",
-        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_ad" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
+        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_pmax" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
         url: "https://www.canva.com",
       },
     ];
@@ -412,6 +435,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       imageGuide,
       insideVersion,
       outsideVersion,
+      pmaxAssets,
       exportPrompts,
       legalStatus: legal.status,
       legalViolations: legal.violations,
@@ -641,18 +665,18 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
         <div className="space-y-4 border-t border-border pt-5">
           {/* Legal Status */}
           <div className={`p-3 rounded-lg border ${
-            generated.legalStatus === "pass" ? "border-green-500/30 bg-green-500/10" : "border-yellow-500/30 bg-yellow-500/10"
+            generated.legalStatus === "pass" ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"
           }`}>
             <div className="flex items-center gap-2">
               {generated.legalStatus === "pass" ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               ) : (
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
               )}
               <span className="text-sm font-medium">
                 {t("Legal Compliance", "법무 컴플라이언스")}:
                 <Badge variant="outline" className={`ml-2 text-[10px] ${
-                  generated.legalStatus === "pass" ? "text-green-500 border-green-500/30" : "text-yellow-500 border-yellow-500/30"
+                  generated.legalStatus === "pass" ? "text-emerald-500 border-emerald-500/30" : "text-amber-500 border-amber-500/30"
                 }`}>
                   {generated.legalStatus.toUpperCase()}
                 </Badge>
@@ -662,107 +686,164 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
               <ul className="text-xs text-foreground/80 space-y-1 mt-2">
                 {generated.legalViolations.map((v, i) => (
                   <li key={i} className="flex items-start gap-1.5">
-                    <AlertTriangle className="h-3 w-3 text-yellow-500 shrink-0 mt-0.5" /> {v}
+                    <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0 mt-0.5" /> {v}
                   </li>
                 ))}
               </ul>
             )}
           </div>
 
-          {/* Headline */}
-          <div className="p-4 rounded-lg border border-border bg-secondary/30">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ PDP Headline</span>
-              <CopyBtn text={generated.headline} id="headline" />
+          {/* ═══ SECTION A: 📝 TEXT COPY ═══ */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-bold">{t("📝 Text Copy — Ready to Use", "📝 텍스트 카피 — 바로 사용")}</h4>
             </div>
-            <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
-          </div>
 
-          {/* Sub Message */}
-          <div className="p-4 rounded-lg border border-border bg-secondary/30">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Sub Message</span>
-              <CopyBtn text={generated.subMessage} id="sub" />
-            </div>
-            <p className="text-sm text-foreground/90 leading-relaxed">{generated.subMessage}</p>
-          </div>
-
-          {/* FAQ (if applicable) */}
-          {generated.faqMessage && (
-            <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5">
+            {/* Headline */}
+            <div className="p-4 rounded-lg border border-border bg-secondary/30">
               <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ FAQ Message</span>
-                <CopyBtn text={`Q. ${generated.faqMessage.q}\nA. ${generated.faqMessage.a}`} id="faq" />
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline</span>
+                <CopyBtn text={generated.headline} id="headline" />
               </div>
-              <p className="text-sm font-medium mb-1">Q. {generated.faqMessage.q}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">A. {generated.faqMessage.a}</p>
+              <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
             </div>
-          )}
 
-          {/* Inside vs Outside Versions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1">
-                  <Monitor className="h-3 w-3" /> Inside Channel
-                </span>
-                <CopyBtn text={generated.insideVersion} id="inside_ver" />
+            {/* Sub Message */}
+            <div className="p-4 rounded-lg border border-border bg-secondary/30">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Sub Message</span>
+                <CopyBtn text={generated.subMessage} id="sub" />
               </div>
-              <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">
-                {generated.insideVersion}
-              </div>
-              <p className="text-[9px] text-muted-foreground italic">
-                {t("USP-focused, numbers-driven, spec-based", "USP 중심, 숫자 기반, 스펙 중심")}
-              </p>
+              <p className="text-sm text-foreground/90 leading-relaxed">{generated.subMessage}</p>
             </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1">
-                  <Film className="h-3 w-3" /> Outside Channel
-                </span>
-                <CopyBtn text={generated.outsideVersion} id="outside_ver" />
+
+            {/* FAQ (if applicable) */}
+            {generated.faqMessage && (
+              <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ FAQ</span>
+                  <CopyBtn text={`Q. ${generated.faqMessage.q}\nA. ${generated.faqMessage.a}`} id="faq" />
+                </div>
+                <p className="text-sm font-medium mb-1">Q. {generated.faqMessage.q}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">A. {generated.faqMessage.a}</p>
               </div>
-              <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">
-                {generated.outsideVersion}
+            )}
+
+            {/* Inside vs Outside Versions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1">
+                    <Monitor className="h-3 w-3" /> Inside Channel
+                  </span>
+                  <CopyBtn text={generated.insideVersion} id="inside_ver" />
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">
+                  {generated.insideVersion}
+                </div>
               </div>
-              <p className="text-[9px] text-muted-foreground italic">
-                {t("Emotion-driven, 3s hook, lifestyle", "감성 중심, 3초 훅, 라이프스타일")}
-              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1">
+                    <Film className="h-3 w-3" /> Outside Channel
+                  </span>
+                  <CopyBtn text={generated.outsideVersion} id="outside_ver" />
+                </div>
+                <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">
+                  {generated.outsideVersion}
+                </div>
+              </div>
             </div>
+
+            {/* PMax Asset Set (Criteo/PMax only) */}
+            {generated.pmaxAssets && (
+              <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                    🟠 PMax Asset Set
+                  </span>
+                  <CopyBtn
+                    text={`Headlines:\n${generated.pmaxAssets.headlines.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\nLong Headline:\n${generated.pmaxAssets.longHeadline}\n\nDescriptions:\n${generated.pmaxAssets.descriptions.map((d, i) => `${i + 1}. ${d}`).join("\n")}`}
+                    id="pmax_all"
+                    label={t("Copy All", "전체 복사")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Headlines (max 30 chars)</p>
+                    <div className="space-y-1">
+                      {generated.pmaxAssets.headlines.map((h, i) => (
+                        <div key={i} className="flex items-center justify-between bg-background/50 rounded px-2.5 py-1.5 group">
+                          <span className="text-xs text-foreground/80">{i + 1}. {h} <span className="text-muted-foreground">({h.length})</span></span>
+                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0" onClick={() => copyText(h, `pmax_h${i}`)}>
+                            <Copy className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Long Headline (max 90 chars)</p>
+                    <div className="flex items-center justify-between bg-background/50 rounded px-2.5 py-1.5 group">
+                      <span className="text-xs text-foreground/80">{generated.pmaxAssets.longHeadline} <span className="text-muted-foreground">({generated.pmaxAssets.longHeadline.length})</span></span>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0" onClick={() => copyText(generated.pmaxAssets!.longHeadline, "pmax_long")}>
+                        <Copy className="h-2.5 w-2.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Descriptions (max 90 chars)</p>
+                    <div className="space-y-1">
+                      {generated.pmaxAssets.descriptions.map((d, i) => (
+                        <div key={i} className="flex items-center justify-between bg-background/50 rounded px-2.5 py-1.5 group">
+                          <span className="text-xs text-foreground/80">{i + 1}. {d} <span className="text-muted-foreground">({d.length})</span></span>
+                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0" onClick={() => copyText(d, `pmax_d${i}`)}>
+                            <Copy className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Image Guide */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
-                <ImageIcon className="h-3.5 w-3.5 text-primary" />
-                {t("Image Creation Guide", "이미지 제작 가이드")}
-              </span>
-              <CopyBtn text={generated.imageGuide} id="img_guide" />
+          {/* ═══ SECTION B: 🖼️ IMAGE CREATION PROMPTS ═══ */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-border pb-2">
+              <ImageIcon className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-bold">{t("🖼️ Image Creation Prompts", "🖼️ 이미지 제작용 프롬프트")}</h4>
             </div>
-            <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-foreground/80">
-              {generated.imageGuide}
-            </div>
-          </div>
 
-          {/* Export Prompts — Bridge to External Tools */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold flex items-center gap-1.5">
-              <ExternalLink className="h-4 w-4 text-primary" />
-              {t("External Tool Prompts", "외부 툴 프롬프트")}
-            </h4>
-            <p className="text-[10px] text-muted-foreground">
-              {t(
-                "Copy the prompt and click the link to create images/videos in each tool",
-                "프롬프트를 복사하고 링크를 클릭해 각 툴에서 이미지/영상을 제작하세요"
-              )}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Image Guide */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
+                  📐 {t("Spec & Direction Guide", "스펙 & 디렉션 가이드")}
+                </span>
+                <CopyBtn text={generated.imageGuide} id="img_guide" />
+              </div>
+              <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 text-xs text-foreground/80">
+                {generated.imageGuide}
+              </div>
+            </div>
+
+            {/* Tool-specific prompts */}
+            <div className="grid grid-cols-1 gap-2">
               {generated.exportPrompts.map((exp) => (
-                <div key={exp.tool} className="space-y-1">
+                <div key={exp.tool} className={`space-y-1 ${exp.isAI ? "p-3 rounded-lg border-2 border-primary/30 bg-primary/5" : ""}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px]">{exp.tool}</Badge>
+                      <Badge variant={exp.isAI ? "default" : "outline"} className={`text-[10px] ${exp.isAI ? "bg-primary text-primary-foreground" : ""}`}>
+                        {exp.isAI ? "⚡ " : ""}{exp.tool}
+                      </Badge>
+                      {exp.isAI && (
+                        <span className="text-[9px] text-primary font-medium">
+                          {t("Built-in AI — no API key needed", "내장 AI — API 키 불필요")}
+                        </span>
+                      )}
                       {exp.url && (
                         <a href={exp.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
                           <ExternalLink className="h-2.5 w-2.5" /> Open
@@ -783,13 +864,13 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
           <Collapsible open={showLegal} onOpenChange={setShowLegal}>
             <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
               {showLegal ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
               <span className="font-medium">{t("Full Compliance Checklist", "전체 컴플라이언스 체크리스트")}</span>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 p-3 rounded-lg border border-border bg-secondary/20 text-[11px] space-y-1">
               {getComplianceChecks(selectedPurpose.channel === "outside" ? "social" : "dotcom").map((c) => (
                 <div key={c.id} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                   <span className="text-muted-foreground font-mono">[{c.category}]</span>
                   <span className="text-foreground/80">{lang === "en" ? c.rule : c.ruleKo}</span>
                 </div>
