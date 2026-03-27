@@ -205,36 +205,53 @@ export function LgComReviewDashboard({ onProductClick }: LgComReviewDashboardPro
             <CardTitle className="text-lg font-heading">
               {t("LG.com Review Dashboard", "LG.com 리뷰 대시보드")}
             </CardTitle>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary gap-1">
-              <Globe className="h-2.5 w-2.5" />
-              {t("Weekly", "주간")}
-            </Badge>
           </div>
-          <div className="flex gap-1">
-            {[
-              { value: "all", label: t("All", "전체") },
-              { value: "US", label: "US" },
-              { value: "UK", label: "UK" },
-            ].map((r) => (
-              <button
-                key={r.value}
-                onClick={() => setRegion(r.value)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  region === r.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-1.5">
+            {/* Period toggle */}
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+              {[
+                { value: "weekly" as const, label: t("Weekly", "주간") },
+                { value: "cumulative" as const, label: t("Cumulative", "누적") },
+              ].map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => setPeriod(p.value)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    period === p.value
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {/* Region toggle */}
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+              {[
+                { value: "all", label: t("All", "전체") },
+                { value: "US", label: "US" },
+                { value: "UK", label: "UK" },
+              ].map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setRegion(r.value)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    region === r.value
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {t(
-            "Top 10 products by positive/negative reviews collected from LG.com (Bazaarvoice) this week",
-            "이번 주 LG.com(Bazaarvoice)에서 수집된 긍정/부정 리뷰 기준 Top 10 제품"
-          )}
+          {period === "weekly"
+            ? t("Top 10 products by positive/negative reviews this week", "이번 주 긍정/부정 리뷰 기준 Top 10 제품")
+            : t("Top 10 products by cumulative positive/negative reviews", "누적 긍정/부정 리뷰 기준 Top 10 제품")}
         </p>
       </CardHeader>
       <CardContent className="pt-0">
