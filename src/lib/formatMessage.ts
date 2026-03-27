@@ -720,7 +720,54 @@ ${averageScore >= 0.7 ? "  → 긍정 리뷰 기반 SNS 마케팅 적극 추천"
         ),
       ];
 
-  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, usageScenes, durabilityInsights, personas };
+  // JTBD Insights — Jobs to be Done framework
+  const jtbdInsights: import("./formatMessage").JTBDInsight = {
+    anxiety: keywords.negative.length > 0
+      ? t(
+          `Before purchasing, users were most concerned about: ${keywords.negative.slice(0, 2).join(", ")}. These are the key anxiety points to address in marketing.`,
+          `구매 전 고객이 가장 걱정한 부분: ${keywords.negative.slice(0, 2).join(", ")}. 마케팅에서 해소해야 할 핵심 불안 요소입니다.`
+        )
+      : t("No significant pre-purchase concerns detected.", "구매 전 주요 불안 요소가 감지되지 않았습니다."),
+    delight: keywords.positive.length > 0
+      ? t(
+          `After purchase, users felt relief and delight about: ${keywords.positive.slice(0, 3).join(", ")}. These are the words they use when recommending to others.`,
+          `구매 후 고객이 안도하고 기뻐한 포인트: ${keywords.positive.slice(0, 3).join(", ")}. 추천 시 가장 많이 사용하는 표현입니다.`
+        )
+      : t("Collecting delight data from reviews.", "리뷰에서 만족 데이터를 수집 중입니다."),
+    switchingPoint: averageScore >= 0.7
+      ? t(
+          `High satisfaction (${(averageScore * 100).toFixed(0)}%) suggests strong switching motivation. Key reasons users chose ${productName}: ${keywords.positive.slice(0, 2).join(", ") || "overall quality"}.`,
+          `높은 만족도(${(averageScore * 100).toFixed(0)}%)로 강한 전환 동기 확인. ${productName} 선택 결정적 이유: ${keywords.positive.slice(0, 2).join(", ") || "전반적 품질"}.`
+        )
+      : t(
+          `Mixed satisfaction indicates opportunity to strengthen differentiation vs competitors.`,
+          `혼재된 만족도는 경쟁사 대비 차별화 강화 기회를 시사합니다.`
+        ),
+  };
+
+  // CRM Insights — Negative review-based CRM & product planning
+  const crmInsights: import("./formatMessage").CRMInsight = {
+    expectationGap: keywords.negative.length > 0
+      ? t(
+          `Gap between expectations and reality: Users feel disappointed about "${keywords.negative[0]}". This suggests a mismatch between marketing messaging and actual experience.`,
+          `기대와 현실의 괴리: 고객이 "${keywords.negative[0]}"에 배신감을 느끼고 있습니다. 마케팅 메시지와 실제 경험 간 괴리가 존재합니다.`
+        )
+      : t("No significant expectation gaps detected.", "주요 기대치 괴리가 감지되지 않았습니다."),
+    serviceOpportunity: keywords.negative.length > 0
+      ? t(
+          `Paid service opportunity: Users experiencing "${keywords.negative.slice(0, 2).join(", ")}" may pay for premium support, extended warranty, or dedicated setup services.`,
+          `유료 서비스 기회: "${keywords.negative.slice(0, 2).join(", ")}" 관련 불만 고객은 프리미엄 지원, 연장 보증, 전문 설치 서비스에 비용을 지불할 의사가 있습니다.`
+        )
+      : t("No clear upselling opportunities detected yet.", "아직 명확한 업셀링 기회가 감지되지 않았습니다."),
+    crmResponse: keywords.negative.length > 0
+      ? t(
+          `CRM response strategy: For users mentioning "${keywords.negative[0]}", provide immediate acknowledgment + solution timeline. Offer compensation (discount code, free accessory) within 24h of negative review.`,
+          `CRM 대응 전략: "${keywords.negative[0]}" 언급 고객에게 즉각적 인정 + 해결 일정 제공. 부정 리뷰 24시간 내 보상(할인 코드, 무료 액세서리) 제안.`
+        )
+      : t("No urgent CRM actions needed at this time.", "현재 긴급한 CRM 대응이 필요하지 않습니다."),
+  };
+
+  return { qaList, reviewGuide, tagline, strengthsSummary, weaknessesSummary, userTips, usageScenes, durabilityInsights, personas, jtbdInsights, crmInsights };
 }
 
 function generatePersonas(
