@@ -1,1 +1,0 @@
-ALTER TABLE public.reviews ADD COLUMN IF NOT EXISTS review_type text DEFAULT 'organic' CHECK (review_type IN ('organic', 'paid', 'syndication', 'mixed'));

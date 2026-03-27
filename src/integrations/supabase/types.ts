@@ -88,7 +88,6 @@ export type Database = {
           product_id: string
           published_at: string | null
           rating: number | null
-          review_type: string | null
           sentiment: string | null
           sentiment_score: number | null
           source: string
@@ -109,7 +108,6 @@ export type Database = {
           product_id: string
           published_at?: string | null
           rating?: number | null
-          review_type?: string | null
           sentiment?: string | null
           sentiment_score?: number | null
           source: string
@@ -130,7 +128,6 @@ export type Database = {
           product_id?: string
           published_at?: string | null
           rating?: number | null
-          review_type?: string | null
           sentiment?: string | null
           sentiment_score?: number | null
           source?: string
