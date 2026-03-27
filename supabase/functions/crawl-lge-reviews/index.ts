@@ -98,7 +98,7 @@ RULES:
 // ── Bazaarvoice Conversations API ──
 const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
   us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
-  uk: { baseUrl: "https://stg.api.bazaarvoice.com/data", client: "lgelectronics-en" },
+  uk: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
 };
 
 async function fetchBazaarvoiceReviews(
@@ -116,9 +116,7 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  const since = new Date();
-  since.setDate(since.getDate() - 90);
-  url.searchParams.append("Filter", `SubmissionTime:gte:${since.toISOString().split("T")[0]}`);
+  // Note: no date filter — BV returns latest reviews sorted by SubmissionTime desc
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
