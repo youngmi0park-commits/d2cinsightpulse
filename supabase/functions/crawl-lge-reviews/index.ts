@@ -98,7 +98,7 @@ RULES:
 // ── Bazaarvoice Conversations API ──
 const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
   us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
-  uk: { baseUrl: "https://stg.api.bazaarvoice.com/data", client: "lgelectronics-en" },
+  uk: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
 };
 
 async function fetchBazaarvoiceReviews(
