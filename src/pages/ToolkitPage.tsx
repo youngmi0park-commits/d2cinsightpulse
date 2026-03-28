@@ -281,6 +281,8 @@ export default function ToolkitPage() {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
   const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
+  const [selectedCampaignType, setSelectedCampaignType] = useState("📺 Single Product Focus");
+  const [selectedBudget, setSelectedBudget] = useState("💵 Tier 2 — Priority ($50–100K)");
 
   type SortMode = "inventory" | "sales" | "rated";
   type CopyTab = "owned" | "paid" | "retail";
