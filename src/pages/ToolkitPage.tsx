@@ -456,9 +456,9 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 2 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={2} title="Global Strategy & Persona" subtitle="Target persona · JTBD messaging strategy" />
+        <StepHeader step={2} title={t("Global Strategy & Persona", "글로벌 전략 & 페르소나")} subtitle={t("Target persona · JTBD messaging strategy", "타겟 페르소나 · JTBD 메시징 전략")} />
 
-        <SectionLabel>TARGET PERSONA</SectionLabel>
+        <SectionLabel>{t("TARGET PERSONA", "타겟 페르소나")}</SectionLabel>
         <div className="grid grid-cols-3 gap-3.5 mb-6">
           {PERSONAS.map((p, i) => (
             <button
@@ -483,12 +483,13 @@ export default function ToolkitPage() {
           ))}
         </div>
 
-        <SectionLabel>JTBD & KEY MESSAGING</SectionLabel>
+        <SectionLabel>{t("JTBD & KEY MESSAGING", "JTBD & 핵심 메시징")}</SectionLabel>
         <div className="grid grid-cols-2 gap-4">
           {/* Defense */}
           <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5">
             <p className="text-[10px] font-bold text-primary uppercase tracking-[1px] mb-3">
-              🛡 ANXIETY → DEFENSE (Pre-purchase concern)
+              🛡 {t("ANXIETY → DEFENSE (Pre-purchase concern)", "불안 요소 → 디펜스 (구매 전 우려)")}
+            </p>
             </p>
             {DEFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < DEFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
@@ -503,7 +504,8 @@ export default function ToolkitPage() {
           {/* Offense */}
           <div className="rounded-xl border border-success/20 bg-success/5 p-5">
             <p className="text-[10px] font-bold text-success uppercase tracking-[1px] mb-3">
-              ⚡ DELIGHT → OFFENSE (Post-purchase satisfaction)
+              ⚡ {t("DELIGHT → OFFENSE (Post-purchase satisfaction)", "만족 포인트 → 오펜스 (구매 후 만족)")}
+            </p>
             </p>
             {OFFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < OFFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
