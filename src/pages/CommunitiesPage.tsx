@@ -231,35 +231,29 @@ const CommunitiesPage = () => {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : !communities || communities.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+        <div className="gradient-card rounded-xl border border-border p-6 text-center text-sm text-muted-foreground">
             LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다.
-          </CardContent>
-        </Card>
+        </div>
       ) : (
         <>
           {/* Source count buttons */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary" />
-                <CardTitle className="text-sm font-semibold">커뮤니티별 리뷰 수</CardTitle>
-                <Badge variant="secondary" className="text-[10px] ml-auto">Total {total.toLocaleString()}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {communities.map((c) => (
-                  <div key={c.source} className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-4 py-2.5 min-w-[120px]">
-                    <div>
-                      <div className="text-xs font-semibold text-foreground">{c.label}</div>
-                      <div className="text-lg font-bold text-primary">{c.total.toLocaleString()}</div>
-                    </div>
+          <div className="gradient-card rounded-xl border border-border p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-semibold font-heading">커뮤니티별 리뷰 수</h4>
+              <Badge variant="secondary" className="text-[10px] ml-auto">Total {total.toLocaleString()}</Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {communities.map((c) => (
+                <div key={c.source} className="flex items-center gap-2 rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[120px]">
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{c.label}</div>
+                    <div className="text-lg font-bold text-primary">{c.total.toLocaleString()}</div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Community cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
