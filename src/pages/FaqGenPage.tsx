@@ -110,7 +110,7 @@ export default function FaqGenPage() {
 
       {/* ═══════ STEP 1 — Pipeline Overview ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={1} title={t("Generation Pipeline", "생성 파이프라인")} subtitle={t("4-stage automated workflow", "4단계 자동화 워크플로")} />
+        <StepHeader step={1} title={t("Generation Pipeline", "생성 파이프라인")} subtitle={t("4-stage automated workflow", "4단계 자동화 Workflow")} />
 
         <div className="bg-muted/40 border border-border rounded-lg p-3 mb-5 flex items-start gap-2">
           <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
