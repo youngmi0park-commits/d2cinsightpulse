@@ -218,12 +218,12 @@ const ASSETS = [
 
 function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle: string }) {
   return (
-    <div className="flex items-center gap-3 pb-3.5 mb-5 border-b-2 border-border">
-      <span className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-primary text-white text-[13px] font-bold shrink-0">
+    <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">
         {step}
       </span>
-      <h2 className="text-[17px] font-bold text-foreground tracking-tight">{title}</h2>
-      <span className="text-[12.5px] text-muted-foreground ml-auto">{subtitle}</span>
+      <h2 className="text-base font-bold font-heading text-foreground">{title}</h2>
+      <span className="text-xs text-muted-foreground ml-auto">{subtitle}</span>
     </div>
   );
 }
@@ -327,7 +327,7 @@ export default function ToolkitPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8 pr-9" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       <PageHeader
         icon={Wrench}
         title="🚀 Global Marketing Toolkit"
@@ -336,7 +336,6 @@ export default function ToolkitPage() {
           "실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
         )}
       />
-      <div className="mt-6"></div>
 
       {/* ═══════ STEP 1 ═══════ */}
       <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
