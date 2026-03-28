@@ -135,23 +135,23 @@ function CommunityCard({ community }: { community: CommunityData }) {
   const negPercent = community.total ? Math.round((community.negative / community.total) * 100) : 0;
 
   return (
-    <div className="gradient-card rounded-xl border border-border overflow-hidden">
-      <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">{community.label}</CardTitle>
-          <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
-        </div>
-        {/* Sentiment bar */}
-        <div className="h-2 rounded-full overflow-hidden flex bg-secondary mt-2">
-          <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
-          <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
-          <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span className="text-success font-medium">{posPercent}% 긍정</span>
-          <span className="text-destructive font-medium">{negPercent}% 부정</span>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-4">
+    <div className="gradient-card rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-semibold font-heading">{community.label}</h4>
+        <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
+      </div>
+      {/* Sentiment bar */}
+      <div className="h-2 rounded-full overflow-hidden flex bg-secondary">
+        <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
+        <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
+        <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1 mb-3">
+        <span className="text-success font-medium">{posPercent}% 긍정</span>
+        <span className="text-destructive font-medium">{negPercent}% 부정</span>
+      </div>
+
+      <div className="space-y-4">
         {/* Positive products */}
         {community.topPositiveProducts.length > 0 && (
           <div>
@@ -209,8 +209,8 @@ function CommunityCard({ community }: { community: CommunityData }) {
         {community.topPositiveProducts.length === 0 && community.topNegativeProducts.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-2">제품별 데이터 없음</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
