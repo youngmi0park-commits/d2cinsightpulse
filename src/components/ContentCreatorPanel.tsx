@@ -274,7 +274,7 @@ export function ContentCreatorPanel({
 
   const CopyBtn = ({ text, id, label }: { text: string; id: string; label?: string }) => (
     <Button variant="outline" size="sm" onClick={() => copyText(text, id)} className="h-7 text-[10px] gap-1">
-      {copiedKey === id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      {copiedKey === id ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
       {label || t("Copy", "복사")}
     </Button>
   );
