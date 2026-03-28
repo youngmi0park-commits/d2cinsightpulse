@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { PageHeader } from "@/components/PageHeader";
-import { SentimentChart } from "@/components/SentimentChart";
-import { ReviewList } from "@/components/ReviewList";
-import { KeywordCloud } from "@/components/KeywordCloud";
-import { MarketingHub } from "@/components/MarketingHub";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
@@ -119,17 +115,6 @@ const Index = () => {
       })
     : results;
 
-  const isMulti = filteredResults.length > 1;
-
-  const groupedResults = filteredResults.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
-    let key: string;
-    if (groupMode === "subcategory") key = extractSubCategory(item.product.displayName);
-    else if (groupMode === "inch") key = extractInch(item.product.displayName) || t("Unknown", "미분류");
-    else key = item.product.category;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item);
-    return acc;
-  }, {});
 
   return (
     <div className="min-h-screen bg-background">
@@ -236,36 +221,5 @@ const Index = () => {
   );
 };
 
-function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
-  return (
-    <>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-          {item.product.category}
-        </Badge>
-        <h3 className="text-lg font-bold">{item.product.displayName || item.product.name}</h3>
-        <span className="text-xs text-muted-foreground font-mono">{item.product.name}</span>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <SentimentChart sentiment={item.sentiment} />
-        <KeywordCloud keywords={item.sentiment.keywords} />
-      </div>
-
-      {item.product.reviews.length > 0 && (
-        <MarketingHub
-          geoMessages={item.geoMessages}
-          productName={item.product.name}
-          displayName={item.product.displayName}
-          totalReviews={item.product.reviews.length}
-          marketing={item.marketing}
-          sentiment={item.sentiment}
-          reviews={item.product.reviews}
-        />
-      )}
-      <ReviewList reviews={item.product.reviews} />
-    </>
-  );
-}
 
 export default Index;
