@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
 import ToolkitPage from "./pages/ToolkitPage";
+import RedditPage from "./pages/RedditPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
                 <main className="flex-1 overflow-hidden">
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    <Route path="/reddit" element={<RedditPage />} />
                     <Route path="/toolkit" element={<ToolkitPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
