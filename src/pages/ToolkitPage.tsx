@@ -279,6 +279,7 @@ function CopyBlock({
 // ═══════════════════════════════════════════════════════════════
 
 export default function ToolkitPage() {
+  const { t } = useLang();
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
   const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
