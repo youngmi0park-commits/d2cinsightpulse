@@ -143,6 +143,20 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                       </Badge>
                     ))}
                 </div>
+
+                {/* Top Usage Scenes (preview) */}
+                {item.sentiment.usageScenes.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {item.sentiment.usageScenes.slice(0, 3).map((scene, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 text-[9px] text-[#006600] bg-[#006600]/8 border border-[#006600]/15 rounded-md px-1.5 py-0.5"
+                      >
+                        📍 {scene}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
           );
@@ -171,6 +185,11 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               <SentimentChart sentiment={item.sentiment} />
               <KeywordCloud keywords={item.sentiment.keywords} />
             </div>
+
+            {/* 고객 실제 Using Scene */}
+            {item.sentiment.usageScenes.length > 0 && (
+              <UsageSceneSection scenes={item.sentiment.usageScenes} />
+            )}
 
             {item.product.reviews.length > 0 && (
               <MarketingHub
