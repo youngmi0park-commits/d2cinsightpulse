@@ -555,7 +555,7 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 4 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={4} title="AI Text Copy Generation" subtitle="Channel-specific auto-generation · Legal pre-review included" />
+        <StepHeader step={4} title={t("AI Text Copy Generation", "AI 텍스트 카피 생성")} subtitle={t("Channel-specific auto-generation · Legal pre-review included", "채널별 자동 생성 · 법률 사전 검토 포함")} />
 
         <button
           onClick={handleGenerate}
@@ -564,10 +564,10 @@ export default function ToolkitPage() {
         >
           {isGenerating ? (
             <span className="flex items-center justify-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+              <Loader2 className="h-4 w-4 animate-spin" /> {t("Generating...", "생성 중...")}
             </span>
           ) : (
-            "✨ Generate All Copy — Owned · Paid · Retail"
+            t("✨ Generate All Copy — Owned · Paid · Retail", "✨ 전체 카피 생성 — Owned · Paid · Retail")
           )}
         </button>
 
@@ -611,7 +611,7 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 5 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={5} title="Media Asset Handoff" subtitle="Image/video/banner external tool integration · Auto design prompt" />
+        <StepHeader step={5} title={t("Media Asset Handoff", "미디어 에셋 핸드오프")} subtitle={t("Image/video/banner external tool integration · Auto design prompt", "이미지/영상/배너 외부 툴 연동 · 자동 디자인 프롬프트")} />
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {ASSETS.map((a, i) => (
