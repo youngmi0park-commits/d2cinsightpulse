@@ -106,7 +106,9 @@ async function fetchBazaarvoiceReviews(
   region: "us" | "uk",
   category: string,
   offset = 0,
-  limit = 20
+  limit = 20,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<any[]> {
   const config = BV_CONFIG[region];
   const url = new URL(`${config.baseUrl}/reviews.json`);
@@ -116,7 +118,10 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  // Note: no date filter — BV returns latest reviews sorted by SubmissionTime desc
+  
+  // Date range filters - BV uses epoch seconds for SubmissionTime filter
+  if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${Math.floor(new Date(dateFrom).getTime() / 1000)}`);
+  if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${Math.floor(new Date(dateTo).getTime() / 1000)}`);
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
@@ -187,8 +192,10 @@ Deno.serve(async (req) => {
   let categories = ["Refrigerator", "Washer", "Dryer", "Dishwasher"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
-  let bvPages = 5; // pages of 100 reviews each per category per region
-  let bvOffset = 0; // starting offset for BV pagination
+  let bvPages = 5;
+  let bvOffset = 0;
+  let dateFrom: string | undefined;
+  let dateTo: string | undefined;
 
   try {
     const body = await req.json();
@@ -197,6 +204,8 @@ Deno.serve(async (req) => {
     if (body.maxQueries) maxQueriesPerCategory = body.maxQueries;
     if (body.bvPages != null) bvPages = body.bvPages;
     if (body.bvOffset != null) bvOffset = body.bvOffset;
+    if (body.dateFrom) dateFrom = body.dateFrom;
+    if (body.dateTo) dateTo = body.dateTo;
   } catch {
     // defaults
   }
@@ -227,7 +236,7 @@ Deno.serve(async (req) => {
           try {
             let pageOffset = bvOffset;
             for (let page = 0; page < bvPages; page++) {
-              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100);
+              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo);
               console.log(`[BV-${region.toUpperCase()}] Page ${page + 1}/${bvPages}: ${bvReviews.length} reviews for ${category} (offset=${pageOffset})`);
               
               if (bvReviews.length === 0) break;
