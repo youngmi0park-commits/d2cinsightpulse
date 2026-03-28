@@ -490,7 +490,6 @@ export default function ToolkitPage() {
             <p className="text-[10px] font-bold text-primary uppercase tracking-[1px] mb-3">
               🛡 {t("ANXIETY → DEFENSE (Pre-purchase concern)", "불안 요소 → 디펜스 (구매 전 우려)")}
             </p>
-            </p>
             {DEFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < DEFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
                 <span className="text-sm shrink-0 mt-0.5">{m.icon}</span>
@@ -505,7 +504,6 @@ export default function ToolkitPage() {
           <div className="rounded-xl border border-success/20 bg-success/5 p-5">
             <p className="text-[10px] font-bold text-success uppercase tracking-[1px] mb-3">
               ⚡ {t("DELIGHT → OFFENSE (Post-purchase satisfaction)", "만족 포인트 → 오펜스 (구매 후 만족)")}
-            </p>
             </p>
             {OFFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < OFFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
