@@ -187,9 +187,27 @@ export function AppSidebar() {
 
       {!collapsed && (
         <SidebarFooter className="p-3 border-t border-[hsl(0,0%,15%)]">
-          <p className="text-[9px] text-[hsl(0,0%,35%)] text-center leading-relaxed">
+          <button
+            onClick={toggleLang}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)] transition-colors"
+          >
+            <Languages className="h-4 w-4 shrink-0" />
+            {lang === "ko" ? "English" : "한국어"}
+          </button>
+          <p className="text-[9px] text-[hsl(0,0%,35%)] text-center leading-relaxed mt-1">
             D2C Marketing Strategy Team
           </p>
+        </SidebarFooter>
+      )}
+      {collapsed && (
+        <SidebarFooter className="p-2 border-t border-[hsl(0,0%,15%)]">
+          <button
+            onClick={toggleLang}
+            className="flex items-center justify-center p-2 rounded-md text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)] transition-colors"
+            title={lang === "ko" ? "English" : "한국어"}
+          >
+            <Languages className="h-4 w-4" />
+          </button>
         </SidebarFooter>
       )}
     </Sidebar>
