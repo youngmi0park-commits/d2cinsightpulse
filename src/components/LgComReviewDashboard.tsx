@@ -117,7 +117,7 @@ function ProductRankTable({
                 <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                   i < 3
                     ? isPositive
-                      ? "bg-emerald-800/15 text-success"
+                      ? "bg-success/15 text-success"
                       : "bg-red-500/20 text-red-400"
                     : "bg-muted text-muted-foreground"
                 }`}>
@@ -155,7 +155,7 @@ function ProductRankTable({
                 <div className="flex items-center gap-1.5">
                   <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${isPositive ? "bg-emerald-700/70" : "bg-red-500"}`}
+                      className={`h-full rounded-full ${isPositive ? "bg-success/70" : "bg-red-500"}`}
                       style={{ width: `${Math.min(p.avg_score || 0, 100)}%` }}
                     />
                   </div>
