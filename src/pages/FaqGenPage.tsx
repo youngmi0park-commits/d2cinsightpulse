@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import {
   HelpCircle, Sparkles, Search, ChevronRight, Loader2,
-  BarChart3, Shield, Package, Copy, CheckCircle2, XCircle, Clock,
+  BarChart3, Shield, Package, Copy, CheckCircle2, XCircle,
   Wrench, Monitor, Wifi, Settings, DollarSign, Tag,
   TrendingUp, AlertTriangle,
 } from "lucide-react";
