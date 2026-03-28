@@ -2,7 +2,6 @@ import { Globe, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 /* ── helpers ── */
@@ -135,24 +134,23 @@ function CommunityCard({ community }: { community: CommunityData }) {
   const negPercent = community.total ? Math.round((community.negative / community.total) * 100) : 0;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold">{community.label}</CardTitle>
-          <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
-        </div>
-        {/* Sentiment bar */}
-        <div className="h-2 rounded-full overflow-hidden flex bg-secondary mt-2">
-          <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
-          <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
-          <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span className="text-success font-medium">{posPercent}% 긍정</span>
-          <span className="text-destructive font-medium">{negPercent}% 부정</span>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-4">
+    <div className="gradient-card rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-semibold font-heading">{community.label}</h4>
+        <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
+      </div>
+      {/* Sentiment bar */}
+      <div className="h-2 rounded-full overflow-hidden flex bg-secondary">
+        <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
+        <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
+        <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1 mb-3">
+        <span className="text-success font-medium">{posPercent}% 긍정</span>
+        <span className="text-destructive font-medium">{negPercent}% 부정</span>
+      </div>
+
+      <div className="space-y-4">
         {/* Positive products */}
         {community.topPositiveProducts.length > 0 && (
           <div>
@@ -210,8 +208,8 @@ function CommunityCard({ community }: { community: CommunityData }) {
         {community.topPositiveProducts.length === 0 && community.topNegativeProducts.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-2">제품별 데이터 없음</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -232,35 +230,29 @@ const CommunitiesPage = () => {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : !communities || communities.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+        <div className="gradient-card rounded-xl border border-border p-6 text-center text-sm text-muted-foreground">
             LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다.
-          </CardContent>
-        </Card>
+        </div>
       ) : (
         <>
           {/* Source count buttons */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary" />
-                <CardTitle className="text-sm font-semibold">커뮤니티별 리뷰 수</CardTitle>
-                <Badge variant="secondary" className="text-[10px] ml-auto">Total {total.toLocaleString()}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {communities.map((c) => (
-                  <div key={c.source} className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-4 py-2.5 min-w-[120px]">
-                    <div>
-                      <div className="text-xs font-semibold text-foreground">{c.label}</div>
-                      <div className="text-lg font-bold text-primary">{c.total.toLocaleString()}</div>
-                    </div>
+          <div className="gradient-card rounded-xl border border-border p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Globe className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-semibold font-heading">커뮤니티별 리뷰 수</h4>
+              <Badge variant="secondary" className="text-[10px] ml-auto">Total {total.toLocaleString()}</Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {communities.map((c) => (
+                <div key={c.source} className="flex items-center gap-2 rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[120px]">
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">{c.label}</div>
+                    <div className="text-lg font-bold text-primary">{c.total.toLocaleString()}</div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Community cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
