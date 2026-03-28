@@ -5,7 +5,7 @@ import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
 import { DataStatusBar } from "@/components/DataStatusBar";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Badge } from "@/components/ui/badge";
 
 function CountryReviewButtons() {
