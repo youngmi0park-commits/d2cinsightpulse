@@ -195,7 +195,7 @@ export function RedditBucketDashboard() {
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
-              {t("Reddit Data Classification", "Reddit 데이터 자동 분류")}
+              {t("Reddit Data Auto-Classification", "Reddit 데이터 자동 분류")}
             </CardTitle>
             {totalPosts > 0 && (
               <Badge variant="secondary" className="text-[10px]">
@@ -238,10 +238,12 @@ export function RedditBucketDashboard() {
               })}
             </div>
 
-            {/* Bucket cards */}
-            {summaries.map((s) => (
-              <BucketCard key={s.bucket} summary={s} t={t} />
-            ))}
+            {/* Bucket cards — horizontal 3-column layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {summaries.map((s) => (
+                <BucketCard key={s.bucket} summary={s} t={t} />
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
