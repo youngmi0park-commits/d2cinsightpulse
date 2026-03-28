@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ExternalLink, Loader2, Check, Wrench, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { useLang } from "@/contexts/LanguageContext";
 
 // ═══════════════════════════════════════════════════════════════
 //  DATA
@@ -278,6 +279,7 @@ function CopyBlock({
 // ═══════════════════════════════════════════════════════════════
 
 export default function ToolkitPage() {
+  const { t } = useLang();
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
   const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
@@ -329,28 +331,31 @@ export default function ToolkitPage() {
       <PageHeader
         icon={Wrench}
         title="🚀 Global Marketing Toolkit"
-        description="실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
+        description={t(
+          "Auto-generates campaign content based on real customer review data. Set product selection, target market, and marketing goal to get ready-to-use copy and banner assets.",
+          "실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
+        )}
       />
       <div className="mt-6"></div>
 
       {/* ═══════ STEP 1 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={1} title="Campaign Context" subtitle="Seasonal event & product selection · Korea excluded" />
+        <StepHeader step={1} title={t("Campaign Context", "캠페인 컨텍스트")} subtitle={t("Seasonal event & product selection · Korea excluded", "시즌 이벤트 & 제품 선택 · 한국 제외")} />
 
-        <SectionLabel>GLOBAL SEASONAL EVENT</SectionLabel>
+        <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
         <div className="flex gap-3.5 mb-4 flex-wrap">
-          <SelectDropdown label="SEASONAL EVENT" value={selectedEvent} options={EVENTS} placeholder="— Select Season —" onChange={setSelectedEvent} />
-          <SelectDropdown label="TARGET MARKET" value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
-          <SelectDropdown label="CAMPAIGN GOAL" value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season —", "— 시즌 선택 —")} onChange={setSelectedEvent} />
+          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
+          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
         </div>
 
-        <SectionLabel>CAMPAIGN SETUP</SectionLabel>
+        <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
         <div className="flex gap-3.5 mb-6 flex-wrap">
-          <SelectDropdown label="CAMPAIGN TYPE" value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
-          <SelectDropdown label="BUDGET TIER" value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
+          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
+          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
         </div>
 
-        <SectionLabel>PRODUCT SELECTION</SectionLabel>
+        <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
         <div className="flex items-center gap-0 mb-3.5 border border-border rounded-[10px] overflow-hidden w-fit">
           {([["inventory", "📦 High Inventory"], ["sales", "🏆 Best Seller"], ["rated", "⭐ Top Rated"]] as const).map(([key, label]) => (
             <button
@@ -389,12 +394,12 @@ export default function ToolkitPage() {
             );
           })}
         </div>
-        <p className="text-[11.5px] text-muted-foreground mt-2">Click to select (multi-select enabled)</p>
+        <p className="text-[11.5px] text-muted-foreground mt-2">{t("Click to select (multi-select enabled)", "클릭하여 선택 (복수 선택 가능)")}</p>
 
         {/* Custom Model Input */}
         <div className="mt-5 p-4 rounded-xl border border-border bg-card">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[1px] mb-2.5">
-            ✏️ ADD CUSTOM PRODUCT / MODEL NUMBER
+            ✏️ {t("ADD CUSTOM PRODUCT / MODEL NUMBER", "제품명 / 모델번호 직접 입력")}
           </p>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -409,7 +414,7 @@ export default function ToolkitPage() {
                     setCustomModelInput("");
                   }
                 }}
-                placeholder="e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ..."
+                placeholder={t("e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ...", "예: OLED65C4PUA, WashTower, UltraGear 27GR95QE ...")}
                 className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
               />
             </div>
@@ -422,7 +427,7 @@ export default function ToolkitPage() {
               }}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
             >
-              Add
+              {t("Add", "추가")}
             </button>
           </div>
           {customModels.length > 0 && (
@@ -444,16 +449,16 @@ export default function ToolkitPage() {
             </div>
           )}
           <p className="text-[10.5px] text-muted-foreground mt-2">
-            Enter any product name or model number not listed above. Press Enter or click Add.
+            {t("Enter any product name or model number not listed above. Press Enter or click Add.", "위 목록에 없는 제품명 또는 모델번호를 입력하세요. Enter 또는 추가 버튼을 클릭하세요.")}
           </p>
         </div>
       </div>
 
       {/* ═══════ STEP 2 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={2} title="Global Strategy & Persona" subtitle="Target persona · JTBD messaging strategy" />
+        <StepHeader step={2} title={t("Global Strategy & Persona", "글로벌 전략 & 페르소나")} subtitle={t("Target persona · JTBD messaging strategy", "타겟 페르소나 · JTBD 메시징 전략")} />
 
-        <SectionLabel>TARGET PERSONA</SectionLabel>
+        <SectionLabel>{t("TARGET PERSONA", "타겟 페르소나")}</SectionLabel>
         <div className="grid grid-cols-3 gap-3.5 mb-6">
           {PERSONAS.map((p, i) => (
             <button
@@ -478,12 +483,12 @@ export default function ToolkitPage() {
           ))}
         </div>
 
-        <SectionLabel>JTBD & KEY MESSAGING</SectionLabel>
+        <SectionLabel>{t("JTBD & KEY MESSAGING", "JTBD & 핵심 메시징")}</SectionLabel>
         <div className="grid grid-cols-2 gap-4">
           {/* Defense */}
           <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5">
             <p className="text-[10px] font-bold text-primary uppercase tracking-[1px] mb-3">
-              🛡 ANXIETY → DEFENSE (Pre-purchase concern)
+              🛡 {t("ANXIETY → DEFENSE (Pre-purchase concern)", "불안 요소 → 디펜스 (구매 전 우려)")}
             </p>
             {DEFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < DEFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
@@ -498,7 +503,7 @@ export default function ToolkitPage() {
           {/* Offense */}
           <div className="rounded-xl border border-success/20 bg-success/5 p-5">
             <p className="text-[10px] font-bold text-success uppercase tracking-[1px] mb-3">
-              ⚡ DELIGHT → OFFENSE (Post-purchase satisfaction)
+              ⚡ {t("DELIGHT → OFFENSE (Post-purchase satisfaction)", "만족 포인트 → 오펜스 (구매 후 만족)")}
             </p>
             {OFFENSE_MESSAGES.map((m, i) => (
               <div key={i} className={`flex gap-2 py-2.5 ${i < OFFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
@@ -515,9 +520,9 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 3 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={3} title="Content Hooks & VoC" subtitle="Search intent ad hooks · Verified customer quotes" />
+        <StepHeader step={3} title={t("Content Hooks & VoC", "콘텐츠 훅 & VoC")} subtitle={t("Search intent ad hooks · Verified customer quotes", "검색 인텐트 광고 훅 · 인증 고객 리뷰 인용")} />
 
-        <SectionLabel>🔍 SEARCH INTENT HOOKS</SectionLabel>
+        <SectionLabel>🔍 {t("SEARCH INTENT HOOKS", "검색 인텐트 훅")}</SectionLabel>
         <div className="space-y-2.5 mb-8">
           {HOOKS.map((h, i) => (
             <div key={i} className="grid grid-cols-[100px_1fr_auto] items-center gap-3 bg-card border border-border rounded-[10px] px-4 py-3">
@@ -528,7 +533,7 @@ export default function ToolkitPage() {
           ))}
         </div>
 
-        <SectionLabel>💬 VERIFIED VOC — Ready-to-use 1-line English reviews</SectionLabel>
+        <SectionLabel>💬 {t("VERIFIED VOC — Ready-to-use 1-line English reviews", "인증 VOC — 바로 활용 가능한 1줄 영문 리뷰")}</SectionLabel>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
           {VOCS.map((v, i) => (
             <div key={i} className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 hover:border-primary transition-colors">
@@ -550,7 +555,7 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 4 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={4} title="AI Text Copy Generation" subtitle="Channel-specific auto-generation · Legal pre-review included" />
+        <StepHeader step={4} title={t("AI Text Copy Generation", "AI 텍스트 카피 생성")} subtitle={t("Channel-specific auto-generation · Legal pre-review included", "채널별 자동 생성 · 법률 사전 검토 포함")} />
 
         <button
           onClick={handleGenerate}
@@ -559,10 +564,10 @@ export default function ToolkitPage() {
         >
           {isGenerating ? (
             <span className="flex items-center justify-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+              <Loader2 className="h-4 w-4 animate-spin" /> {t("Generating...", "생성 중...")}
             </span>
           ) : (
-            "✨ Generate All Copy — Owned · Paid · Retail"
+            t("✨ Generate All Copy — Owned · Paid · Retail", "✨ 전체 카피 생성 — Owned · Paid · Retail")
           )}
         </button>
 
@@ -606,7 +611,7 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 5 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={5} title="Media Asset Handoff" subtitle="Image/video/banner external tool integration · Auto design prompt" />
+        <StepHeader step={5} title={t("Media Asset Handoff", "미디어 에셋 핸드오프")} subtitle={t("Image/video/banner external tool integration · Auto design prompt", "이미지/영상/배너 외부 툴 연동 · 자동 디자인 프롬프트")} />
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {ASSETS.map((a, i) => (
