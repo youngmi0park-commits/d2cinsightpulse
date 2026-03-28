@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,54 +6,56 @@
 
 @layer base {
   :root {
-    /* Warm cream background: RGB(240, 236, 228) */
-    --background: 40 33% 92%;
-    --foreground: 0 0% 10%;
+    /* Clean dashboard background: #f8f9fb */
+    --background: 220 20% 97%;
+    --foreground: 220 15% 10%;
 
-    --card: 40 30% 96%;
-    --card-foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 10%;
 
-    --popover: 40 30% 96%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 10%;
 
-    /* LG Red accent: RGB(234, 27, 23) */
-    --primary: 1 82% 50%;
+    /* LG Brand Red: #B83228 */
+    --primary: 4 58% 44%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 20% 88%;
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 15% 15%;
 
-    --muted: 40 15% 85%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 8% 46%;
 
-    --accent: 1 82% 50%;
+    --accent: 4 58% 44%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    /* Destructive uses same brand red */
+    --destructive: 4 58% 44%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 40%;
+    /* Success green: #1a8a4a */
+    --success: 148 68% 32%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
 
-    --border: 40 15% 80%;
-    --input: 40 20% 85%;
-    --ring: 1 82% 50%;
+    --border: 220 13% 89%;
+    --input: 220 14% 93%;
+    --ring: 4 58% 44%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 40 25% 94%;
-    --sidebar-foreground: 0 0% 15%;
-    --sidebar-primary: 1 82% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 20%;
+    --sidebar-primary: 4 58% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 20% 88%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 40 15% 80%;
-    --sidebar-ring: 1 82% 50%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 4 58% 44%;
 
-    --font-heading: 'Pretendard', 'Space Grotesk', sans-serif;
+    --font-heading: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
 }
@@ -65,7 +67,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Pretendard', 'Space Grotesk', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
