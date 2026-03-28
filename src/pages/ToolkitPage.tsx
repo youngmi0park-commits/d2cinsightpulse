@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ExternalLink, Loader2, Check, Wrench } from "lucide-react";
+import { ExternalLink, Loader2, Check, Wrench, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 // ═══════════════════════════════════════════════════════════════
@@ -289,6 +289,8 @@ export default function ToolkitPage() {
 
   const [sortMode, setSortMode] = useState<SortMode>("inventory");
   const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set([0]));
+  const [customModelInput, setCustomModelInput] = useState("");
+  const [customModels, setCustomModels] = useState<string[]>([]);
   const [activePersona, setActivePersona] = useState(0);
   const [activeCopyTab, setActiveCopyTab] = useState<CopyTab>("owned");
   const [isGenerating, setIsGenerating] = useState(false);
