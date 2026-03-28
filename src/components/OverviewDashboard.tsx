@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 
 /* ───── hooks ───── */
@@ -12,73 +12,124 @@ function useOverviewKPIs() {
   const { data: sourceCounts } = useSourceCounts();
 
   return useQuery({
-    queryKey: ["overview-kpis", sourceCounts],
+    queryKey: ["overview-kpis-v2", sourceCounts],
     queryFn: async () => {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
       // Total reviews
       const { count: totalReviews } = await supabase
         .from("reviews")
         .select("*", { count: "exact", head: true });
 
-      // Weekly reviews (last 7 days)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const { count: weeklyReviews } = await supabase
+      // This week reviews
+      const { count: thisWeekReviews } = await supabase
         .from("reviews")
         .select("*", { count: "exact", head: true })
         .gte("collected_at", weekAgo.toISOString());
 
-      // Sentiment avg
-      const { data: sentimentData } = await supabase
+      // Last week reviews (for WoW)
+      const { count: lastWeekReviews } = await supabase
         .from("reviews")
-        .select("sentiment_score")
-        .not("sentiment_score", "is", null)
-        .limit(1000);
+        .select("*", { count: "exact", head: true })
+        .gte("collected_at", twoWeeksAgo.toISOString())
+        .lt("collected_at", weekAgo.toISOString());
 
-      const scores = (sentimentData || []).map((r) => r.sentiment_score!);
-      const avgSentiment = scores.length > 0
-        ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100)
-        : 0;
+      // LG.com counts
+      const { count: lgcomTotal } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .like("source", "lge_com%");
 
-      // Reddit VOC count
-      const { count: redditVoc } = await supabase
+      const { count: lgcomWeekly } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .like("source", "lge_com%")
+        .gte("collected_at", weekAgo.toISOString());
+
+      const { count: lgcomLastWeek } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .like("source", "lge_com%")
+        .gte("collected_at", twoWeeksAgo.toISOString())
+        .lt("collected_at", weekAgo.toISOString());
+
+      // Reddit counts
+      const { count: redditTotal } = await supabase
         .from("reviews")
         .select("*", { count: "exact", head: true })
         .eq("source", "reddit");
 
-      // P0 alerts (negative reviews with low score)
-      const { count: p0Alerts } = await supabase
+      const { count: redditWeekly } = await supabase
         .from("reviews")
         .select("*", { count: "exact", head: true })
-        .eq("sentiment", "negative")
-        .lt("sentiment_score", 0.3);
+        .eq("source", "reddit")
+        .gte("collected_at", weekAgo.toISOString());
 
-      const lgcomCount = sourceCounts?.["lge_com"] || 0;
-      const redditCount = sourceCounts?.["reddit"] || 0;
+      const { count: redditLastWeek } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("source", "reddit")
+        .gte("collected_at", twoWeeksAgo.toISOString())
+        .lt("collected_at", weekAgo.toISOString());
+
+      // Community (everything except lge_com and reddit)
+      const allSources = sourceCounts || {};
+      let communityTotal = 0;
+      for (const [src, cnt] of Object.entries(allSources)) {
+        if (src !== "lge_com" && src !== "reddit") {
+          communityTotal += cnt;
+        }
+      }
+
+      // Community weekly - approximate by subtracting lgcom + reddit from total weekly
+      const communityWeekly = Math.max(0, (thisWeekReviews || 0) - (lgcomWeekly || 0) - (redditWeekly || 0));
+      const communityLastWeek = Math.max(0, (lastWeekReviews || 0) - (lgcomLastWeek || 0) - (redditLastWeek || 0));
+
+      const calcWow = (current: number, previous: number) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return Math.round(((current - previous) / previous) * 100);
+      };
 
       return {
-        sentiment: avgSentiment,
-        totalReviews: totalReviews || 0,
-        weeklyReviews: weeklyReviews || 0,
-        redditVoc: redditVoc || 0,
-        p0Alerts: p0Alerts || 0,
-        lgcomCount,
-        redditCount,
+        total: {
+          cumulative: totalReviews || 0,
+          weekly: thisWeekReviews || 0,
+          wow: calcWow(thisWeekReviews || 0, lastWeekReviews || 0),
+        },
+        lgcom: {
+          cumulative: lgcomTotal || 0,
+          weekly: lgcomWeekly || 0,
+          wow: calcWow(lgcomWeekly || 0, lgcomLastWeek || 0),
+        },
+        reddit: {
+          cumulative: redditTotal || 0,
+          weekly: redditWeekly || 0,
+          wow: calcWow(redditWeekly || 0, redditLastWeek || 0),
+        },
+        community: {
+          cumulative: communityTotal,
+          weekly: communityWeekly,
+          wow: calcWow(communityWeekly, communityLastWeek),
+        },
       };
     },
     staleTime: 60_000,
   });
 }
 
-function useTopProducts() {
+function useTopActions() {
   return useQuery({
-    queryKey: ["overview-top-products"],
+    queryKey: ["overview-top-actions-v2"],
     queryFn: async () => {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
 
       const { data } = await supabase
         .from("reviews")
-        .select("product_id, sentiment, sentiment_score, products!inner(model_number, display_name, category)")
+        .select("product_id, sentiment, sentiment_score, content, source, products!inner(model_number, display_name, category)")
         .gte("collected_at", weekAgo.toISOString())
         .limit(1000);
 
@@ -93,9 +144,10 @@ function useTopProducts() {
         count: number;
         posCount: number;
         negCount: number;
-        avgScore: number;
         scores: number[];
-        topKeywords: string[];
+        posSnippets: string[];
+        negSnippets: string[];
+        sources: Set<string>;
       }> = {};
 
       for (const r of data as any[]) {
@@ -109,24 +161,50 @@ function useTopProducts() {
             count: 0,
             posCount: 0,
             negCount: 0,
-            avgScore: 0,
             scores: [],
-            topKeywords: [],
+            posSnippets: [],
+            negSnippets: [],
+            sources: new Set(),
           };
         }
         const p = productMap[pid];
         p.count++;
-        if (r.sentiment === "positive") p.posCount++;
-        if (r.sentiment === "negative") p.negCount++;
+        p.sources.add(r.source);
+        if (r.sentiment === "positive") {
+          p.posCount++;
+          if (p.posSnippets.length < 2 && r.content) p.posSnippets.push(r.content.slice(0, 80));
+        }
+        if (r.sentiment === "negative") {
+          p.negCount++;
+          if (p.negSnippets.length < 2 && r.content) p.negSnippets.push(r.content.slice(0, 80));
+        }
         if (r.sentiment_score != null) p.scores.push(r.sentiment_score);
       }
 
-      const products = Object.values(productMap).map((p) => ({
-        ...p,
-        avgScore: p.scores.length > 0
+      const products = Object.values(productMap).map((p) => {
+        const avgScore = p.scores.length > 0
           ? Math.round((p.scores.reduce((a, b) => a + b, 0) / p.scores.length) * 100)
-          : 50,
-      }));
+          : 50;
+
+        // Generate action summary
+        let actionSummary = "";
+        if (p.negCount > p.posCount) {
+          actionSummary = `부정 리뷰 ${p.negCount}건 집중 — CRM 대응 및 FAQ 업데이트 필요. 주요 불만 사항 기반 개선 메시지 준비 권장.`;
+        } else if (p.posCount > 0 && p.negCount === 0) {
+          actionSummary = `긍정 리뷰 ${p.posCount}건 확보 — PDP 히어로 카피, SNS 콘텐츠, Amazon A+ 활용 가능. 고객 추천 메시지로 전환 권장.`;
+        } else if (p.posCount > p.negCount) {
+          actionSummary = `긍정 우세(${p.posCount}건 vs 부정 ${p.negCount}건) — 강점 키워드 활용한 마케팅 카피 제작 및 부정 리뷰 대응 FAQ 병행.`;
+        } else {
+          actionSummary = `리뷰 ${p.count}건 수집 — 감성 분석 기반 콘텐츠 기획 및 타겟 마케팅 메시지 개발 필요.`;
+        }
+
+        return {
+          ...p,
+          avgScore,
+          actionSummary,
+          sources: Array.from(p.sources),
+        };
+      });
 
       products.sort((a, b) => b.count - a.count);
       return products.slice(0, 3);
@@ -139,11 +217,10 @@ function useChannelPerformance() {
   return useQuery({
     queryKey: ["overview-channel-perf"],
     queryFn: async () => {
-      // LG.com sentiment breakdown
       const { data: lgReviews } = await supabase
         .from("reviews")
         .select("sentiment, sentiment_score")
-        .eq("source", "lge_com")
+        .like("source", "lge_com%")
         .limit(1000);
 
       const lgTotal = lgReviews?.length || 0;
@@ -151,7 +228,6 @@ function useChannelPerformance() {
       const lgNeg = lgReviews?.filter((r) => r.sentiment === "negative").length || 0;
       const lgNeutral = lgTotal - lgPos - lgNeg;
 
-      // LG.com top positive keywords from trending_keywords
       const { data: lgKeywords } = await supabase
         .from("trending_keywords")
         .select("keyword, count, sentiment")
@@ -160,7 +236,6 @@ function useChannelPerformance() {
         .order("count", { ascending: false })
         .limit(3);
 
-      // Reddit breakdown by review_type
       const { data: redditReviews } = await supabase
         .from("reviews")
         .select("review_type, sentiment")
@@ -172,7 +247,6 @@ function useChannelPerformance() {
       const redditVocCount = redditReviews?.filter((r) => r.review_type === "VOC").length || 0;
       const redditQuestionCount = redditReviews?.filter((r) => r.review_type === "QUESTION").length || 0;
 
-      // Reddit pain points from trending_keywords
       const { data: redditPainPoints } = await supabase
         .from("trending_keywords")
         .select("keyword, count, sentiment")
@@ -209,7 +283,6 @@ function useVocSpotlight() {
   return useQuery({
     queryKey: ["overview-voc-spotlight"],
     queryFn: async () => {
-      // Positive highlight reviews
       const { data: posReviews } = await supabase
         .from("reviews")
         .select("content, author, source, sentiment, rating, published_at, products!inner(model_number, display_name)")
@@ -219,7 +292,6 @@ function useVocSpotlight() {
         .order("published_at", { ascending: false })
         .limit(2);
 
-      // Negative / urgent reviews
       const { data: negReviews } = await supabase
         .from("reviews")
         .select("content, author, source, sentiment, review_type, rating, published_at, products!inner(model_number, display_name)")
@@ -255,9 +327,8 @@ function useVocSpotlight() {
 /* ───── Component ───── */
 
 export function OverviewDashboard() {
-  const { t } = useLang();
   const { data: kpis } = useOverviewKPIs();
-  const { data: topProducts } = useTopProducts();
+  const { data: topActions } = useTopActions();
   const { data: channelPerf } = useChannelPerformance();
   const { data: vocSpotlight } = useVocSpotlight();
 
@@ -266,36 +337,36 @@ export function OverviewDashboard() {
       {/* Section Header */}
       <div className="flex items-center gap-2">
         <div className="w-1 h-6 bg-primary rounded-full" />
-        <h2 className="text-sm font-bold tracking-widest uppercase text-foreground">
-          Overview
-        </h2>
-        <Badge variant="outline" className="text-[10px] ml-1 border-primary/30 text-primary font-semibold">
-          WEEKLY
-        </Badge>
+        <h2 className="text-sm font-bold tracking-widest uppercase text-foreground">Overview</h2>
+        <Badge variant="outline" className="text-[10px] ml-1 border-primary/30 text-primary font-semibold">WEEKLY</Badge>
       </div>
 
       {/* ─── KPI Summary Cards ─── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard
-          label="SENTIMENT"
-          value={kpis?.sentiment ?? "—"}
-          sub={`누적 ${kpis?.totalReviews?.toLocaleString() ?? "—"}건`}
-        />
-        <KPICard
           label="TOTAL REVIEWS"
-          value={kpis?.weeklyReviews?.toLocaleString() ?? "—"}
-          sub={`LG.com ${kpis?.lgcomCount?.toLocaleString() ?? "—"} · Reddit ${kpis?.redditCount?.toLocaleString() ?? "—"}`}
+          weekly={kpis?.total.weekly}
+          cumulative={kpis?.total.cumulative}
+          wow={kpis?.total.wow}
         />
         <KPICard
-          label="REDDIT VOC"
-          value={kpis?.redditVoc?.toLocaleString() ?? "—"}
-          sub="레딧 리뷰 수"
+          label="LG.COM REVIEWS"
+          weekly={kpis?.lgcom.weekly}
+          cumulative={kpis?.lgcom.cumulative}
+          wow={kpis?.lgcom.wow}
         />
         <KPICard
-          label="P0 ALERTS"
-          value={kpis?.p0Alerts ?? "—"}
-          sub="부정 감성 경고"
-          alert={!!kpis?.p0Alerts && kpis.p0Alerts > 0}
+          label="REDDIT REVIEWS & VOC"
+          weekly={kpis?.reddit.weekly}
+          cumulative={kpis?.reddit.cumulative}
+          wow={kpis?.reddit.wow}
+        />
+        <KPICard
+          label="COMMUNITY REVIEWS"
+          weekly={kpis?.community.weekly}
+          cumulative={kpis?.community.cumulative}
+          wow={kpis?.community.wow}
+          sub="닷컴·레딧 제외 타채널"
         />
       </div>
 
@@ -303,7 +374,7 @@ export function OverviewDashboard() {
       <div>
         <SectionTitle title="TOP 3 ACTIONS THIS WEEK" />
         <div className="space-y-3">
-          {topProducts && topProducts.length > 0 ? topProducts.map((product, i) => (
+          {topActions && topActions.length > 0 ? topActions.map((product, i) => (
             <Card key={product.id} className="border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-4 flex items-start gap-4">
                 {/* Rank */}
@@ -315,39 +386,38 @@ export function OverviewDashboard() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-semibold text-sm text-foreground">
-                      {product.display || product.model}
-                    </h4>
-                    <span className="text-[10px] text-muted-foreground font-mono">{product.model}</span>
-                  </div>
+                  <h4 className="font-semibold text-sm text-foreground">
+                    {product.display || product.model}
+                  </h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {product.count}건 리뷰 · 긍정 {product.posCount}건 · 부정 {product.negCount}건 · {product.category}
+                    주간 {product.count}건 · 긍정 {product.posCount}건 · 부정 {product.negCount}건 · {product.sources.map(s => s === "lge_com" || s.startsWith("lge_com") ? "LG.com" : s).join(", ")}
+                  </p>
+                  <p className="text-xs text-foreground/80 mt-2 leading-relaxed">
+                    💡 {product.actionSummary}
                   </p>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <Badge className="text-[9px] bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                      CIS {product.avgScore}
-                    </Badge>
                     {product.posCount > product.negCount ? (
                       <Badge variant="outline" className="text-[9px] border-success/30 text-success">
                         <TrendingUp className="h-3 w-3 mr-0.5" /> Positive trend
                       </Badge>
-                    ) : (
+                    ) : product.negCount > product.posCount ? (
                       <Badge variant="outline" className="text-[9px] border-destructive/30 text-destructive">
                         <TrendingDown className="h-3 w-3 mr-0.5" /> Needs attention
                       </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[9px] border-muted-foreground/30 text-muted-foreground">
+                        Balanced
+                      </Badge>
                     )}
+                    <Badge variant="outline" className="text-[9px] text-muted-foreground">
+                      {product.category}
+                    </Badge>
                   </div>
                 </div>
 
-                {/* CIS Score */}
+                {/* Priority */}
                 <div className="flex-shrink-0 text-right">
-                  <div className={`text-xs font-bold px-2.5 py-1 rounded ${
-                    product.avgScore >= 70 ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-                  }`}>
-                    CIS {product.avgScore}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Priority {i}</p>
+                  <p className="text-[10px] text-muted-foreground">Priority {i}</p>
                 </div>
               </CardContent>
             </Card>
@@ -368,8 +438,6 @@ export function OverviewDashboard() {
                 <span className="w-2.5 h-2.5 rounded-full bg-primary" />
                 <span className="font-semibold text-sm text-foreground">LG.com · {channelPerf?.lgcom.total.toLocaleString()} reviews</span>
               </div>
-
-              {/* Sentiment bar */}
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">Sentiment split</p>
               <div className="flex h-2.5 rounded-full overflow-hidden mb-2">
                 <div className="bg-success" style={{ width: `${channelPerf?.lgcom.posPct || 0}%` }} />
@@ -381,18 +449,13 @@ export function OverviewDashboard() {
                 <span className="text-muted-foreground">{channelPerf?.lgcom.neutralPct}% neutral</span>
                 <span className="text-destructive font-semibold">{channelPerf?.lgcom.negPct}% neg</span>
               </div>
-
-              {/* Top positive keywords */}
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2">TOP POSITIVE</p>
               <div className="space-y-1.5">
                 {channelPerf?.lgcom.topKeywords.map((kw) => (
                   <div key={kw.keyword} className="flex items-center gap-2">
                     <span className="text-xs text-foreground w-28 truncate">{kw.keyword}</span>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-success rounded-full"
-                        style={{ width: `${Math.min(100, (kw.count / (channelPerf?.lgcom.topKeywords[0]?.count || 1)) * 100)}%` }}
-                      />
+                      <div className="h-full bg-success rounded-full" style={{ width: `${Math.min(100, (kw.count / (channelPerf?.lgcom.topKeywords[0]?.count || 1)) * 100)}%` }} />
                     </div>
                     <span className="text-[10px] text-muted-foreground font-mono w-10 text-right">{kw.count}</span>
                   </div>
@@ -411,8 +474,6 @@ export function OverviewDashboard() {
                 <span className="w-2.5 h-2.5 rounded-full bg-orange-400" />
                 <span className="font-semibold text-sm text-foreground">Reddit · {channelPerf?.reddit.total.toLocaleString()} signals</span>
               </div>
-
-              {/* Bucket counts */}
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
                   { label: "REVIEW", count: channelPerf?.reddit.reviewCount || 0, color: "text-primary" },
@@ -425,18 +486,13 @@ export function OverviewDashboard() {
                   </div>
                 ))}
               </div>
-
-              {/* Pain point tags */}
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2">PAIN POINT TAGS</p>
               <div className="space-y-1.5">
                 {channelPerf?.reddit.painPoints.map((pp, i) => (
                   <div key={pp.keyword} className="flex items-center gap-2">
                     <span className="text-xs text-foreground w-28 truncate">{pp.keyword}</span>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${i === 0 ? "bg-destructive" : i === 1 ? "bg-destructive/70" : "bg-warning"}`}
-                        style={{ width: `${Math.min(100, (pp.count / (channelPerf?.reddit.painPoints[0]?.count || 1)) * 100)}%` }}
-                      />
+                      <div className={`h-full rounded-full ${i === 0 ? "bg-destructive" : i === 1 ? "bg-destructive/70" : "bg-warning"}`} style={{ width: `${Math.min(100, (pp.count / (channelPerf?.reddit.painPoints[0]?.count || 1)) * 100)}%` }} />
                     </div>
                     <span className="text-[10px] text-muted-foreground font-mono w-10 text-right">{pp.count}</span>
                   </div>
@@ -480,13 +536,41 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function KPICard({ label, value, sub, alert }: { label: string; value: string | number; sub: string; alert?: boolean }) {
+function KPICard({ label, weekly, cumulative, wow, sub }: {
+  label: string;
+  weekly?: number;
+  cumulative?: number;
+  wow?: number;
+  sub?: string;
+}) {
+  const wowPositive = (wow ?? 0) > 0;
+  const wowNegative = (wow ?? 0) < 0;
+
   return (
-    <Card className={`border bg-card ${alert ? "border-destructive/40" : "border-border"}`}>
+    <Card className="border border-border bg-card">
       <CardContent className="p-4 text-center">
         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">{label}</p>
-        <p className={`text-3xl font-bold ${alert ? "text-destructive" : "text-foreground"}`}>{value}</p>
-        <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>
+        <p className="text-3xl font-bold text-foreground">
+          {weekly != null ? weekly.toLocaleString() : "—"}
+        </p>
+        {/* WoW change */}
+        <div className="flex items-center justify-center gap-1 mt-1">
+          {wowPositive ? (
+            <ArrowUpRight className="h-3 w-3 text-success" />
+          ) : wowNegative ? (
+            <ArrowDownRight className="h-3 w-3 text-destructive" />
+          ) : null}
+          <span className={`text-[10px] font-semibold ${
+            wowPositive ? "text-success" : wowNegative ? "text-destructive" : "text-muted-foreground"
+          }`}>
+            {wow != null ? `${wow > 0 ? "+" : ""}${wow}% WoW` : "—"}
+          </span>
+        </div>
+        {/* Cumulative */}
+        <p className="text-[10px] text-muted-foreground mt-1">
+          누적 {cumulative != null ? cumulative.toLocaleString() : "—"}건
+        </p>
+        {sub && <p className="text-[9px] text-muted-foreground/70 mt-0.5">{sub}</p>}
       </CardContent>
     </Card>
   );
@@ -501,20 +585,13 @@ function VocCard({ voc, variant }: {
     <Card className="border border-border bg-card">
       <CardContent className="p-4">
         <Badge className={`text-[9px] mb-2 ${
-          isPositive
-            ? "bg-success/10 text-success border-success/20"
-            : "bg-destructive/10 text-destructive border-destructive/20"
+          isPositive ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
         }`}>
           {voc.type}
         </Badge>
-        <p className="text-sm font-medium text-foreground italic leading-relaxed mb-3">
-          "{voc.content}"
-        </p>
+        <p className="text-sm font-medium text-foreground italic leading-relaxed mb-3">"{voc.content}"</p>
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <span>
-            {voc.source === "lge_com" ? "LG.com" : voc.source} · {voc.product}
-            {voc.rating ? ` · ${voc.rating}★` : ""}
-          </span>
+          <span>{voc.source === "lge_com" ? "LG.com" : voc.source} · {voc.product}{voc.rating ? ` · ${voc.rating}★` : ""}</span>
           {voc.date && <span>{voc.date}</span>}
         </div>
         <div className="flex items-center gap-1 mt-2">
