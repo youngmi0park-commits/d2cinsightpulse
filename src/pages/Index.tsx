@@ -125,7 +125,7 @@ const Index = () => {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
-                <span className="text-gradient">D2C Insight Pulse</span>
+                <span className="text-primary">D2C Insight Pulse</span>
               </h1>
             </div>
             <p className="text-sm md:text-base text-muted-foreground/70 italic mb-4">
