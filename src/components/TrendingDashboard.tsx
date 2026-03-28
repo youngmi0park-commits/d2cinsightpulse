@@ -551,61 +551,6 @@ export function TrendingDashboard({ onProductClick }: TrendingDashboardProps) {
           ))
         )}
       </div>
-
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <div className="rounded-lg border border-border bg-muted/30 p-1.5 overflow-x-auto">
-          <TabsList className="inline-flex h-auto gap-0 p-0 bg-transparent w-max min-w-full">
-            <Badge variant="secondary" className="text-[10px] gap-1 font-mono mr-2 shrink-0 bg-primary/10 text-primary border-primary/20 px-2 py-1">
-              {t(`${totalPlatforms} channels collecting`, `${totalPlatforms}개 채널 수집중`)}
-            </Badge>
-            {mainTabs.map((s, idx) => {
-              const dotColors = [
-                "bg-emerald-500", "bg-rose-500", "bg-amber-500", "bg-blue-500",
-                "bg-purple-500", "bg-cyan-500", "bg-orange-500", "bg-pink-500",
-                "bg-teal-500", "bg-indigo-500", "bg-lime-500", "bg-red-500",
-                "bg-sky-500", "bg-violet-500", "bg-yellow-500", "bg-fuchsia-500",
-              ];
-              const dotColor = dotColors[idx % dotColors.length];
-              return (
-                <TabsTrigger
-                  key={s.value}
-                  value={s.value}
-                  className="gap-1.5 text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm shrink-0 bg-transparent"
-                >
-                  <span className={`inline-block w-2 h-2 rounded-full ${dotColor} shrink-0`} />
-                  <span>{s.label}</span>
-                  <span className="font-mono font-bold">{s.count.toLocaleString()}</span>
-                </TabsTrigger>
-              );
-            })}
-            {otherTabs.length > 0 && (() => {
-              const othersTotal = otherTabs.reduce((sum, s) => sum + s.count, 0);
-              return (
-                <TabsTrigger value="__others__" className="gap-1.5 text-xs px-3 py-1.5 rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm shrink-0 bg-transparent">
-                  <span className="inline-block w-2 h-2 rounded-full bg-gray-400 shrink-0" />
-                  <span>{t("Others", "기타")}</span>
-                  <span className="font-mono font-bold">{othersTotal.toLocaleString()}</span>
-                </TabsTrigger>
-              );
-            })()}
-          </TabsList>
-        </div>
-
-        {mainTabs.map((s) => (
-          <TabsContent key={s.value} value={s.value}>
-            {s.value === "lge_com" ? (
-              <LgComTabContent source={s} onProductClick={onProductClick} t={t} />
-            ) : (
-              <SourceTabContent source={s} onProductClick={onProductClick} t={t} />
-            )}
-          </TabsContent>
-        ))}
-        {otherTabs.length > 0 && (
-          <TabsContent value="__others__">
-            <OthersTabContent sources={otherTabs} sourceCounts={sourceCounts} onProductClick={onProductClick} t={t} />
-          </TabsContent>
-        )}
-      </Tabs>
     </div>
   );
 }
