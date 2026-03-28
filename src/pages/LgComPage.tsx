@@ -6,7 +6,6 @@ import { DataStatusBar } from "@/components/DataStatusBar";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Badge } from "@/components/ui/badge";
 
 function CountryReviewButtons() {
   const { data, isLoading } = useQuery({
