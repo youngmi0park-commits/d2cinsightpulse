@@ -10,11 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import type { GeoMessage } from "@/lib/formatMessage";
-import type { MarketingOutput } from "@/lib/formatMessage";
-import type { SentimentResult } from "@/lib/sentiment";
-import type { GeoMessage } from "@/lib/formatMessage";
-import type { MarketingOutput } from "@/lib/formatMessage";
+import type { GeoMessage, MarketingOutput } from "@/lib/formatMessage";
 import type { SentimentResult } from "@/lib/sentiment";
 
 interface MarketingHubProps {
