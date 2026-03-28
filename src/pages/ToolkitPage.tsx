@@ -394,12 +394,12 @@ export default function ToolkitPage() {
             );
           })}
         </div>
-        <p className="text-[11.5px] text-muted-foreground mt-2">Click to select (multi-select enabled)</p>
+        <p className="text-[11.5px] text-muted-foreground mt-2">{t("Click to select (multi-select enabled)", "클릭하여 선택 (복수 선택 가능)")}</p>
 
         {/* Custom Model Input */}
         <div className="mt-5 p-4 rounded-xl border border-border bg-card">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[1px] mb-2.5">
-            ✏️ ADD CUSTOM PRODUCT / MODEL NUMBER
+            ✏️ {t("ADD CUSTOM PRODUCT / MODEL NUMBER", "제품명 / 모델번호 직접 입력")}
           </p>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -414,7 +414,7 @@ export default function ToolkitPage() {
                     setCustomModelInput("");
                   }
                 }}
-                placeholder="e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ..."
+                placeholder={t("e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ...", "예: OLED65C4PUA, WashTower, UltraGear 27GR95QE ...")}
                 className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
               />
             </div>
@@ -427,7 +427,7 @@ export default function ToolkitPage() {
               }}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
             >
-              Add
+              {t("Add", "추가")}
             </button>
           </div>
           {customModels.length > 0 && (
@@ -449,7 +449,7 @@ export default function ToolkitPage() {
             </div>
           )}
           <p className="text-[10.5px] text-muted-foreground mt-2">
-            Enter any product name or model number not listed above. Press Enter or click Add.
+            {t("Enter any product name or model number not listed above. Press Enter or click Add.", "위 목록에 없는 제품명 또는 모델번호를 입력하세요. Enter 또는 추가 버튼을 클릭하세요.")}
           </p>
         </div>
       </div>
