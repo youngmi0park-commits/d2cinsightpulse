@@ -3,7 +3,7 @@ import {
   HelpCircle, Sparkles, Search, ChevronRight, Loader2,
   BarChart3, Shield, Package, Copy, CheckCircle2, XCircle, Clock,
   Wrench, Monitor, Wifi, Settings, DollarSign, Tag,
-  TrendingUp, AlertTriangle, FileText, Zap,
+  TrendingUp, AlertTriangle,
 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
