@@ -33,7 +33,7 @@ const Index = () => {
   const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang } = useLang();
-
+  const { data: stats } = useProductStats();
 
 
   const handleSearch = async (query: string) => {
