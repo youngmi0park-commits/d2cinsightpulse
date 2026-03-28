@@ -8,6 +8,7 @@ import { TopProductsWidget } from "@/components/TopProductsWidget";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { KeywordCloud } from "@/components/KeywordCloud";
+import { MarketingHub } from "@/components/MarketingHub";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
