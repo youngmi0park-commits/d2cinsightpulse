@@ -160,19 +160,19 @@ const Index = () => {
       <div className="flex-1 overflow-y-auto">
         {/* Hero Section — warm cream */}
         <div className="gradient-hero">
-          <div className="container mx-auto px-4 py-16 md:py-20">
-            <div className="text-center mb-8">
+          <div className="container mx-auto px-4 py-16 md:py-24">
+            <div className="text-center mb-10">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
-                <h1 className="text-4xl md:text-5xl font-bold">
+                <h1 className="text-4xl md:text-5xl font-bold font-heading">
                   <span className="text-gradient">D2C Insight Pulse</span>
                 </h1>
               </div>
-              <p className="text-sm md:text-base text-muted-foreground/70 italic mb-5">
+              <p className="text-sm md:text-base text-muted-foreground/70 italic mb-4">
                 Feel the Pulse. Gain the Insight.
               </p>
               <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
-                {"고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.\nD2C Insight Pulse는 LG.com과 Reddit 등 주요 채널의 실사용자 리뷰를 깊이 있게 분석합니다.\n방대한 데이터 속에 숨겨진 인사이트를 발견하고,\n즉시 활용 가능한 최적의 마케팅 커뮤니케이션 메시지를 제공하는 데이터 플랫폼입니다."}
+                {"Reddit · Amazon 등 주요 커뮤니티와 유통사 내 실사용자 리뷰를 수집·분석하여,\n마케팅 커뮤니케이션에 활용 가능한 메시지를 기획·제공하는 플랫폼입니다."}
               </p>
               {stats && (
                 <div className="flex items-center justify-center gap-2 mt-5">
