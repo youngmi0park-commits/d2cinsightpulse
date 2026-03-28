@@ -1,8 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { PageHeader } from "@/components/PageHeader";
-import { PageHeader } from "@/components/PageHeader";
-
 const CollectionPage = () => {
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
