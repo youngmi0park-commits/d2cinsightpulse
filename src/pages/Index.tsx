@@ -14,9 +14,9 @@ import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingO
 import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Database, Activity, LayoutDashboard } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { SearchResultCards, type AnalyzedProduct } from "@/components/SearchResultCards";
 
 interface AnalyzedProduct {
   product: ProductData;
