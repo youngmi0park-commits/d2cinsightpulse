@@ -6,54 +6,55 @@
 
 @layer base {
   :root {
-    /* Clean dashboard background: #f8f9fb */
-    --background: 220 20% 97%;
-    --foreground: 220 15% 10%;
+    /* Page background: Warm Gray #F0ECE4 */
+    --background: 36 20% 92%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
+    --popover-foreground: 0 0% 10%;
 
-    /* LG Brand Red: #B83228 */
-    --primary: 4 58% 44%;
+    /* Heritage Red #A50034 */
+    --primary: 346 100% 32%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 93%;
-    --secondary-foreground: 220 15% 15%;
+    --secondary: 36 14% 88%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 220 14% 90%;
-    --muted-foreground: 220 8% 46%;
+    --muted: 36 14% 85%;
+    --muted-foreground: 0 0% 42%;
 
-    --accent: 4 58% 44%;
+    /* Active Red #FD312E */
+    --accent: 1 98% 59%;
     --accent-foreground: 0 0% 100%;
 
-    /* Destructive uses same brand red */
-    --destructive: 4 58% 44%;
+    /* Destructive uses Heritage Red */
+    --destructive: 346 100% 32%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success green: #1a8a4a */
+    /* Success green */
     --success: 148 68% 32%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
 
-    --border: 220 13% 89%;
-    --input: 220 14% 93%;
-    --ring: 4 58% 44%;
+    --border: 36 10% 85%;
+    --input: 36 14% 88%;
+    --ring: 346 100% 32%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 15% 20%;
-    --sidebar-primary: 4 58% 44%;
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 346 100% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 220 15% 15%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 4 58% 44%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 346 100% 32%;
 
     --font-heading: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -81,33 +82,33 @@
 
 @layer utilities {
   .glow-primary {
-    box-shadow: 0 0 20px hsl(1 82% 50% / 0.25), 0 0 60px hsl(1 82% 50% / 0.1);
+    box-shadow: 0 0 20px hsl(346 100% 32% / 0.25), 0 0 60px hsl(346 100% 32% / 0.1);
   }
 
   .glow-success {
-    box-shadow: 0 0 15px hsl(142 70% 40% / 0.3);
+    box-shadow: 0 0 15px hsl(148 68% 32% / 0.3);
   }
 
   .glow-destructive {
-    box-shadow: 0 0 15px hsl(0 72% 51% / 0.3);
+    box-shadow: 0 0 15px hsl(346 100% 32% / 0.3);
   }
 
   .gradient-hero {
-    background: linear-gradient(135deg, hsl(40 33% 92%) 0%, hsl(40 25% 88%) 50%, hsl(40 20% 85%) 100%);
+    background: linear-gradient(135deg, hsl(36 20% 92%) 0%, hsl(36 18% 89%) 50%, hsl(36 15% 86%) 100%);
   }
 
   .gradient-card {
-    background: linear-gradient(180deg, hsl(40 30% 97%) 0%, hsl(40 28% 94%) 100%);
+    background: linear-gradient(180deg, hsl(36 20% 97%) 0%, hsl(36 18% 94%) 100%);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, hsl(1 82% 50%), hsl(1 70% 40%));
+    background: linear-gradient(135deg, hsl(346 100% 32%), hsl(1 98% 59%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .lg-red-border {
-    border-color: hsl(1 82% 50%);
+    border-color: hsl(346 100% 32%);
   }
 }
