@@ -7,6 +7,7 @@ import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
+import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
@@ -226,6 +227,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-4">
+            <RedditBucketDashboard />
             <CollectionCriteria />
             <RedditCountryInsights />
             <NewsletterSubscribe />
