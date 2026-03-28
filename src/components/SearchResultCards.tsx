@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, MapPin, Copy } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
 import type { SentimentResult } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
