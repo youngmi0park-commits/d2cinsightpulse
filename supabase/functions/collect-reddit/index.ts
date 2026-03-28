@@ -7,226 +7,104 @@ const corsHeaders = {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  SUBREDDIT DEFINITIONS — categorised by LG product line
+//  REDDIT-FOCUSED SEARCH QUERIES — per category
 // ══════════════════════════════════════════════════════════════
 
-const SUBREDDITS: Record<string, { subs: string[]; keywords: string[] }> = {
-  TV: {
-    subs: [
-      "OLED", "4kTV", "hometheater", "bravia", "TVRepair",
-      "LGtv", "LGOLED", "HTBuyingAdvice", "Roku",
-    ],
-    keywords: [
-      "LG OLED", "LG C4", "LG C5", "LG G4", "LG G5", "LG G6",
-      "C6H", "W6", "OLED evo", "LG QNED", "LG NanoCell", "LG TV",
-      "burn-in", "webOS", "magic remote", "Dolby Vision",
-      "OLED65", "OLED55", "OLED77", "OLED83",
-    ],
-  },
-  Monitor: {
-    subs: [
-      "Monitors", "ultrawidemasterrace", "buildapc", "pcmasterrace",
-      "GamingMonitors", "LGUltraGear",
-    ],
-    keywords: [
-      "LG UltraGear", "LG UltraFine", "LG UltraWide",
-      "27GR83Q", "27GR95QE", "32GS95UE", "27GP850",
-      "LG monitor", "LG 4K monitor", "LG gaming monitor",
-    ],
-  },
-  Laptop: {
-    subs: ["LGGram", "laptops", "SuggestALaptop", "thinkpad"],
-    keywords: [
-      "LG Gram", "Gram Pro", "Gram 16", "Gram 17",
-      "17Z90TP", "LG laptop", "Gram 2-in-1",
-    ],
-  },
-  Audio: {
-    subs: ["Soundbars", "hometheater", "audiophile", "Bluetooth_Speakers"],
-    keywords: [
-      "LG Soundbar", "S95TR", "S90TR", "S80QY", "XBOOM",
-      "LG speaker", "WOW Orchestra", "Dolby Atmos soundbar",
-    ],
-  },
-  HomeAppliance: {
-    subs: [
-      "Appliances", "homeautomation", "BuyItForLife",
-      "CleaningTips", "Laundry",
-    ],
-    keywords: [
-      "LG WashTower", "LG InstaView", "LG CordZero",
-      "LG washer", "LG dryer", "LG refrigerator", "LG dishwasher",
-      "ThinQ", "LG PuriCare", "LG vacuum",
-    ],
-  },
-  AirConditioner: {
-    subs: ["HVAC", "AirConditioning", "homeimprovement"],
-    keywords: [
-      "LG AC", "LG air conditioner", "dual inverter",
-      "LG window AC", "LG portable AC", "LG split AC",
-    ],
-  },
-  StanbyME: {
-    subs: ["LGtv", "hometheater", "Monitors"],
-    keywords: ["StanbyME", "StandbyMe", "Stand by Me", "27LX6"],
-  },
+const REDDIT_QUERIES: Record<string, string[]> = {
+  TV: [
+    'site:reddit.com LG OLED (review OR "just bought" OR owner OR impression) 2025 OR 2026',
+    'site:reddit.com "LG C5" OR "LG C4" OR "LG G5" OR "LG G6" review OR worth OR recommend',
+    'site:reddit.com LG OLED (burn-in OR "picture quality" OR gaming OR "Dolby Vision")',
+    'site:reddit.com LG OLED (disappointed OR issue OR problem OR "not working" OR defective)',
+    'site:reddit.com "should I buy" LG OLED OR "LG TV" OR C5 OR G5 vs',
+    'site:reddit.com LG QNED OR NanoCell review OR recommendation',
+    'site:reddit.com LG OLED (calibration OR settings OR "best picture" OR tips)',
+    'site:reddit.com "LG C6H" OR "LG W6" OR "OLED evo" 2026 review',
+  ],
+  Monitor: [
+    'site:reddit.com LG UltraGear (review OR "just bought" OR impression OR gaming)',
+    'site:reddit.com "27GR83Q" OR "32GS95UE" OR "27GP850" OR "LG monitor" review',
+    'site:reddit.com LG monitor (flickering OR issue OR problem OR calibration)',
+    'site:reddit.com "LG UltraWide" OR "LG UltraFine" review OR recommend',
+  ],
+  Laptop: [
+    'site:reddit.com "LG Gram" (review OR "just bought" OR lightweight OR battery)',
+    'site:reddit.com "LG Gram Pro" OR "Gram 17" OR "Gram 16" 2025 OR 2026 review',
+    'site:reddit.com "LG Gram" (issue OR problem OR overheating OR keyboard)',
+  ],
+  Audio: [
+    'site:reddit.com "LG Soundbar" (review OR "just bought" OR "Dolby Atmos" OR setup)',
+    'site:reddit.com "S95TR" OR "S90TR" OR "S80QY" OR "XBOOM" review OR recommend',
+    'site:reddit.com LG soundbar (issue OR problem OR "no sound" OR sync OR connectivity)',
+  ],
+  HomeAppliance: [
+    'site:reddit.com LG WashTower OR "LG washer" OR "LG dryer" review OR recommend',
+    'site:reddit.com LG InstaView OR "LG refrigerator" OR "LG fridge" review',
+    'site:reddit.com LG CordZero OR "LG vacuum" OR "LG PuriCare" review',
+    'site:reddit.com LG washer OR dryer (issue OR problem OR vibration OR noise OR error)',
+  ],
+  AirConditioner: [
+    'site:reddit.com "LG AC" OR "LG air conditioner" OR "dual inverter" review OR recommend',
+    'site:reddit.com LG AC (noise OR "energy saving" OR cooling OR installation OR issue)',
+  ],
+  StanbyME: [
+    'site:reddit.com StanbyME OR "Stand by Me" LG review OR recommend OR worth',
+  ],
 };
 
 // ══════════════════════════════════════════════════════════════
-//  BUCKET CLASSIFICATION (REVIEW / VOC / QUESTION)
+//  BUCKET CLASSIFICATION
 // ══════════════════════════════════════════════════════════════
 
-type Bucket = "REVIEW" | "VOC" | "QUESTION";
+type Bucket = "review" | "voc" | "question";
 
-const QUESTION_PATTERNS = [
-  /\bshould\s+i\b/i, /\bworth\s+(it|the|buying)\b/i,
-  /\bvs\.?\b/i, /\bwhich\s+(one|is|should)\b/i,
-  /\brecommend(ation)?s?\b/i, /\badvice\b/i,
-  /\bhow\s+(do|does|is|can|to|much|long)\b/i,
-  /\bwhat\s+(is|are|do|should)\b/i,
-  /\bdoes\s+(it|the|this|anyone)\b/i,
-  /\bcan\s+(i|you|someone)\b/i,
-  /\bis\s+it\s+(good|worth|better)\b/i,
-  /\?$/m,
-];
+function classifyBucket(text: string): Bucket {
+  const t = text.toLowerCase();
+  // VOC patterns
+  const vocPatterns = [/disappointed|frustrated|terrible|defective|broken|refund|return/i, /not working|stopped|issue|problem|bug|error|crash/i, /regret|waste|do not buy|avoid|worst/i, /customer service|support ticket|repair/i];
+  let vScore = 0;
+  for (const p of vocPatterns) if (p.test(t)) vScore++;
+  if (vScore >= 2) return "voc";
 
-const VOC_PATTERNS = [
-  /\b(disappointed|frustrated|terrible|awful|worst|defective)\b/i,
-  /\b(refund|return(ed|ing)?|warranty|broke|broken|dead pixel)\b/i,
-  /\b(not working|stopped working|issue|problem|bug|error|crash)\b/i,
-  /\b(regret|waste of money|do not buy|avoid|scam)\b/i,
-  /\b(customer service|support ticket|repair|replacement)\b/i,
-];
+  // Question patterns
+  const qPatterns = [/should\s+i|worth\s+(it|buying)|vs\.?|versus|compared?\s+to/i, /recommend|suggestion|advice|help/i, /how\s+(do|does|is|can|to|much)|what\s+(is|are|should)/i, /\?$/m];
+  let qScore = 0;
+  for (const p of qPatterns) if (p.test(t)) qScore++;
+  if (qScore >= 2) return "question";
 
-const REVIEW_PATTERNS = [
-  /\b(just (bought|got|received|installed|set up))\b/i,
-  /\b(month|week|year)s?\s+(later|in|of|with|owning)\b/i,
-  /\b(love|loving|impressed|stunning|amazing|great|excellent)\b/i,
-  /\b(my (new|lg|oled))\b/i,
-  /\b(owner|owned|using it|daily driver)\b/i,
-  /\b(review|impression|first look|hands on|unbox)\b/i,
-  /\bupgrade(d)?\s+(from|to)\b/i,
-];
-
-function classifyBucket(title: string, content: string): { bucket: Bucket; confidence: number } {
-  const text = `${title} ${content}`.toLowerCase();
-
-  let qScore = 0, vScore = 0, rScore = 0;
-  for (const p of QUESTION_PATTERNS) if (p.test(text)) qScore++;
-  for (const p of VOC_PATTERNS) if (p.test(text)) vScore++;
-  for (const p of REVIEW_PATTERNS) if (p.test(text)) rScore++;
-
-  if (vScore >= 2) return { bucket: "VOC", confidence: Math.min(vScore / 4, 1) };
-  if (qScore >= 2 && qScore > rScore) return { bucket: "QUESTION", confidence: Math.min(qScore / 5, 1) };
-  if (rScore >= 1) return { bucket: "REVIEW", confidence: Math.min(rScore / 4, 1) };
-  if (qScore >= 1) return { bucket: "QUESTION", confidence: 0.4 };
-  if (vScore >= 1) return { bucket: "VOC", confidence: 0.4 };
-  return { bucket: "REVIEW", confidence: 0.3 };
+  if (vScore >= 1 && qScore === 0) return "voc";
+  if (qScore >= 1) return "question";
+  return "review";
 }
 
 // ══════════════════════════════════════════════════════════════
-//  SENTIMENT SCORING (lightweight rule-based)
+//  AI EXTRACTION PROMPT
 // ══════════════════════════════════════════════════════════════
 
-const POS_WORDS = ["love", "great", "excellent", "amazing", "stunning", "impressed", "perfect", "recommend", "fantastic", "premium", "worth", "beautiful", "reliable", "best"];
-const NEG_WORDS = ["hate", "terrible", "awful", "worst", "disappointed", "frustrated", "broken", "defective", "regret", "waste", "poor", "bad", "overpriced", "garbage"];
+const REDDIT_EXTRACTION_PROMPT = `You are a Reddit data extractor for LG Electronics product intelligence. Extract individual posts/comments from the given Reddit content.
 
-function scoreSentiment(text: string): { sentiment: string; score: number } {
-  const lower = text.toLowerCase();
-  let pos = 0, neg = 0;
-  for (const w of POS_WORDS) if (lower.includes(w)) pos++;
-  for (const w of NEG_WORDS) if (lower.includes(w)) neg++;
-  const total = pos + neg || 1;
-  const score = (pos - neg) / total;
-  if (score > 0.2) return { sentiment: "positive", score: 0.5 + score * 0.5 };
-  if (score < -0.2) return { sentiment: "negative", score: 0.5 + score * 0.5 };
-  return { sentiment: "neutral", score: 0.5 };
-}
+For each post/comment, return a JSON array of objects:
+- model_number: string (LG model if found, else use category like "OLED TV General")
+- display_name: string (full product name)
+- category: string (TV, Monitor, Laptop, Audio, Washer, Dryer, Refrigerator, Air Conditioner, Robot Vacuum, StanbyME)
+- title: string (post title or summary, max 200 chars)
+- content: string (post/comment text, max 3000 chars, preserve original wording)
+- author: string or null (Reddit username without u/)
+- sentiment: "positive" | "negative" | "neutral" | "mixed"
+- sentiment_score: number 0-1
+- published_at: string ISO date or null
+- subreddit: string (the subreddit name)
+- post_type: "post" | "comment"
+- upvotes: number or null
+- is_lg_relevant: boolean (true only if specifically about LG product)
 
-// ══════════════════════════════════════════════════════════════
-//  REDDIT API HELPERS
-// ══════════════════════════════════════════════════════════════
-
-const REDDIT_USER_AGENT = "D2CInsightPulse/1.0 (by /u/lgd2c_collector)";
-
-async function fetchRedditJson(url: string): Promise<any> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": REDDIT_USER_AGENT },
-  });
-  if (!res.ok) {
-    console.error(`Reddit API ${res.status}: ${url}`);
-    return null;
-  }
-  // Rate limit: ~1 req/sec for unauthenticated
-  await new Promise((r) => setTimeout(r, 1100));
-  return res.json();
-}
-
-interface RedditPost {
-  id: string;
-  title: string;
-  selftext: string;
-  author: string;
-  subreddit: string;
-  score: number;
-  num_comments: number;
-  created_utc: number;
-  permalink: string;
-  url: string;
-}
-
-interface RedditComment {
-  id: string;
-  body: string;
-  author: string;
-  score: number;
-  created_utc: number;
-  permalink: string;
-}
-
-async function searchSubreddit(
-  subreddit: string,
-  keyword: string,
-  days: number,
-  limit = 25,
-): Promise<RedditPost[]> {
-  const after = Math.floor(Date.now() / 1000) - days * 86400;
-  const q = encodeURIComponent(keyword);
-  const url = `https://www.reddit.com/r/${subreddit}/search.json?q=${q}&restrict_sr=1&sort=relevance&t=${days <= 7 ? "week" : days <= 30 ? "month" : "year"}&limit=${limit}`;
-  const data = await fetchRedditJson(url);
-  if (!data?.data?.children) return [];
-  return data.data.children
-    .map((c: any) => c.data as RedditPost)
-    .filter((p: RedditPost) => p.created_utc >= after);
-}
-
-async function fetchPostComments(
-  permalink: string,
-  limit = 50,
-): Promise<RedditComment[]> {
-  const url = `https://www.reddit.com${permalink}.json?limit=${limit}&sort=top&depth=3`;
-  const data = await fetchRedditJson(url);
-  if (!Array.isArray(data) || data.length < 2) return [];
-  const comments: RedditComment[] = [];
-  function extractComments(listing: any) {
-    if (!listing?.data?.children) return;
-    for (const child of listing.data.children) {
-      if (child.kind === "t1" && child.data?.body) {
-        comments.push({
-          id: child.data.id,
-          body: child.data.body,
-          author: child.data.author,
-          score: child.data.score || 0,
-          created_utc: child.data.created_utc,
-          permalink: child.data.permalink || "",
-        });
-        if (child.data.replies) extractComments(child.data.replies);
-      }
-    }
-  }
-  extractComments(data[1]);
-  return comments;
-}
+RULES:
+- Only include content specifically about LG Electronics products
+- Exclude generic mentions, memes, or off-topic content
+- Preserve the original voice — do not paraphrase
+- ALL text in English
+- If content has both post and relevant comments, extract each separately
+- Return ONLY valid JSON array, no markdown`;
 
 // ══════════════════════════════════════════════════════════════
 //  MAIN HANDLER
@@ -237,12 +115,14 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!FIRECRAWL_API_KEY || !LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
-      JSON.stringify({ success: false, error: "Missing env vars" }),
+      JSON.stringify({ success: false, error: "Missing required env vars" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -250,27 +130,25 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Parse options
-  let days = 30;
-  let deepComments = true;
   let mode: "all" | "review" | "voc" | "question" = "all";
   let categoryFilter: string | null = null;
-  let globalSearch = true;
+  let deepComments = true;
+  let maxQueriesPerCategory = 8;
 
   try {
     const body = await req.json();
-    if (body.days) days = Math.min(Number(body.days), 90);
-    if (body.deepComments !== undefined) deepComments = body.deepComments;
     if (body.mode) mode = body.mode;
     if (body.category) categoryFilter = body.category;
-    if (body.globalSearch !== undefined) globalSearch = body.globalSearch;
+    if (body.deepComments !== undefined) deepComments = body.deepComments;
+    if (body.maxQueries) maxQueriesPerCategory = Math.min(Number(body.maxQueries), 10);
   } catch {
     // defaults
   }
 
-  // Log start
+  // Log
   const { data: logEntry } = await supabase
     .from("collection_logs")
-    .insert({ source: "reddit_collector", status: "running" })
+    .insert({ source: "reddit_collector_v2", status: "running" })
     .select()
     .single();
   const logId = logEntry?.id;
@@ -278,214 +156,179 @@ Deno.serve(async (req) => {
   let totalCollected = 0;
   let totalSkipped = 0;
   const errors: string[] = [];
-  const seenPostIds = new Set<string>();
 
   try {
-    // Determine which categories to process
     const categories = categoryFilter
-      ? { [categoryFilter]: SUBREDDITS[categoryFilter] }
-      : SUBREDDITS;
+      ? { [categoryFilter]: REDDIT_QUERIES[categoryFilter] || [] }
+      : REDDIT_QUERIES;
 
-    for (const [category, config] of Object.entries(categories)) {
-      if (!config) continue;
+    for (const [category, queries] of Object.entries(categories)) {
+      const activeQueries = queries.slice(0, maxQueriesPerCategory);
 
-      for (const subreddit of config.subs) {
-        for (const keyword of config.keywords.slice(0, 5)) {
-          try {
-            const posts = await searchSubreddit(subreddit, keyword, days, 15);
-            console.log(`[r/${subreddit}] "${keyword}" → ${posts.length} posts`);
-
-            for (const post of posts) {
-              if (seenPostIds.has(post.id)) continue;
-              seenPostIds.add(post.id);
-
-              const fullText = `${post.title} ${post.selftext}`.trim();
-              if (fullText.length < 20) continue;
-
-              // Classify bucket
-              const { bucket, confidence } = classifyBucket(post.title, post.selftext);
-
-              // Mode filter
-              if (mode !== "all") {
-                if (mode === "review" && bucket !== "REVIEW") continue;
-                if (mode === "voc" && bucket !== "VOC") continue;
-                if (mode === "question" && bucket !== "QUESTION") continue;
-              }
-
-              // Sentiment
-              const { sentiment, score } = scoreSentiment(fullText);
-
-              // Find or create product
-              const productId = await findOrCreateProduct(
-                supabase, keyword, category,
-              );
-
-              // Check duplicate
-              const { data: existing } = await supabase
-                .from("reviews")
-                .select("id")
-                .eq("external_id", `reddit_${post.id}`)
-                .maybeSingle();
-
-              if (existing) {
-                totalSkipped++;
-                continue;
-              }
-
-              // Save post as review
-              const { error: insertErr } = await supabase.from("reviews").insert({
-                product_id: productId,
-                source: `reddit_${subreddit}`,
-                external_id: `reddit_${post.id}`,
-                author: post.author !== "[deleted]" ? post.author : null,
-                title: post.title.slice(0, 500),
-                content: (post.selftext || post.title).slice(0, 5000),
-                sentiment,
-                sentiment_score: score,
-                rating: null,
-                published_at: new Date(post.created_utc * 1000).toISOString(),
-                source_url: `https://reddit.com${post.permalink}`,
-                review_type: bucket.toLowerCase(),
-                content_type: "community",
-                platform_type: "community",
-                user_type: "actual_user",
-              });
-
-              if (insertErr) {
-                errors.push(`Insert post ${post.id}: ${insertErr.message}`);
-              } else {
-                totalCollected++;
-              }
-
-              // Deep comments
-              if (deepComments && post.num_comments > 0) {
-                try {
-                  const comments = await fetchPostComments(post.permalink, 30);
-                  const lgComments = comments.filter((c) => {
-                    const t = c.body.toLowerCase();
-                    return config.keywords.some((kw) => t.includes(kw.toLowerCase())) ||
-                      t.includes("lg ") || t.includes("oled") || t.includes("ultragear") ||
-                      t.includes("gram") || t.includes("washtower") || t.includes("thinq");
-                  });
-
-                  for (const comment of lgComments.slice(0, 10)) {
-                    if (comment.body.length < 30) continue;
-
-                    const { data: cExisting } = await supabase
-                      .from("reviews")
-                      .select("id")
-                      .eq("external_id", `reddit_c_${comment.id}`)
-                      .maybeSingle();
-
-                    if (cExisting) continue;
-
-                    const cBucket = classifyBucket("", comment.body);
-                    if (mode !== "all") {
-                      if (mode === "review" && cBucket.bucket !== "REVIEW") continue;
-                      if (mode === "voc" && cBucket.bucket !== "VOC") continue;
-                      if (mode === "question" && cBucket.bucket !== "QUESTION") continue;
-                    }
-
-                    const cSentiment = scoreSentiment(comment.body);
-
-                    await supabase.from("reviews").insert({
-                      product_id: productId,
-                      source: `reddit_${subreddit}`,
-                      external_id: `reddit_c_${comment.id}`,
-                      author: comment.author !== "[deleted]" ? comment.author : null,
-                      title: `Re: ${post.title.slice(0, 200)}`,
-                      content: comment.body.slice(0, 5000),
-                      sentiment: cSentiment.sentiment,
-                      sentiment_score: cSentiment.score,
-                      rating: null,
-                      published_at: new Date(comment.created_utc * 1000).toISOString(),
-                      source_url: `https://reddit.com${comment.permalink || post.permalink}`,
-                      review_type: cBucket.bucket.toLowerCase(),
-                      content_type: "community",
-                      platform_type: "community",
-                      user_type: "actual_user",
-                    });
-                    totalCollected++;
-                  }
-                } catch (commentErr) {
-                  console.error(`Comments error for ${post.id}: ${commentErr}`);
-                }
-              }
-            }
-          } catch (searchErr) {
-            const msg = `r/${subreddit} "${keyword}": ${searchErr}`;
-            console.error(msg);
-            errors.push(msg);
-          }
-        }
-      }
-    }
-
-    // Global search across all of Reddit (not restricted to subreddits)
-    if (globalSearch) {
-      const globalKeywords = [
-        "LG OLED review", "LG TV 2025", "LG C5 vs", "LG G5 review",
-        "LG UltraGear review", "LG Gram review", "LG WashTower review",
-        "LG soundbar review", "LG air conditioner review",
-        "LG OLED burn-in", "LG TV worth it",
-      ];
-
-      for (const gk of globalKeywords) {
+      for (const query of activeQueries) {
         try {
-          const q = encodeURIComponent(gk);
-          const url = `https://www.reddit.com/search.json?q=${q}&sort=relevance&t=${days <= 7 ? "week" : "month"}&limit=10`;
-          const data = await fetchRedditJson(url);
-          if (!data?.data?.children) continue;
+          console.log(`[Reddit/${category}] Searching: ${query.slice(0, 80)}...`);
 
-          for (const child of data.data.children) {
-            const post = child.data as RedditPost;
-            if (seenPostIds.has(post.id)) continue;
-            seenPostIds.add(post.id);
+          // Firecrawl search
+          const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              query,
+              limit: 5,
+              scrapeOptions: { formats: ["markdown"] },
+            }),
+          });
 
-            const fullText = `${post.title} ${post.selftext}`.trim();
-            if (fullText.length < 20) continue;
+          if (!searchRes.ok) {
+            const errText = await searchRes.text();
+            errors.push(`Search ${category}: ${searchRes.status} ${errText.slice(0, 100)}`);
+            continue;
+          }
 
-            const { bucket } = classifyBucket(post.title, post.selftext);
-            if (mode !== "all") {
-              if (mode === "review" && bucket !== "REVIEW") continue;
-              if (mode === "voc" && bucket !== "VOC") continue;
-              if (mode === "question" && bucket !== "QUESTION") continue;
+          const searchData = await searchRes.json();
+          const results = searchData.data || [];
+          console.log(`[Reddit/${category}] Found ${results.length} results`);
+
+          if (results.length === 0) continue;
+
+          // Deep scrape for more content (comments)
+          let batchedContent = "";
+          for (const result of results) {
+            let content = result.markdown || result.description || "";
+
+            // If deep comments enabled and content is short, scrape the full page
+            if (deepComments && content.length < 500 && result.url) {
+              try {
+                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    url: result.url,
+                    formats: ["markdown"],
+                    onlyMainContent: true,
+                  }),
+                });
+                if (scrapeRes.ok) {
+                  const scrapeData = await scrapeRes.json();
+                  content = scrapeData.data?.markdown || content;
+                }
+              } catch {
+                // use original content
+              }
             }
 
-            const { sentiment, score } = scoreSentiment(fullText);
+            if (content.length >= 50) {
+              batchedContent += `\n\n--- Reddit Result (${result.url || "unknown"}) ---\n${content.slice(0, 4000)}`;
+            }
+          }
 
-            // Detect category from text
-            const detectedCategory = detectCategory(fullText);
-            const productId = await findOrCreateProduct(supabase, gk.split(" ")[1] || "LG", detectedCategory);
+          if (batchedContent.length < 100) continue;
 
+          // AI extraction
+          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                { role: "system", content: REDDIT_EXTRACTION_PROMPT },
+                {
+                  role: "user",
+                  content: `Category: ${category}\n\nReddit Content:\n${batchedContent.slice(0, 15000)}`,
+                },
+              ],
+              temperature: 0.1,
+              max_tokens: 8000,
+            }),
+          });
+
+          if (!aiRes.ok) {
+            errors.push(`AI ${category}: ${aiRes.status}`);
+            continue;
+          }
+
+          const aiData = await aiRes.json();
+          const rawText = aiData.choices?.[0]?.message?.content || "[]";
+
+          // Parse AI response
+          let reviews: any[] = [];
+          try {
+            const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+            reviews = JSON.parse(cleaned);
+            if (!Array.isArray(reviews)) reviews = [];
+          } catch {
+            console.error(`Failed to parse AI response for ${category}`);
+            continue;
+          }
+
+          // Filter by LG relevance & save
+          for (const review of reviews) {
+            if (!review.is_lg_relevant) continue;
+            if (!review.content || review.content.length < 20) continue;
+
+            // Bucket classification
+            const bucket = classifyBucket(`${review.title || ""} ${review.content}`);
+
+            // Mode filter
+            if (mode !== "all" && bucket !== mode) continue;
+
+            // Find or create product
+            const productId = await findOrCreateProduct(
+              supabase,
+              review.model_number || category,
+              review.display_name || `LG ${category}`,
+              review.category || category,
+            );
+
+            // Deduplicate by content hash
+            const contentHash = `reddit_${simpleHash(review.content.slice(0, 200))}`;
             const { data: existing } = await supabase
               .from("reviews")
               .select("id")
-              .eq("external_id", `reddit_${post.id}`)
+              .eq("external_id", contentHash)
               .maybeSingle();
 
-            if (existing) continue;
+            if (existing) {
+              totalSkipped++;
+              continue;
+            }
 
-            await supabase.from("reviews").insert({
+            const { error: insertErr } = await supabase.from("reviews").insert({
               product_id: productId,
-              source: `reddit_${post.subreddit}`,
-              external_id: `reddit_${post.id}`,
-              author: post.author !== "[deleted]" ? post.author : null,
-              title: post.title.slice(0, 500),
-              content: (post.selftext || post.title).slice(0, 5000),
-              sentiment, sentiment_score: score,
+              source: `reddit_${(review.subreddit || category).toLowerCase()}`,
+              external_id: contentHash,
+              author: review.author || null,
+              title: (review.title || "").slice(0, 500),
+              content: review.content.slice(0, 5000),
+              sentiment: review.sentiment || "neutral",
+              sentiment_score: review.sentiment_score ?? 0.5,
               rating: null,
-              published_at: new Date(post.created_utc * 1000).toISOString(),
-              source_url: `https://reddit.com${post.permalink}`,
-              review_type: bucket.toLowerCase(),
+              published_at: review.published_at || null,
+              source_url: null,
+              review_type: bucket,
               content_type: "community",
               platform_type: "community",
               user_type: "actual_user",
             });
-            totalCollected++;
+
+            if (insertErr) {
+              errors.push(`Insert: ${insertErr.message}`);
+            } else {
+              totalCollected++;
+            }
           }
-        } catch (ge) {
-          errors.push(`Global "${gk}": ${ge}`);
+        } catch (queryErr) {
+          errors.push(`Query ${category}: ${queryErr}`);
         }
       }
     }
@@ -510,10 +353,9 @@ Deno.serve(async (req) => {
     success: true,
     collected: totalCollected,
     skipped_duplicates: totalSkipped,
-    unique_posts_seen: seenPostIds.size,
     errors: errors.length,
     error_samples: errors.slice(0, 5),
-    config: { days, deepComments, mode, categoryFilter, globalSearch },
+    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory },
   };
 
   console.log(`✅ Reddit collection complete:`, JSON.stringify(result));
@@ -527,35 +369,33 @@ Deno.serve(async (req) => {
 //  HELPERS
 // ══════════════════════════════════════════════════════════════
 
-function detectCategory(text: string): string {
-  const t = text.toLowerCase();
-  if (/\b(oled|qned|nanocell|tv|television|webos)\b/.test(t)) return "TV";
-  if (/\b(monitor|ultragear|ultrawide|ultrafinefine|gaming\s*monitor)\b/.test(t)) return "Monitor";
-  if (/\b(gram|laptop)\b/.test(t)) return "Laptop";
-  if (/\b(soundbar|xboom|speaker|audio|atmos)\b/.test(t)) return "Audio";
-  if (/\b(washer|dryer|washtower|laundry)\b/.test(t)) return "Washer";
-  if (/\b(refrigerator|fridge|instaview)\b/.test(t)) return "Refrigerator";
-  if (/\b(air\s*condition|ac\b|hvac|dual\s*inverter)\b/.test(t)) return "Air Conditioner";
-  if (/\b(vacuum|cordzero|robot)\b/.test(t)) return "Robot Vacuum";
-  if (/\b(stanby|stand\s*by\s*me)\b/.test(t)) return "TV";
-  return "TV"; // default
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
 }
 
 const productCache = new Map<string, string>();
 
 async function findOrCreateProduct(
   supabase: any,
-  keyword: string,
+  modelNumber: string,
+  displayName: string,
   category: string,
 ): Promise<string> {
-  const cacheKey = `${keyword}_${category}`;
+  const safeModel = modelNumber.replace(/['"]/g, "").slice(0, 100);
+  const cacheKey = `${safeModel}_${category}`;
   if (productCache.has(cacheKey)) return productCache.get(cacheKey)!;
 
-  // Try to match existing product
+  // Try match existing
   const { data: existing } = await supabase
     .from("products")
     .select("id")
-    .or(`model_number.ilike.%${keyword.replace(/['"]/g, "")}%,display_name.ilike.%${keyword.replace(/['"]/g, "")}%`)
+    .or(`model_number.ilike.%${safeModel}%,display_name.ilike.%${safeModel}%`)
     .eq("is_active", true)
     .limit(1)
     .maybeSingle();
@@ -565,12 +405,12 @@ async function findOrCreateProduct(
     return existing.id;
   }
 
-  // Create generic product for this category
-  const modelNum = `Reddit_${category}_General`;
+  // Create generic Reddit product
+  const genericModel = `Reddit_${category}_General`;
   const { data: genExisting } = await supabase
     .from("products")
     .select("id")
-    .eq("model_number", modelNum)
+    .eq("model_number", genericModel)
     .maybeSingle();
 
   if (genExisting) {
@@ -581,7 +421,7 @@ async function findOrCreateProduct(
   const { data: newProduct } = await supabase
     .from("products")
     .insert({
-      model_number: modelNum,
+      model_number: genericModel,
       display_name: `LG ${category} (Reddit VOC)`,
       category,
       is_active: true,
