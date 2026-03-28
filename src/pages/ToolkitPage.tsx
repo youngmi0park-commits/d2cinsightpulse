@@ -284,7 +284,7 @@ export default function ToolkitPage() {
     <div className="min-h-screen bg-background p-8 pr-9" style={{ fontFamily: "'Inter', sans-serif" }}>
       <PageHeader
         icon={Wrench}
-        title="🚀 Global 마케팅 툴킷"
+        title="🚀 Global Marketing Toolkit"
         description="실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
       />
       <div className="mt-6"></div>

@@ -42,7 +42,7 @@ export function FaqToolkitPanel({ productName, displayName, sentiment, reviews, 
             }`}
           >
             <Rocket className="h-3.5 w-3.5" />
-            {t("마케팅 툴킷", "마케팅 툴킷")}
+            {t("Marketing Toolkit", "마케팅 툴킷")}
           </button>
         </div>
       </div>
