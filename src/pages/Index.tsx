@@ -247,6 +247,16 @@ const Index = () => {
           )}
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="mt-12 py-8 text-center space-y-2">
+        <p className="text-sm text-muted-foreground">
+          고객의 진짜 목소리에서 출발해, 브랜드의 다음 움직임을 이끄는 인사이트 플랫폼 — D2C Insight Pulse
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Presented by LG전자 D2C마케팅전략팀
+        </p>
+      </footer>
     </div>
   );
 };
