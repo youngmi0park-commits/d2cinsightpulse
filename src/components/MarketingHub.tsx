@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { MarketingPanel } from "@/components/MarketingPanel";
 import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
 import { ContentCreatorPanel } from "@/components/ContentCreatorPanel";
 import { useLang } from "@/contexts/LanguageContext";
 import {
-  Star, Wrench, Palette, Copy, ThumbsUp, AlertTriangle,
-  Lightbulb, Users, Shield, Briefcase, TrendingUp, ChevronDown,
-  Target, Megaphone, Search,
+  Wrench, Copy, ThumbsUp, AlertTriangle,
+  Lightbulb, Users, TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import type { GeoMessage } from "@/lib/formatMessage";
+import type { MarketingOutput } from "@/lib/formatMessage";
+import type { SentimentResult } from "@/lib/sentiment";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { SentimentResult } from "@/lib/sentiment";
