@@ -440,6 +440,20 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
                           {faq.evidence.pattern && (
                             <p className="text-[10px] text-muted-foreground/70">📊 {faq.evidence.pattern}</p>
                           )}
+                          {((faq.evidence as any).review_count || (faq.evidence as any).sentiment_score) && (
+                            <div className="flex gap-2 flex-wrap mt-1">
+                              {(faq.evidence as any).review_count && (
+                                <Badge variant="outline" className="text-[9px] font-mono gap-1">
+                                  📋 {t("Evidence", "근거")}: {(faq.evidence as any).review_count}{t(" reviews", "건")}
+                                </Badge>
+                              )}
+                              {typeof (faq.evidence as any).sentiment_score === "number" && (
+                                <Badge variant="outline" className="text-[9px] font-mono gap-1">
+                                  💯 {t("Sentiment", "감성점수")}: {(faq.evidence as any).sentiment_score}/100
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 

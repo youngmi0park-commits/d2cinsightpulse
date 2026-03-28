@@ -10,9 +10,10 @@ interface FaqToolkitPanelProps {
   displayName: string;
   sentiment: SentimentResult;
   reviews: { text: string; sentiment?: string; source?: string }[];
+  locale?: string;
 }
 
-export function FaqToolkitPanel({ productName, displayName, sentiment, reviews }: FaqToolkitPanelProps) {
+export function FaqToolkitPanel({ productName, displayName, sentiment, reviews, locale }: FaqToolkitPanelProps) {
   const { t } = useLang();
   const [activeSection, setActiveSection] = useState<"faq" | "toolkit">("faq");
 
@@ -52,6 +53,7 @@ export function FaqToolkitPanel({ productName, displayName, sentiment, reviews }
           displayName={displayName}
           sentiment={sentiment}
           reviews={reviews}
+          locale={locale}
         />
       ) : (
         <MarketerToolkit
