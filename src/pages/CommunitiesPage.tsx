@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Badge } from "@/components/ui/badge";
 
 /* ── helpers ── */
 const STOP_WORDS = new Set([
