@@ -109,10 +109,18 @@ interface FaqPanelProps {
   displayName: string;
   sentiment: SentimentResult;
   reviews: { text: string; sentiment?: string; source?: string }[];
+  locale?: string;
 }
 
 // ─── Constants ───
 const CATEGORY_META: Record<string, { label: string; labelKo: string; icon: React.ElementType; color: string }> = {
+  performance_quality: { label: "Performance/Quality", labelKo: "성능/품질", icon: Sparkles, color: "text-emerald-400" },
+  purchase_anxiety: { label: "Purchase Anxiety", labelKo: "구매 전 불안 해소", icon: Shield, color: "text-amber-400" },
+  installation_compatibility: { label: "Installation/Compatibility", labelKo: "설치/호환성", icon: Wrench, color: "text-orange-400" },
+  delivery_warranty: { label: "Delivery/Warranty", labelKo: "배송/AS", icon: Package, color: "text-blue-400" },
+  competitor_comparison: { label: "Competitor Comparison", labelKo: "경쟁사 비교", icon: TrendingUp, color: "text-violet-400" },
+  price_value: { label: "Price/Value", labelKo: "가격 가치", icon: DollarSign, color: "text-green-400" },
+  // Legacy categories fallback
   installation: { label: "Installation", labelKo: "설치", icon: Wrench, color: "text-orange-400" },
   initial_setup: { label: "Initial Setup", labelKo: "초기 설정", icon: Settings, color: "text-blue-400" },
   display_sound: { label: "Display & Sound", labelKo: "화면/사운드", icon: Monitor, color: "text-purple-400" },
@@ -161,7 +169,7 @@ const SOURCE_TYPE_LABEL: Record<string, { en: string; ko: string }> = {
   conversion_barrier: { en: "Conversion Barrier", ko: "전환 장애" },
 };
 
-export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPanelProps) {
+export function FaqPanel({ productName, displayName, sentiment, reviews, locale }: FaqPanelProps) {
   const { t } = useLang();
   const [aiData, setAiData] = useState<AiFaqData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -189,6 +197,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPa
       const { data, error: fnError } = await supabase.functions.invoke("generate-faq", {
         body: {
           productName: toPRName(displayName || productName),
+          locale: locale || "en-US",
           reviews: reviews.slice(0, 40).map((r) => ({
             text: r.text,
             sentiment: r.sentiment,
@@ -430,6 +439,20 @@ export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPa
                           )}
                           {faq.evidence.pattern && (
                             <p className="text-[10px] text-muted-foreground/70">📊 {faq.evidence.pattern}</p>
+                          )}
+                          {((faq.evidence as any).review_count || (faq.evidence as any).sentiment_score) && (
+                            <div className="flex gap-2 flex-wrap mt-1">
+                              {(faq.evidence as any).review_count && (
+                                <Badge variant="outline" className="text-[9px] font-mono gap-1">
+                                  📋 {t("Evidence", "근거")}: {(faq.evidence as any).review_count}{t(" reviews", "건")}
+                                </Badge>
+                              )}
+                              {typeof (faq.evidence as any).sentiment_score === "number" && (
+                                <Badge variant="outline" className="text-[9px] font-mono gap-1">
+                                  💯 {t("Sentiment", "감성점수")}: {(faq.evidence as any).sentiment_score}/100
+                                </Badge>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}

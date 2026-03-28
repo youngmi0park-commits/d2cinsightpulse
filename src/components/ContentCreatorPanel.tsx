@@ -92,6 +92,11 @@ const CONTENT_PURPOSES: ContentPurpose[] = [
   { key: "criteo_pmax", icon: "🟠", labelEn: "Criteo / PMax Campaign", labelKo: "Criteo / PMax 캠페인", channel: "outside" },
   { key: "display_ad", icon: "🖥️", labelEn: "Display Ad (GDN)", labelKo: "디스플레이 광고 (GDN)", channel: "outside" },
   { key: "store_promo", icon: "🏬", labelEn: "Store Promo KV", labelKo: "스토어 프로모션용 KV", channel: "outside" },
+  { key: "amazon_aplus", icon: "🛒", labelEn: "Amazon A+ Content", labelKo: "Amazon A+ 콘텐츠", channel: "outside" },
+  { key: "amazon_sb", icon: "🛒", labelEn: "Amazon Sponsored Brand", labelKo: "Amazon Sponsored Brand", channel: "outside" },
+  { key: "bestbuy_walmart", icon: "🏪", labelEn: "Best Buy / Walmart PDP", labelKo: "Best Buy / Walmart PDP", channel: "outside" },
+  { key: "currys_uk", icon: "🏪", labelEn: "Currys (UK)", labelKo: "Currys (UK)", channel: "outside" },
+  { key: "pinterest_ad", icon: "📌", labelEn: "Pinterest Ad", labelKo: "Pinterest 광고", channel: "outside" },
 ];
 
 // ─── Props ───
@@ -103,6 +108,34 @@ interface ContentCreatorPanelProps {
   marketing: MarketingOutput;
 }
 
+// ─── Channel-specific format rules ───
+const CHANNEL_FORMAT_RULES: Record<string, { en: string; ko: string }> = {
+  pdp_hero: {
+    en: "Format: Headline ≤8 words / Sub-copy ≤15 words / CTA exactly 3 words",
+    ko: "포맷: 헤드라인 8단어 이내 / 서브카피 15단어 이내 / CTA 3단어",
+  },
+  amazon_aplus: {
+    en: "Format: Module 1 Headline (max 70 chars) + Body (max 300 chars) + 3 bullet points",
+    ko: "포맷: Module 1 헤드라인(최대 70자) + 본문(최대 300자) + 불릿포인트 3개",
+  },
+  amazon_sb: {
+    en: "Format: Headline (max 50 chars) / Sub-line (max 30 chars)",
+    ko: "포맷: 헤드라인(최대 50자) / 서브라인(최대 30자)",
+  },
+  meta_ad: {
+    en: "Format: Primary text ≤125 chars / Headline ≤40 chars / CTA button selection",
+    ko: "포맷: Primary text 125자 이내 / 헤드라인 40자 이내 / CTA 버튼 선택",
+  },
+  youtube_trueview: {
+    en: "Format: Hook (first 5s script) + Body (30s script)",
+    ko: "포맷: Hook(첫 5초 스크립트) + 본문 30초 스크립트",
+  },
+  sns_short: {
+    en: "Format: Caption ≤150 chars + 5 hashtags",
+    ko: "포맷: 캡션 150자 이내 + 해시태그 5개",
+  },
+};
+
 // ─── Generated output shape ───
 interface GeneratedContent {
   headline: string;
@@ -111,7 +144,10 @@ interface GeneratedContent {
   imageGuide: string;
   insideVersion: string;
   outsideVersion: string;
+  versionB?: { headline: string; subMessage: string; insideVersion: string; outsideVersion: string };
   pmaxAssets?: { headlines: string[]; longHeadline: string; descriptions: string[] };
+  amazonAplus?: { headline: string; body: string; bullets: string[] };
+  amazonSB?: { headline: string; subline: string };
   exportPrompts: { tool: string; prompt: string; url?: string; isAI?: boolean }[];
   legalStatus: "pass" | "needs_revision" | "fail";
   legalViolations: string[];
@@ -243,10 +279,14 @@ export function ContentCreatorPanel({
     </Button>
   );
 
-  // ─── Legal check ───
+  // ─── Legal check + copy quality ───
+  const removeSuperlatves = (text: string): string => {
+    return text.replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "").replace(/\s{2,}/g, " ").trim();
+  };
+
   const runLegalCheck = (text: string): { status: "pass" | "needs_revision" | "fail"; violations: string[] } => {
     const violations: string[] = [];
-    const superlatives = ["best", "#1", "unprecedented", "most reliable", "top-rated", "number one", "world's first"];
+    const superlatives = ["best", "#1", "unprecedented", "most reliable", "top-rated", "number one", "world's first", "unmatched", "ultimate"];
     const comparatives = ["better than", "superior to", "beats", "outperforms", "compared to"];
     const lower = text.toLowerCase();
     for (const s of superlatives) {
@@ -284,12 +324,23 @@ export function ContentCreatorPanel({
       ? `\n🖼️ Image Style: ${selectedBannerStyle.labelEn}\n  ${selectedBannerStyle.descEn}`
       : "";
 
+    // Channel format rule
+    const formatRule = CHANNEL_FORMAT_RULES[contentPurpose];
+    const formatRuleText = formatRule ? `\n📏 ${lang === "en" ? formatRule.en : formatRule.ko}` : "";
+
     const fullPrompt = `🎯 Content Creation Brief
 ━━━━━━━━━━━━━━━━━━━━━━
 📦 Product: ${prName}
 📍 Target: ${localeLabel} via ${channelLabel}
 🏷️ Message Type: ${lang === "en" ? msgTypeInfo.labelEn : msgTypeInfo.labelKo}
 📄 Content Purpose: ${purposeLabel}
+${formatRuleText}
+
+── Copy Quality Rules ──
+✅ Rewrite review keywords into emotional, compelling language (no keyword listing)
+✅ Include social proof: "Verified buyers report..." / "${sentiment.positive} users praised..."
+🚫 Auto-remove superlatives: best, #1, unmatched, ultimate
+✅ Generate A/B versions (A: benefit-led, B: social-proof-led)
 
 ── Review-Driven Insights (Auto-Extracted) ──
 
@@ -309,13 +360,13 @@ ${uspKeywords.join(", ") || "N/A"}
 ${evidence}
 ${specInfo}${bannerInfo}
 
-── Generated Content ──
+── Generated Content (Version A) ──
 
 ▣ Headline:
-${msg.headline}
+${removeSuperlatves(msg.headline)}
 
 ▣ Sub Message:
-${msg.sub}
+${removeSuperlatves(msg.sub)}
 ${msg.faqQ ? `\n▣ FAQ:\nQ. ${msg.faqQ}\nA. ${msg.faqA}` : ""}
 
 ── Locale Rules: ${localeLabel} ──
@@ -368,30 +419,103 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       case "store_promo":
         imageGuide = `KV layout: Product center, promotional overlay (badge/sticker). Space for price/offer callout. Print-ready 300dpi or digital 72dpi.`;
         break;
+      case "amazon_aplus":
+        imageGuide = `Amazon A+ Content: Module hero 970×600. Comparison chart 150×150 per cell. Lifestyle 970×300. Product on white background. Follow Amazon image guidelines. No promotional text in images.`;
+        break;
+      case "amazon_sb":
+        imageGuide = `Amazon Sponsored Brand: Logo 400×400. Custom image 1200×628. Product collection 300×300 each. White/clean background. Brand-consistent styling.`;
+        break;
+      case "bestbuy_walmart":
+        imageGuide = `Retailer PDP: Hero 1500×1500 square. Gallery 6-8 images. Infographic overlays allowed. Feature callouts. Comparison charts. Lifestyle shots.`;
+        break;
+      case "currys_uk":
+        imageGuide = `Currys UK: Hero 1200×1200. Gallery 800×800. White background product shots. Feature highlight infographics. Energy rating badge placement.`;
+        break;
+      case "pinterest_ad":
+        imageGuide = `Pinterest: Standard Pin 1000×1500 (2:3). Video Pin 1000×1500. Carousel 1000×1500 per card. Warm lifestyle imagery. Text overlay max 20% area. "Ad" label auto-applied.`;
+        break;
     }
 
-    // Inside vs Outside channel versions
-    const insideVersion = `${prName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${strengths[2] || "Design"}.\n${evidence}`;
-    const outsideVersion = contentPurpose === "meta_ad"
-      ? `[Ad] ${msg.headline}\n\nPrimary text (125 chars): ${(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`
-      : contentPurpose === "criteo_pmax"
-      ? `── Criteo ──\nHeadline (25 chars): ${(prName).slice(0, 25)}\nDescription (45 chars): ${(strengths[0] || "Premium quality").slice(0, 45)}\nCTA: Learn More\n\n── PMax ──\nHeadline 1: ${(prName + " — " + (strengths[0] || "Quality")).slice(0, 30)}\nHeadline 2: ${(strengths[1] || "Performance").slice(0, 30)}\nHeadline 3: ${(strengths[2] || "Design").slice(0, 30)}\nLong headline: ${(msg.headline).slice(0, 90)}\nDescription 1: ${(msg.sub).slice(0, 90)}\nDescription 2: ${(strengths.slice(0, 3).join(". ") + ".").slice(0, 90)}`
-      : `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : msg.headline}\n3-second hook → lifestyle scene → product reveal`;
+    // Social proof phrase
+    const socialProof = `${sentiment.positive} verified buyers praised`;
+
+    // Inside vs Outside channel versions (Version A: benefit-led)
+    const insideVersion = `${removeSuperlatves(prName)} — ${removeSuperlatves(strengths[0] || "Quality")}. ${removeSuperlatves(strengths[1] || "Performance")}. ${removeSuperlatves(strengths[2] || "Design")}.\n${socialProof} this product. ${evidence}`;
+    
+    let outsideVersion = "";
+    switch (contentPurpose) {
+      case "meta_ad":
+        outsideVersion = `[Ad] ${removeSuperlatves(msg.headline)}\n\nPrimary text (125 chars): ${removeSuperlatves(msg.sub).slice(0, 125)}\nHeadline (40 chars): ${(prName + " — " + removeSuperlatves(strengths[0] || "Quality")).slice(0, 40)}\nDescription (30 chars): ${removeSuperlatves(strengths[1] || "Shop Now").slice(0, 30)}\nCTA: Shop Now`;
+        break;
+      case "criteo_pmax":
+        outsideVersion = `── Criteo ──\nHeadline (25 chars): ${prName.slice(0, 25)}\nDescription (45 chars): ${removeSuperlatves(strengths[0] || "Premium quality").slice(0, 45)}\nCTA: Learn More\n\n── PMax ──\nHeadline 1: ${(prName + " — " + removeSuperlatves(strengths[0] || "Quality")).slice(0, 30)}\nHeadline 2: ${removeSuperlatves(strengths[1] || "Performance").slice(0, 30)}\nHeadline 3: ${removeSuperlatves(strengths[2] || "Design").slice(0, 30)}\nLong headline: ${removeSuperlatves(msg.headline).slice(0, 90)}\nDescription 1: ${removeSuperlatves(msg.sub).slice(0, 90)}\nDescription 2: ${removeSuperlatves(strengths.slice(0, 3).join(". ") + ".").slice(0, 90)}`;
+        break;
+      case "amazon_aplus":
+        outsideVersion = `── Amazon A+ Content ──\nModule 1 Headline (70 chars): ${(prName + " — " + removeSuperlatves(strengths[0] || "Quality")).slice(0, 70)}\nBody (300 chars): ${(`${socialProof} features like ${removeSuperlatves(strengths.slice(0, 3).join(", "))}. ${removeSuperlatves(msg.sub)}`).slice(0, 300)}\n\nBullet Points:\n• ${removeSuperlatves(strengths[0] || "Quality")}\n• ${removeSuperlatves(strengths[1] || "Performance")}\n• ${removeSuperlatves(strengths[2] || "Design")}`;
+        break;
+      case "amazon_sb":
+        outsideVersion = `── Amazon Sponsored Brand ──\nHeadline (50 chars): ${removeSuperlatves(prName + " — " + (strengths[0] || "Quality")).slice(0, 50)}\nSub-line (30 chars): ${removeSuperlatves(strengths[1] || "Trusted Choice").slice(0, 30)}`;
+        break;
+      case "sns_short":
+        outsideVersion = `[Ad] ${removeSuperlatves(msg.headline).slice(0, 150)}\n\n#${prName.replace(/\s+/g, "")} #LG #${(strengths[0] || "Quality").replace(/\s+/g, "")} #${(usingScenes[0] || "Lifestyle").replace(/\s+/g, "")} #SmartHome`;
+        break;
+      case "youtube_trueview":
+        outsideVersion = `── Hook (0-5s) ──\n"${removeSuperlatves(msg.headline).slice(0, 60)}"\n\n── Body (5-30s Script) ──\n${removeSuperlatves(msg.sub)} ${socialProof} ${removeSuperlatves(strengths[0] || "quality")}. See why real users love ${prName}.\n\n── CTA ──\nLearn more at lg.com`;
+        break;
+      case "bestbuy_walmart":
+        outsideVersion = `── Retailer PDP Copy ──\nHeadline: ${removeSuperlatves(prName + " — " + (strengths[0] || "Quality"))}\nKey Features:\n• ${removeSuperlatves(strengths[0] || "Quality")}\n• ${removeSuperlatves(strengths[1] || "Performance")}\n• ${removeSuperlatves(strengths[2] || "Design")}\nSocial Proof: ${socialProof} this product.`;
+        break;
+      case "currys_uk":
+        outsideVersion = `── Currys UK PDP Copy ──\nHeadline: ${removeSuperlatves(prName + " — " + (strengths[0] || "Quality"))}\nKey Benefits:\n• ${removeSuperlatves(strengths[0] || "Quality")}\n• ${removeSuperlatves(strengths[1] || "Performance")}\n• ${removeSuperlatves(strengths[2] || "Design")}\n${socialProof} this product.`;
+        break;
+      case "pinterest_ad":
+        outsideVersion = `[Ad] ${removeSuperlatves(msg.headline).slice(0, 100)}\n\nDescription: ${removeSuperlatves(msg.sub).slice(0, 200)}\nCTA: Learn More\nBoard: Home & Living / Technology`;
+        break;
+      default:
+        outsideVersion = `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : removeSuperlatves(msg.headline)}\n3-second hook → lifestyle scene → product reveal`;
+    }
+
+    // Version B: social-proof-led
+    const versionB = {
+      headline: t(
+        `${socialProof} ${removeSuperlatves(strengths[0] || "quality")} on ${prName}`,
+        `${sentiment.positive}명의 실사용자가 ${prName}의 ${removeSuperlatves(strengths[0] || "품질")}을 인정했습니다`
+      ),
+      subMessage: t(
+        `Real users highlight ${removeSuperlatves(strengths.slice(0, 2).join(" and "))}. ${evidence}`,
+        `실사용자들이 ${removeSuperlatves(strengths.slice(0, 2).join(", "))}을(를) 강조합니다. ${evidence}`
+      ),
+      insideVersion: `${prName} — ${socialProof} ${removeSuperlatves(strengths[0] || "quality")}.\n"${removeSuperlatves(strengths[1] || "Performance")}" is the most mentioned keyword.\n${evidence}`,
+      outsideVersion: `[Ad] ${socialProof} ${removeSuperlatves(strengths[0] || "quality")} — Discover ${prName}\n${evidence}`,
+    };
+
+    // Amazon A+ structured assets
+    const amazonAplus = contentPurpose === "amazon_aplus" ? {
+      headline: (prName + " — " + removeSuperlatves(strengths[0] || "Quality")).slice(0, 70),
+      body: (`${socialProof} features like ${removeSuperlatves(strengths.slice(0, 3).join(", "))}. ${removeSuperlatves(msg.sub)}`).slice(0, 300),
+      bullets: [removeSuperlatves(strengths[0] || "Quality"), removeSuperlatves(strengths[1] || "Performance"), removeSuperlatves(strengths[2] || "Design")],
+    } : undefined;
+
+    // Amazon SB structured assets
+    const amazonSB = contentPurpose === "amazon_sb" ? {
+      headline: removeSuperlatves(prName + " — " + (strengths[0] || "Quality")).slice(0, 50),
+      subline: removeSuperlatves(strengths[1] || "Trusted Choice").slice(0, 30),
+    } : undefined;
 
     // PMax asset set for criteo_pmax
     const pmaxAssets = contentPurpose === "criteo_pmax" ? {
       headlines: [
-        (prName + " — " + (strengths[0] || "Quality")).slice(0, 30),
-        (strengths[1] || "Performance You'll Love").slice(0, 30),
-        (strengths[2] || "Designed for You").slice(0, 30),
+        removeSuperlatves(prName + " — " + (strengths[0] || "Quality")).slice(0, 30),
+        removeSuperlatves(strengths[1] || "Performance You'll Love").slice(0, 30),
+        removeSuperlatves(strengths[2] || "Designed for You").slice(0, 30),
         ("Discover " + prName).slice(0, 30),
-        (strengths[0] || "Quality" + " Meets " + (strengths[1] || "Style")).slice(0, 30),
+        removeSuperlatves((strengths[0] || "Quality") + " Meets " + (strengths[1] || "Style")).slice(0, 30),
       ],
-      longHeadline: (msg.headline).slice(0, 90),
+      longHeadline: removeSuperlatves(msg.headline).slice(0, 90),
       descriptions: [
-        (msg.sub).slice(0, 90),
-        (strengths.slice(0, 3).join(". ") + ". " + evidence).slice(0, 90),
-        (`Experience ${prName}. ${strengths[0] || "Quality"} that customers love.`).slice(0, 90),
+        removeSuperlatves(msg.sub).slice(0, 90),
+        removeSuperlatves(strengths.slice(0, 3).join(". ") + ". " + evidence).slice(0, 90),
+        (`Experience ${prName}. ${socialProof} ${removeSuperlatves(strengths[0] || "quality")}.`).slice(0, 90),
       ],
     } : undefined;
 
@@ -400,17 +524,22 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
     const exportPrompts: GeneratedContent["exportPrompts"] = [
       {
         tool: "Nano Banana (AI)",
-        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} photography of ${prName}. ${messageType === "using_scene" ? `Scene: ${sceneRef}, warm natural lighting, real-home atmosphere.` : `Studio setting, premium finish, dark gradient background.`} ${contentPurpose === "meta_ad" ? "Square 1:1 composition." : contentPurpose === "criteo_pmax" ? "Clean product hero, white background, no text overlay." : "16:9 hero composition."} High quality, photorealistic, 8K detail.`,
+        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} photography of ${prName}. ${messageType === "using_scene" ? `Scene: ${sceneRef}, warm natural lighting, real-home atmosphere.` : `Studio setting, premium finish, dark gradient background.`} ${contentPurpose === "meta_ad" ? "Square 1:1 composition." : contentPurpose === "criteo_pmax" ? "Clean product hero, white background, no text overlay." : contentPurpose === "amazon_aplus" || contentPurpose === "amazon_sb" ? "White background, product-focused, Amazon guidelines." : contentPurpose === "pinterest_ad" ? "2:3 vertical, lifestyle warm tones." : "16:9 hero composition."} High quality, photorealistic, 8K detail.`,
+        isAI: true,
+      },
+      {
+        tool: "Nano Banana 2 (AI)",
+        prompt: `${prName} ${messageType === "using_scene" ? `in ${sceneRef}, lifestyle photography` : "studio product shot"}, ${contentPurpose === "amazon_aplus" ? "white background, e-commerce ready" : contentPurpose === "pinterest_ad" ? "warm aesthetic, 2:3 vertical" : "professional commercial photography"}. Clean, modern, high-end feel.`,
         isAI: true,
       },
       {
         tool: "Midjourney",
-        prompt: `${prName} product photography, ${messageType === "using_scene" ? `warm lifestyle, ${sceneRef}` : "studio, premium"}, professional lighting, 8k, photorealistic --ar ${contentPurpose === "pdp_hero" ? "8:3" : contentPurpose === "sns_short" ? "9:16" : "16:9"} --v 6`,
+        prompt: `${prName} product photography, ${messageType === "using_scene" ? `warm lifestyle, ${sceneRef}` : "studio, premium"}, professional lighting, 8k, photorealistic --ar ${contentPurpose === "pdp_hero" ? "8:3" : contentPurpose === "sns_short" || contentPurpose === "pinterest_ad" ? "2:3" : contentPurpose === "amazon_aplus" || contentPurpose === "amazon_sb" ? "1:1" : "16:9"} --v 6`,
         url: "https://www.midjourney.com",
       },
       {
         tool: "Adobe Firefly",
-        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} shot of ${prName} in ${styleScene}. Lighting: ${messageType === "using_scene" ? "natural, warm" : "studio"}. Background: ${messageType === "using_scene" ? "real home" : "dark gradient"}.`,
+        prompt: `Professional ${messageType === "using_scene" ? "lifestyle" : "product"} shot of ${prName} in ${styleScene}. Lighting: ${messageType === "using_scene" ? "natural, warm" : "studio"}. Background: ${contentPurpose === "amazon_aplus" || contentPurpose === "amazon_sb" ? "pure white" : messageType === "using_scene" ? "real home" : "dark gradient"}.`,
         url: "https://firefly.adobe.com",
       },
       {
@@ -420,7 +549,7 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
       },
       {
         tool: "Canva",
-        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_pmax" ? "Display Ad 300x250" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${msg.headline}".`,
+        prompt: `Template: ${contentPurpose === "sns_short" ? "Instagram Story" : contentPurpose === "pdp_hero" ? "Website Banner" : contentPurpose === "meta_ad" ? "Facebook Ad" : contentPurpose === "criteo_pmax" ? "Display Ad 300x250" : contentPurpose === "pinterest_ad" ? "Pinterest Pin" : contentPurpose === "amazon_aplus" ? "Product Infographic" : "Social Media Post"}. Brand: LG Electronics (#A50034). Headline: "${removeSuperlatves(msg.headline)}".`,
         url: "https://www.canva.com",
       },
     ];
@@ -429,13 +558,16 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
     const legal = runLegalCheck(allText);
 
     setGenerated({
-      headline: msg.headline,
-      subMessage: msg.sub,
+      headline: removeSuperlatves(msg.headline),
+      subMessage: removeSuperlatves(msg.sub),
       faqMessage: msg.faqQ ? { q: msg.faqQ, a: msg.faqA } : undefined,
       imageGuide,
       insideVersion,
       outsideVersion,
+      versionB,
       pmaxAssets,
+      amazonAplus,
+      amazonSB,
       exportPrompts,
       legalStatus: legal.status,
       legalViolations: legal.violations,
@@ -700,14 +832,19 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
               <h4 className="text-sm font-bold">{t("📝 Text Copy — Ready to Use", "📝 텍스트 카피 — 바로 사용")}</h4>
             </div>
 
-            {/* Headline */}
-            <div className="p-4 rounded-lg border border-border bg-secondary/30">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline</span>
-                <CopyBtn text={generated.headline} id="headline" />
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Version A</Badge>
+                <span className="text-[10px] text-muted-foreground">{t("Benefit-led", "베네핏 중심")}</span>
               </div>
-              <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
-            </div>
+
+              {/* Headline */}
+              <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline</span>
+                  <CopyBtn text={generated.headline} id="headline" />
+                </div>
+                <p className="text-lg font-bold font-heading leading-snug">{generated.headline}</p>
+              </div>
 
             {/* Sub Message */}
             <div className="p-4 rounded-lg border border-border bg-secondary/30">
@@ -804,6 +941,95 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Amazon A+ Content */}
+            {generated.amazonAplus && (
+              <div className="p-4 rounded-lg border border-amber-600/20 bg-amber-600/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                    🛒 Amazon A+ Content
+                  </span>
+                  <CopyBtn
+                    text={`Headline:\n${generated.amazonAplus.headline}\n\nBody:\n${generated.amazonAplus.body}\n\nBullet Points:\n${generated.amazonAplus.bullets.map((b, i) => `${i + 1}. ${b}`).join("\n")}`}
+                    id="aplus_all"
+                    label={t("Copy All", "전체 복사")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Headline (max 70 chars)</p>
+                    <p className="text-xs text-foreground/80">{generated.amazonAplus.headline} <span className="text-muted-foreground">({generated.amazonAplus.headline.length})</span></p>
+                  </div>
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Body (max 300 chars)</p>
+                    <p className="text-xs text-foreground/80">{generated.amazonAplus.body} <span className="text-muted-foreground">({generated.amazonAplus.body.length})</span></p>
+                  </div>
+                  <div className="bg-background/50 rounded px-2.5 py-2">
+                    <p className="text-[10px] text-muted-foreground uppercase mb-1">Bullet Points</p>
+                    <ul className="text-xs text-foreground/80 space-y-0.5">
+                      {generated.amazonAplus.bullets.map((b, i) => <li key={i}>• {b}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Amazon Sponsored Brand */}
+            {generated.amazonSB && (
+              <div className="p-4 rounded-lg border border-amber-600/20 bg-amber-600/5 space-y-2">
+                <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                  🛒 Amazon Sponsored Brand
+                </span>
+                <div className="bg-background/50 rounded px-2.5 py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Headline (max 50 chars)</p>
+                  <p className="text-xs text-foreground/80">{generated.amazonSB.headline} <span className="text-muted-foreground">({generated.amazonSB.headline.length})</span></p>
+                </div>
+                <div className="bg-background/50 rounded px-2.5 py-2">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-0.5">Sub-line (max 30 chars)</p>
+                  <p className="text-xs text-foreground/80">{generated.amazonSB.subline} <span className="text-muted-foreground">({generated.amazonSB.subline.length})</span></p>
+                </div>
+              </div>
+            )}
+
+            {/* ═══ Version B: Social-Proof-Led ═══ */}
+            {generated.versionB && (
+              <div className="space-y-3 border-t border-dashed border-border pt-4">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-accent/80 text-accent-foreground text-[10px]">Version B</Badge>
+                  <span className="text-[10px] text-muted-foreground">{t("Social-proof-led", "사회적 증거 중심")}</span>
+                </div>
+                <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Headline B</span>
+                    <CopyBtn text={generated.versionB.headline} id="headline_b" />
+                  </div>
+                  <p className="text-lg font-bold font-heading leading-snug">{generated.versionB.headline}</p>
+                </div>
+                <div className="p-4 rounded-lg border border-border bg-secondary/30">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">▣ Sub Message B</span>
+                    <CopyBtn text={generated.versionB.subMessage} id="sub_b" />
+                  </div>
+                  <p className="text-sm text-foreground/90 leading-relaxed">{generated.versionB.subMessage}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1"><Monitor className="h-3 w-3" /> Inside B</span>
+                      <CopyBtn text={generated.versionB.insideVersion} id="inside_b" />
+                    </div>
+                    <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">{generated.versionB.insideVersion}</div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground/80 flex items-center gap-1"><Film className="h-3 w-3" /> Outside B</span>
+                      <CopyBtn text={generated.versionB.outsideVersion} id="outside_b" />
+                    </div>
+                    <div className="p-3 rounded-lg border border-border bg-secondary/20 text-xs text-foreground/80 whitespace-pre-line">{generated.versionB.outsideVersion}</div>
                   </div>
                 </div>
               </div>
