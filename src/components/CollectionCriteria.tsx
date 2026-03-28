@@ -17,8 +17,8 @@ function useLgComCounts() {
   useEffect(() => {
     Promise.all([
       supabase.rpc("get_lgcom_country_counts"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2025-01-01"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2025-01-01"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2024-01-01"),
+      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2024-01-01"),
     ]).then(([countRes, us2025Res, uk2025Res]) => {
       const data = countRes.data || [];
       const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
@@ -436,25 +436,25 @@ export const CollectionCriteria = () => {
       <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
         {/* Live collection stats */}
         <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
-          <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
+          <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2024 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2024년 1월 ~ 현재)")}</h4>
           <div className="grid grid-cols-1 gap-2 text-xs">
             <div>
               <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
               {t(
-                `Written since Jan 2025: ${BV_2025_US.toLocaleString()} reviews — `,
-                `25년 1월부터 작성된 총 ${BV_2025_US.toLocaleString()}건 리뷰 중 `
+                `Total ${BV_TOTAL_US.toLocaleString()} reviews — `,
+                `총 ${BV_TOTAL_US.toLocaleString()}건 리뷰 중 `
               )}
               <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-              <span className="text-muted-foreground"> ({t(`Total all-time: ${counts.us.toLocaleString()}`, `전체 누적 ${counts.us.toLocaleString()}건`)})</span>
+              <span className="text-muted-foreground"> ({t(`Total reviews: ${counts.us.toLocaleString()}`, `전체 누적 ${counts.us.toLocaleString()}건`)})</span>
             </div>
             <div>
               <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
               {t(
-                `Written since Jan 2025: ${BV_2025_UK.toLocaleString()} reviews — `,
-                `25년 1월부터 작성된 총 ${BV_2025_UK.toLocaleString()}건 리뷰 중 `
+                `Total ${BV_TOTAL_UK.toLocaleString()} reviews — `,
+                `총 ${BV_TOTAL_UK.toLocaleString()}건 리뷰 중 `
               )}
               <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-              <span className="text-muted-foreground"> ({t(`Total all-time: ${counts.uk.toLocaleString()}`, `전체 누적 ${counts.uk.toLocaleString()}건`)})</span>
+              <span className="text-muted-foreground"> ({t(`Total reviews: ${counts.uk.toLocaleString()}`, `전체 누적 ${counts.uk.toLocaleString()}건`)})</span>
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes reviews <20 chars & duplicates", "출처: Bazaarvoice Conversations API (Production) · 전 카테고리 · 20자 미만 콘텐츠 및 중복 리뷰 제외")}</p>
