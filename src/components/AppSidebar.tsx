@@ -1,6 +1,6 @@
 import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -51,7 +52,7 @@ export function AppSidebar() {
     >
       {/* Header */}
       <SidebarHeader className="p-4 pb-3 border-b border-[hsl(0,0%,15%)]">
-        <div className="flex items-center gap-2.5">
+        <button onClick={() => navigate("/")} className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity">
           <Activity className="h-5 w-5 text-[hsl(4,58%,44%)] shrink-0" />
           {!collapsed && (
             <div>
@@ -68,7 +69,7 @@ export function AppSidebar() {
               </div>
             </div>
           )}
-        </div>
+        </button>
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-4 space-y-5">
