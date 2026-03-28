@@ -36,6 +36,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
+  const { lang, toggleLang } = useLang();
   const isActive = (path: string) => location.pathname === path;
 
   return (
