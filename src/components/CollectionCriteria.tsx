@@ -440,14 +440,14 @@ export const CollectionCriteria = () => {
           <div className="grid grid-cols-1 gap-2.5 text-xs">
             <div>
               <span className="text-muted-foreground">🇺🇸 {t("US LG.com", "미국 LG.com")}</span>{" "}
-              <span className="text-muted-foreground">{t(`Total ${BV_TOTAL_US.toLocaleString()} reviews accumulated.`, `총 ${BV_TOTAL_US.toLocaleString()}건 누적.`)}</span>{" "}
-              {t("Since Jan 2024: ", "24년 1월 이후 ")}
+              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 중 `)}
+              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
               <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
             <div>
               <span className="text-muted-foreground">🇬🇧 {t("UK LG.com", "영국 LG.com")}</span>{" "}
-              <span className="text-muted-foreground">{t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews accumulated.`, `총 ${BV_TOTAL_UK.toLocaleString()}건 누적.`)}</span>{" "}
-              {t("Since Jan 2024: ", "24년 1월 이후 ")}
+              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 중 `)}
+              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
               <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
           </div>
