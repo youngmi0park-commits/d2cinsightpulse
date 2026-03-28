@@ -7,7 +7,7 @@ import { TopKeywordsWidget } from "@/components/TopKeywordsWidget";
 import { TopProductsWidget } from "@/components/TopProductsWidget";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
-import { MarketingHub } from "@/components/MarketingHub";
+import { KeywordCloud } from "@/components/KeywordCloud";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
@@ -150,6 +150,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      {/* Data Status Bar */}
+      <DataStatusBar />
       {/* Global Filter Bar */}
       <GlobalFilterBar filters={filters} onChange={setFilters} />
 
