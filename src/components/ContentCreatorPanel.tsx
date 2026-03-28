@@ -40,7 +40,7 @@ const MESSAGE_TYPES: {
     labelKo: "강점 강조형",
     descEn: "Review Strength-based — Hero, NPI Banner, Digital Ad",
     descKo: "리뷰 Strength 기반 — 히어로, NPI 배너, 디지털 광고",
-    color: "border-emerald-500/40 bg-emerald-500/5",
+    color: "border-success/40 bg-success/5",
   },
   {
     key: "pain_reversal",
@@ -274,7 +274,7 @@ export function ContentCreatorPanel({
 
   const CopyBtn = ({ text, id, label }: { text: string; id: string; label?: string }) => (
     <Button variant="outline" size="sm" onClick={() => copyText(text, id)} className="h-7 text-[10px] gap-1">
-      {copiedKey === id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      {copiedKey === id ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
       {label || t("Copy", "복사")}
     </Button>
   );
@@ -797,18 +797,18 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
         <div className="space-y-4 border-t border-border pt-5">
           {/* Legal Status */}
           <div className={`p-3 rounded-lg border ${
-            generated.legalStatus === "pass" ? "border-emerald-500/30 bg-emerald-500/10" : "border-amber-500/30 bg-amber-500/10"
+            generated.legalStatus === "pass" ? "border-success/30 bg-success/10" : "border-amber-500/30 bg-amber-500/10"
           }`}>
             <div className="flex items-center gap-2">
               {generated.legalStatus === "pass" ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
               )}
               <span className="text-sm font-medium">
                 {t("Legal Compliance", "법무 컴플라이언스")}:
                 <Badge variant="outline" className={`ml-2 text-[10px] ${
-                  generated.legalStatus === "pass" ? "text-emerald-500 border-emerald-500/30" : "text-amber-500 border-amber-500/30"
+                  generated.legalStatus === "pass" ? "text-success border-success/30" : "text-amber-500 border-amber-500/30"
                 }`}>
                   {generated.legalStatus.toUpperCase()}
                 </Badge>
@@ -1090,13 +1090,13 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
           <Collapsible open={showLegal} onOpenChange={setShowLegal}>
             <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
               {showLegal ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
               <span className="font-medium">{t("Full Compliance Checklist", "전체 컴플라이언스 체크리스트")}</span>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 p-3 rounded-lg border border-border bg-secondary/20 text-[11px] space-y-1">
               {getComplianceChecks(selectedPurpose.channel === "outside" ? "social" : "dotcom").map((c) => (
                 <div key={c.id} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                   <span className="text-muted-foreground font-mono">[{c.category}]</span>
                   <span className="text-foreground/80">{lang === "en" ? c.rule : c.ruleKo}</span>
                 </div>

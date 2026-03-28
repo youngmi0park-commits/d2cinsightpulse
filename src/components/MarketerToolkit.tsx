@@ -25,7 +25,7 @@ const INTENT_COLORS: Record<string, string> = {
   problem_aware: "bg-red-500/10 text-red-400 border-red-500/20",
   info_seeking: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   comparison: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  purchase: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  purchase: "bg-success/10 text-success border-success/20",
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -97,9 +97,9 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
                 <EmptyState text={t("Not enough positive reviews for testimonials.", "추천 후기 생성을 위한 긍정 리뷰가 부족합니다.")} />
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 bg-emerald-500/10 rounded-lg px-3 py-2 border border-emerald-500/20">
-                    <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <p className="text-[11px] text-emerald-400">
+                  <div className="flex items-center gap-2 bg-success/10 rounded-lg px-3 py-2 border border-success/20">
+                    <ShieldCheck className="h-4 w-4 text-success shrink-0" />
+                    <p className="text-[11px] text-success">
                       {t(
                         "All quotes are auto-sanitized: PII removed, superlatives replaced, competitor names filtered. Ready for legal review.",
                         "모든 인용문은 자동 정제됨: 개인정보 제거, 최상급 표현 대체, 경쟁사명 필터링. 법무 검토 준비 완료."
@@ -261,8 +261,8 @@ export function MarketerToolkit({ productName, displayName, sentiment, reviews }
               onCopy={() => copySection("Improvement Points", data.improvementPoints.map(p => `[${p.severity.toUpperCase()}] ${p.category}: ${p.point} (${p.mentions} mentions)`).join("\n"))}
             >
               {data.improvementPoints.length === 0 ? (
-                <div className="bg-emerald-500/10 rounded-lg p-4 border border-emerald-500/20 text-center">
-                  <p className="text-sm text-emerald-400">
+                <div className="bg-success/10 rounded-lg p-4 border border-success/20 text-center">
+                  <p className="text-sm text-success">
                     {t("No significant improvement points found — customers are largely satisfied!", "주요 개선점이 발견되지 않음 — 고객 만족도가 높습니다!")}
                   </p>
                 </div>

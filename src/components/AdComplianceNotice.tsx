@@ -25,7 +25,7 @@ export function AdComplianceNotice({
 
   const statusIcon = (status: ComplianceCheck["status"]) => {
     switch (status) {
-      case "pass": return <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />;
+      case "pass": return <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />;
       case "warning": return <AlertTriangle className="h-3.5 w-3.5 text-yellow-500 shrink-0" />;
       case "info": return <Info className="h-3.5 w-3.5 text-blue-400 shrink-0" />;
     }
@@ -45,7 +45,7 @@ export function AdComplianceNotice({
         className="w-full px-4 py-2.5 flex items-center justify-between text-xs hover:bg-secondary/40 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-green-500" />
+          <ShieldCheck className="h-4 w-4 text-success" />
           <span className="font-medium text-foreground/80">
             {t("Ad Compliance Checklist", "광고 컴플라이언스 체크리스트")}
           </span>

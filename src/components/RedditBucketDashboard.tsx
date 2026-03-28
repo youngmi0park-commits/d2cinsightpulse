@@ -30,7 +30,7 @@ function useRedditClassified() {
 }
 
 const BUCKET_STYLES: Record<RedditBucket, { bg: string; border: string; text: string; icon: React.ElementType; badgeBg: string }> = {
-  REVIEW: { bg: "bg-emerald-800/5", border: "border-emerald-800/15", text: "text-emerald-800", icon: TrendingUp, badgeBg: "bg-emerald-800/10" },
+  REVIEW: { bg: "bg-success/5", border: "border-success/15", text: "text-success", icon: TrendingUp, badgeBg: "bg-success/10" },
   VOC: { bg: "bg-red-500/5", border: "border-red-500/20", text: "text-red-400", icon: AlertTriangle, badgeBg: "bg-red-500/10" },
   QUESTION: { bg: "bg-blue-500/5", border: "border-blue-500/20", text: "text-blue-400", icon: HelpCircle, badgeBg: "bg-blue-500/10" },
 };

@@ -131,7 +131,7 @@ export function ContentStudioPanel({
       onClick={() => copyText(text, id)}
       className="h-7 text-[10px] gap-1"
     >
-      {copiedKey === id ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      {copiedKey === id ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
       {label || t("Copy", "복사")}
     </Button>
   );
@@ -566,21 +566,21 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
           {/* Legal Review Status */}
           <div className={`p-3 rounded-lg border ${
             generated.legalReview.status === "pass"
-              ? "border-green-500/30 bg-green-500/10"
+              ? "border-success/30 bg-success/10"
               : generated.legalReview.status === "needs_revision"
               ? "border-yellow-500/30 bg-yellow-500/10"
               : "border-red-500/30 bg-red-500/10"
           }`}>
             <div className="flex items-center gap-2 mb-1">
               {generated.legalReview.status === "pass" ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : (
                 <AlertTriangle className="h-4 w-4 text-yellow-500" />
               )}
               <span className="text-sm font-medium">
                 {t("Legal Compliance", "법무 컴플라이언스")}:
                 <Badge variant="outline" className={`ml-2 text-[10px] ${
-                  generated.legalReview.status === "pass" ? "text-green-500 border-green-500/30" : "text-yellow-500 border-yellow-500/30"
+                  generated.legalReview.status === "pass" ? "text-success border-success/30" : "text-yellow-500 border-yellow-500/30"
                 }`}>
                   {generated.legalReview.status.toUpperCase()}
                 </Badge>
@@ -602,13 +602,13 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}`;
           <Collapsible open={showLegal} onOpenChange={setShowLegal}>
             <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
               {showLegal ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-success" />
               <span className="font-medium">{t("Full Compliance Checklist", "전체 컴플라이언스 체크리스트")}</span>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 p-3 rounded-lg border border-border bg-secondary/20 text-[11px] space-y-1">
               {getComplianceChecks(channelType === "outside" ? "social" : "dotcom").map((c) => (
                 <div key={c.id} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                   <span className="text-muted-foreground font-mono">[{c.category}]</span>
                   <span className="text-foreground/80">{lang === "en" ? c.rule : c.ruleKo}</span>
                 </div>

@@ -28,7 +28,7 @@ const sourceStyle = (s: string) => {
     reddit: "bg-accent/20 text-accent",
     amazon: "bg-warning/20 text-warning",
     rtings: "bg-blue-500/20 text-blue-400",
-    trusted_reviews: "bg-emerald-500/20 text-emerald-400",
+    trusted_reviews: "bg-success/20 text-success",
     consumer_reports: "bg-red-500/20 text-red-400",
     cnet: "bg-rose-500/20 text-rose-400",
     trustpilot: "bg-green-500/20 text-green-400",
