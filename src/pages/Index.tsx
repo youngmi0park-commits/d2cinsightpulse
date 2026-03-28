@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { GlobalFilterBar, type GlobalFilters } from "@/components/GlobalFilterBar";
+import { DataStatusBar } from "@/components/DataStatusBar";
 import { ChannelSentimentWidget } from "@/components/ChannelSentimentWidget";
 import { TopKeywordsWidget } from "@/components/TopKeywordsWidget";
 import { TopProductsWidget } from "@/components/TopProductsWidget";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
-import { MarketingHub } from "@/components/MarketingHub";
 import { KeywordCloud } from "@/components/KeywordCloud";
+import { MarketingHub } from "@/components/MarketingHub";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
@@ -45,7 +46,6 @@ const Index = () => {
   const [filters, setFilters] = useState<GlobalFilters>({
     country: "global",
     timeframe: "weekly",
-    category: "all",
   });
 
   const handleSearch = async (query: string) => {
@@ -151,6 +151,8 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      {/* Data Status Bar */}
+      <DataStatusBar />
       {/* Global Filter Bar */}
       <GlobalFilterBar filters={filters} onChange={setFilters} />
 

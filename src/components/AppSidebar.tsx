@@ -1,4 +1,4 @@
-import { BarChart3, Search, Sparkles, Palette, Calendar, Database, Settings, Activity } from "lucide-react";
+import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
@@ -11,22 +11,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 
 const analyticsItems = [
-  { title: "Review Dashboard", url: "/", icon: BarChart3 },
-  { title: "Keyword Intelligence", url: "/keywords", icon: Search },
+  { title: "LG.com Insights", url: "/", icon: Store },
+  { title: "Reddit Intelligence", url: "/reddit", icon: MessageSquare },
+  { title: "Other Communities", url: "/communities", icon: Globe },
 ];
 
 const marketingItems = [
-  { title: "Content Studio", url: "/content-studio", icon: Palette },
-  { title: "Campaign Calendar", url: "/campaign-calendar", icon: Calendar },
+  { title: "Marketer Toolkit", url: "/toolkit", icon: Wrench, isNew: true },
 ];
 
 const pipelineItems = [
-  { title: "Data Sources", url: "/data-sources", icon: Database, badge: "19 Channels" },
-  { title: "API Settings", url: "/api-settings", icon: Settings },
+  { title: "Collection Overview", url: "/collection", icon: BarChart3 },
 ];
 
 export function AppSidebar() {
@@ -36,104 +36,158 @@ export function AppSidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="p-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <Activity className="h-6 w-6 text-primary shrink-0" />
+    <Sidebar
+      collapsible="icon"
+      className="border-r-0"
+      style={{
+        "--sidebar-background": "0 0% 7%",
+        "--sidebar-foreground": "0 0% 70%",
+        "--sidebar-border": "0 0% 15%",
+        "--sidebar-accent": "0 0% 12%",
+        "--sidebar-accent-foreground": "0 0% 100%",
+        "--sidebar-primary": "4 58% 44%",
+        "--sidebar-primary-foreground": "0 0% 100%",
+      } as React.CSSProperties}
+    >
+      {/* Header */}
+      <SidebarHeader className="p-4 pb-3 border-b border-[hsl(0,0%,15%)]">
+        <div className="flex items-center gap-2.5">
+          <Activity className="h-5 w-5 text-[hsl(4,58%,44%)] shrink-0" />
           {!collapsed && (
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-foreground">D2C Insight Pulse</h1>
-              <p className="text-[10px] text-muted-foreground">Feel the Pulse. Gain the Insight.</p>
+              <h1 className="text-sm font-bold tracking-tight">
+                <span className="text-white">D2C </span>
+                <span className="text-[hsl(4,58%,44%)]">Insight</span>
+                <span className="text-white"> Pulse</span>
+              </h1>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-[hsl(0,0%,50%)]">
+                  Live · 07:00 KST auto-collect
+                </span>
+              </div>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-3">
+      <SidebarContent className="px-2 py-4 space-y-5">
         {/* ANALYTICS */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase px-3">
-            {!collapsed && "📊 Analytics"}
+          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
+            {!collapsed && "📊 ANALYTICS"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {analyticsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    className="text-sm"
-                  >
-                    <NavLink to={item.url} end activeClassName="bg-primary/10 text-primary font-medium">
-                      <item.icon className="h-4 w-4 mr-2 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {analyticsItems.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={active} className="text-[13px] relative">
+                      <NavLink
+                        to={item.url}
+                        end
+                        className={`rounded-md px-3 py-2 transition-all ${
+                          active
+                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
+                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
+                        }`}
+                        activeClassName=""
+                      >
+                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* MARKETING INSIGHTS */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase px-3">
-            {!collapsed && "🚀 Marketing Insights"}
+          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
+            {!collapsed && "🚀 MARKETING INSIGHTS"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {marketingItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    className="text-sm"
-                  >
-                    <NavLink to={item.url} end activeClassName="bg-primary/10 text-primary font-medium">
-                      <item.icon className="h-4 w-4 mr-2 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {marketingItems.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={active} className="text-[13px]">
+                      <NavLink
+                        to={item.url}
+                        end
+                        className={`rounded-md px-3 py-2 transition-all ${
+                          active
+                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
+                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
+                        }`}
+                        activeClassName=""
+                      >
+                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
+                        {!collapsed && (
+                          <span className="flex items-center gap-2">
+                            {item.title}
+                            {item.isNew && (
+                              <span className="text-[9px] bg-[hsl(4,58%,44%)] text-white px-1.5 py-0.5 rounded font-bold leading-none">
+                                NEW
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* DATA PIPELINE */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase px-3">
-            {!collapsed && "⚙️ Data Pipeline"}
+          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
+            {!collapsed && "⚙️ DATA PIPELINE"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {pipelineItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    className="text-sm"
-                  >
-                    <NavLink to={item.url} end activeClassName="bg-primary/10 text-primary font-medium">
-                      <item.icon className="h-4 w-4 mr-2 shrink-0" />
-                      {!collapsed && (
-                        <span className="flex items-center gap-2">
-                          {item.title}
-                          {"badge" in item && (
-                            <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                              {item.badge}
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {pipelineItems.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={active} className="text-[13px]">
+                      <NavLink
+                        to={item.url}
+                        end
+                        className={`rounded-md px-3 py-2 transition-all ${
+                          active
+                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
+                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
+                        }`}
+                        activeClassName=""
+                      >
+                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {!collapsed && (
+        <SidebarFooter className="p-3 border-t border-[hsl(0,0%,15%)]">
+          <p className="text-[9px] text-[hsl(0,0%,35%)] text-center leading-relaxed">
+            D2C Marketing Strategy Team
+          </p>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }
