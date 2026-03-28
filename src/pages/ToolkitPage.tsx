@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, HelpCircle, Sparkles } from "lucide-react";
+import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 
@@ -656,84 +656,6 @@ export default function ToolkitPage() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* ═══════ STEP 6 — AI FAQ Generation ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={6} title={t("AI FAQ Generation", "AI FAQ 자동 생성")} subtitle={t("Evidence-based FAQ · CIS scoring · Legal review gate", "증거 기반 FAQ · 전환 영향도(CIS) · 법무 사전 검토")} />
-
-        <div className="bg-muted/40 border border-border rounded-lg p-3 mb-5 flex items-start gap-2">
-          <HelpCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">{t("D2C Insight Pulse FAQ Orchestrator", "D2C Insight Pulse FAQ 오케스트레이터")}</strong>{" "}
-            {t(
-              "— Combines real user reviews and official LG product specs (lg.com/us) to auto-generate conversion-optimized FAQs. Each FAQ passes through an Evidence Engine (≥2 citations), CIS scoring, category classification, and Legal Review Gate before publishing.",
-              "— 실사용자 리뷰와 LG USA 공식 제품 정보(lg.com/us)를 결합해 전환 중심의 FAQ를 자동 생성합니다. 모든 FAQ는 에비던스 엔진(≥2개 인용), CIS 점수, 카테고리 분류, 법무 사전 검토 게이트를 거쳐 발행됩니다."
-            )}
-          </p>
-        </div>
-
-        {/* Pipeline overview */}
-        <SectionLabel>📋 {t("GENERATION PIPELINE", "생성 파이프라인")}</SectionLabel>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {[
-            { icon: "📊", title: t("Data Collection", "데이터 수집"), desc: t("LG.com reviews + Reddit + YouTube comments aggregated", "LG.com 리뷰 + Reddit + YouTube 댓글 수집·통합") },
-            { icon: "🔍", title: t("Evidence Engine", "에비던스 엔진"), desc: t("Min. 2 citations per FAQ — review quotes, metrics, statistical patterns", "FAQ당 최소 2개 증거 — 리뷰 인용, 정량 데이터, 통계 패턴") },
-            { icon: "📈", title: t("CIS Scoring", "CIS 점수 산정"), desc: t("Conversion Impact Score determines priority: P0 → P1 → P2 → Backlog", "전환 영향도 점수로 우선순위 결정: P0 → P1 → P2 → Backlog") },
-            { icon: "⚖️", title: t("Legal Gate", "법무 검토 게이트"), desc: t("Automated compliance check — only approved items published", "자동 법무 검토 — 승인된 항목만 발행") },
-          ].map((step, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4 text-center">
-              <span className="text-2xl block mb-2">{step.icon}</span>
-              <p className="text-xs font-bold text-foreground mb-1">{step.title}</p>
-              <p className="text-[10.5px] text-muted-foreground leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Category auto-classification */}
-        <SectionLabel>🏷️ {t("AUTO CATEGORY CLASSIFICATION", "자동 카테고리 분류")}</SectionLabel>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mb-6">
-          {[
-            { icon: "🔧", label: t("Installation & Initial Setup", "설치 · 초기 설정"), color: "border-orange-500/30 bg-orange-500/5" },
-            { icon: "🖥️", label: t("Display & Sound Settings", "화면 · 사운드 설정"), color: "border-purple-500/30 bg-purple-500/5" },
-            { icon: "📡", label: t("Connectivity & Smart Features", "연결성 · 스마트 기능"), color: "border-cyan-500/30 bg-cyan-500/5" },
-            { icon: "🛡️", label: t("Purchase Anxiety & Warranty", "구매 불안 · 보증"), color: "border-amber-500/30 bg-amber-500/5" },
-            { icon: "💰", label: t("Price & Value Proposition", "가격 · 가치 제안"), color: "border-success/30 bg-success/5" },
-            { icon: "⚔️", label: t("Competitor Comparison", "경쟁사 비교"), color: "border-violet-500/30 bg-violet-500/5" },
-          ].map((cat, i) => (
-            <div key={i} className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl border ${cat.color}`}>
-              <span className="text-lg">{cat.icon}</span>
-              <span className="text-xs font-medium text-foreground">{cat.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Output formats */}
-        <SectionLabel>📤 {t("OUTPUT FORMATS", "출력 형식")}</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          {[
-            { icon: "❓", title: t("FAQ Cards", "FAQ 카드"), desc: t("Q&A with evidence citations, CIS score, priority badge, legal status, and PDP presence check", "증거 인용, CIS 점수, 우선순위 뱃지, 법무 상태, PDP 반영 여부 포함 Q&A") },
-            { icon: "📋", title: t("Weekly Action List", "주간 액션리스트"), desc: t("Immediately actionable marketing copy and PDP optimization suggestions with A/B test hypotheses", "즉시 활용 가능한 마케팅 카피와 PDP 최적화 제안 (A/B 테스트 가설 포함)") },
-            { icon: "🔥", title: t("CS Heatmap", "CS 히트맵"), desc: t("Customer service issue frequency map with CIS averages and action-required flags", "CS 이슈 빈도 맵 — CIS 평균, 조치 필요 플래그 포함") },
-          ].map((item, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4">
-              <span className="text-xl block mb-2">{item.icon}</span>
-              <p className="text-xs font-bold text-foreground mb-1">{item.title}</p>
-              <p className="text-[10.5px] text-muted-foreground leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA note */}
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-2.5">
-          <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-foreground/80 leading-relaxed">
-            {t(
-              "To generate AI FAQs for a specific product, navigate to the product detail page and use the AI FAQ panel in the Marketing Hub section. FAQs are generated per-product based on actual collected review data.",
-              "특정 제품의 AI FAQ를 생성하려면 제품 상세 페이지로 이동하여 마케팅 허브 내 AI FAQ 패널을 사용하세요. FAQ는 실제 수집된 리뷰 데이터 기반으로 제품별 생성됩니다."
-            )}
-          </p>
         </div>
       </div>
     </div>
