@@ -10,7 +10,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { SearchBar } from "@/components/SearchBar";
 import { useSearchProducts, toReviewFormat } from "@/hooks/useProductData";
-import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
+import { analyzeSentiment } from "@/lib/sentiment";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,7 +113,7 @@ export default function FaqGenPage() {
   );
 
   const sentiment = useMemo(
-    () => analyzeSentiment(reviews.map((r) => r.text)),
+    () => analyzeSentiment(reviews.map((r) => ({ text: r.text, source: r.source as any }))),
     [reviews]
   );
 
@@ -317,7 +317,7 @@ export default function FaqGenPage() {
                   <p className="text-[10px] text-muted-foreground">{t("Negative", "부정")}</p>
                 </div>
                 <div className="bg-card border border-border rounded-[10px] p-4 text-center">
-                  <p className="text-2xl font-bold text-foreground">{(sentiment.score * 100).toFixed(0)}</p>
+                  <p className="text-2xl font-bold text-foreground">{(sentiment.averageScore * 100).toFixed(0)}</p>
                   <p className="text-[10px] text-muted-foreground">{t("Sentiment Score", "감성 점수")}</p>
                 </div>
               </div>
@@ -552,7 +552,6 @@ export default function FaqGenPage() {
                       const catMeta = CATEGORY_META[faq.category] || CATEGORY_META.other;
                       const CatIcon = catMeta.icon;
                       const stLabel = SOURCE_TYPE_LABEL[faq.sourceType] || SOURCE_TYPE_LABEL.question;
-                      const PdpIcon = PDP_STATUS_ICON[faq.pdp_presence?.status] || Clock;
                       return (
                         <div key={faq.faq_id || i} className={`bg-muted/30 rounded-lg p-4 border group relative ${faq.publishable ? "border-success/30" : "border-border/50"}`}>
                           <Button variant="ghost" size="sm" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0" onClick={() => copyText(`Q: ${faq.question}\nA: ${faq.answer}`)}>
