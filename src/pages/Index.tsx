@@ -150,15 +150,10 @@ const Index = () => {
   }, {});
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Data Status Bar */}
-      <DataStatusBar />
-      {/* Global Filter Bar */}
-      <GlobalFilterBar filters={filters} onChange={setFilters} />
-
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Hero Section — warm cream */}
+    <div className="min-h-screen bg-background">
+      {/* Hero Section — warm cream */}
+      <div className="relative overflow-hidden gradient-hero">
+        <div className="relative z-10 container mx-auto px-4 py-16 md:py-24">
         <div className="gradient-hero">
           <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="text-center mb-10">
