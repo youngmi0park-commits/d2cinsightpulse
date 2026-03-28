@@ -27,7 +27,7 @@ const marketingItems = [
 ];
 
 const pipelineItems = [
-  { title: "Collection Overview", url: "/collection", icon: BarChart3 },
+  { title: "Collection Criteria", url: "/collection", icon: BarChart3 },
   { title: "Newsletter", url: "/newsletter", icon: Mail },
 ];
 
