@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { PageHeader } from "@/components/PageHeader";
 
 /* ─── Past Newsletters Archive ─── */
 const newsletters = [
@@ -107,7 +108,11 @@ const NewsletterPage = () => {
 
   return (
     <div className="p-6 space-y-6 max-w-[1000px] mx-auto overflow-y-auto h-[calc(100vh-2rem)]">
-      {/* ─── Subscribe Section ─── */}
+      <PageHeader
+        icon={Mail}
+        title="📮 Newsletter"
+        description="주간 D2C Insight Pulse 뉴스레터를 구독하고, 지난 호의 인사이트 리포트를 아카이브에서 다시 확인할 수 있습니다."
+      />
       <Card className="border border-border bg-card">
         <CardContent className="p-6">
           {isSubscribed ? (

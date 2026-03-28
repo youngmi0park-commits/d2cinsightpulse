@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
+import { PageHeader } from "@/components/PageHeader";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { KeywordCloud } from "@/components/KeywordCloud";
@@ -12,7 +13,7 @@ import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertCircle, Database, Activity } from "lucide-react";
+import { AlertCircle, Database, Activity, LayoutDashboard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
@@ -170,8 +171,12 @@ const Index = () => {
       {/* Dashboard Widgets (visible when no search results) */}
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
+          <PageHeader
+            icon={LayoutDashboard}
+            title="📊 Main Overview"
+            description="전체 채널의 리뷰 수집 현황과 주요 트렌드를 한눈에 파악할 수 있는 대시보드입니다. 실시간 트렌딩 제품, 채널별 리뷰 통계, 주간 TOP 3 마케팅 액션 아이템을 확인하세요."
+          />
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} />
-
           <OverviewDashboard />
         </div>
       )}
