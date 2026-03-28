@@ -1,6 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import { CollectionCriteria } from "@/components/CollectionCriteria";
-import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
+import { PageHeader } from "@/components/PageHeader";
 import { PageHeader } from "@/components/PageHeader";
 
 const CollectionPage = () => {
