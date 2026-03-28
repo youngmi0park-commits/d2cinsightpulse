@@ -33,11 +33,8 @@ const Index = () => {
   const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang } = useLang();
-  const { data: stats } = useProductStats();
-  const [filters, setFilters] = useState<GlobalFilters>({
-    country: "global",
-    timeframe: "weekly",
-  });
+
+
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
