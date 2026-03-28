@@ -1,4 +1,4 @@
-import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity, Mail, Languages } from "lucide-react";
+import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity, Mail, Languages, HelpCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLang } from "@/contexts/LanguageContext";
@@ -24,6 +24,7 @@ const analyticsItems = [
 
 const marketingItems = [
   { title: "Marketing Toolkit", url: "/toolkit", icon: Wrench, isNew: true },
+  { title: "AI FAQ Generation", url: "/faq-gen", icon: HelpCircle },
 ];
 
 const pipelineItems = [
