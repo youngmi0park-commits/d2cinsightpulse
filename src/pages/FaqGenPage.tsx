@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { HelpCircle, Sparkles, Package, BarChart3, ChevronRight } from "lucide-react";
+import { HelpCircle, Sparkles, Package, BarChart3, ChevronRight, Search, List } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { SearchBar } from "@/components/SearchBar";
 
 /* ── Sub-components ── */
 
@@ -25,6 +26,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     </p>
   );
 }
+
+/* ── Quick Guide Steps ── */
+const QUICK_GUIDE = [
+  { icon: "1️⃣", titleEn: "Search Product", titleKo: "제품 검색", descEn: "Search by model number or category", descKo: "모델번호 또는 카테고리로 검색" },
+  { icon: "2️⃣", titleEn: "Review Analysis", titleKo: "리뷰 분석", descEn: "AI analyzes collected reviews", descKo: "수집된 리뷰를 AI가 분석" },
+  { icon: "3️⃣", titleEn: "FAQ Generation", titleKo: "FAQ 생성", descEn: "Evidence-based FAQ auto-generated", descKo: "증거 기반 FAQ 자동 생성" },
+  { icon: "4️⃣", titleEn: "Copy & Use", titleKo: "복사 · 활용", descEn: "Copy to PDP or marketing materials", descKo: "PDP 또는 마케팅 자료에 활용" },
+];
 
 /* ── Data ── */
 
@@ -89,6 +98,8 @@ const SAMPLE_FAQ = {
 export default function FaqGenPage() {
   const { t } = useLang();
   const [copiedMap, setCopiedMap] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -97,16 +108,69 @@ export default function FaqGenPage() {
     setTimeout(() => setCopiedMap((prev) => ({ ...prev, [id]: false })), 2000);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setIsSearching(true);
+    toast.info(t(`Searching "${query}" for FAQ generation...`, `"${query}" FAQ 생성을 위해 검색 중...`));
+    // Simulate search completion
+    setTimeout(() => setIsSearching(false), 1500);
+  };
+
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       <PageHeader
         icon={HelpCircle}
         title={t("🤖 AI FAQ Generation", "🤖 AI FAQ 자동 생성")}
         description={t(
-          "Automatically generates conversion-optimized FAQs by combining real user reviews with official LG product specs. Each FAQ passes through an Evidence Engine, CIS scoring, and Legal Review Gate.",
-          "실사용자 리뷰와 LG 공식 제품 정보를 결합해 전환 최적화 FAQ를 자동 생성합니다. 모든 FAQ는 에비던스 엔진, CIS 점수, 법무 사전 검토 게이트를 거칩니다."
+          "Search a product and automatically generate conversion-optimized FAQs from real user reviews.",
+          "제품을 검색하고 실사용자 리뷰 기반 전환 최적화 FAQ를 자동 생성합니다."
         )}
       />
+
+      {/* ═══════ Quick Guide — Horizontal Steps ═══════ */}
+      <div className="gradient-card rounded-xl border border-border p-4 md:p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <p className="text-xs font-bold text-foreground">{t("How It Works", "이용 가이드")}</p>
+          <span className="text-[10px] text-muted-foreground ml-1">{t("Product search → AI analysis → FAQ generation → Copy & use", "제품 검색 → AI 분석 → FAQ 생성 → 복사 · 활용")}</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          {QUICK_GUIDE.map((step, i) => (
+            <div key={i} className="flex items-center gap-2.5 bg-card border border-border rounded-[10px] px-3 py-2.5 relative">
+              <span className="text-base shrink-0">{step.icon}</span>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-foreground truncate">{t(step.titleEn, step.titleKo)}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t(step.descEn, step.descKo)}</p>
+              </div>
+              {i < QUICK_GUIDE.length - 1 && (
+                <ChevronRight className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/40 z-10" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══════ Product Search Bar ═══════ */}
+      <div className="gradient-card rounded-xl border border-primary/20 p-5 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="h-4 w-4 text-primary" />
+          <p className="text-xs font-bold text-foreground">{t("Product Search", "제품 검색")}</p>
+          <span className="text-[10px] text-muted-foreground ml-1">{t("Search to start FAQ generation", "FAQ 생성을 위해 제품을 검색하세요")}</span>
+        </div>
+        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+        {searchQuery && !isSearching && (
+          <div className="mt-4 bg-primary/5 border border-primary/20 rounded-[10px] p-3 flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+            <p className="text-[11px] text-foreground/80">
+              <span className="font-bold text-primary">"{searchQuery}"</span>{" "}
+              {t(
+                "— Reviews found. Navigate to the product detail page to generate AI FAQs with full evidence.",
+                "— 리뷰가 확인되었습니다. 제품 상세 페이지에서 AI FAQ를 생성할 수 있습니다."
+              )}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* ═══════ STEP 1 — Pipeline Overview ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
@@ -288,41 +352,6 @@ export default function FaqGenPage() {
               ))}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* ═══════ STEP 5 — How to Use ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={5} title={t("How to Use", "사용 방법")} subtitle={t("Step-by-step guide for FAQ generation", "FAQ 생성 단계별 가이드")} />
-
-        <div className="space-y-3">
-          {[
-            { step: "01", titleEn: "Select a product from LG.com Insights page", titleKo: "LG.com Insights 페이지에서 제품 선택", descEn: "Navigate to LG.com Insights and click on a product with collected reviews.", descKo: "LG.com Insights로 이동하여 리뷰가 수집된 제품을 클릭합니다." },
-            { step: "02", titleEn: "Open Marketing Hub panel", titleKo: "마케팅 허브 패널 열기", descEn: "Scroll down to the Marketing Hub section on the product detail view.", descKo: "제품 상세 화면에서 마케팅 허브 섹션까지 스크롤합니다." },
-            { step: "03", titleEn: "Click 'Generate AI FAQ' button", titleKo: "'AI FAQ 생성' 버튼 클릭", descEn: "The AI will analyze all collected reviews and generate FAQ cards with full evidence.", descKo: "AI가 수집된 리뷰를 분석하여 증거가 포함된 FAQ 카드를 생성합니다." },
-            { step: "04", titleEn: "Review, filter, and copy results", titleKo: "결과 검토, 필터, 복사", descEn: "Filter by category, check legal status, and copy ready-to-use Q&A to your PDP or marketing materials.", descKo: "카테고리별 필터링, 법무 상태 확인 후, PDP 또는 마케팅 자료에 바로 활용할 Q&A를 복사합니다." },
-          ].map((item, i) => (
-            <div key={i} className="flex gap-3.5 bg-card border border-border rounded-[10px] p-4">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-[11px] font-bold shrink-0">
-                {item.step}
-              </span>
-              <div>
-                <p className="text-[11px] font-bold text-foreground mb-0.5">{t(item.titleEn, item.titleKo)}</p>
-                <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(item.descEn, item.descKo)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA note */}
-        <div className="bg-primary/5 border border-primary/20 rounded-[10px] p-4 flex items-start gap-2.5 mt-5">
-          <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-[11px] text-foreground/80 leading-relaxed">
-            {t(
-              "AI FAQ generation is available per-product on the LG.com Insights detail page. Each generation uses the latest collected review data to ensure relevance and accuracy.",
-              "AI FAQ 생성은 LG.com Insights 상세 페이지에서 제품별로 사용 가능합니다. 최신 수집 리뷰 데이터를 활용하여 관련성과 정확성을 보장합니다."
-            )}
-          </p>
         </div>
       </div>
     </div>
