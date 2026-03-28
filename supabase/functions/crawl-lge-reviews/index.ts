@@ -119,13 +119,9 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
   
-  // Date range filter using BV Filter syntax
-  const filters: string[] = [];
-  if (dateFrom) filters.push(`SubmissionTime:gte:${dateFrom}`);
-  if (dateTo) filters.push(`SubmissionTime:lt:${dateTo}`);
-  if (filters.length > 0) {
-    url.searchParams.set("Filter", filters.join("&Filter="));
-  }
+  // Date range filters - each as separate Filter param
+  if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${dateFrom}`);
+  if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${dateTo}`);
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
