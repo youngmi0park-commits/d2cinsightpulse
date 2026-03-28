@@ -390,6 +390,63 @@ export default function ToolkitPage() {
           })}
         </div>
         <p className="text-[11.5px] text-muted-foreground mt-2">Click to select (multi-select enabled)</p>
+
+        {/* Custom Model Input */}
+        <div className="mt-5 p-4 rounded-xl border border-border bg-card">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[1px] mb-2.5">
+            ✏️ ADD CUSTOM PRODUCT / MODEL NUMBER
+          </p>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                value={customModelInput}
+                onChange={(e) => setCustomModelInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && customModelInput.trim()) {
+                    setCustomModels((prev) => [...prev, customModelInput.trim()]);
+                    setCustomModelInput("");
+                  }
+                }}
+                placeholder="e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => {
+                if (customModelInput.trim()) {
+                  setCustomModels((prev) => [...prev, customModelInput.trim()]);
+                  setCustomModelInput("");
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
+            >
+              Add
+            </button>
+          </div>
+          {customModels.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {customModels.map((model, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/5 text-xs font-medium text-foreground"
+                >
+                  🔍 {model}
+                  <button
+                    onClick={() => setCustomModels((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <p className="text-[10.5px] text-muted-foreground mt-2">
+            Enter any product name or model number not listed above. Press Enter or click Add.
+          </p>
+        </div>
       </div>
 
       {/* ═══════ STEP 2 ═══════ */}
