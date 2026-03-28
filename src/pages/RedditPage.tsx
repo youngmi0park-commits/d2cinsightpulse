@@ -1,6 +1,9 @@
 import { MessageSquare } from "lucide-react";
 import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
+import { RedditVocPostCards } from "@/components/RedditVocPostCards";
+import { RedditAiCopyModal } from "@/components/RedditAiCopyModal";
+import { RedditCompetitorMentions } from "@/components/RedditCompetitorMentions";
 import { PageHeader } from "@/components/PageHeader";
 
 const RedditPage = () => {
@@ -9,9 +12,14 @@ const RedditPage = () => {
       <PageHeader
         icon={MessageSquare}
         title="💬 Reddit Intelligence"
-        description="Reddit 커뮤니티에서 수집된 실사용자 VOC를 분석합니다. 버킷별 감성 분류, 국가별 언급 트렌드, 주요 토론 키워드를 통해 커뮤니티 인사이트를 확인하세요."
+        description="Reddit 커뮤니티에서 수집된 실사용자 VOC를 분석합니다. 버킷별 감성 분류, VOC 카드, AI 카피 생성, 경쟁사 언급 분석, 국가별 트렌드를 확인하세요."
       />
       <RedditBucketDashboard />
+      <RedditVocPostCards />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <RedditAiCopyModal />
+        <RedditCompetitorMentions />
+      </div>
       <RedditCountryInsights />
     </div>
   );
