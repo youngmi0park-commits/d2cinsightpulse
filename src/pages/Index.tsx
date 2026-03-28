@@ -158,24 +158,31 @@ const Index = () => {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Compact Hero + Search */}
-        <div className="bg-card border-b border-border px-6 py-6">
-          <div className="max-w-3xl mx-auto text-center space-y-3">
-            <div className="flex items-center justify-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-bold">
-                <span className="text-primary">D2C Insight Pulse</span>
-                <span className="text-muted-foreground text-sm font-normal ml-2">Review Dashboard</span>
-              </h1>
-            </div>
-            {stats && (
-              <div className="flex items-center justify-center gap-3">
-                <Badge variant="outline" className="gap-1 text-[10px] border-border">
-                  <Database className="h-3 w-3" />
-                  {stats.productCount} products · {stats.reviewCount.toLocaleString()} reviews
-                </Badge>
+        {/* Hero Section — warm cream */}
+        <div className="gradient-hero">
+          <div className="container mx-auto px-4 py-16 md:py-20">
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
+                <h1 className="text-4xl md:text-5xl font-bold">
+                  <span className="text-gradient">D2C Insight Pulse</span>
+                </h1>
               </div>
-            )}
+              <p className="text-sm md:text-base text-muted-foreground/70 italic mb-5">
+                Feel the Pulse. Gain the Insight.
+              </p>
+              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed whitespace-pre-line">
+                {"고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.\nD2C Insight Pulse는 LG.com과 Reddit 등 주요 채널의 실사용자 리뷰를 깊이 있게 분석합니다.\n방대한 데이터 속에 숨겨진 인사이트를 발견하고,\n즉시 활용 가능한 최적의 마케팅 커뮤니케이션 메시지를 제공하는 데이터 플랫폼입니다."}
+              </p>
+              {stats && (
+                <div className="flex items-center justify-center gap-2 mt-5">
+                  <Badge variant="outline" className="gap-1.5 text-xs border-primary/30">
+                    <Database className="h-3 w-3" />
+                    {stats.productCount}개 제품 · {stats.reviewCount.toLocaleString()}건 실제 리뷰 수집됨
+                  </Badge>
+                </div>
+              )}
+            </div>
             <SearchBar onSearch={handleSearch} isLoading={isLoading} />
           </div>
         </div>
