@@ -142,16 +142,21 @@ export function WeeklyInsightsPanel() {
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5 flex-wrap">
               {[
                 { value: "all", label: t("All", "전체") },
                 { value: "US", label: "US" },
                 { value: "UK", label: "UK" },
+                { value: "DE", label: "DE" },
+                { value: "FR", label: "FR" },
+                { value: "AU", label: "AU" },
+                { value: "CA", label: "CA" },
+                { value: "JP", label: "JP" },
               ].map((r) => (
                 <button
                   key={r.value}
                   onClick={() => setRegion(r.value)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  className={`px-2 py-1 rounded-full text-[10px] font-medium transition-colors ${
                     region === r.value
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground"

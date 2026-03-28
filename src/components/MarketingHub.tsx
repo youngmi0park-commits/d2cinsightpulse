@@ -81,6 +81,7 @@ export function MarketingHub({
             displayName={displayName}
             sentiment={sentiment}
             reviews={reviews}
+            locale="en-US"
           />
         </TabsContent>
 
