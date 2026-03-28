@@ -196,8 +196,10 @@ Deno.serve(async (req) => {
   let categories = ["Refrigerator", "Washer", "Dryer", "Dishwasher"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
-  let bvPages = 5; // pages of 100 reviews each per category per region
-  let bvOffset = 0; // starting offset for BV pagination
+  let bvPages = 5;
+  let bvOffset = 0;
+  let dateFrom: string | undefined;
+  let dateTo: string | undefined;
 
   try {
     const body = await req.json();
@@ -206,6 +208,8 @@ Deno.serve(async (req) => {
     if (body.maxQueries) maxQueriesPerCategory = body.maxQueries;
     if (body.bvPages != null) bvPages = body.bvPages;
     if (body.bvOffset != null) bvOffset = body.bvOffset;
+    if (body.dateFrom) dateFrom = body.dateFrom;
+    if (body.dateTo) dateTo = body.dateTo;
   } catch {
     // defaults
   }
