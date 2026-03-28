@@ -10,12 +10,11 @@ import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { SearchBar } from "@/components/SearchBar";
 import { useSearchProducts, toReviewFormat } from "@/hooks/useProductData";
-import { analyzeSentiment } from "@/lib/sentiment";
+import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toPRName } from "@/lib/formatMessage";
-import { generateMarketerToolkit } from "@/lib/marketerToolkit";
 
 /* ── Types (same as FaqPanel) ── */
 interface Evidence { quotes: string[]; claims: { metric: string; value: number; unit: string }[]; pattern: string; }
