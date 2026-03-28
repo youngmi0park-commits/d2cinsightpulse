@@ -338,7 +338,7 @@ export default function ToolkitPage() {
       />
 
       {/* ═══════ STEP 1 ═══════ */}
-      <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={1} title={t("Campaign Context", "캠페인 컨텍스트")} subtitle={t("Seasonal event & product selection · Korea excluded", "시즌 이벤트 & 제품 선택 · 한국 제외")} />
 
         <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
@@ -454,7 +454,7 @@ export default function ToolkitPage() {
       </div>
 
       {/* ═══════ STEP 2 ═══════ */}
-      <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={2} title={t("Global Strategy & Persona", "글로벌 전략 & 페르소나")} subtitle={t("Target persona · JTBD messaging strategy", "타겟 페르소나 · JTBD 메시징 전략")} />
 
         <SectionLabel>{t("TARGET PERSONA", "타겟 페르소나")}</SectionLabel>
@@ -528,7 +528,7 @@ export default function ToolkitPage() {
       </div>
 
       {/* ═══════ STEP 3 ═══════ */}
-      <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={3} title={t("Content Hooks & VoC", "콘텐츠 훅 & VoC")} subtitle={t("Search intent ad hooks · Verified customer quotes", "검색 인텐트 광고 훅 · 인증 고객 리뷰 인용")} />
 
         <SectionLabel>🔍 {t("SEARCH INTENT HOOKS", "검색 인텐트 훅")}</SectionLabel>
@@ -563,7 +563,7 @@ export default function ToolkitPage() {
       </div>
 
       {/* ═══════ STEP 4 ═══════ */}
-      <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={4} title={t("AI Text Copy Generation", "AI 텍스트 카피 생성")} subtitle={t("Channel-specific auto-generation · Legal pre-review included", "채널별 자동 생성 · 법률 사전 검토 포함")} />
 
         <button
@@ -619,7 +619,7 @@ export default function ToolkitPage() {
       </div>
 
       {/* ═══════ STEP 5 ═══════ */}
-      <div className="mb-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={5} title={t("Media Asset Handoff", "미디어 에셋 핸드오프")} subtitle={t("Image/video/banner external tool integration · Auto design prompt", "이미지/영상/배너 외부 툴 연동 · 자동 디자인 프롬프트")} />
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
