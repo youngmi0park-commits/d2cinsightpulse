@@ -200,10 +200,8 @@ const Index = () => {
 
           <WeeklyInsightsPanel />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <RedditBucketDashboard />
-            <RedditCountryInsights />
-          </div>
+
+
 
           <CollectionCriteria />
           <NewsletterSubscribe />
