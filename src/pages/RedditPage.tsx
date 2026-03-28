@@ -11,10 +11,8 @@ const RedditPage = () => {
         title="💬 Reddit Intelligence"
         description="Reddit 커뮤니티에서 수집된 실사용자 VOC를 분석합니다. 버킷별 감성 분류, 국가별 언급 트렌드, 주요 토론 키워드를 통해 커뮤니티 인사이트를 확인하세요."
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <RedditBucketDashboard />
-        <RedditCountryInsights />
-      </div>
+      <RedditBucketDashboard />
+      <RedditCountryInsights />
     </div>
   );
 };
