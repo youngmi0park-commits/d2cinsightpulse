@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { HelpCircle, Sparkles, Package, BarChart3, ChevronRight, Search, List } from "lucide-react";
+import { HelpCircle, Sparkles, Package, BarChart3, ChevronRight, Search } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
