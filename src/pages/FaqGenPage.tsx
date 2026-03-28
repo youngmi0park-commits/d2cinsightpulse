@@ -85,9 +85,6 @@ const SOURCE_TYPE_LABEL: Record<string, { en: string; ko: string }> = {
   conversion_barrier: { en: "Conversion Barrier", ko: "전환 장애" },
 };
 
-const PDP_STATUS_ICON: Record<string, React.ElementType> = {
-  implemented: CheckCircle2, missing: XCircle, outdated: Clock,
-};
 
 /* ── Main Page ── */
 export default function FaqGenPage() {
@@ -113,7 +110,7 @@ export default function FaqGenPage() {
   );
 
   const sentiment = useMemo(
-    () => analyzeSentiment(reviews.map((r) => ({ text: r.text, source: r.source as any }))),
+    () => analyzeSentiment(reviews.map((r) => ({ id: r.id, text: r.text, source: r.source as any, author: r.author || "", date: r.date || "" }))),
     [reviews]
   );
 
