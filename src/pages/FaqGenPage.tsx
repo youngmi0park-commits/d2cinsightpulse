@@ -1,119 +1,190 @@
-import { useState } from "react";
-import { HelpCircle, Sparkles, Package, BarChart3, ChevronRight, Search } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import {
+  HelpCircle, Sparkles, Search, ChevronRight, Loader2,
+  BarChart3, Shield, Package, Copy, CheckCircle2, XCircle,
+  Wrench, Monitor, Wifi, Settings, DollarSign, Tag,
+  TrendingUp, AlertTriangle,
+} from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { SearchBar } from "@/components/SearchBar";
+import { useSearchProducts, toReviewFormat } from "@/hooks/useProductData";
+import { analyzeSentiment } from "@/lib/sentiment";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toPRName } from "@/lib/formatMessage";
 
-/* ── Sub-components ── */
-
-function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle: string }) {
-  return (
-    <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
-      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">
-        {step}
-      </span>
-      <h2 className="text-base font-bold font-heading text-foreground">{title}</h2>
-      <span className="text-xs text-muted-foreground ml-auto">{subtitle}</span>
-    </div>
-  );
+/* ── Types (same as FaqPanel) ── */
+interface Evidence { quotes: string[]; claims: { metric: string; value: number; unit: string }[]; pattern: string; }
+interface LegalReview { status: "pass" | "needs_revision" | "fail"; violations: { item_id: string; note: string }[]; }
+interface FaqCard {
+  faq_id: string; product_family: string; question: string; answer: string;
+  category: string; sourceType: string; topics: string[]; evidence: Evidence;
+  cis: number; priority: "P0" | "P1" | "P2" | "Backlog"; intent_type: string;
+  pdp_presence: { status: string; last_updated_days?: number | null };
+  legal_review: LegalReview; publishable: boolean;
+  ab_test_suggestion?: { variation: string; expected_lift: { pdp_to_atc_pct: number[] } };
+  mentionCount?: number; confidence?: number;
+}
+interface ActionItem {
+  priority: string; product_family: string; faq_id: string;
+  what: string; why: string; impact: { expected_lift_cvr_pct: number[] };
+  ready_to_use_copy: { pdp_highlight: string; exit_popup: string }; publishable: boolean;
+}
+interface CsHeatmapItem { issue: string; review_freq: number; cis_avg: number; action_required: boolean; }
+interface AiFaqData {
+  faq_cards?: FaqCard[]; faqItems?: FaqCard[]; weekly_action_list?: ActionItem[];
+  cs_heatmap?: CsHeatmapItem[];
+  reviewTopics: { topic: string; category: string; sentiment: string; mentionCount: number; summary: string }[];
+  painPoints: { issue: string; severity: string; frequency: number; userWorkaround: string; category: string }[];
+  dataSources: { source: string; count: number }[];
+  summary?: { total_faq: number; p0: number; p1: number; p2: number; publishable_count: number };
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px] mb-3">
-      {children}
-    </p>
-  );
-}
-
-/* ── Quick Guide Steps ── */
-const QUICK_GUIDE = [
-  { icon: "1️⃣", titleEn: "Search Product", titleKo: "제품 검색", descEn: "Search by model number or category", descKo: "모델번호 또는 카테고리로 검색" },
-  { icon: "2️⃣", titleEn: "Review Analysis", titleKo: "리뷰 분석", descEn: "AI analyzes collected reviews", descKo: "수집된 리뷰를 AI가 분석" },
-  { icon: "3️⃣", titleEn: "FAQ Generation", titleKo: "FAQ 생성", descEn: "Evidence-based FAQ auto-generated", descKo: "증거 기반 FAQ 자동 생성" },
-  { icon: "4️⃣", titleEn: "Copy & Use", titleKo: "복사 · 활용", descEn: "Copy to PDP or marketing materials", descKo: "PDP 또는 마케팅 자료에 활용" },
+/* ── Constants ── */
+const STEP_LABELS = [
+  { en: "Review Data", ko: "리뷰 데이터" },
+  { en: "Evidence & CIS", ko: "에비던스 & CIS" },
+  { en: "Category", ko: "카테고리 분류" },
+  { en: "FAQ Results", ko: "FAQ 결과" },
 ];
 
-/* ── Data ── */
-
-const PIPELINE_STEPS = [
-  { icon: "📊", titleEn: "Data Collection", titleKo: "데이터 수집", descEn: "LG.com reviews + Reddit + YouTube comments aggregated per product", descKo: "LG.com 리뷰 + Reddit + YouTube 댓글을 제품별로 수집·통합" },
-  { icon: "🔍", titleEn: "Evidence Engine", titleKo: "에비던스 엔진", descEn: "Min. 2 citations per FAQ — review quotes, quantitative metrics, statistical patterns", descKo: "FAQ당 최소 2개 증거 — 리뷰 인용, 정량 데이터, 통계 패턴" },
-  { icon: "📈", titleEn: "CIS Scoring", titleKo: "CIS 점수 산정", descEn: "Conversion Impact Score determines priority: P0 → P1 → P2 → Backlog", descKo: "전환 영향도(CIS) 점수로 우선순위 결정: P0 → P1 → P2 → Backlog" },
-  { icon: "⚖️", titleEn: "Legal Gate", titleKo: "법무 검토 게이트", descEn: "Automated compliance check — only approved items are published", descKo: "자동 법무 사전 검토 — 승인된 항목만 발행" },
-];
-
-const CATEGORIES = [
-  { icon: "🔧", labelEn: "Installation & Initial Setup", labelKo: "설치 · 초기 설정", color: "border-orange-500/30 bg-orange-500/5", descEn: "Mounting, wall bracket, first-time power-on, remote pairing", descKo: "벽걸이 설치, 전원 최초 연결, 리모컨 페어링 등" },
-  { icon: "🖥️", labelEn: "Display & Sound Settings", labelKo: "화면 · 사운드 설정", color: "border-purple-500/30 bg-purple-500/5", descEn: "Picture mode, HDR calibration, Dolby Atmos, soundbar sync", descKo: "화면 모드, HDR 보정, Dolby Atmos, 사운드바 연동" },
-  { icon: "📡", labelEn: "Connectivity & Smart Features", labelKo: "연결성 · 스마트 기능", color: "border-cyan-500/30 bg-cyan-500/5", descEn: "Wi-Fi, Bluetooth, ThinQ, Matter/Thread, AirPlay, casting", descKo: "Wi-Fi, 블루투스, ThinQ, Matter/Thread, AirPlay, 캐스팅" },
-  { icon: "🛡️", labelEn: "Purchase Anxiety & Warranty", labelKo: "구매 불안 · 보증", color: "border-amber-500/30 bg-amber-500/5", descEn: "Burn-in concerns, extended warranty, return policy, durability", descKo: "번인 우려, 연장 보증, 반품 정책, 내구성" },
-  { icon: "💰", labelEn: "Price & Value Proposition", labelKo: "가격 · 가치 제안", color: "border-success/30 bg-success/5", descEn: "Price justification, bundle deals, competitor price comparison", descKo: "가격 정당성, 번들 혜택, 경쟁사 가격 비교" },
-  { icon: "⚔️", labelEn: "Competitor Comparison", labelKo: "경쟁사 비교", color: "border-violet-500/30 bg-violet-500/5", descEn: "LG vs Samsung, LG vs Sony — feature-by-feature breakdown", descKo: "LG vs 삼성, LG vs 소니 — 기능별 상세 비교" },
-];
-
-const OUTPUT_FORMATS = [
-  { icon: "❓", titleEn: "FAQ Cards", titleKo: "FAQ 카드", descEn: "Q&A with evidence citations, CIS score, priority badge, legal status, and PDP presence check per item", descKo: "증거 인용, CIS 점수, 우선순위 뱃지, 법무 상태, PDP 반영 여부 포함된 개별 Q&A 카드" },
-  { icon: "📋", titleEn: "Weekly Action List", titleKo: "주간 액션리스트", descEn: "Immediately actionable marketing copy and PDP optimization suggestions with A/B test hypotheses included", descKo: "즉시 활용 가능한 마케팅 카피와 PDP 최적화 제안 (A/B 테스트 가설 포함)" },
-  { icon: "🔥", titleEn: "CS Heatmap", titleKo: "CS 히트맵", descEn: "Customer service issue frequency map with CIS averages and action-required flags for each issue", descKo: "CS 이슈 빈도 맵 — 이슈별 CIS 평균, 조치 필요 플래그 포함" },
-];
-
-const EVIDENCE_TYPES = [
-  { icon: "💬", titleEn: "Review Quotes", titleKo: "리뷰 인용", descEn: "Direct verbatim quotes from verified purchasers with source attribution", descKo: "검증된 구매자의 직접 인용문 (출처 표기)" },
-  { icon: "📊", titleEn: "Quantitative Metrics", titleKo: "정량 데이터", descEn: "Statistical measures: mention frequency, sentiment ratios, NPS scores", descKo: "통계 수치: 언급 빈도, 감성 비율, NPS 점수" },
-  { icon: "📐", titleEn: "Statistical Patterns", titleKo: "통계 패턴", descEn: "Cross-review trend analysis: recurring themes, seasonal patterns", descKo: "리뷰 교차 분석: 반복 테마, 시즌별 패턴" },
-];
-
-const CIS_PRIORITIES = [
-  { level: "P0", scoreEn: "CIS ≥ 80", scoreKo: "CIS ≥ 80", descEn: "Critical — Must be on PDP immediately. High conversion impact.", descKo: "긴급 — PDP 즉시 반영 필수. 전환 영향도 최고.", color: "bg-red-500/10 text-red-400 border-red-500/30" },
-  { level: "P1", scoreEn: "CIS 60–79", scoreKo: "CIS 60–79", descEn: "Important — Should be addressed within 1 sprint cycle.", descKo: "중요 — 1 스프린트 내 반영 권장.", color: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
-  { level: "P2", scoreEn: "CIS 40–59", scoreKo: "CIS 40–59", descEn: "Nice to have — Include in quarterly content refresh.", descKo: "선택적 — 분기 콘텐츠 갱신 시 포함.", color: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
-  { level: "Backlog", scoreEn: "CIS < 40", scoreKo: "CIS < 40", descEn: "Monitor — Low impact, revisit when data accumulates.", descKo: "모니터링 — 영향도 낮음, 데이터 누적 시 재검토.", color: "bg-muted text-muted-foreground border-border" },
-];
-
-const LEGAL_CHECKS = [
-  { icon: "✅", statusEn: "Pass", statusKo: "통과", descEn: "All claims substantiated. Ready to publish.", descKo: "모든 주장 입증 완료. 발행 가능." },
-  { icon: "⚠️", statusEn: "Needs Revision", statusKo: "수정 필요", descEn: "Minor issues found — revise specific claims before publishing.", descKo: "경미한 문제 발견 — 특정 주장 수정 후 발행." },
-  { icon: "❌", statusEn: "Fail", statusKo: "실패", descEn: "Unsubstantiated or misleading claims. Do not publish.", descKo: "미입증 또는 오해 유발 주장. 발행 불가." },
-];
-
-const SAMPLE_FAQ = {
-  question: "Will I experience burn-in with LG OLED?",
-  questionKo: "LG OLED에서 번인이 발생하나요?",
-  answer: "Among 6,000+ verified long-term owners, only 1.2% reported any visible burn-in. LG OLED Care+ further minimizes risk with automatic pixel management.",
-  answerKo: "6,000명 이상의 장기 사용자 중 1.2%만 번인 현상을 보고했습니다. LG OLED Care+가 자동 픽셀 관리로 위험을 최소화합니다.",
-  category: "Purchase Anxiety",
-  categoryKo: "구매 불안 해소",
-  priority: "P0",
-  cis: 84,
-  evidence: ["6,000+ verified owners surveyed", "1.2% burn-in incident rate", "OLED Care+ automatic pixel refresh"],
-  evidenceKo: ["6,000명+ 검증된 사용자 조사", "1.2% 번인 발생률", "OLED Care+ 자동 픽셀 리프레시"],
-  legal: "pass" as const,
-  pdpStatus: "missing" as const,
+const CATEGORY_META: Record<string, { label: string; labelKo: string; icon: React.ElementType; color: string }> = {
+  performance_quality: { label: "Performance/Quality", labelKo: "성능/품질", icon: Sparkles, color: "text-success" },
+  purchase_anxiety: { label: "Purchase Anxiety", labelKo: "구매 전 불안 해소", icon: Shield, color: "text-amber-400" },
+  installation_compatibility: { label: "Installation/Compatibility", labelKo: "설치/호환성", icon: Wrench, color: "text-orange-400" },
+  delivery_warranty: { label: "Delivery/Warranty", labelKo: "배송/AS", icon: Package, color: "text-blue-400" },
+  competitor_comparison: { label: "Competitor Comparison", labelKo: "경쟁사 비교", icon: TrendingUp, color: "text-violet-400" },
+  price_value: { label: "Price/Value", labelKo: "가격 가치", icon: DollarSign, color: "text-success" },
+  installation: { label: "Installation", labelKo: "설치", icon: Wrench, color: "text-orange-400" },
+  initial_setup: { label: "Initial Setup", labelKo: "초기 설정", icon: Settings, color: "text-blue-400" },
+  display_sound: { label: "Display & Sound", labelKo: "화면/사운드", icon: Monitor, color: "text-purple-400" },
+  connectivity: { label: "Connectivity", labelKo: "연결성", icon: Wifi, color: "text-cyan-400" },
+  usability: { label: "Usability", labelKo: "사용성", icon: Package, color: "text-success" },
+  compatibility: { label: "Compatibility", labelKo: "호환성", icon: Tag, color: "text-indigo-400" },
+  features: { label: "Features", labelKo: "기능", icon: Sparkles, color: "text-amber-400" },
+  pricing: { label: "Pricing", labelKo: "가격", icon: DollarSign, color: "text-success" },
+  reliability: { label: "Reliability", labelKo: "신뢰성", icon: Shield, color: "text-red-400" },
+  other: { label: "Other", labelKo: "기타", icon: HelpCircle, color: "text-muted-foreground" },
 };
 
-/* ── Main Page ── */
+const PRIORITY_STYLE: Record<string, string> = {
+  P0: "bg-red-500/20 text-red-400 border-red-500/40",
+  P1: "bg-amber-500/20 text-amber-400 border-amber-500/40",
+  P2: "bg-blue-500/20 text-blue-400 border-blue-500/40",
+  Backlog: "bg-muted text-muted-foreground border-border",
+};
 
+const SOURCE_TYPE_LABEL: Record<string, { en: string; ko: string }> = {
+  question: { en: "Direct Question", ko: "직접 질문" },
+  issue_resolution: { en: "Issue → Solution", ko: "이슈→해결" },
+  pain_point: { en: "Pain Point", ko: "불만 사항" },
+  feature_inquiry: { en: "Feature Inquiry", ko: "기능 문의" },
+  conversion_barrier: { en: "Conversion Barrier", ko: "전환 장애" },
+};
+
+
+/* ── Main Page ── */
 export default function FaqGenPage() {
   const { t } = useLang();
-  const [copiedMap, setCopiedMap] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [aiData, setAiData] = useState<AiFaqData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const handleCopy = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedMap((prev) => ({ ...prev, [id]: true }));
-    toast.success(t("Copied!", "복사 완료!"));
-    setTimeout(() => setCopiedMap((prev) => ({ ...prev, [id]: false })), 2000);
-  };
+  const { data: products = [], isLoading: searchLoading } = useSearchProducts(searchQuery);
+
+  const selectedProduct = useMemo(
+    () => products.find((p) => p.id === selectedProductId) || null,
+    [products, selectedProductId]
+  );
+
+  const reviews = useMemo(
+    () => selectedProduct?.reviews.map(toReviewFormat) || [],
+    [selectedProduct]
+  );
+
+  const sentiment = useMemo(
+    () => analyzeSentiment(reviews.map((r) => ({ id: r.id, text: r.text, source: r.source as any, author: r.author || "", date: r.date || "" }))),
+    [reviews]
+  );
+
+  const faqCards: FaqCard[] = useMemo(() => {
+    if (!aiData) return [];
+    return aiData.faq_cards || aiData.faqItems || [];
+  }, [aiData]);
+
+  const faqsByCategory = useMemo(() => {
+    const map: Record<string, FaqCard[]> = {};
+    for (const faq of faqCards) {
+      const cat = faq.category || "other";
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(faq);
+    }
+    return map;
+  }, [faqCards]);
+
+  const filteredFaqs = activeCategory ? (faqsByCategory[activeCategory] || []) : faqCards;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setIsSearching(true);
-    toast.info(t(`Searching "${query}" for FAQ generation...`, `"${query}" FAQ 생성을 위해 검색 중...`));
-    // Simulate search completion
-    setTimeout(() => setIsSearching(false), 1500);
+    setSelectedProductId(null);
+    setAiData(null);
+    setActiveStep(0);
+    setActiveCategory(null);
+  };
+
+  const handleSelectProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setAiData(null);
+    setActiveStep(0);
+    setActiveCategory(null);
+  };
+
+  const generateFaq = useCallback(async () => {
+    if (!selectedProduct) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-faq", {
+        body: {
+          productName: toPRName(selectedProduct.display_name || selectedProduct.model_number),
+          locale: "en-US",
+          reviews: reviews.slice(0, 40).map((r) => ({
+            text: r.text, sentiment: r.sentiment, source: r.source || "unknown",
+          })),
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      setAiData(data);
+      setActiveStep(3); // Jump to results
+      toast.success(t("AI FAQ generated!", "AI FAQ가 생성되었습니다!"));
+    } catch (e: any) {
+      console.error("FAQ generation error:", e);
+      setError(e.message || "Failed to generate");
+      toast.error(t("Failed to generate AI FAQ", "AI FAQ 생성 실패"));
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedProduct, reviews, t]);
+
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(t("Copied!", "복사됨!"));
+  };
+
+  const canProceedToStep = (step: number) => {
+    if (step === 0) return true;
+    if (step === 1) return !!selectedProduct && reviews.length >= 3;
+    if (step === 2) return !!selectedProduct && reviews.length >= 3;
+    if (step === 3) return !!aiData;
+    return false;
   };
 
   return (
@@ -122,238 +193,458 @@ export default function FaqGenPage() {
         icon={HelpCircle}
         title={t("🤖 AI FAQ Generation", "🤖 AI FAQ 자동 생성")}
         description={t(
-          "Search a product and automatically generate conversion-optimized FAQs from real user reviews.",
-          "제품을 검색하고 실사용자 리뷰 기반 전환 최적화 FAQ를 자동 생성합니다."
+          "Search a product → analyze reviews → generate conversion-optimized FAQs in one flow.",
+          "제품 검색 → 리뷰 분석 → 전환 최적화 FAQ 생성을 한 번에 수행합니다."
         )}
       />
 
-      {/* ═══════ Quick Guide — Horizontal Steps ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-4 md:p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <p className="text-xs font-bold text-foreground">{t("How It Works", "이용 가이드")}</p>
-          <span className="text-[10px] text-muted-foreground ml-1">{t("Product search → AI analysis → FAQ generation → Copy & use", "제품 검색 → AI 분석 → FAQ 생성 → 복사 · 활용")}</span>
+      {/* ═══════ Quick Guide ═══════ */}
+      <div className="gradient-card rounded-xl border border-border p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <p className="text-[11px] font-bold text-foreground">{t("How It Works", "이용 가이드")}</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          {QUICK_GUIDE.map((step, i) => (
-            <div key={i} className="flex items-center gap-2.5 bg-card border border-border rounded-[10px] px-3 py-2.5 relative">
-              <span className="text-base shrink-0">{step.icon}</span>
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold text-foreground truncate">{t(step.titleEn, step.titleKo)}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{t(step.descEn, step.descKo)}</p>
-              </div>
-              {i < QUICK_GUIDE.length - 1 && (
-                <ChevronRight className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/40 z-10" />
-              )}
-            </div>
-          ))}
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span>🔍 {t("Search Product", "제품 검색")}</span>
+          <ChevronRight className="h-3 w-3" />
+          <span>📊 {t("Review Analysis", "리뷰 분석")}</span>
+          <ChevronRight className="h-3 w-3" />
+          <span>📈 {t("Evidence & CIS Scoring", "에비던스 & CIS 점수")}</span>
+          <ChevronRight className="h-3 w-3" />
+          <span>❓ {t("FAQ Cards Output", "FAQ 카드 출력")}</span>
         </div>
       </div>
 
-      {/* ═══════ Product Search Bar ═══════ */}
-      <div className="gradient-card rounded-xl border border-primary/20 p-5 md:p-6">
+      {/* ═══════ Product Search ═══════ */}
+      <div className="gradient-card rounded-xl border border-primary/20 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Search className="h-4 w-4 text-primary" />
-          <p className="text-xs font-bold text-foreground">{t("Product Search", "제품 검색")}</p>
-          <span className="text-[10px] text-muted-foreground ml-1">{t("Search to start FAQ generation", "FAQ 생성을 위해 제품을 검색하세요")}</span>
+          <p className="text-xs font-bold text-foreground">{t("Step 0. Product Search", "Step 0. 제품 검색")}</p>
         </div>
-        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
-        {searchQuery && !isSearching && (
-          <div className="mt-4 bg-primary/5 border border-primary/20 rounded-[10px] p-3 flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
-            <p className="text-[11px] text-foreground/80">
-              <span className="font-bold text-primary">"{searchQuery}"</span>{" "}
-              {t(
-                "— Reviews found. Navigate to the product detail page to generate AI FAQs with full evidence.",
-                "— 리뷰가 확인되었습니다. 제품 상세 페이지에서 AI FAQ를 생성할 수 있습니다."
-              )}
+        <SearchBar onSearch={handleSearch} isLoading={searchLoading} />
+
+        {/* Search Results — Product Selection */}
+        {searchQuery && products.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[1px]">
+              {t(`${products.length} products found — select one`, `${products.length}개 제품 검색됨 — 선택하세요`)}
             </p>
-          </div>
-        )}
-      </div>
-
-      {/* ═══════ STEP 1 — Pipeline Overview ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={1} title={t("Generation Pipeline", "생성 파이프라인")} subtitle={t("4-stage automated workflow", "4단계 자동화 Workflow")} />
-
-        <div className="bg-muted/40 border border-border rounded-lg p-3 mb-5 flex items-start gap-2">
-          <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">{t("D2C Insight Pulse FAQ Orchestrator", "D2C Insight Pulse FAQ 오케스트레이터")}</strong>{" "}
-            {t(
-              "— Combines real user reviews and official LG product specs (lg.com/us) to auto-generate conversion-optimized FAQs. Every FAQ passes through 4 rigorous stages before publication.",
-              "— 실사용자 리뷰와 LG USA 공식 제품 정보(lg.com/us)를 결합해 전환 중심의 FAQ를 자동 생성합니다. 모든 FAQ는 발행 전 4단계 검증을 거칩니다."
-            )}
-          </p>
-        </div>
-
-        <SectionLabel>📋 {t("PIPELINE STAGES", "파이프라인 단계")}</SectionLabel>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {PIPELINE_STEPS.map((step, i) => (
-            <div key={i} className="bg-card border border-border rounded-[10px] p-4 text-center relative">
-              <span className="text-2xl block mb-2">{step.icon}</span>
-              <p className="text-[11px] font-bold text-foreground mb-1">{t(step.titleEn, step.titleKo)}</p>
-              <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(step.descEn, step.descKo)}</p>
-              {i < PIPELINE_STEPS.length - 1 && (
-                <ChevronRight className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Evidence Types */}
-        <SectionLabel>🔎 {t("EVIDENCE ENGINE — CITATION TYPES", "에비던스 엔진 — 인용 유형")}</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {EVIDENCE_TYPES.map((ev, i) => (
-            <div key={i} className="bg-card border border-border rounded-[10px] p-4 flex gap-3">
-              <span className="text-lg shrink-0">{ev.icon}</span>
-              <div>
-                <p className="text-[11px] font-bold text-foreground mb-0.5">{t(ev.titleEn, ev.titleKo)}</p>
-                <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(ev.descEn, ev.descKo)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══════ STEP 2 — CIS Scoring & Priority ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={2} title={t("CIS Scoring & Priority", "CIS 점수 & 우선순위")} subtitle={t("Conversion Impact Score → priority assignment", "전환 영향도 점수 → 우선순위 배정")} />
-
-        <div className="bg-muted/40 border border-border rounded-lg p-3 mb-5 flex items-start gap-2">
-          <BarChart3 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">{t("Conversion Impact Score (CIS)", "전환 영향도 점수 (CIS)")}</strong>{" "}
-            {t(
-              "— Measures how much a FAQ topic impacts purchase conversion. Calculated from mention frequency, sentiment intensity, and competitive relevance.",
-              "— FAQ 주제가 구매 전환에 미치는 영향을 측정합니다. 언급 빈도, 감성 강도, 경쟁 관련성을 종합하여 산출합니다."
-            )}
-          </p>
-        </div>
-
-        <SectionLabel>🏷️ {t("PRIORITY LEVELS", "우선순위 등급")}</SectionLabel>
-        <div className="space-y-2.5 mb-6">
-          {CIS_PRIORITIES.map((p, i) => (
-            <div key={i} className={`flex items-center gap-3.5 px-4 py-3 rounded-[10px] border ${p.color}`}>
-              <span className="text-xs font-bold w-16 shrink-0">{p.level}</span>
-              <span className="text-[10.5px] font-mono text-muted-foreground w-20 shrink-0">{t(p.scoreEn, p.scoreKo)}</span>
-              <span className="text-[11px] text-foreground/80 leading-relaxed">{t(p.descEn, p.descKo)}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Legal Review Gate */}
-        <SectionLabel>⚖️ {t("LEGAL REVIEW GATE", "법무 사전 검토 게이트")}</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {LEGAL_CHECKS.map((l, i) => (
-            <div key={i} className="bg-card border border-border rounded-[10px] p-4 flex gap-3">
-              <span className="text-lg shrink-0">{l.icon}</span>
-              <div>
-                <p className="text-[11px] font-bold text-foreground mb-0.5">{t(l.statusEn, l.statusKo)}</p>
-                <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(l.descEn, l.descKo)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══════ STEP 3 — Category Classification ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={3} title={t("Auto Category Classification", "자동 카테고리 분류")} subtitle={t("Topic-based auto-sorting for generated FAQs", "생성된 FAQ의 주제 기반 자동 분류")} />
-
-        <div className="bg-muted/40 border border-border rounded-lg p-3 mb-5 flex items-start gap-2">
-          <Package className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            {t(
-              "Generated FAQs are automatically classified into 6 topic categories based on content analysis. Each category maps to specific PDP sections and marketing channels.",
-              "생성된 FAQ는 콘텐츠 분석을 기반으로 6개 주제 카테고리에 자동 분류됩니다. 각 카테고리는 특정 PDP 섹션 및 마케팅 채널에 매핑됩니다."
-            )}
-          </p>
-        </div>
-
-        <SectionLabel>🏷️ {t("FAQ CATEGORIES", "FAQ 카테고리")}</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {CATEGORIES.map((cat, i) => (
-            <div key={i} className={`flex items-start gap-3 px-4 py-3.5 rounded-[10px] border ${cat.color}`}>
-              <span className="text-lg shrink-0 mt-0.5">{cat.icon}</span>
-              <div>
-                <p className="text-[11px] font-bold text-foreground mb-0.5">{t(cat.labelEn, cat.labelKo)}</p>
-                <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(cat.descEn, cat.descKo)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══════ STEP 4 — Output Formats ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={4} title={t("Output Formats", "출력 형식")} subtitle={t("FAQ Cards · Weekly Actions · CS Heatmap", "FAQ 카드 · 주간 액션 · CS 히트맵")} />
-
-        <SectionLabel>📤 {t("DELIVERABLES", "산출물")}</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          {OUTPUT_FORMATS.map((item, i) => (
-            <div key={i} className="bg-card border border-border rounded-[10px] p-4">
-              <span className="text-xl block mb-2">{item.icon}</span>
-              <p className="text-[11px] font-bold text-foreground mb-1">{t(item.titleEn, item.titleKo)}</p>
-              <p className="text-[10.5px] text-muted-foreground leading-relaxed">{t(item.descEn, item.descKo)}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Sample FAQ Card */}
-        <SectionLabel>🃏 {t("SAMPLE FAQ CARD", "FAQ 카드 샘플")}</SectionLabel>
-        <div className="bg-card border border-success/30 rounded-[10px] p-5 relative">
-          <button
-            onClick={() => handleCopy("sample-faq", `Q: ${SAMPLE_FAQ.question}\nA: ${SAMPLE_FAQ.answer}`)}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg border border-border text-[10.5px] text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-          >
-            {copiedMap["sample-faq"] ? "✅ Copied" : "📋 Copy"}
-          </button>
-
-          {/* Meta badges */}
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40">
-              {SAMPLE_FAQ.priority}
-            </span>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
-              CIS {SAMPLE_FAQ.cis}
-            </span>
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
-              🛡️ {t(SAMPLE_FAQ.category, SAMPLE_FAQ.categoryKo)}
-            </span>
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/30">
-              ✅ {t("Legal Pass", "법무 통과")}
-            </span>
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30">
-              ❌ {t("PDP Missing", "PDP 미반영")}
-            </span>
-          </div>
-
-          {/* Q&A */}
-          <div className="mb-3">
-            <p className="text-[11px] font-bold text-primary mb-1">Q.</p>
-            <p className="text-[12px] font-semibold text-foreground leading-relaxed">{t(SAMPLE_FAQ.question, SAMPLE_FAQ.questionKo)}</p>
-          </div>
-          <div className="mb-3">
-            <p className="text-[11px] font-bold text-success mb-1">A.</p>
-            <p className="text-[11.5px] text-foreground/80 leading-relaxed">{t(SAMPLE_FAQ.answer, SAMPLE_FAQ.answerKo)}</p>
-          </div>
-
-          {/* Evidence */}
-          <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.6px] mb-2">
-              📎 {t("EVIDENCE CITATIONS", "증거 인용")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(t(SAMPLE_FAQ.evidence.join("|"), SAMPLE_FAQ.evidenceKo.join("|")) as string).split("|").map((ev, i) => (
-                <span key={i} className="text-[10px] px-2.5 py-1 rounded-lg bg-secondary/50 text-foreground/70 border border-border/30">
-                  {ev}
-                </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {products.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelectProduct(p.id)}
+                  className={`text-left p-3 rounded-[10px] border transition-all ${
+                    selectedProductId === p.id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <p className="text-[11px] font-bold text-foreground truncate">{p.model_number}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{p.display_name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="text-[9px]">{p.category}</Badge>
+                    <span className="text-[9px] text-muted-foreground">{p.reviews.length} {t("reviews", "건 리뷰")}</span>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
-        </div>
+        )}
+        {searchQuery && !searchLoading && products.length === 0 && (
+          <p className="mt-3 text-xs text-muted-foreground">{t("No products found.", "검색 결과가 없습니다.")}</p>
+        )}
       </div>
+
+      {/* ═══════ Step Navigation ═══════ */}
+      {selectedProduct && (
+        <>
+          <div className="gradient-card rounded-xl border border-border p-3">
+            <div className="flex items-center gap-1">
+              {STEP_LABELS.map((label, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (i < 3 || canProceedToStep(i)) setActiveStep(i);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-[11px] font-medium transition-all ${
+                    activeStep === i
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : canProceedToStep(i)
+                        ? "text-foreground hover:bg-secondary/50 cursor-pointer"
+                        : "text-muted-foreground/50 cursor-default"
+                  }`}
+                >
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-background/20 text-[10px] font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  {t(label.en, label.ko)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ═══════ Selected Product Info Bar ═══════ */}
+          <div className="bg-primary/5 border border-primary/20 rounded-[10px] p-3 flex items-center gap-3 flex-wrap">
+            <span className="text-[11px] font-bold text-primary">{selectedProduct.model_number}</span>
+            <span className="text-[10px] text-muted-foreground">{selectedProduct.display_name}</span>
+            <Badge variant="secondary" className="text-[9px]">{selectedProduct.category}</Badge>
+            <span className="text-[10px] text-muted-foreground ml-auto">{reviews.length} {t("reviews", "건 리뷰")}</span>
+          </div>
+
+          {/* ═══════ STEP 1 — Review Data ═══════ */}
+          {activeStep === 0 && (
+            <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold">1</span>
+                <h2 className="text-base font-bold font-heading text-foreground">{t("Review Data Overview", "리뷰 데이터 개요")}</h2>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-card border border-border rounded-[10px] p-4 text-center">
+                  <p className="text-2xl font-bold text-foreground">{reviews.length}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("Total Reviews", "전체 리뷰")}</p>
+                </div>
+                <div className="bg-card border border-border rounded-[10px] p-4 text-center">
+                  <p className="text-2xl font-bold text-success">{reviews.filter(r => r.sentiment === "positive").length}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("Positive", "긍정")}</p>
+                </div>
+                <div className="bg-card border border-border rounded-[10px] p-4 text-center">
+                  <p className="text-2xl font-bold text-red-400">{reviews.filter(r => r.sentiment === "negative").length}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("Negative", "부정")}</p>
+                </div>
+                <div className="bg-card border border-border rounded-[10px] p-4 text-center">
+                  <p className="text-2xl font-bold text-foreground">{(sentiment.averageScore * 100).toFixed(0)}</p>
+                  <p className="text-[10px] text-muted-foreground">{t("Sentiment Score", "감성 점수")}</p>
+                </div>
+              </div>
+
+              {/* Source breakdown */}
+              <div>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px] mb-2">📊 {t("SOURCE BREAKDOWN", "채널별 분포")}</p>
+                <div className="flex gap-2 flex-wrap">
+                  {Object.entries(
+                    reviews.reduce<Record<string, number>>((acc, r) => {
+                      const src = (r.source as string) || "unknown";
+                      acc[src] = (acc[src] || 0) + 1;
+                      return acc;
+                    }, {})
+                  ).map(([src, count]) => (
+                    <Badge key={src} variant="secondary" className="text-[10px]">{src}: {count}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              {reviews.length < 3 && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-400">
+                  ⚠️ {t("Minimum 3 reviews required for FAQ generation.", "FAQ 생성에 최소 3건의 리뷰가 필요합니다.")}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => setActiveStep(1)} disabled={reviews.length < 3} className="text-[11px] gap-1">
+                  {t("Next: Evidence & CIS", "다음: 에비던스 & CIS")} <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════ STEP 2 — Evidence & CIS Scoring ═══════ */}
+          {activeStep === 1 && (
+            <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold">2</span>
+                <h2 className="text-base font-bold font-heading text-foreground">{t("Evidence Engine & CIS Scoring", "에비던스 엔진 & CIS 점수")}</h2>
+              </div>
+
+              <div className="bg-muted/40 border border-border rounded-lg p-3 flex items-start gap-2">
+                <BarChart3 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {t(
+                    "AI will extract evidence (review quotes, quantitative metrics, statistical patterns) and calculate CIS (Conversion Impact Score) for each FAQ topic.",
+                    "AI가 각 FAQ 주제에 대해 증거(리뷰 인용, 정량 데이터, 통계 패턴)를 추출하고 CIS(전환 영향도 점수)를 산출합니다."
+                  )}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { icon: "💬", en: "Review Quotes", ko: "리뷰 인용", descEn: "Min. 2 citations per FAQ", descKo: "FAQ당 최소 2개 인용" },
+                  { icon: "📊", en: "Quantitative Metrics", ko: "정량 데이터", descEn: "Mention frequency, sentiment ratio", descKo: "언급 빈도, 감성 비율" },
+                  { icon: "📐", en: "Statistical Patterns", ko: "통계 패턴", descEn: "Recurring themes & trends", descKo: "반복 테마 & 트렌드" },
+                ].map((item, i) => (
+                  <div key={i} className="bg-card border border-border rounded-[10px] p-4 flex gap-3">
+                    <span className="text-lg shrink-0">{item.icon}</span>
+                    <div>
+                      <p className="text-[11px] font-bold text-foreground mb-0.5">{t(item.en, item.ko)}</p>
+                      <p className="text-[10px] text-muted-foreground">{t(item.descEn, item.descKo)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px]">🏷️ {t("PRIORITY LEVELS", "우선순위 등급")}</p>
+              <div className="space-y-2">
+                {[
+                  { level: "P0", score: "CIS ≥ 80", desc: t("Critical — PDP immediately", "긴급 — PDP 즉시 반영"), color: "bg-red-500/10 text-red-400 border-red-500/30" },
+                  { level: "P1", score: "CIS 60–79", desc: t("Important — within 1 sprint", "중요 — 1 스프린트 내"), color: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
+                  { level: "P2", score: "CIS 40–59", desc: t("Nice to have", "선택적 반영"), color: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
+                  { level: "Backlog", score: "CIS < 40", desc: t("Monitor", "모니터링"), color: "bg-muted text-muted-foreground border-border" },
+                ].map((p, i) => (
+                  <div key={i} className={`flex items-center gap-3 px-3 py-2 rounded-[10px] border text-xs ${p.color}`}>
+                    <span className="font-bold w-14">{p.level}</span>
+                    <span className="font-mono text-muted-foreground w-20">{p.score}</span>
+                    <span className="text-foreground/80">{p.desc}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between">
+                <Button variant="outline" size="sm" onClick={() => setActiveStep(0)} className="text-[11px]">
+                  ← {t("Back", "이전")}
+                </Button>
+                <Button size="sm" onClick={() => setActiveStep(2)} className="text-[11px] gap-1">
+                  {t("Next: Category", "다음: 카테고리")} <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════ STEP 3 — Category & Generate ═══════ */}
+          {activeStep === 2 && (
+            <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold">3</span>
+                <h2 className="text-base font-bold font-heading text-foreground">{t("Category Classification & Generation", "카테고리 분류 & 생성")}</h2>
+              </div>
+
+              <div className="bg-muted/40 border border-border rounded-lg p-3 flex items-start gap-2">
+                <Package className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {t(
+                    "FAQs will be auto-classified into 6 categories. Click 'Generate' to start AI analysis.",
+                    "FAQ는 6개 카테고리로 자동 분류됩니다. '생성' 버튼을 클릭하면 AI 분석이 시작됩니다."
+                  )}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {[
+                  { icon: "🔧", en: "Installation & Setup", ko: "설치 · 초기 설정", color: "border-orange-500/30 bg-orange-500/5" },
+                  { icon: "🖥️", en: "Display & Sound", ko: "화면 · 사운드", color: "border-purple-500/30 bg-purple-500/5" },
+                  { icon: "📡", en: "Connectivity & Smart", ko: "연결성 · 스마트", color: "border-cyan-500/30 bg-cyan-500/5" },
+                  { icon: "🛡️", en: "Purchase Anxiety", ko: "구매 불안 · 보증", color: "border-amber-500/30 bg-amber-500/5" },
+                  { icon: "💰", en: "Price & Value", ko: "가격 · 가치", color: "border-success/30 bg-success/5" },
+                  { icon: "⚔️", en: "Competitor Comparison", ko: "경쟁사 비교", color: "border-violet-500/30 bg-violet-500/5" },
+                ].map((cat, i) => (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-[10px] border ${cat.color}`}>
+                    <span className="text-lg">{cat.icon}</span>
+                    <p className="text-[11px] font-bold text-foreground">{t(cat.en, cat.ko)}</p>
+                  </div>
+                ))}
+              </div>
+
+              {error && (
+                <div className="bg-destructive/10 text-destructive text-xs p-3 rounded-lg border border-destructive/20">{error}</div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <Button variant="outline" size="sm" onClick={() => setActiveStep(1)} className="text-[11px]">
+                  ← {t("Back", "이전")}
+                </Button>
+                <Button size="sm" onClick={generateFaq} disabled={loading} className="text-[11px] gap-1.5 glow-primary px-6">
+                  {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                  {loading ? t("Generating FAQ...", "FAQ 생성 중...") : t("🚀 Generate AI FAQ", "🚀 AI FAQ 생성")}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════ STEP 4 — FAQ Results ═══════ */}
+          {activeStep === 3 && (
+            <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold">4</span>
+                <h2 className="text-base font-bold font-heading text-foreground">{t("FAQ Results", "FAQ 결과")}</h2>
+                <div className="ml-auto flex gap-2">
+                  {faqCards.length > 0 && (
+                    <Button variant="ghost" size="sm" onClick={() => copyText(filteredFaqs.map((f) => `Q: ${f.question}\nA: ${f.answer}`).join("\n\n"))} className="h-7 text-[10px] gap-1 text-muted-foreground">
+                      <Copy className="h-3 w-3" /> {t("Copy All", "전체 복사")}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={generateFaq} disabled={loading} className="h-7 text-[10px] gap-1">
+                    {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    {t("Regenerate", "재생성")}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Summary */}
+              {aiData?.summary && (
+                <div className="flex gap-3 flex-wrap text-[11px]">
+                  <div className="bg-muted/30 rounded-lg px-3 py-2 border border-border/50 flex items-center gap-2">
+                    <BarChart3 className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-muted-foreground">{t("Total", "총")}: <strong className="text-foreground">{aiData.summary.total_faq}</strong></span>
+                  </div>
+                  <Badge className={`${PRIORITY_STYLE.P0} border text-[10px]`}>P0: {aiData.summary.p0}</Badge>
+                  <Badge className={`${PRIORITY_STYLE.P1} border text-[10px]`}>P1: {aiData.summary.p1}</Badge>
+                  <Badge className={`${PRIORITY_STYLE.P2} border text-[10px]`}>P2: {aiData.summary.p2}</Badge>
+                  <div className="flex items-center gap-1 text-success text-[11px]">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>{t("Publishable", "발행 가능")}: {aiData.summary.publishable_count}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Weekly Action List */}
+              {aiData?.weekly_action_list && aiData.weekly_action_list.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px] mb-2">
+                    ⚡ {t("WEEKLY ACTION LIST", "주간 액션리스트")}
+                  </p>
+                  <div className="space-y-2">
+                    {aiData.weekly_action_list.map((action, i) => (
+                      <div key={i} className="bg-muted/30 rounded-lg p-3 border border-border/50 space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={`${PRIORITY_STYLE[action.priority] || PRIORITY_STYLE.P2} border text-[9px]`}>{action.priority}</Badge>
+                          <span className="text-[11px] font-medium">{action.what}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{action.why}</p>
+                        <div className="bg-primary/5 rounded p-2 border border-primary/10">
+                          <p className="text-[10px] font-semibold text-primary mb-1">{t("Ready-to-use Copy", "바로 쓰는 문구")}</p>
+                          <p className="text-[10px] text-foreground/80">📌 {action.ready_to_use_copy.pdp_highlight}</p>
+                          <p className="text-[10px] text-foreground/80">🚪 {action.ready_to_use_copy.exit_popup}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Category Filter */}
+              {faqCards.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px] mb-2">
+                    🏷️ {t("FAQ CARDS", "FAQ 카드")}
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap mb-3">
+                    <Button variant={activeCategory === null ? "default" : "outline"} size="sm" className="h-6 text-[10px] px-2" onClick={() => setActiveCategory(null)}>
+                      {t("All", "전체")} ({faqCards.length})
+                    </Button>
+                    {Object.keys(faqsByCategory).map((cat) => {
+                      const meta = CATEGORY_META[cat] || CATEGORY_META.other;
+                      const Icon = meta.icon;
+                      return (
+                        <Button key={cat} variant={activeCategory === cat ? "default" : "outline"} size="sm" className="h-6 text-[10px] px-2 gap-1" onClick={() => setActiveCategory(cat)}>
+                          <Icon className="h-3 w-3" />
+                          {t(meta.label, meta.labelKo)} ({faqsByCategory[cat].length})
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* FAQ Cards */}
+                  <div className="grid gap-2.5">
+                    {filteredFaqs.map((faq, i) => {
+                      const catMeta = CATEGORY_META[faq.category] || CATEGORY_META.other;
+                      const CatIcon = catMeta.icon;
+                      const stLabel = SOURCE_TYPE_LABEL[faq.sourceType] || SOURCE_TYPE_LABEL.question;
+                      return (
+                        <div key={faq.faq_id || i} className={`bg-muted/30 rounded-lg p-4 border group relative ${faq.publishable ? "border-success/30" : "border-border/50"}`}>
+                          <Button variant="ghost" size="sm" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0" onClick={() => copyText(`Q: ${faq.question}\nA: ${faq.answer}`)}>
+                            <Copy className="h-3 w-3" />
+                          </Button>
+
+                          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                            {faq.priority && <Badge className={`${PRIORITY_STYLE[faq.priority] || PRIORITY_STYLE.Backlog} border text-[9px]`}>{faq.priority}</Badge>}
+                            {typeof faq.cis === "number" && <Badge variant="outline" className="text-[9px] font-mono">CIS {faq.cis.toFixed(0)}</Badge>}
+                            {faq.publishable === true && (
+                              <Badge className="bg-success/10 text-success border-success/30 border text-[9px] gap-0.5">
+                                <CheckCircle2 className="h-2.5 w-2.5" /> {t("Publishable", "발행가능")}
+                              </Badge>
+                            )}
+                            {faq.publishable === false && (
+                              <Badge className="bg-red-500/10 text-red-400 border-red-500/30 border text-[9px] gap-0.5">
+                                <XCircle className="h-2.5 w-2.5" /> {t("Draft", "초안")}
+                              </Badge>
+                            )}
+                            {faq.legal_review && (
+                              <Badge variant="secondary" className={`text-[9px] gap-0.5 ${faq.legal_review.status === "pass" ? "text-success" : faq.legal_review.status === "needs_revision" ? "text-amber-400" : "text-red-400"}`}>
+                                <Shield className="h-2.5 w-2.5" /> {t("Legal", "법무")}: {faq.legal_review.status}
+                              </Badge>
+                            )}
+                            {faq.faq_id && <span className="text-[9px] font-mono text-muted-foreground ml-auto">{faq.faq_id}</span>}
+                          </div>
+
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <CatIcon className={`h-3.5 w-3.5 ${catMeta.color}`} />
+                            <p className="text-sm font-semibold text-foreground/90">Q: {faq.question}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed pl-5 mb-2">{faq.answer}</p>
+
+                          {faq.evidence && (
+                            <div className="pl-5 mb-2 space-y-1">
+                              {faq.evidence.quotes?.length > 0 && faq.evidence.quotes.map((q, qi) => (
+                                <p key={qi} className="text-[10px] text-muted-foreground italic border-l-2 border-primary/30 pl-2 py-0.5">"{q}"</p>
+                              ))}
+                              {faq.evidence.claims?.length > 0 && (
+                                <div className="flex gap-1.5 flex-wrap">
+                                  {faq.evidence.claims.map((c, ci) => (
+                                    <Badge key={ci} variant="outline" className="text-[9px] font-mono">{c.metric}: {c.value}{c.unit}</Badge>
+                                  ))}
+                                </div>
+                              )}
+                              {faq.evidence.pattern && <p className="text-[10px] text-muted-foreground/70">📊 {faq.evidence.pattern}</p>}
+                            </div>
+                          )}
+
+                          <div className="flex gap-1.5 pl-5 flex-wrap">
+                            <Badge variant="outline" className="text-[9px]">{t(catMeta.label, catMeta.labelKo)}</Badge>
+                            <Badge variant="secondary" className="text-[9px]">{t(stLabel.en, stLabel.ko)}</Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* CS Heatmap */}
+              {aiData?.cs_heatmap && aiData.cs_heatmap.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[1px] mb-2">
+                    🔥 {t("CS ISSUE HEATMAP", "CS 이슈 히트맵")}
+                  </p>
+                  <div className="grid gap-1.5">
+                    {aiData.cs_heatmap.map((item, i) => (
+                      <div key={i} className={`flex items-center gap-3 text-xs rounded-lg px-3 py-2 border ${item.action_required ? "bg-red-500/5 border-red-500/20" : "bg-muted/20 border-border/40"}`}>
+                        {item.action_required && <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />}
+                        <span className="font-medium flex-1">{item.issue}</span>
+                        <Badge variant="outline" className="text-[9px] font-mono">CIS {item.cis_avg.toFixed(0)}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!aiData && !loading && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground mb-3">{t("Go to Step 3 and click 'Generate' to create FAQs.", "Step 3으로 이동하여 '생성' 버튼을 클릭하세요.")}</p>
+                  <Button variant="outline" size="sm" onClick={() => setActiveStep(2)} className="text-[11px]">
+                    ← {t("Back to Step 3", "Step 3으로 돌아가기")}
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex justify-start">
+                <Button variant="outline" size="sm" onClick={() => setActiveStep(2)} className="text-[11px]">
+                  ← {t("Back", "이전")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
