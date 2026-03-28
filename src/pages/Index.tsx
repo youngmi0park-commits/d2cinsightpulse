@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
-import { GlobalFilterBar, type GlobalFilters } from "@/components/GlobalFilterBar";
+import { SentimentChart } from "@/components/SentimentChart";
+import { ReviewList } from "@/components/ReviewList";
+import { KeywordCloud } from "@/components/KeywordCloud";
+import { MarketingHub } from "@/components/MarketingHub";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 import type { ProductData } from "@/data/dummyData";
@@ -172,26 +175,6 @@ const Index = () => {
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} />
-
-          {/* Data Status Bar + Country Filter — below trending */}
-          <DataStatusBar />
-          <GlobalFilterBar filters={filters} onChange={setFilters} />
-
-          <LgComReviewDashboard onProductClick={(m) => handleSearch(m)} />
-
-          {/* Widget A: Channel Sentiment Overview */}
-          <ChannelSentimentWidget filters={filters} />
-
-          {/* Widget B: Top Keywords */}
-          <TopKeywordsWidget filters={filters} />
-
-          {/* Widget C: Top Products by Sentiment */}
-          <TopProductsWidget filters={filters} onProductClick={(m) => handleSearch(m)} />
-
-          <WeeklyInsightsPanel />
-
-
-
 
           <CollectionCriteria />
           <NewsletterSubscribe />
