@@ -22,7 +22,7 @@ const analyticsItems = [
 ];
 
 const marketingItems = [
-  { title: "Marketer Toolkit", url: "/toolkit", icon: Wrench, isNew: true },
+  { title: "마케팅 툴킷", url: "/toolkit", icon: Wrench, isNew: true },
 ];
 
 const pipelineItems = [
