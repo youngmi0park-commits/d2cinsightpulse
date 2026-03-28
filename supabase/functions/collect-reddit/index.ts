@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
               published_at: review.published_at || null,
               source_url: null,
               review_type: "organic",
-              content_type: "community",
+              content_type: bucket, // store bucket classification (review/voc/question)
               platform_type: "community",
               user_type: "actual_user",
             });
