@@ -12,8 +12,7 @@ import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
-import { CollectionCriteria } from "@/components/CollectionCriteria";
-import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
+import { AlertCircle, Database, Activity } from "lucide-react";
 import { AlertCircle, Database, Activity } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -175,9 +174,6 @@ const Index = () => {
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} />
 
           <OverviewDashboard />
-
-          <CollectionCriteria />
-          <NewsletterSubscribe />
         </div>
       )}
 
