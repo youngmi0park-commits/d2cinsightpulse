@@ -23,41 +23,37 @@ function CountryReviewButtons() {
   const FLAG: Record<string, string> = { US: "🇺🇸", UK: "🇬🇧", Other: "🌐" };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <Store className="h-4 w-4 text-primary" />
-          <CardTitle className="text-sm font-semibold">국가별 LG.com 리뷰 수</CardTitle>
-          {total > 0 && (
-            <Badge variant="secondary" className="text-[10px] ml-auto">
-              Total {total.toLocaleString()}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {isLoading ? (
-          <div className="flex justify-center py-6">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {data?.map((c) => (
-              <div
-                key={c.country}
-                className="flex items-center gap-2 rounded-lg border border-border bg-secondary/30 px-4 py-2.5 min-w-[120px]"
-              >
-                <span className="text-lg">{FLAG[c.country] || "🌐"}</span>
-                <div>
-                  <div className="text-xs font-semibold text-foreground">{c.country}</div>
-                  <div className="text-lg font-bold text-primary">{Number(c.count).toLocaleString()}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="gradient-card rounded-xl border border-border p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <Store className="h-4 w-4 text-primary" />
+        <h4 className="text-sm font-semibold font-heading">국가별 LG.com 리뷰 수</h4>
+        {total > 0 && (
+          <Badge variant="secondary" className="text-[10px] ml-auto">
+            Total {total.toLocaleString()}
+          </Badge>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {data?.map((c) => (
+            <div
+              key={c.country}
+              className="flex items-center gap-2 rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[120px]"
+            >
+              <span className="text-lg">{FLAG[c.country] || "🌐"}</span>
+              <div>
+                <div className="text-xs font-semibold text-foreground">{c.country}</div>
+                <div className="text-lg font-bold text-primary">{Number(c.count).toLocaleString()}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
