@@ -533,7 +533,7 @@ export default function ToolkitPage() {
           ))}
         </div>
 
-        <SectionLabel>💬 VERIFIED VOC — Ready-to-use 1-line English reviews</SectionLabel>
+        <SectionLabel>💬 {t("VERIFIED VOC — Ready-to-use 1-line English reviews", "인증 VOC — 바로 활용 가능한 1줄 영문 리뷰")}</SectionLabel>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
           {VOCS.map((v, i) => (
             <div key={i} className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 hover:border-primary transition-colors">
