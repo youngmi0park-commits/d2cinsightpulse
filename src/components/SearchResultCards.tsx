@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, MapPin, Copy } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { SentimentResult } from "@/lib/sentiment";
