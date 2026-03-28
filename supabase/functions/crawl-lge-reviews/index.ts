@@ -119,9 +119,9 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
   
-  // Date range filters - BV requires Unix timestamp in milliseconds
-  if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${new Date(dateFrom).getTime()}`);
-  if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${new Date(dateTo).getTime()}`);
+  // Date range filters - BV uses epoch seconds for SubmissionTime filter
+  if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${Math.floor(new Date(dateFrom).getTime() / 1000)}`);
+  if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${Math.floor(new Date(dateTo).getTime() / 1000)}`);
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
