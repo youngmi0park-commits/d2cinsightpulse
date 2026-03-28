@@ -7,24 +7,64 @@ import { PageHeader } from "@/components/PageHeader";
 // ═══════════════════════════════════════════════════════════════
 
 const PRODUCTS = [
-  { id: 0, name: 'LG OLED65G5WUA · 65" G5', cis: 89, inventory: 142, sales: 1243, rating: 4.8 },
-  { id: 1, name: 'LG OLED55C5PUA · 55" C5', cis: 82, inventory: 287, sales: 987, rating: 4.7 },
-  { id: 2, name: 'LG OLED48C5PUA · 48" C5', cis: 68, inventory: 198, sales: 890, rating: 4.6 },
-  { id: 3, name: 'LG WashTower WKEX200HBA', cis: 74, inventory: 89, sales: 567, rating: 4.5 },
-  { id: 4, name: 'LG UltraGear 27GP950-B', cis: 71, inventory: 312, sales: 445, rating: 4.6 },
-  { id: 5, name: 'LG OLED77G5WUA · 77" G5', cis: 54, inventory: 45, sales: 234, rating: 4.9 },
-  { id: 6, name: 'LG Gram 17Z90TP', cis: 61, inventory: 178, sales: 389, rating: 4.5 },
-  { id: 7, name: 'LG Soundbar S95QR', cis: 52, inventory: 134, sales: 189, rating: 4.4 },
+  { id: 0, name: 'LG OLED65G6WUA · 65" G6', cis: 92, inventory: 158, sales: 1380, rating: 4.9 },
+  { id: 1, name: 'LG OLED65G5WUA · 65" G5', cis: 89, inventory: 142, sales: 1243, rating: 4.8 },
+  { id: 2, name: 'LG OLED55C5PUA · 55" C5', cis: 82, inventory: 287, sales: 987, rating: 4.7 },
+  { id: 3, name: 'LG OLED48C5PUA · 48" C5', cis: 68, inventory: 198, sales: 890, rating: 4.6 },
+  { id: 4, name: 'LG OLED77G5WUA · 77" G5', cis: 54, inventory: 45, sales: 234, rating: 4.9 },
+  { id: 5, name: 'LG OLED65C6H · 65" C6H Tandem', cis: 85, inventory: 95, sales: 412, rating: 4.8 },
+  { id: 6, name: 'LG OLED83W6 · 83" W6 Wireless', cis: 78, inventory: 32, sales: 98, rating: 4.9 },
+  { id: 7, name: 'LG UltraGear 27GR83Q-B', cis: 71, inventory: 312, sales: 445, rating: 4.6 },
+  { id: 8, name: 'LG UltraGear 32GS95UE', cis: 76, inventory: 189, sales: 378, rating: 4.7 },
+  { id: 9, name: 'LG Gram 17Z90TP', cis: 61, inventory: 178, sales: 389, rating: 4.5 },
+  { id: 10, name: 'LG Gram Pro 16 2-in-1', cis: 73, inventory: 112, sales: 267, rating: 4.6 },
+  { id: 11, name: 'LG Soundbar S95TR', cis: 64, inventory: 134, sales: 289, rating: 4.5 },
+  { id: 12, name: 'LG Soundbar S80QY', cis: 58, inventory: 201, sales: 345, rating: 4.4 },
+  { id: 13, name: 'LG WashTower WKEX200HBA', cis: 74, inventory: 89, sales: 567, rating: 4.5 },
+  { id: 14, name: 'LG CordZero A9 ThinQ', cis: 66, inventory: 245, sales: 412, rating: 4.4 },
+  { id: 15, name: 'LG InstaView LRMVS3006S', cis: 70, inventory: 67, sales: 198, rating: 4.6 },
+  { id: 16, name: 'LG PuriCare AeroTower', cis: 62, inventory: 156, sales: 223, rating: 4.3 },
+  { id: 17, name: 'LG StanbyME 27LX6TYGA', cis: 59, inventory: 88, sales: 145, rating: 4.5 },
 ];
 
 const EVENTS = [
-  "🎒 Back to School (Jul–Aug)", "🖤 Black Friday (Nov)", "💻 Cyber Monday (Nov)",
-  "🎄 Holiday Season (Dec)", "⚡ Prime Day (Jul)", "🏷️ Clearance Sale",
-  "🎮 Gaming Season (Q4)", "🏠 Home Refresh (Spring)",
+  // Mega Sales
+  "🖤 Black Friday (Nov)", "💻 Cyber Monday (Nov)", "⚡ Prime Day (Jul)", "🛒 Amazon Spring Sale (Mar)",
+  // Seasonal
+  "🎒 Back to School (Jul–Aug)", "🎄 Holiday Season (Dec)", "💝 Valentine's Day (Feb)", "👨 Father's Day (Jun)",
+  "🏠 Home Refresh (Spring)", "🍂 Fall Refresh (Sep–Oct)",
+  // Category-specific
+  "🎮 Gaming Season (Q4)", "🏈 Super Bowl / Big Game (Feb)", "🏆 FIFA / World Cup Season",
+  "📺 New Model Launch (CES Jan)", "📺 Mid-Year Line Refresh (Jun)",
+  // Regional
+  "🇬🇧 Boxing Day (Dec 26)", "🇨🇦 Canada Day (Jul 1)", "🇩🇪 German Unity Day (Oct)",
+  // Clearance
+  "🏷️ End-of-Season Clearance", "📦 Warehouse / Outlet Sale",
 ];
 
-const MARKETS = ["🇺🇸 US (LGEUS)", "🇬🇧 UK (LGEUK)", "🇨🇦 CA (LGECI)", "🇦🇺 AU (LGEAP)", "🇩🇪 DE (LGEDG)", "🌐 Global All"];
-const GOALS = ["🚀 Awareness", "💡 Consideration", "🛒 Conversion", "🔁 Retention / Upsell"];
+const MARKETS = [
+  "🇺🇸 US (LGEUS)", "🇬🇧 UK (LGEUK)", "🇨🇦 CA (LGECI)", "🇦🇺 AU (LGEAP)",
+  "🇩🇪 DE (LGEDG)", "🇫🇷 FR (LGEFS)", "🇮🇹 IT (LGEIS)", "🇪🇸 ES (LGEES)",
+  "🇳🇱 NL (LGENL)", "🇸🇪 SE (LGEND)", "🇵🇱 PL (LGEPL)", "🇮🇳 IN (LGEIL)",
+  "🇸🇬 SG (LGESL)", "🇲🇽 MX (LGEMS)", "🇧🇷 BR (LGEBR)", "🌐 Global All",
+];
+
+const GOALS = [
+  "🚀 Awareness", "💡 Consideration", "🛒 Conversion", "🔁 Retention / Upsell",
+  "🆕 New Launch Hype", "⚔️ Competitive Conquest", "🏷️ Clearance / Sell-through",
+  "📈 Market Share Growth", "💎 Premium Positioning",
+];
+
+const CAMPAIGN_TYPES = [
+  "📺 Single Product Focus", "🎁 Bundle / Cross-sell", "🏷️ Category Push (e.g. All OLED TVs)",
+  "🏠 Lifestyle / Ecosystem (Multi-category)", "🆚 Competitive Switch",
+  "📦 Inventory Liquidation", "🆕 Pre-order / Launch",
+];
+
+const BUDGET_TIERS = [
+  "💰 Tier 1 — Hero (>$100K)", "💵 Tier 2 — Priority ($50–100K)",
+  "🪙 Tier 3 — Standard ($10–50K)", "🆓 Tier 4 — Organic Only (<$10K)",
+];
 
 const PERSONAS = [
   { icon: "🎮", name: "The Gamer", region: "US · AU · DE · 18–34", desc: "High-spec gaming setup. Sensitive to response time & VRR. Active on r/buildapc.", tags: ["Input lag", "VRR", "4K120Hz", "HDMI 2.1"] },
@@ -241,6 +281,8 @@ export default function ToolkitPage() {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
   const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
+  const [selectedCampaignType, setSelectedCampaignType] = useState("📺 Single Product Focus");
+  const [selectedBudget, setSelectedBudget] = useState("💵 Tier 2 — Priority ($50–100K)");
 
   type SortMode = "inventory" | "sales" | "rated";
   type CopyTab = "owned" | "paid" | "retail";
@@ -294,10 +336,16 @@ export default function ToolkitPage() {
         <StepHeader step={1} title="Campaign Context" subtitle="Seasonal event & product selection · Korea excluded" />
 
         <SectionLabel>GLOBAL SEASONAL EVENT</SectionLabel>
-        <div className="flex gap-3.5 mb-6 flex-wrap">
+        <div className="flex gap-3.5 mb-4 flex-wrap">
           <SelectDropdown label="SEASONAL EVENT" value={selectedEvent} options={EVENTS} placeholder="— Select Season —" onChange={setSelectedEvent} />
           <SelectDropdown label="TARGET MARKET" value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
           <SelectDropdown label="CAMPAIGN GOAL" value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+        </div>
+
+        <SectionLabel>CAMPAIGN SETUP</SectionLabel>
+        <div className="flex gap-3.5 mb-6 flex-wrap">
+          <SelectDropdown label="CAMPAIGN TYPE" value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
+          <SelectDropdown label="BUDGET TIER" value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
         </div>
 
         <SectionLabel>PRODUCT SELECTION</SectionLabel>
