@@ -12,7 +12,6 @@ const CollectionPage = () => {
         description="데이터 수집 파이프라인의 실행 현황과 소스별 수집 기준을 관리합니다. 수집 주기, 대상 채널, 최근 수집 로그를 확인하고 모니터링하세요."
       />
       <CollectionCriteria />
-      <NewsletterSubscribe />
     </div>
   );
 };

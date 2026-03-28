@@ -496,7 +496,6 @@ export const CollectionCriteria = () => {
             })}
           </div>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+    </div>
   );
 };
