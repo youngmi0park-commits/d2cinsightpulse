@@ -48,23 +48,19 @@ function buildToolSchema() {
             items: {
               type: "object",
               properties: {
-                faq_id: { type: "string", description: "Unique FAQ identifier e.g. auto-c4-burnin-001" },
-                product_family: { type: "string", description: "e.g. TV_OLED, UltraGear, HomeAppliances_WM" },
-                question: { type: "string", description: "Customer-language FAQ question" },
-                answer: { type: "string", description: "Fact-based 2-3 sentence answer, no exaggeration" },
+                faq_id: { type: "string", description: "Unique FAQ identifier" },
+                product_family: { type: "string" },
+                question: { type: "string", description: "Natural-language question buyers would actually search for" },
+                answer: { type: "string", description: "Evidence-based answer with 'X% of verified buyers reported...' format" },
                 category: {
                   type: "string",
-                  enum: ["installation", "initial_setup", "display_sound", "connectivity", "usability", "compatibility", "features", "pricing", "reliability", "other"],
+                  enum: ["performance_quality", "purchase_anxiety", "installation_compatibility", "delivery_warranty", "competitor_comparison", "price_value"],
                 },
                 sourceType: {
                   type: "string",
                   enum: ["question", "issue_resolution", "pain_point", "feature_inquiry", "conversion_barrier"],
                 },
-                topics: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Multi-select topic tags: picture_quality, brightness, uniformity, response_time, noise, energy_saving, installation, burn_in, etc."
-                },
+                topics: { type: "array", items: { type: "string" } },
                 evidence: {
                   type: "object",
                   properties: {
@@ -82,19 +78,21 @@ function buildToolSchema() {
                         additionalProperties: false,
                       },
                     },
-                    pattern: { type: "string", description: "e.g. 'Last 6 months: 14% of reviews mention overshoot'" },
+                    pattern: { type: "string" },
+                    review_count: { type: "number", description: "Number of reviews supporting this FAQ" },
+                    sentiment_score: { type: "number", description: "Average sentiment score for this topic (0-100)" },
                   },
-                  required: ["quotes", "claims", "pattern"],
+                  required: ["quotes", "claims", "pattern", "review_count", "sentiment_score"],
                   additionalProperties: false,
                 },
                 cis: { type: "number", description: "Conversion Impact Score 0-100" },
                 priority: { type: "string", enum: ["P0", "P1", "P2", "Backlog"] },
-                intent_type: { type: "string", enum: ["anxiety", "info_gap", "comparison", "setup"], description: "Conversion barrier type" },
+                intent_type: { type: "string", enum: ["anxiety", "info_gap", "comparison", "setup"] },
                 pdp_presence: {
                   type: "object",
                   properties: {
                     status: { type: "string", enum: ["implemented", "missing", "outdated"] },
-                    last_updated_days: { type: "number", description: "Days since last PDP update, null if unknown" },
+                    last_updated_days: { type: "number" },
                   },
                   required: ["status"],
                   additionalProperties: false,
@@ -107,10 +105,7 @@ function buildToolSchema() {
                       type: "array",
                       items: {
                         type: "object",
-                        properties: {
-                          item_id: { type: "string" },
-                          note: { type: "string" },
-                        },
+                        properties: { item_id: { type: "string" }, note: { type: "string" } },
                         required: ["item_id", "note"],
                         additionalProperties: false,
                       },
@@ -119,7 +114,7 @@ function buildToolSchema() {
                   required: ["status", "violations"],
                   additionalProperties: false,
                 },
-                publishable: { type: "boolean", description: "true only if legal pass AND evidence >= 2 quotes/claims" },
+                publishable: { type: "boolean" },
                 ab_test_suggestion: {
                   type: "object",
                   properties: {
@@ -141,7 +136,6 @@ function buildToolSchema() {
           },
           weekly_action_list: {
             type: "array",
-            description: "Top priority actions sorted by CIS",
             items: {
               type: "object",
               properties: {
@@ -158,10 +152,7 @@ function buildToolSchema() {
                 },
                 ready_to_use_copy: {
                   type: "object",
-                  properties: {
-                    pdp_highlight: { type: "string" },
-                    exit_popup: { type: "string" },
-                  },
+                  properties: { pdp_highlight: { type: "string" }, exit_popup: { type: "string" } },
                   required: ["pdp_highlight", "exit_popup"],
                   additionalProperties: false,
                 },
@@ -173,7 +164,6 @@ function buildToolSchema() {
           },
           cs_heatmap: {
             type: "array",
-            description: "Issue x frequency matrix",
             items: {
               type: "object",
               properties: {
@@ -192,7 +182,7 @@ function buildToolSchema() {
               type: "object",
               properties: {
                 topic: { type: "string" },
-                category: { type: "string", enum: ["installation", "compatibility", "usability", "feature_issue", "improvement_request", "praise"] },
+                category: { type: "string", enum: ["performance_quality", "purchase_anxiety", "installation_compatibility", "delivery_warranty", "competitor_comparison", "price_value"] },
                 sentiment: { type: "string", enum: ["positive", "negative", "mixed"] },
                 mentionCount: { type: "number" },
                 summary: { type: "string" },
@@ -246,70 +236,68 @@ function buildToolSchema() {
 }
 
 // ── System prompt ──
-function buildSystemPrompt() {
+function buildSystemPrompt(locale: string) {
+  const langInstruction = locale === "ko-KR"
+    ? "All FAQ questions and answers MUST be written in Korean (한국어)."
+    : locale === "de-DE"
+    ? "All FAQ questions and answers MUST be written in German (Deutsch)."
+    : locale === "fr-FR"
+    ? "All FAQ questions and answers MUST be written in French (Français)."
+    : locale === "pt-BR"
+    ? "All FAQ questions and answers MUST be written in Portuguese (Português BR)."
+    : locale === "en-UK"
+    ? "All FAQ questions and answers MUST be written in British English."
+    : "All FAQ questions and answers MUST be written in American English.";
+
   return `You are an expert D2C Insight Pulse FAQ Orchestrator for LG Electronics consumer products.
 
 ## YOUR MISSION
-Analyze customer reviews and generate **conversion-optimized FAQ cards** with full evidence, scoring, and legal review.
+Analyze customer reviews and generate **conversion-optimized FAQ cards** for overseas e-commerce purchase conversion.
+${langInstruction}
+
+## FAQ CATEGORIES (6 mandatory categories)
+Generate FAQs from ALL 6 categories below using review data:
+
+1. **performance_quality** — Strengths repeatedly mentioned in reviews. Focus on verified performance claims.
+2. **purchase_anxiety** — Convert negative keywords into positive reassurance. Address pre-purchase concerns.
+3. **installation_compatibility** — Extract voltage, size, fitting, compatibility from reviews.
+4. **delivery_warranty** — Delivery, warranty, return-related review extraction.
+5. **competitor_comparison** — Reviews mentioning competitor brands. Extract switching reasons.
+6. **price_value** — Reviews about price, worth, value. Frame as value proposition.
+
+## OUTPUT FORMAT FOR EACH FAQ
+Q: [Natural-language question buyers would actually search for]
+A: [Evidence-based answer — use "X% of verified buyers reported..." or "N out of M reviewers confirmed..." format]
+Evidence: review_count + sentiment_score
 
 ## CIS (Conversion Impact Score) FORMULA (0-100)
 CIS = 100 × (0.30×freq_norm + 0.20×neg_ratio + 0.20×intent_weight + 0.15×cs_overlap + 0.10×pdp_drop_match + 0.05×evidence_score)
-
-- freq_norm: How often this issue appears in reviews (0-1)
-- neg_ratio: Negative sentiment ratio for this topic (0-1)
-- intent_weight: anxiety=1.0, info_gap=0.8, comparison=0.7, setup=0.6
-- cs_overlap: Estimate if this would generate CS tickets (0-1)
-- pdp_drop_match: Would this FAQ reduce PDP exit rate? (0/1)
-- evidence_score: Quality of supporting evidence (0-1)
-
 Priority: P0(≥80), P1(65-79), P2(50-64), Backlog(<50)
 
 ## EVIDENCE ENGINE RULES
 Each FAQ MUST have:
 - quotes[]: 30-100 char anonymized review excerpts (minimum 2)
-- claims[]: Quantitative data (nits/dB/Hz/ms/min etc.) when available
-- pattern: "Last N months: X% of reviews mention [topic]" with methodology note
+- claims[]: Quantitative data when available
+- pattern: Statistical pattern description
+- review_count: Number of supporting reviews
+- sentiment_score: Average sentiment (0-100)
 
-## LEGAL REVIEW RULES (LGE Ad Compliance Checklist)
-Apply these checks to each FAQ:
+## LEGAL REVIEW RULES
 - No unsubstantiated superlatives (best, #1, unprecedented)
-- All factual claims backed by verifiable data
+- All claims backed by verifiable data
 - No direct competitor comparisons (use "some alternatives" instead)
-- No misleading content
 - Data source disclosed
-- Genuine user-generated content only
-- No unauthorized third-party IP
-
-legal_review.status:
-- "pass": All checks clear
-- "needs_revision": Minor issues fixable with edits
-- "fail": Cannot be published
-
-## PUBLISHABLE RULE
-publishable = true ONLY when:
-1. legal_review.status == "pass"
-2. evidence has >= 2 items (quotes + claims combined)
-
-## FAQ GENERATION RULES
-- Extract questions from: direct questions, repeated issues, conversion barriers (anxiety, info gaps, comparisons, setup concerns)
-- Answers: fact-based 2-3 sentences, specify conditions, NO exaggeration
-- Use customer language, not marketing speak
-- Topics: multi-select from predefined list
+publishable = true ONLY when legal_review.status == "pass" AND evidence >= 2 items
 
 ## WEEKLY ACTION LIST
-Generate top 3-5 actions sorted by CIS, each with:
-- what/why/impact
-- ready_to_use_copy: pdp_highlight + exit_popup text
-
-## OUTPUT
-Return structured JSON via tool calling. All output in English.`;
+Top 3-5 actions sorted by CIS with ready_to_use_copy.`;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { productName, reviews } = await req.json();
+    const { productName, reviews, locale } = await req.json();
     if (!productName || !reviews?.length) {
       return new Response(JSON.stringify({ error: "productName and reviews required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -338,7 +326,15 @@ Reviews (${reviews.length} total, showing ${Math.min(40, reviews.length)}):
 
 ${reviewTexts}${officialInfoBlock}
 
-Analyze these reviews and generate conversion-optimized FAQ cards with Evidence, CIS scoring, legal review, and weekly action list.`;
+Analyze these reviews and generate conversion-optimized FAQ cards across ALL 6 categories:
+1. Performance/Quality (repeated strengths)
+2. Purchase Anxiety (negative → positive conversion)
+3. Installation/Compatibility (voltage, size, fitting)
+4. Delivery/Warranty (shipping, returns, warranty)
+5. Competitor Comparison (brand switching reasons)
+6. Price/Value (worth, value for money)
+
+Include Evidence Engine data (review_count + sentiment_score), CIS scoring, legal review, and weekly action list.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -346,7 +342,7 @@ Analyze these reviews and generate conversion-optimized FAQ cards with Evidence,
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: buildSystemPrompt() },
+          { role: "system", content: buildSystemPrompt(locale || "en-US") },
           { role: "user", content: userPrompt },
         ],
         tools: [buildToolSchema()],
@@ -366,16 +362,15 @@ Analyze these reviews and generate conversion-optimized FAQ cards with Evidence,
 
     const result = JSON.parse(toolCall.function.arguments);
 
-    // Backward compat: map faq_cards → faqItems for existing UI
+    // Backward compat
     if (result.faq_cards && !result.faqItems) {
       result.faqItems = result.faq_cards.map((c: any) => ({
         question: c.question,
         answer: c.answer,
         category: c.category,
         sourceType: c.sourceType,
-        mentionCount: c.evidence?.quotes?.length || 0,
+        mentionCount: c.evidence?.review_count || c.evidence?.quotes?.length || 0,
         confidence: (c.cis || 50) / 100,
-        // Enhanced fields pass through
         ...c,
       }));
     }
