@@ -426,9 +426,11 @@ export function OverviewDashboard() {
                   <p className="text-xs text-muted-foreground mt-1">
                     주간 {product.count}건 · 긍정 {product.posCount}건 · 부정 {product.negCount}건 · {product.sources.map(s => s === "lge_com" || s.startsWith("lge_com") ? "LG.com" : s).join(", ")}
                   </p>
-                  <p className="text-xs text-foreground/80 mt-2 leading-relaxed">
-                    💡 {product.actionSummary}
-                  </p>
+                  <div className="text-xs text-foreground/80 mt-2 leading-relaxed whitespace-pre-line">
+                    {product.actionSummary.split('\n').map((line, li) => (
+                      <p key={li}>{li === 0 ? `💡 ${line}` : line}</p>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {product.posCount > product.negCount ? (
                       <Badge variant="outline" className="text-[9px] border-success/30 text-success">
