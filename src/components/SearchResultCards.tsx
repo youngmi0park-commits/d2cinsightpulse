@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
 import type { SentimentResult } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
@@ -64,6 +65,41 @@ function SentimentIcon({ sentiment }: { sentiment: SentimentResult }) {
   if (ratio >= 0.6) return <TrendingUp className="h-4 w-4 text-[#006600]" />;
   if (ratio <= 0.3) return <TrendingDown className="h-4 w-4 text-destructive" />;
   return <Minus className="h-4 w-4 text-muted-foreground" />;
+}
+
+function UsageSceneSection({ scenes }: { scenes: string[] }) {
+  const { t } = useLang();
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(t("Copied!", "복사됨!"));
+  };
+
+  return (
+    <div className="gradient-card rounded-xl border border-border p-5">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-bold flex items-center gap-1.5">
+          📍 {t("Customer Real Using Scene", "고객 실제 Using Scene")}
+        </h4>
+        <button
+          onClick={() => copyText(scenes.join("\n"))}
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Copy className="h-3 w-3" /> {t("Copy", "복사")}
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {scenes.map((scene, i) => (
+          <div
+            key={i}
+            className="p-3 rounded-lg border border-[#006600]/15 bg-[#006600]/5 flex items-center gap-2.5"
+          >
+            <span className="shrink-0">🏠</span>
+            <span className="text-xs text-foreground">📍 {scene}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function SearchResultCards({ results }: SearchResultCardsProps) {
@@ -142,6 +178,20 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                       </Badge>
                     ))}
                 </div>
+
+                {/* Top Usage Scenes (preview) */}
+                {item.sentiment.usageScenes.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {item.sentiment.usageScenes.slice(0, 3).map((scene, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 text-[9px] text-[#006600] bg-[#006600]/8 border border-[#006600]/15 rounded-md px-1.5 py-0.5"
+                      >
+                        📍 {scene}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
           );
@@ -170,6 +220,11 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               <SentimentChart sentiment={item.sentiment} />
               <KeywordCloud keywords={item.sentiment.keywords} />
             </div>
+
+            {/* 고객 실제 Using Scene */}
+            {item.sentiment.usageScenes.length > 0 && (
+              <UsageSceneSection scenes={item.sentiment.usageScenes} />
+            )}
 
             {item.product.reviews.length > 0 && (
               <MarketingHub
