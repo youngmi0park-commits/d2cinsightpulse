@@ -147,6 +147,8 @@ function useTopActions() {
         scores: number[];
         posSnippets: string[];
         negSnippets: string[];
+        posKeywords: Record<string, number>;
+        negKeywords: Record<string, number>;
         sources: Set<string>;
       }> = {};
 
