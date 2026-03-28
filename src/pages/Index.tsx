@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { PageHeader } from "@/components/PageHeader";
-import { SentimentChart } from "@/components/SentimentChart";
-import { ReviewList } from "@/components/ReviewList";
-import { KeywordCloud } from "@/components/KeywordCloud";
-import { MarketingHub } from "@/components/MarketingHub";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
@@ -14,16 +10,10 @@ import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingO
 import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Database, Activity, LayoutDashboard } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { SearchResultCards, type AnalyzedProduct } from "@/components/SearchResultCards";
 
-interface AnalyzedProduct {
-  product: ProductData;
-  sentiment: SentimentResult;
-  marketing: MarketingOutput;
-  geoMessages: GeoMessage[];
-}
 
 const Index = () => {
   const [results, setResults] = useState<AnalyzedProduct[]>([]);
@@ -125,17 +115,6 @@ const Index = () => {
       })
     : results;
 
-  const isMulti = filteredResults.length > 1;
-
-  const groupedResults = filteredResults.reduce<Record<string, AnalyzedProduct[]>>((acc, item) => {
-    let key: string;
-    if (groupMode === "subcategory") key = extractSubCategory(item.product.displayName);
-    else if (groupMode === "inch") key = extractInch(item.product.displayName) || t("Unknown", "미분류");
-    else key = item.product.category;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item);
-    return acc;
-  }, {});
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,32 +202,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground text-center py-8">
               {t("No products match the selected filter.", "선택한 필터에 해당하는 제품이 없습니다.")}
             </p>
-          ) : isMulti ? (
-            <Tabs defaultValue={filteredResults[0].product.name} className="w-full">
-              <div className="space-y-3 mb-5">
-                {Object.entries(groupedResults).map(([groupKey, items]) => (
-                  <div key={groupKey}>
-                    <Badge variant="outline" className="text-[10px] font-semibold border-primary/30 text-primary mb-2">
-                      {groupKey} ({items.length})
-                    </Badge>
-                    <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
-                      {items.map((item) => (
-                        <TabsTrigger key={item.product.name} value={item.product.name} className="text-xs px-3 py-1.5">
-                          {item.product.displayName || item.product.name}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </div>
-                ))}
-              </div>
-              {filteredResults.map((item) => (
-                <TabsContent key={item.product.name} value={item.product.name} className="space-y-5">
-                  <ProductAnalysisView item={item} />
-                </TabsContent>
-              ))}
-            </Tabs>
           ) : (
-            <ProductAnalysisView item={filteredResults[0]} />
+            <SearchResultCards results={filteredResults} />
           )}
         </div>
       )}
@@ -266,36 +221,5 @@ const Index = () => {
   );
 };
 
-function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
-  return (
-    <>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-          {item.product.category}
-        </Badge>
-        <h3 className="text-lg font-bold">{item.product.displayName || item.product.name}</h3>
-        <span className="text-xs text-muted-foreground font-mono">{item.product.name}</span>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <SentimentChart sentiment={item.sentiment} />
-        <KeywordCloud keywords={item.sentiment.keywords} />
-      </div>
-
-      {item.product.reviews.length > 0 && (
-        <MarketingHub
-          geoMessages={item.geoMessages}
-          productName={item.product.name}
-          displayName={item.product.displayName}
-          totalReviews={item.product.reviews.length}
-          marketing={item.marketing}
-          sentiment={item.sentiment}
-          reviews={item.product.reviews}
-        />
-      )}
-      <ReviewList reviews={item.product.reviews} />
-    </>
-  );
-}
 
 export default Index;
