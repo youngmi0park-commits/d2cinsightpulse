@@ -18,12 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
 import { SearchResultCards, type AnalyzedProduct } from "@/components/SearchResultCards";
 
-interface AnalyzedProduct {
-  product: ProductData;
-  sentiment: SentimentResult;
-  marketing: MarketingOutput;
-  geoMessages: GeoMessage[];
-}
 
 const Index = () => {
   const [results, setResults] = useState<AnalyzedProduct[]>([]);
@@ -223,32 +217,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground text-center py-8">
               {t("No products match the selected filter.", "선택한 필터에 해당하는 제품이 없습니다.")}
             </p>
-          ) : isMulti ? (
-            <Tabs defaultValue={filteredResults[0].product.name} className="w-full">
-              <div className="space-y-3 mb-5">
-                {Object.entries(groupedResults).map(([groupKey, items]) => (
-                  <div key={groupKey}>
-                    <Badge variant="outline" className="text-[10px] font-semibold border-primary/30 text-primary mb-2">
-                      {groupKey} ({items.length})
-                    </Badge>
-                    <TabsList className="h-auto p-1 bg-secondary/50 flex flex-wrap gap-1">
-                      {items.map((item) => (
-                        <TabsTrigger key={item.product.name} value={item.product.name} className="text-xs px-3 py-1.5">
-                          {item.product.displayName || item.product.name}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </div>
-                ))}
-              </div>
-              {filteredResults.map((item) => (
-                <TabsContent key={item.product.name} value={item.product.name} className="space-y-5">
-                  <ProductAnalysisView item={item} />
-                </TabsContent>
-              ))}
-            </Tabs>
           ) : (
-            <ProductAnalysisView item={filteredResults[0]} />
+            <SearchResultCards results={filteredResults} />
           )}
         </div>
       )}
