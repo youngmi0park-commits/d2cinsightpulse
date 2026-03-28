@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ExternalLink, Loader2, Check, Wrench, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { useLang } from "@/contexts/LanguageContext";
 
 // ═══════════════════════════════════════════════════════════════
 //  DATA
