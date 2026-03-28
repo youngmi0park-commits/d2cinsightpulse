@@ -164,19 +164,41 @@ function useTopActions() {
             scores: [],
             posSnippets: [],
             negSnippets: [],
+            posKeywords: {} as Record<string, number>,
+            negKeywords: {} as Record<string, number>,
             sources: new Set(),
           };
         }
         const p = productMap[pid];
         p.count++;
         p.sources.add(r.source);
+
+        // Extract simple keywords from content
+        const extractKws = (text: string): string[] => {
+          const stops = new Set(["the","a","an","is","was","are","were","it","its","i","my","and","or","but","to","of","in","for","on","with","this","that","very","so","not","no","has","have","had","been","be","do","does","did","will","would","can","could","just","also","from","at","by","as","all","they","them","we","our","you","your","he","she","her","his"]);
+          return text.toLowerCase()
+            .replace(/[^a-z가-힣\s]/g, " ")
+            .split(/\s+/)
+            .filter(w => w.length > 2 && !stops.has(w));
+        };
+
         if (r.sentiment === "positive") {
           p.posCount++;
           if (p.posSnippets.length < 2 && r.content) p.posSnippets.push(r.content.slice(0, 80));
+          if (r.content) {
+            for (const kw of extractKws(r.content)) {
+              p.posKeywords[kw] = (p.posKeywords[kw] || 0) + 1;
+            }
+          }
         }
         if (r.sentiment === "negative") {
           p.negCount++;
           if (p.negSnippets.length < 2 && r.content) p.negSnippets.push(r.content.slice(0, 80));
+          if (r.content) {
+            for (const kw of extractKws(r.content)) {
+              p.negKeywords[kw] = (p.negKeywords[kw] || 0) + 1;
+            }
+          }
         }
         if (r.sentiment_score != null) p.scores.push(r.sentiment_score);
       }
