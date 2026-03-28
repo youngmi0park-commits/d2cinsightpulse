@@ -147,6 +147,8 @@ function useTopActions() {
         scores: number[];
         posSnippets: string[];
         negSnippets: string[];
+        posKeywords: Record<string, number>;
+        negKeywords: Record<string, number>;
         sources: Set<string>;
       }> = {};
 
@@ -164,19 +166,41 @@ function useTopActions() {
             scores: [],
             posSnippets: [],
             negSnippets: [],
+            posKeywords: {} as Record<string, number>,
+            negKeywords: {} as Record<string, number>,
             sources: new Set(),
           };
         }
         const p = productMap[pid];
         p.count++;
         p.sources.add(r.source);
+
+        // Extract simple keywords from content
+        const extractKws = (text: string): string[] => {
+          const stops = new Set(["the","a","an","is","was","are","were","it","its","i","my","and","or","but","to","of","in","for","on","with","this","that","very","so","not","no","has","have","had","been","be","do","does","did","will","would","can","could","just","also","from","at","by","as","all","they","them","we","our","you","your","he","she","her","his"]);
+          return text.toLowerCase()
+            .replace(/[^a-z가-힣\s]/g, " ")
+            .split(/\s+/)
+            .filter(w => w.length > 2 && !stops.has(w));
+        };
+
         if (r.sentiment === "positive") {
           p.posCount++;
           if (p.posSnippets.length < 2 && r.content) p.posSnippets.push(r.content.slice(0, 80));
+          if (r.content) {
+            for (const kw of extractKws(r.content)) {
+              p.posKeywords[kw] = (p.posKeywords[kw] || 0) + 1;
+            }
+          }
         }
         if (r.sentiment === "negative") {
           p.negCount++;
           if (p.negSnippets.length < 2 && r.content) p.negSnippets.push(r.content.slice(0, 80));
+          if (r.content) {
+            for (const kw of extractKws(r.content)) {
+              p.negKeywords[kw] = (p.negKeywords[kw] || 0) + 1;
+            }
+          }
         }
         if (r.sentiment_score != null) p.scores.push(r.sentiment_score);
       }
@@ -186,16 +210,26 @@ function useTopActions() {
           ? Math.round((p.scores.reduce((a, b) => a + b, 0) / p.scores.length) * 100)
           : 50;
 
-        // Generate action summary
+        // Top keywords extraction
+        const topPos = Object.entries(p.posKeywords).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
+        const topNeg = Object.entries(p.negKeywords).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
+        const catLabel = p.category || "General";
+        const nameLabel = p.display || p.model;
+
+        // Generate action summary with category, name, keywords (max 3 lines)
         let actionSummary = "";
         if (p.negCount > p.posCount) {
-          actionSummary = `부정 리뷰 ${p.negCount}건 집중 — CRM 대응 및 FAQ 업데이트 필요. 주요 불만 사항 기반 개선 메시지 준비 권장.`;
+          const negKwStr = topNeg.length > 0 ? `주요 부정 키워드: ${topNeg.join(", ")}` : "";
+          actionSummary = `[${catLabel}] ${nameLabel} — 부정 리뷰 ${p.negCount}건 집중. ${negKwStr}\nCRM 대응 및 FAQ 업데이트 필요. 불만 키워드 기반 개선 메시지 준비 권장.`;
         } else if (p.posCount > 0 && p.negCount === 0) {
-          actionSummary = `긍정 리뷰 ${p.posCount}건 확보 — PDP 히어로 카피, SNS 콘텐츠, Amazon A+ 활용 가능. 고객 추천 메시지로 전환 권장.`;
+          const posKwStr = topPos.length > 0 ? `긍정 키워드: ${topPos.join(", ")}` : "";
+          actionSummary = `[${catLabel}] ${nameLabel} — 긍정 리뷰 ${p.posCount}건 확보. ${posKwStr}\nPDP 히어로 카피, SNS 콘텐츠, Amazon A+ 활용 가능. 고객 추천 메시지로 전환 권장.`;
         } else if (p.posCount > p.negCount) {
-          actionSummary = `긍정 우세(${p.posCount}건 vs 부정 ${p.negCount}건) — 강점 키워드 활용한 마케팅 카피 제작 및 부정 리뷰 대응 FAQ 병행.`;
+          const posKwStr = topPos.length > 0 ? `긍정: ${topPos.join(", ")}` : "";
+          const negKwStr = topNeg.length > 0 ? ` / 부정: ${topNeg.join(", ")}` : "";
+          actionSummary = `[${catLabel}] ${nameLabel} — 긍정 우세(${p.posCount}건 vs 부정 ${p.negCount}건). ${posKwStr}${negKwStr}\n강점 키워드 활용 마케팅 카피 제작 및 부정 리뷰 대응 FAQ 병행 권장.`;
         } else {
-          actionSummary = `리뷰 ${p.count}건 수집 — 감성 분석 기반 콘텐츠 기획 및 타겟 마케팅 메시지 개발 필요.`;
+          actionSummary = `[${catLabel}] ${nameLabel} — 리뷰 ${p.count}건 수집. 감성 분석 기반 콘텐츠 기획 및 타겟 마케팅 메시지 개발 필요.`;
         }
 
         return {
@@ -392,9 +426,11 @@ export function OverviewDashboard() {
                   <p className="text-xs text-muted-foreground mt-1">
                     주간 {product.count}건 · 긍정 {product.posCount}건 · 부정 {product.negCount}건 · {product.sources.map(s => s === "lge_com" || s.startsWith("lge_com") ? "LG.com" : s).join(", ")}
                   </p>
-                  <p className="text-xs text-foreground/80 mt-2 leading-relaxed">
-                    💡 {product.actionSummary}
-                  </p>
+                  <div className="text-xs text-foreground/80 mt-2 leading-relaxed whitespace-pre-line">
+                    {product.actionSummary.split('\n').map((line, li) => (
+                      <p key={li}>{li === 0 ? `💡 ${line}` : line}</p>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {product.posCount > product.negCount ? (
                       <Badge variant="outline" className="text-[9px] border-success/30 text-success">
