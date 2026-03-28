@@ -2,7 +2,7 @@ import { Globe, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Badge } from "@/components/ui/badge";
 
 /* ── helpers ── */
