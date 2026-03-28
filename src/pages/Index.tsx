@@ -227,6 +227,7 @@ const Index = () => {
           </div>
 
           <div className="space-y-4">
+            <RedditBucketDashboard />
             <CollectionCriteria />
             <RedditCountryInsights />
             <NewsletterSubscribe />
