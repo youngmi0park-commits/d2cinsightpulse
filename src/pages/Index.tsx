@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
-import { GlobalFilterBar, type GlobalFilters } from "@/components/GlobalFilterBar";
-import { DataStatusBar } from "@/components/DataStatusBar";
-import { ChannelSentimentWidget } from "@/components/ChannelSentimentWidget";
-import { TopKeywordsWidget } from "@/components/TopKeywordsWidget";
-import { TopProductsWidget } from "@/components/TopProductsWidget";
 import { SentimentChart } from "@/components/SentimentChart";
 import { ReviewList } from "@/components/ReviewList";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { MarketingHub } from "@/components/MarketingHub";
-import { CollectionCriteria } from "@/components/CollectionCriteria";
-import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
-import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
-import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
 import { useProductStats, toReviewFormat } from "@/hooks/useProductData";
 import { supabase } from "@/integrations/supabase/client";
+import { CollectionCriteria } from "@/components/CollectionCriteria";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { AlertCircle, Database, Activity } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +34,7 @@ const Index = () => {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { t, lang } = useLang();
   const { data: stats } = useProductStats();
-  const [filters, setFilters] = useState<GlobalFilters>({
-    country: "global",
-    timeframe: "weekly",
-  });
+
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -182,26 +172,6 @@ const Index = () => {
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} />
-
-          {/* Data Status Bar + Country Filter — below trending */}
-          <DataStatusBar />
-          <GlobalFilterBar filters={filters} onChange={setFilters} />
-
-          <LgComReviewDashboard onProductClick={(m) => handleSearch(m)} />
-
-          {/* Widget A: Channel Sentiment Overview */}
-          <ChannelSentimentWidget filters={filters} />
-
-          {/* Widget B: Top Keywords */}
-          <TopKeywordsWidget filters={filters} />
-
-          {/* Widget C: Top Products by Sentiment */}
-          <TopProductsWidget filters={filters} onProductClick={(m) => handleSearch(m)} />
-
-          <WeeklyInsightsPanel />
-
-
-
 
           <CollectionCriteria />
           <NewsletterSubscribe />
