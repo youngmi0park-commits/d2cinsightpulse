@@ -285,6 +285,7 @@ const Index = () => {
       )}
     </div>
   );
+};
 
 function ProductAnalysisView({ item }: { item: AnalyzedProduct }) {
   return (
