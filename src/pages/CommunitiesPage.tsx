@@ -135,9 +135,8 @@ function CommunityCard({ community }: { community: CommunityData }) {
   const negPercent = community.total ? Math.round((community.negative / community.total) * 100) : 0;
 
   return (
-    <Card>
+    <div className="gradient-card rounded-xl border border-border overflow-hidden">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold">{community.label}</CardTitle>
           <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
         </div>
