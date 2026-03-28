@@ -1,5 +1,4 @@
-import { Database, Globe, Calendar, Filter, MessageSquare, ShieldCheck, Languages, ChevronDown, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, FlaskConical } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -425,78 +424,71 @@ const criteria: CriteriaItem[] = [
 ];
 
 export const CollectionCriteria = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const { t } = useLang();
   const counts = useLgComCounts();
 
-
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="w-full gradient-card rounded-xl border border-border p-4 md:p-5 flex items-center justify-between cursor-pointer hover:border-primary/30 transition-colors">
-        <div className="flex items-center gap-2">
-          <Database className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-bold font-heading">📋 {t("Data Collection Criteria", "데이터 수집 기준")}</h3>
-        </div>
-        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
-          {/* Live collection stats */}
-          <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
-            <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
-            <div className="grid grid-cols-1 gap-3 text-xs">
-              <div className="flex flex-col gap-1">
-                <div>
-                  <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
-                  <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}</span>
-                  <span className="text-muted-foreground"> / ~{BV_2025_US.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
-                  <span className="ml-1 text-primary font-semibold">({((counts.us2025 / BV_2025_US) * 100).toFixed(1)}%)</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_US.toLocaleString()} reviews · Collected: ${counts.us.toLocaleString()}`, `전체 누적: ${BV_TOTAL_US.toLocaleString()}건 · 수집 완료: ${counts.us.toLocaleString()}건`)}</span>
+    <div className="space-y-0">
+      <div className="gradient-card rounded-t-xl border border-border p-4 md:p-5 flex items-center gap-2">
+        <Database className="h-5 w-5 text-primary" />
+        <h3 className="text-base font-bold font-heading">📋 {t("Data Collection Criteria", "데이터 수집 기준")}</h3>
+      </div>
+      <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
+        {/* Live collection stats */}
+        <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5">
+          <h4 className="text-sm font-semibold mb-2">{t("📊 LG.com Review Collection Status (Jan 2025 ~ Present)", "📊 LG.com 리뷰 수집 현황 (2025년 1월 ~ 현재)")}</h4>
+          <div className="grid grid-cols-1 gap-3 text-xs">
+            <div className="flex flex-col gap-1">
+              <div>
+                <span className="text-muted-foreground">🇺🇸 US:</span>{" "}
+                <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}</span>
+                <span className="text-muted-foreground"> / ~{BV_2025_US.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                <span className="ml-1 text-primary font-semibold">({((counts.us2025 / BV_2025_US) * 100).toFixed(1)}%)</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <div>
-                  <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
-                  <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}</span>
-                  <span className="text-muted-foreground"> / ~{BV_2025_UK.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
-                  <span className="ml-1 text-primary font-semibold">({((counts.uk2025 / BV_2025_UK) * 100).toFixed(1)}%)</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_UK.toLocaleString()} reviews · Collected: ${counts.uk.toLocaleString()}`, `전체 누적: ${BV_TOTAL_UK.toLocaleString()}건 · 수집 완료: ${counts.uk.toLocaleString()}건`)}</span>
-              </div>
+              <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_US.toLocaleString()} reviews · Collected: ${counts.us.toLocaleString()}`, `전체 누적: ${BV_TOTAL_US.toLocaleString()}건 · 수집 완료: ${counts.us.toLocaleString()}건`)}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes reviews <20 chars & duplicates", "출처: Bazaarvoice Conversations API (Production) · 전 카테고리 · 20자 미만 콘텐츠 및 중복 리뷰 제외")}</p>
+            <div className="flex flex-col gap-1">
+              <div>
+                <span className="text-muted-foreground">🇬🇧 UK:</span>{" "}
+                <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}</span>
+                <span className="text-muted-foreground"> / ~{BV_2025_UK.toLocaleString()}{t(" reviews (since Jan 2025)", "건 (25년 1월 이후)")}</span>
+                <span className="ml-1 text-primary font-semibold">({((counts.uk2025 / BV_2025_UK) * 100).toFixed(1)}%)</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground/60 ml-5">{t(`Total all-time: ${BV_TOTAL_UK.toLocaleString()} reviews · Collected: ${counts.uk.toLocaleString()}`, `전체 누적: ${BV_TOTAL_UK.toLocaleString()}건 · 수집 완료: ${counts.uk.toLocaleString()}건`)}</span>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mb-6">
-            {t(
-              "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. Top 10 countries were selected by combining Reddit user counts (WorldPopulationReview), English usage proportion, and lg.com traffic (SimilarWeb).",
-              "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수(WorldPopulationReview), 영어 사용 비중, lg.com 트래픽(SimilarWeb)을 종합하여 상위 10개국을 선정하였습니다."
-            )}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {criteria.map((c) => {
-              const Icon = c.icon;
-              const title = t(c.titleEn, c.titleKo);
-              const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
-              return (
-                <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Icon className="h-5 w-5 text-primary shrink-0" />
-                    <h4 className="font-semibold font-heading text-sm">{title}</h4>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {items.map((item, i) => (
-                      <li key={i} className="text-xs text-muted-foreground flex gap-2">
-                        <span className="text-primary mt-0.5 shrink-0">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
+          <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes reviews <20 chars & duplicates", "출처: Bazaarvoice Conversations API (Production) · 전 카테고리 · 20자 미만 콘텐츠 및 중복 리뷰 제외")}</p>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+        <p className="text-sm text-muted-foreground mb-6">
+          {t(
+            "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. Top 10 countries were selected by combining Reddit user counts (WorldPopulationReview), English usage proportion, and lg.com traffic (SimilarWeb).",
+            "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수(WorldPopulationReview), 영어 사용 비중, lg.com 트래픽(SimilarWeb)을 종합하여 상위 10개국을 선정하였습니다."
+          )}
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {criteria.map((c) => {
+            const Icon = c.icon;
+            const title = t(c.titleEn, c.titleKo);
+            const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
+            return (
+              <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Icon className="h-5 w-5 text-primary shrink-0" />
+                  <h4 className="font-semibold font-heading text-sm">{title}</h4>
+                </div>
+                <ul className="space-y-1.5">
+                  {items.map((item, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex gap-2">
+                      <span className="text-primary mt-0.5 shrink-0">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };
