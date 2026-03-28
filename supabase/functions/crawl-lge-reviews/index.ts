@@ -106,7 +106,9 @@ async function fetchBazaarvoiceReviews(
   region: "us" | "uk",
   category: string,
   offset = 0,
-  limit = 20
+  limit = 20,
+  dateFrom?: string,
+  dateTo?: string
 ): Promise<any[]> {
   const config = BV_CONFIG[region];
   const url = new URL(`${config.baseUrl}/reviews.json`);
@@ -116,7 +118,14 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Sort", "SubmissionTime:desc");
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
-  // Note: no date filter — BV returns latest reviews sorted by SubmissionTime desc
+  
+  // Date range filter using BV Filter syntax
+  const filters: string[] = [];
+  if (dateFrom) filters.push(`SubmissionTime:gte:${dateFrom}`);
+  if (dateTo) filters.push(`SubmissionTime:lt:${dateTo}`);
+  if (filters.length > 0) {
+    url.searchParams.set("Filter", filters.join("&Filter="));
+  }
 
   const fullUrl = url.toString();
   console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
