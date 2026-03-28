@@ -67,7 +67,7 @@ function CopyButton({ text }: { text: string }) {
       className="p-1 rounded hover:bg-muted/50 transition-colors"
       title="Copy"
     >
-      {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
+      {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
     </button>
   );
 }
@@ -315,12 +315,12 @@ export function WeeklyInsightsPanel() {
                 <InsightCard
                   icon={TrendingUp}
                   title={t("Target Expansion Proposals", "타겟 확장 제안")}
-                  color="border-emerald-500/20 bg-emerald-500/5"
+                  color="border-success/20 bg-success/5"
                 >
                   {(ins.persona_insights?.target_expansion || []).map((item, i) => (
                     <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-700 border-emerald-500/20">{item.new_target}</Badge>
+                        <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">{item.new_target}</Badge>
                         <ProductTag name={item.product} />
                         <div className="ml-auto"><CopyButton text={`타겟: ${item.new_target}\n근거: ${item.rationale}\n메시지: ${item.message}`} /></div>
                       </div>
@@ -472,7 +472,7 @@ export function WeeklyInsightsPanel() {
                       </div>
                       <p className="text-xs text-foreground"><strong>{t("Issue:", "이슈:")}</strong> {item.issue}</p>
                       <p className="text-xs text-foreground"><strong>{t("Response:", "대응:")}</strong> {item.response}</p>
-                      <p className="text-[11px] text-emerald-700"><strong>{t("Compensation:", "보상:")}</strong> {item.compensation}</p>
+                      <p className="text-[11px] text-success"><strong>{t("Compensation:", "보상:")}</strong> {item.compensation}</p>
                     </div>
                   ))}
                   {(!ins.negative_insights?.crm_strategy?.length) && (

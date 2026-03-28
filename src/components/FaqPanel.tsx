@@ -114,7 +114,7 @@ interface FaqPanelProps {
 
 // ─── Constants ───
 const CATEGORY_META: Record<string, { label: string; labelKo: string; icon: React.ElementType; color: string }> = {
-  performance_quality: { label: "Performance/Quality", labelKo: "성능/품질", icon: Sparkles, color: "text-emerald-400" },
+  performance_quality: { label: "Performance/Quality", labelKo: "성능/품질", icon: Sparkles, color: "text-success" },
   purchase_anxiety: { label: "Purchase Anxiety", labelKo: "구매 전 불안 해소", icon: Shield, color: "text-amber-400" },
   installation_compatibility: { label: "Installation/Compatibility", labelKo: "설치/호환성", icon: Wrench, color: "text-orange-400" },
   delivery_warranty: { label: "Delivery/Warranty", labelKo: "배송/AS", icon: Package, color: "text-blue-400" },
@@ -128,11 +128,11 @@ const CATEGORY_META: Record<string, { label: string; labelKo: string; icon: Reac
   usability: { label: "Usability", labelKo: "사용성", icon: Package, color: "text-green-400" },
   compatibility: { label: "Compatibility", labelKo: "호환성", icon: Tag, color: "text-indigo-400" },
   features: { label: "Features", labelKo: "기능", icon: Sparkles, color: "text-amber-400" },
-  pricing: { label: "Pricing", labelKo: "가격", icon: DollarSign, color: "text-emerald-400" },
+  pricing: { label: "Pricing", labelKo: "가격", icon: DollarSign, color: "text-success" },
   reliability: { label: "Reliability", labelKo: "신뢰성", icon: Shield, color: "text-red-400" },
   feature_issue: { label: "Feature Issue", labelKo: "기능 문제", icon: AlertTriangle, color: "text-red-400" },
   improvement_request: { label: "Improvement", labelKo: "개선 요청", icon: TrendingUp, color: "text-amber-400" },
-  praise: { label: "Praise", labelKo: "호평", icon: Sparkles, color: "text-emerald-400" },
+  praise: { label: "Praise", labelKo: "호평", icon: Sparkles, color: "text-success" },
   other: { label: "Other", labelKo: "기타", icon: HelpCircle, color: "text-muted-foreground" },
 };
 
@@ -143,7 +143,7 @@ const SEVERITY_STYLE: Record<string, string> = {
 };
 
 const SENTIMENT_STYLE: Record<string, string> = {
-  positive: "bg-emerald-500/10 text-emerald-400",
+  positive: "bg-success/10 text-success",
   negative: "bg-red-500/10 text-red-400",
   mixed: "bg-amber-500/10 text-amber-400",
 };
@@ -293,7 +293,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
           <Badge className={`${PRIORITY_STYLE.P0} border text-[10px]`}>P0: {aiData.summary.p0}</Badge>
           <Badge className={`${PRIORITY_STYLE.P1} border text-[10px]`}>P1: {aiData.summary.p1}</Badge>
           <Badge className={`${PRIORITY_STYLE.P2} border text-[10px]`}>P2: {aiData.summary.p2}</Badge>
-          <div className="flex items-center gap-1 text-emerald-400">
+          <div className="flex items-center gap-1 text-success">
             <CheckCircle2 className="h-3 w-3" />
             <span>{t("Publishable", "발행 가능")}: {aiData.summary.publishable_count}</span>
           </div>
@@ -328,7 +328,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={`${PRIORITY_STYLE[action.priority] || PRIORITY_STYLE.P2} border text-[9px]`}>{action.priority}</Badge>
                       <span className="text-xs font-mono text-muted-foreground">{action.product_family}</span>
-                      {action.publishable && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
+                      {action.publishable && <CheckCircle2 className="h-3 w-3 text-success" />}
                     </div>
                     <p className="text-sm font-medium">{action.what}</p>
                     <p className="text-xs text-muted-foreground">{t("Why", "사유")}: {action.why}</p>
@@ -378,7 +378,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
                   const stLabel = SOURCE_TYPE_LABEL[faq.sourceType] || SOURCE_TYPE_LABEL.question;
                   const PdpIcon = PDP_STATUS_ICON[faq.pdp_presence?.status] || Clock;
                   return (
-                    <div key={faq.faq_id || i} className={`bg-muted/30 rounded-lg p-4 border group relative ${faq.publishable ? "border-emerald-500/30" : "border-border/50"}`}>
+                    <div key={faq.faq_id || i} className={`bg-muted/30 rounded-lg p-4 border group relative ${faq.publishable ? "border-success/30" : "border-border/50"}`}>
                       <Button variant="ghost" size="sm" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0" onClick={() => copyText(`Q: ${faq.question}\nA: ${faq.answer}`)}>
                         <Copy className="h-3 w-3" />
                       </Button>
@@ -392,7 +392,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
                           <Badge variant="outline" className="text-[9px] font-mono">CIS {faq.cis.toFixed(0)}</Badge>
                         )}
                         {faq.publishable === true && (
-                          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 border text-[9px] gap-0.5">
+                          <Badge className="bg-success/10 text-success border-success/30 border text-[9px] gap-0.5">
                             <CheckCircle2 className="h-2.5 w-2.5" /> {t("Publishable", "발행가능")}
                           </Badge>
                         )}
@@ -462,7 +462,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews, locale 
                         <div className="pl-5 mb-2">
                           <div className="flex items-center gap-1.5">
                             <Shield className="h-3 w-3" />
-                            <span className={`text-[9px] font-medium ${faq.legal_review.status === "pass" ? "text-emerald-400" : faq.legal_review.status === "needs_revision" ? "text-amber-400" : "text-red-400"}`}>
+                            <span className={`text-[9px] font-medium ${faq.legal_review.status === "pass" ? "text-success" : faq.legal_review.status === "needs_revision" ? "text-amber-400" : "text-red-400"}`}>
                               {t("Legal", "법무")}: {faq.legal_review.status}
                             </span>
                           </div>

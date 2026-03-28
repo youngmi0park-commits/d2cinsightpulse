@@ -12,7 +12,7 @@ const CHANNEL_MAP: ChannelBadge[] = [
   { key: "trustpilot", label: "Trustpilot", dotColor: "bg-yellow-400" },
   { key: "youtube", label: "YouTube", dotColor: "bg-blue-500" },
   { key: "amazon", label: "Amazon", dotColor: "bg-amber-600" },
-  { key: "bestreviews", label: "BestReviews", dotColor: "bg-emerald-500" },
+  { key: "bestreviews", label: "BestReviews", dotColor: "bg-success" },
 ];
 
 export function DataStatusBar() {

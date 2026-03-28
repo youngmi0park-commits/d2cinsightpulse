@@ -143,12 +143,12 @@ function CommunityCard({ community }: { community: CommunityData }) {
         </div>
         {/* Sentiment bar */}
         <div className="h-2 rounded-full overflow-hidden flex bg-secondary mt-2">
-          <div className="bg-emerald-500 h-full" style={{ width: `${posPercent}%` }} />
+          <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
           <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
           <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
         </div>
         <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span className="text-emerald-600 font-medium">{posPercent}% 긍정</span>
+          <span className="text-success font-medium">{posPercent}% 긍정</span>
           <span className="text-destructive font-medium">{negPercent}% 부정</span>
         </div>
       </CardHeader>
@@ -157,19 +157,19 @@ function CommunityCard({ community }: { community: CommunityData }) {
         {community.topPositiveProducts.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <ThumbsUp className="h-3.5 w-3.5 text-emerald-600" />
-              <span className="text-[11px] font-semibold text-emerald-700">긍정 리뷰 TOP 제품</span>
+              <ThumbsUp className="h-3.5 w-3.5 text-success" />
+              <span className="text-[11px] font-semibold text-success">긍정 리뷰 TOP 제품</span>
             </div>
             <div className="space-y-1.5">
               {community.topPositiveProducts.map((p, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
-                  <span className="text-emerald-600 font-bold shrink-0">{i + 1}</span>
+                  <span className="text-success font-bold shrink-0">{i + 1}</span>
                   <div className="min-w-0">
                     <div className="font-medium text-foreground truncate">{p.name} <span className="text-muted-foreground">({p.count}건)</span></div>
                     {p.keywords.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {p.keywords.map((kw) => (
-                          <Badge key={kw} variant="outline" className="text-[9px] px-1 py-0 border-emerald-200 text-emerald-700">{kw}</Badge>
+                          <Badge key={kw} variant="outline" className="text-[9px] px-1 py-0 border-success/30 text-success">{kw}</Badge>
                         ))}
                       </div>
                     )}

@@ -166,8 +166,8 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
                 <p className="text-xs font-semibold text-orange-600">😰 {t("Pre-Purchase Anxiety", "구매 전 불안")}</p>
                 <p className="text-xs text-foreground/80 leading-relaxed">{marketing.jtbdInsights.anxiety}</p>
               </div>
-              <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 space-y-1">
-                <p className="text-xs font-semibold text-emerald-600">😊 {t("Post-Purchase Delight", "구매 후 안도감")}</p>
+              <div className="p-3 rounded-lg border border-success/20 bg-success/5 space-y-1">
+                <p className="text-xs font-semibold text-success">😊 {t("Post-Purchase Delight", "구매 후 안도감")}</p>
                 <p className="text-xs text-foreground/80 leading-relaxed">{marketing.jtbdInsights.delight}</p>
               </div>
               <div className="p-3 rounded-lg border border-blue-500/20 bg-blue-500/5 space-y-1">
@@ -183,7 +183,7 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold flex items-center gap-1.5">
-            <MapPin className="h-4 w-4 text-emerald-500" />
+            <MapPin className="h-4 w-4 text-success" />
             {t("Customer Real Using Scene", "고객 실제 Using Scene")}
           </h4>
           <Button variant="ghost" size="sm" onClick={() => copyText(marketing.usageScenes.join("\n"))} className="text-xs h-7">
@@ -192,7 +192,7 @@ export function MarketingPanel({ marketing }: MarketingPanelProps) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {marketing.usageScenes.map((scene, i) => (
-            <div key={i} className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 flex items-start gap-2.5">
+            <div key={i} className="p-3 rounded-lg border border-success/20 bg-success/5 flex items-start gap-2.5">
               <span className="shrink-0 mt-0.5">🏠</span>
               <p className="text-sm text-foreground/90 leading-relaxed">{scene}</p>
             </div>
