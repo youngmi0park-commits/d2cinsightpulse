@@ -336,10 +336,16 @@ export default function ToolkitPage() {
         <StepHeader step={1} title="Campaign Context" subtitle="Seasonal event & product selection · Korea excluded" />
 
         <SectionLabel>GLOBAL SEASONAL EVENT</SectionLabel>
-        <div className="flex gap-3.5 mb-6 flex-wrap">
+        <div className="flex gap-3.5 mb-4 flex-wrap">
           <SelectDropdown label="SEASONAL EVENT" value={selectedEvent} options={EVENTS} placeholder="— Select Season —" onChange={setSelectedEvent} />
           <SelectDropdown label="TARGET MARKET" value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
           <SelectDropdown label="CAMPAIGN GOAL" value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+        </div>
+
+        <SectionLabel>CAMPAIGN SETUP</SectionLabel>
+        <div className="flex gap-3.5 mb-6 flex-wrap">
+          <SelectDropdown label="CAMPAIGN TYPE" value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
+          <SelectDropdown label="BUDGET TIER" value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
         </div>
 
         <SectionLabel>PRODUCT SELECTION</SectionLabel>
