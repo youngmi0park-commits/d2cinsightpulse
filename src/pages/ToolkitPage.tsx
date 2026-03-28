@@ -520,9 +520,9 @@ export default function ToolkitPage() {
 
       {/* ═══════ STEP 3 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={3} title="Content Hooks & VoC" subtitle="Search intent ad hooks · Verified customer quotes" />
+        <StepHeader step={3} title={t("Content Hooks & VoC", "콘텐츠 훅 & VoC")} subtitle={t("Search intent ad hooks · Verified customer quotes", "검색 인텐트 광고 훅 · 인증 고객 리뷰 인용")} />
 
-        <SectionLabel>🔍 SEARCH INTENT HOOKS</SectionLabel>
+        <SectionLabel>🔍 {t("SEARCH INTENT HOOKS", "검색 인텐트 훅")}</SectionLabel>
         <div className="space-y-2.5 mb-8">
           {HOOKS.map((h, i) => (
             <div key={i} className="grid grid-cols-[100px_1fr_auto] items-center gap-3 bg-card border border-border rounded-[10px] px-4 py-3">
