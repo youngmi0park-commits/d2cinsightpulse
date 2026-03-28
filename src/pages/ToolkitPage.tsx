@@ -331,28 +331,31 @@ export default function ToolkitPage() {
       <PageHeader
         icon={Wrench}
         title="🚀 Global Marketing Toolkit"
-        description="실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
+        description={t(
+          "Auto-generates campaign content based on real customer review data. Set product selection, target market, and marketing goal to get ready-to-use copy and banner assets.",
+          "실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
+        )}
       />
       <div className="mt-6"></div>
 
       {/* ═══════ STEP 1 ═══════ */}
       <div className="mb-12">
-        <StepHeader step={1} title="Campaign Context" subtitle="Seasonal event & product selection · Korea excluded" />
+        <StepHeader step={1} title={t("Campaign Context", "캠페인 컨텍스트")} subtitle={t("Seasonal event & product selection · Korea excluded", "시즌 이벤트 & 제품 선택 · 한국 제외")} />
 
-        <SectionLabel>GLOBAL SEASONAL EVENT</SectionLabel>
+        <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
         <div className="flex gap-3.5 mb-4 flex-wrap">
-          <SelectDropdown label="SEASONAL EVENT" value={selectedEvent} options={EVENTS} placeholder="— Select Season —" onChange={setSelectedEvent} />
-          <SelectDropdown label="TARGET MARKET" value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
-          <SelectDropdown label="CAMPAIGN GOAL" value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season —", "— 시즌 선택 —")} onChange={setSelectedEvent} />
+          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
+          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
         </div>
 
-        <SectionLabel>CAMPAIGN SETUP</SectionLabel>
+        <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
         <div className="flex gap-3.5 mb-6 flex-wrap">
-          <SelectDropdown label="CAMPAIGN TYPE" value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
-          <SelectDropdown label="BUDGET TIER" value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
+          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
+          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
         </div>
 
-        <SectionLabel>PRODUCT SELECTION</SectionLabel>
+        <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
         <div className="flex items-center gap-0 mb-3.5 border border-border rounded-[10px] overflow-hidden w-fit">
           {([["inventory", "📦 High Inventory"], ["sales", "🏆 Best Seller"], ["rated", "⭐ Top Rated"]] as const).map(([key, label]) => (
             <button
