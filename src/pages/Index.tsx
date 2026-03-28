@@ -5,6 +5,7 @@ import { ReviewList } from "@/components/ReviewList";
 import { KeywordCloud } from "@/components/KeywordCloud";
 import { MarketingHub } from "@/components/MarketingHub";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
+import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
@@ -172,6 +173,8 @@ const Index = () => {
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} />
+
+          <OverviewDashboard />
 
           <CollectionCriteria />
           <NewsletterSubscribe />
