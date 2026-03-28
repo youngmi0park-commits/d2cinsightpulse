@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, HelpCircle, Sparkles } from "lucide-react";
+import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 
