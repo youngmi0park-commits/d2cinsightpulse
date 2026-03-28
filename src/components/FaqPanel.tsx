@@ -169,7 +169,7 @@ const SOURCE_TYPE_LABEL: Record<string, { en: string; ko: string }> = {
   conversion_barrier: { en: "Conversion Barrier", ko: "전환 장애" },
 };
 
-export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPanelProps) {
+export function FaqPanel({ productName, displayName, sentiment, reviews, locale }: FaqPanelProps) {
   const { t } = useLang();
   const [aiData, setAiData] = useState<AiFaqData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -197,6 +197,7 @@ export function FaqPanel({ productName, displayName, sentiment, reviews }: FaqPa
       const { data, error: fnError } = await supabase.functions.invoke("generate-faq", {
         body: {
           productName: toPRName(displayName || productName),
+          locale: locale || "en-US",
           reviews: reviews.slice(0, 40).map((r) => ({
             text: r.text,
             sentiment: r.sentiment,
