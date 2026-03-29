@@ -450,10 +450,7 @@ export function OverviewDashboard() {
                         Balanced
                       </Badge>
                     )}
-                    <Badge variant="outline" className="text-[9px] text-muted-foreground">
-                      {product.category}
-                    </Badge>
-                  </div>
+                    </div>
                 </div>
 
                 {/* Priority */}
