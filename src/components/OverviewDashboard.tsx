@@ -420,9 +420,14 @@ export function OverviewDashboard() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm text-foreground">
-                    {product.display || product.model}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-sm text-foreground">
+                      {product.display || product.model}
+                    </h4>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-medium">
+                      {product.category}
+                    </Badge>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     주간 {product.count}건 · 긍정 {product.posCount}건 · 부정 {product.negCount}건 · {product.sources.map(s => s === "lge_com" || s.startsWith("lge_com") ? "LG.com" : s).join(", ")}
                   </p>
