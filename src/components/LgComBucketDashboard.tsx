@@ -248,40 +248,41 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
   );
 }
 
-function PostItem({
+function ProductKeywordItem({
   post,
   style,
-  t,
 }: {
-  post: ClassifiedPost;
+  post: any;
   style: typeof BUCKET_STYLES.REVIEW;
   t: (en: string, ko: string) => string;
 }) {
+  const productName = post.productName || post.title || "Unknown Product";
   return (
     <div className="rounded-md bg-background/50 border border-border/50 p-2.5">
-      <div className="flex items-start justify-between gap-2 mb-1">
+      <div className="flex items-start justify-between gap-2 mb-1.5">
         <span className="text-[11px] font-medium text-foreground line-clamp-1">
-          {post.title || post.content.slice(0, 60) + "…"}
+          📦 {productName}
         </span>
-        <Badge variant="outline" className={`text-[9px] shrink-0 ${style.text} ${style.border}`}>
-          {(post.bucketConfidence * 100).toFixed(0)}%
-        </Badge>
+        <div className="flex items-center gap-1 shrink-0">
+          <Badge variant="outline" className={`text-[9px] ${style.text} ${style.border}`}>
+            {post.sentiment || "neutral"}
+          </Badge>
+          <span className="text-[9px] text-muted-foreground">
+            {post.source === "lge_com_us" ? "🇺🇸" : post.source === "lge_com_uk" ? "🇬🇧" : ""}
+          </span>
+        </div>
       </div>
-      <p className="text-[10px] text-muted-foreground line-clamp-2 mb-1.5">
-        {post.content.slice(0, 150)}
-      </p>
       <div className="flex items-center gap-1.5 flex-wrap">
-        <Badge variant="secondary" className="text-[9px] px-1 py-0">
-          {post.sentiment || "neutral"}
-        </Badge>
-        {post.actionTags.slice(0, 3).map((tag) => (
+        {post.keywords.slice(0, 5).map((kw: string) => (
+          <Badge key={kw} variant="secondary" className="text-[9px] px-1.5 py-0">
+            #{kw}
+          </Badge>
+        ))}
+        {post.actionTags.slice(0, 2).map((tag: string) => (
           <Badge key={tag} variant="outline" className="text-[9px] px-1 py-0 border-muted">
             {tag.replace(/_/g, " ")}
           </Badge>
         ))}
-        <span className="text-[9px] text-muted-foreground ml-auto">
-          {post.source === "lge_com_us" ? "🇺🇸 US" : post.source === "lge_com_uk" ? "🇬🇧 UK" : post.source}
-        </span>
       </div>
     </div>
   );
