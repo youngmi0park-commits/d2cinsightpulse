@@ -24,10 +24,17 @@ Deno.serve(async (req) => {
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
+      TV_OLED: ["OLED", "evo"],
+      TV_Large: ["QNED", "NanoCell", "86", "85", "90", "97", "98", "75"],
+      TV_Lifestyle: ["StanbyME", "Objet", "Easel", "Posé", "ART"],
       Refrigerator: ["Refrigerator", "Fridge", "InstaView"],
-      Washer: ["Washer", "Dryer", "WashTower", "Laundry"],
+      Washer: ["Washer", "WashTower", "Laundry"],
+      Dryer: ["Dryer"],
+      Dishwasher: ["Dishwasher"],
       "Air Care": ["Air Purifier", "Dehumidifier", "Air Conditioner"],
+      AC: ["Air Conditioner", "Artcool", "DualCool"],
       Audio: ["Soundbar", "Speaker", "XBOOM"],
+      Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
     // 1. Fetch top products
