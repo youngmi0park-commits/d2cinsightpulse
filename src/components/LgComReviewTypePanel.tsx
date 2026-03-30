@@ -48,7 +48,7 @@ export function LgComReviewTypePanel() {
 
     for (const r of reviews) {
       const tag = (r.review_type || "").toLowerCase();
-      const isSyndication = tag.includes("original");
+      const isSyndication = tag.includes("originally posted from");
       const country = r.source === "lge_com_us" ? "US" : r.source === "lge_com_uk" ? "UK" : "Other";
       const isWeekly = new Date(r.collected_at) >= weekAgo;
 
