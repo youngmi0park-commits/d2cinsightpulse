@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tv, Refrigerator, WashingMachine, Smartphone, Speaker,
-  ChevronDown, ChevronUp, Monitor, Maximize, Sofa,
+  ChevronDown, ChevronUp, Monitor,
   ThumbsUp, ThumbsDown, LayoutGrid
 } from "lucide-react";
 
