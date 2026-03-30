@@ -4,6 +4,7 @@ import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditVocPostCards } from "@/components/RedditVocPostCards";
 import { RedditAiCopyModal } from "@/components/RedditAiCopyModal";
 import { RedditCompetitorMentions } from "@/components/RedditCompetitorMentions";
+import { RedditWeeklySummary } from "@/components/RedditWeeklySummary";
 import { PageHeader } from "@/components/PageHeader";
 
 const RedditPage = () => {
@@ -14,6 +15,7 @@ const RedditPage = () => {
         title="💬 Reddit Intelligence"
         description="Reddit 커뮤니티에서 수집된 실사용자 VOC를 분석합니다. 버킷별 감성 분류, VOC 카드, AI 카피 생성, 경쟁사 언급 분석, 국가별 트렌드를 확인하세요."
       />
+      <RedditWeeklySummary />
       <RedditBucketDashboard />
       <RedditVocPostCards />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
