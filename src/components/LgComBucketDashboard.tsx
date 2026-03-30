@@ -160,10 +160,10 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
   const handleCopyPosts = () => {
     const text = summary.posts
       .slice(0, 20)
-      .map((p) => `[${p.bucket}] ${p.title || ""}\n${p.content.slice(0, 200)}...\nKeywords: ${p.keywords.join(", ")}\nActions: ${p.actionTags.join(", ")}`)
+      .map((p: any) => `[${p.bucket}] ${p.productName || p.title || ""}\nKeywords: ${p.keywords.join(", ")}\nActions: ${p.actionTags.join(", ")}`)
       .join("\n\n---\n\n");
     navigator.clipboard.writeText(text);
-    toast.success(t("Posts copied!", "리뷰 복사 완료!"));
+    toast.success(t("Copied!", "복사 완료!"));
   };
 
   return (
@@ -225,20 +225,20 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
 
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className="w-full flex items-center justify-between py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <span>{t("View classified reviews", "분류된 리뷰 보기")}</span>
+          <span>{t("View classified products & keywords", "분류된 제품 · 키워드 보기")}</span>
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="space-y-2 mt-2">
-            {displayPosts.map((post) => (
-              <PostItem key={post.id} post={post} style={style} t={t} />
+            {displayPosts.map((post: any) => (
+              <ProductKeywordItem key={post.id} post={post} style={style} t={t} />
             ))}
             {summary.posts.length > 5 && !showAll && (
               <button
                 onClick={() => setShowAll(true)}
                 className="text-[11px] text-primary hover:underline"
               >
-                {t(`Show all ${summary.posts.length} reviews`, `전체 ${summary.posts.length}건 보기`)}
+                {t(`Show all ${summary.posts.length} items`, `전체 ${summary.posts.length}건 보기`)}
               </button>
             )}
           </div>
