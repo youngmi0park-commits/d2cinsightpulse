@@ -51,7 +51,7 @@ export function LgComReviewTypePanel() {
       if (mode === "weekly" && new Date(r.collected_at) < weekAgo) continue;
 
       const tag = (r.review_type || "").toLowerCase();
-      const isSyndication = tag.includes("originally posted from");
+      const isSyndication = tag.includes("originally posted");
       const country = r.source === "lge_com_us" ? "US" : r.source === "lge_com_uk" ? "UK" : "Other";
 
       if (isSyndication) syndication++;
@@ -192,8 +192,8 @@ export function LgComReviewTypePanel() {
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             💡 <strong className="text-foreground">{t("Classification Rule", "분류 기준")}</strong>:{" "}
             {t(
-              "Reviews without 'originally posted from' in review_type → Native (direct LG.com). Reviews containing 'originally posted from' → Syndication (sourced from external platforms).",
-              "review_type에 'originally posted from' 문구가 없는 리뷰 → Native (LG.com 직접 작성). 'originally posted from'이 포함된 리뷰 → Syndication (외부 플랫폼 유입)."
+              "Reviews without 'Originally posted' in review_type → Native (direct LG.com). Reviews containing 'Originally posted' → Syndication (sourced from external platforms).",
+              "review_type에 'Originally posted' 문구가 없는 리뷰 → Native (LG.com 직접 작성). 'Originally posted'가 포함된 리뷰 → Syndication (외부 플랫폼 유입)."
             )}
           </p>
         </div>
