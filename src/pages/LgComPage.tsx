@@ -1,4 +1,4 @@
-import { Store } from "lucide-react";
+import { Store, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
@@ -6,7 +6,6 @@ import { DataStatusBar } from "@/components/DataStatusBar";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
 
 function CountryReviewButtons() {
   const { data, isLoading } = useQuery({
@@ -69,10 +68,13 @@ const LgComPage = () => {
         title="🏬 LG.com Insights"
         description="LG.com 공식몰에서 수집된 인증 구매자(Verified Buyer) 리뷰를 분석합니다. 국가별·제품별 감성 트렌드, 주요 키워드, 주간 인사이트 리포트를 확인하세요."
       />
+      {/* 1. 국가별 수집 현황 */}
       <CountryReviewButtons />
       <DataStatusBar />
-      <LgComReviewDashboard onProductClick={handleProductClick} />
+      {/* 2. 주간 인사이트 리포트 (서머리 즉시 노출) */}
       <LgComWeeklyReport />
+      {/* 3. 긍/부정 리뷰 대시보드 (하단) */}
+      <LgComReviewDashboard onProductClick={handleProductClick} />
     </div>
   );
 };
