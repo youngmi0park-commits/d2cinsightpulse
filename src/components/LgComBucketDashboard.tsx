@@ -4,21 +4,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { classifyRedditPost, generateBucketSummaries, type RedditBucket, type ClassifiedPost, type BucketSummary } from "@/lib/redditBucketClassifier";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Store, ChevronDown, Copy, TrendingUp, AlertTriangle, HelpCircle, Hash, ArrowRight, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+type PeriodFilter = "weekly" | "all";
+type CountryFilter = "all" | "US" | "UK";
 
-function useLgComClassified() {
+function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
   return useQuery({
-    queryKey: ["lgcom-classified"],
+    queryKey: ["lgcom-classified", period, country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source")
-        .like("source", "lge_com%")
+        .select("id, content, title, sentiment, sentiment_score, source");
+
+      if (country === "US") {
+        query = query.eq("source", "lge_com_us");
+      } else if (country === "UK") {
+        query = query.eq("source", "lge_com_uk");
+      } else {
+        query = query.like("source", "lge_com%");
+      }
+
+      if (period === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.gte("collected_at", weekAgo);
+      }
+
+      const { data, error } = await query
         .order("collected_at", { ascending: false })
         .limit(500);
       if (error) throw error;
