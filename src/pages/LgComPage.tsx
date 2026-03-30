@@ -6,6 +6,7 @@ import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { LgComWeeklySummary } from "@/components/LgComWeeklySummary";
 import { LgComBucketDashboard } from "@/components/LgComBucketDashboard";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
+import { LgComReviewTypePanel } from "@/components/LgComReviewTypePanel";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 
@@ -70,9 +71,11 @@ const LgComPage = () => {
       <CountryReviewSummary />
       {/* 2. 주간 인사이트 요약 (데이터 기반 즉시 노출) */}
       <LgComWeeklySummary />
-      {/* 3. 리뷰 자동 분류 (REVIEW/VOC/QUESTION) */}
+      {/* 3. 리뷰 자동 분류 (REVIEW/VOC) */}
       <LgComBucketDashboard />
-      {/* 4. AI 주간 리포트 (주제/강점/액션/제품별) */}
+      {/* 4. 리뷰 유형 분석 (Native vs Syndication) */}
+      <LgComReviewTypePanel />
+      {/* 5. AI 주간 리포트 */}
       <LgComWeeklyReport />
       {/* 5. 딥 인사이트 (페르소나/JTBD/CRM) — 별도 분석 */}
       <WeeklyInsightsPanel />
