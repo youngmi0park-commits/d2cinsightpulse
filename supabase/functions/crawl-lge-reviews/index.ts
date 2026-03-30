@@ -300,6 +300,7 @@ Deno.serve(async (req) => {
                   user_type: review.verified_purchase ? "actual_user" : "unknown",
                   content_type: "review",
                   platform_type: "retailer",
+                  review_type: review.review_type || "organic",
                 });
               }
 
