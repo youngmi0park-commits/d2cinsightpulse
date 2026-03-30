@@ -300,9 +300,9 @@ export function LgComWeeklyReport() {
               </div>
             )}
 
-            {/* ── Detail tabs (no Summary tab - already shown above) ── */}
+            {/* ── Detail tabs (Themes/Strengths/Actions/Products only) ── */}
             <Tabs defaultValue="themes" className="w-full">
-              <TabsList className="w-full grid grid-cols-5 h-9">
+              <TabsList className="w-full grid grid-cols-4 h-9">
                 <TabsTrigger value="themes" className="text-[10px] gap-1 px-1">
                   <TrendingUp className="h-3 w-3" />
                   {t("Themes", "주제 TOP5")}
@@ -318,10 +318,6 @@ export function LgComWeeklyReport() {
                 <TabsTrigger value="products" className="text-[10px] gap-1 px-1">
                   <Target className="h-3 w-3" />
                   {t("Products", "제품별")}
-                </TabsTrigger>
-                <TabsTrigger value="deep" className="text-[10px] gap-1 px-1">
-                  <Lightbulb className="h-3 w-3" />
-                  {t("Deep", "딥인사이트")}
                 </TabsTrigger>
               </TabsList>
 
@@ -484,102 +480,6 @@ export function LgComWeeklyReport() {
                 )}
               </TabsContent>
 
-              {/* ─── 6. Deep Insights (3 Strategy Frameworks) ─── */}
-              <TabsContent value="deep" className="space-y-3 mt-3">
-                {report.deep_insights && (
-                  <>
-                    {/* UX Strategy */}
-                    <SectionCard icon={Eye} title={t("① UX Strategy Insights", "① 고객경험(UX) 전략")} color="border-blue-500/20 bg-blue-500/5">
-                      {report.deep_insights.ux_strategy && (
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Pain Flow", "불편 경험 흐름")}</span>
-                            {(report.deep_insights.ux_strategy.pain_flow || []).map((p, i) => (
-                              <p key={i} className="text-xs text-foreground ml-2">• {p}</p>
-                            ))}
-                          </div>
-                          {report.deep_insights.ux_strategy.stage_issues && (
-                            <div className="grid grid-cols-3 gap-2">
-                              {Object.entries(report.deep_insights.ux_strategy.stage_issues).map(([stage, issue]) => (
-                                <div key={stage} className="bg-background/60 rounded p-2">
-                                  <span className="text-[10px] font-semibold text-muted-foreground">
-                                    {stage === "pre_use" ? t("Pre-Use", "사용 전") : stage === "during_use" ? t("During Use", "사용 중") : t("Post-Use", "사용 후")}
-                                  </span>
-                                  <p className="text-[11px] text-foreground mt-0.5">{issue}</p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("High-Impact Improvements", "높은 개선 효과")}</span>
-                            {(report.deep_insights.ux_strategy.high_impact_improvements || []).map((p, i) => (
-                              <p key={i} className="text-xs text-success ml-2">✅ {p}</p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </SectionCard>
-
-                    {/* Product Quality Strategy */}
-                    <SectionCard icon={Cpu} title={t("② Product & Quality Strategy", "② 제품·품질 전략")} color="border-orange-500/20 bg-orange-500/5">
-                      {report.deep_insights.product_quality_strategy && (
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Recurring Defects", "반복 결함")}</span>
-                            {(report.deep_insights.product_quality_strategy.recurring_defects || []).map((d, i) => (
-                              <p key={i} className="text-xs text-destructive ml-2">⚠️ {d}</p>
-                            ))}
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Expectation vs Reality", "기대 대비 실망")}</span>
-                            {(report.deep_insights.product_quality_strategy.expectation_disappointment || []).map((d, i) => (
-                              <p key={i} className="text-xs text-foreground ml-2">• {d}</p>
-                            ))}
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Trust Impact", "신뢰도 영향 표현")}</span>
-                            {(report.deep_insights.product_quality_strategy.trust_impact_expressions || []).map((d, i) => (
-                              <p key={i} className="text-xs text-foreground ml-2 italic">"{d}"</p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </SectionCard>
-
-                    {/* Marketing Comms Strategy */}
-                    <SectionCard icon={MessageSquare} title={t("③ Marketing & Communication Strategy", "③ 마케팅·커뮤니케이션 전략")} color="border-violet-500/20 bg-violet-500/5">
-                      {report.deep_insights.marketing_comms_strategy && (
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Organic Praise", "자발적 칭찬 문장")}</span>
-                            {(report.deep_insights.marketing_comms_strategy.organic_praise_sentences || []).map((s, i) => (
-                              <div key={i} className="flex items-center gap-2 ml-2">
-                                <p className="text-xs text-foreground flex-1">💬 "{s}"</p>
-                                <CopyBtn text={s} />
-                              </div>
-                            ))}
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Ad Copy Candidates", "광고 카피 후보")}</span>
-                            {(report.deep_insights.marketing_comms_strategy.copy_candidates || []).map((c, i) => (
-                              <div key={i} className="flex items-center gap-2 ml-2">
-                                <p className="text-xs text-primary/80 flex-1">→ {c}</p>
-                                <CopyBtn text={c} />
-                              </div>
-                            ))}
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Avoid Expressions", "피해야 할 표현")}</span>
-                            {(report.deep_insights.marketing_comms_strategy.avoid_expressions || []).map((a, i) => (
-                              <p key={i} className="text-xs text-destructive ml-2">❌ {a}</p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </SectionCard>
-                  </>
-                )}
-              </TabsContent>
             </Tabs>
 
             {/* Timestamp */}
