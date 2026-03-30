@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, ArrowDownRight, Copy, Check } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, ArrowDownRight, Copy, Check, Store, MessageSquare, Wrench, HelpCircle } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 /* ───── hooks ───── */
 
@@ -360,13 +361,77 @@ function useVocSpotlight() {
   });
 }
 
+function useWeeklyCategoryHighlights() {
+  return useQuery({
+    queryKey: ["overview-weekly-category-highlights"],
+    queryFn: async () => {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      const { data } = await supabase
+        .from("reviews")
+        .select("sentiment, content, products!inner(category, display_name)")
+        .gte("collected_at", weekAgo.toISOString())
+        .limit(1000);
+
+      if (!data || data.length === 0) return [];
+
+      const catMap: Record<string, { pos: number; neg: number; total: number; topSnippet: string; topProduct: string }> = {};
+      const TV_KW = ["tv", "oled", "qned", "nanocell", "stanby", "objet"];
+
+      for (const r of data as any[]) {
+        let cat = (r.products?.category || "Other").toLowerCase();
+        if (TV_KW.some(kw => cat.includes(kw))) cat = "TV";
+        else if (cat.includes("refriger") || cat.includes("fridge")) cat = "Refrigerator";
+        else if (cat.includes("wash") || cat.includes("laundry")) cat = "Washer/Dryer";
+        else if (cat.includes("monitor") || cat.includes("ultragear")) cat = "Monitor";
+        else if (cat.includes("sound") || cat.includes("audio")) cat = "Audio";
+        else if (cat.includes("laptop") || cat.includes("gram")) cat = "Laptop";
+        else cat = cat.charAt(0).toUpperCase() + cat.slice(1);
+
+        if (!catMap[cat]) catMap[cat] = { pos: 0, neg: 0, total: 0, topSnippet: "", topProduct: "" };
+        catMap[cat].total++;
+        if (r.sentiment === "positive") {
+          catMap[cat].pos++;
+          if (!catMap[cat].topSnippet && r.content) catMap[cat].topSnippet = r.content.slice(0, 60);
+        }
+        if (r.sentiment === "negative") catMap[cat].neg++;
+        if (!catMap[cat].topProduct) catMap[cat].topProduct = r.products?.display_name || "";
+      }
+
+      const EMOJI: Record<string, string> = {
+        TV: "📺", Refrigerator: "🧊", "Washer/Dryer": "🧺", Monitor: "🖥️", Audio: "🔊", Laptop: "💻",
+      };
+
+      return Object.entries(catMap)
+        .filter(([, v]) => v.total >= 3)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 6)
+        .map(([cat, v]) => ({
+          category: cat,
+          emoji: EMOJI[cat] || "📦",
+          total: v.total,
+          pos: v.pos,
+          neg: v.neg,
+          posPct: v.total > 0 ? Math.round((v.pos / v.total) * 100) : 0,
+          topSnippet: v.topSnippet,
+          topProduct: v.topProduct,
+        }));
+    },
+    staleTime: 60_000,
+  });
+}
+
 /* ───── Component ───── */
 
 export function OverviewDashboard() {
+  const { t } = useLang();
+  const navigate = useNavigate();
   const { data: kpis } = useOverviewKPIs();
   const { data: topActions } = useTopActions();
   const { data: channelPerf } = useChannelPerformance();
   const { data: vocSpotlight } = useVocSpotlight();
+  const { data: categoryHighlights } = useWeeklyCategoryHighlights();
 
   return (
     <div className="space-y-6">
@@ -559,6 +624,71 @@ export function OverviewDashboard() {
           {(!vocSpotlight || (vocSpotlight.positive.length === 0 && vocSpotlight.negative.length === 0)) && (
             <p className="text-sm text-muted-foreground col-span-2 py-4">VOC 데이터를 불러오는 중...</p>
           )}
+        </div>
+      </div>
+
+      {/* ─── WEEKLY CATEGORY HIGHLIGHTS ─── */}
+      {categoryHighlights && categoryHighlights.length > 0 && (
+        <div>
+          <SectionTitle title="WEEKLY CATEGORY HIGHLIGHTS — 제품군별 주간 핵심" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {categoryHighlights.map((cat) => (
+              <Card key={cat.category} className="border border-border bg-card hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">{cat.emoji}</span>
+                    <span className="font-bold text-sm text-foreground">{cat.category}</span>
+                    <Badge variant="secondary" className="text-[9px] ml-auto">{cat.total}건</Badge>
+                  </div>
+                  {/* Sentiment bar */}
+                  <div className="flex h-2 rounded-full overflow-hidden mb-2">
+                    <div className="bg-success" style={{ width: `${cat.posPct}%` }} />
+                    <div className="bg-destructive" style={{ width: `${100 - cat.posPct}%` }} />
+                  </div>
+                  <div className="flex justify-between text-[9px] text-muted-foreground mb-2">
+                    <span className="text-success font-semibold">긍정 {cat.pos}</span>
+                    <span className="text-destructive font-semibold">부정 {cat.neg}</span>
+                  </div>
+                  {cat.topProduct && (
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      🏷️ {cat.topProduct}
+                    </p>
+                  )}
+                  {cat.topSnippet && (
+                    <p className="text-[10px] text-muted-foreground/70 italic truncate mt-0.5">
+                      "{cat.topSnippet}…"
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── MARKETING QUICK ACTIONS ─── */}
+      <div>
+        <SectionTitle title="MARKETING QUICK ACTIONS — 마케팅 활용 바로가기" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { icon: Store, label: "LG.com 인사이트", desc: "주간 리포트 · 리뷰 유형 분석", path: "/lgcom", color: "text-primary" },
+            { icon: MessageSquare, label: "Reddit Intelligence", desc: "커뮤니티 VOC · 제품군 분석", path: "/reddit", color: "text-orange-400" },
+            { icon: Wrench, label: "Marketing Toolkit", desc: "캠페인 카피 · 배너 소재 생성", path: "/toolkit", color: "text-accent-foreground" },
+            { icon: HelpCircle, label: "AI FAQ 생성", desc: "리뷰 기반 FAQ 자동 생성", path: "/faq-gen", color: "text-muted-foreground" },
+          ].map((item) => (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="group border border-border rounded-xl bg-card p-4 text-left hover:border-primary/50 hover:shadow-md transition-all"
+            >
+              <item.icon className={`h-5 w-5 ${item.color} mb-2`} />
+              <p className="text-xs font-bold text-foreground mb-0.5">{item.label}</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">{item.desc}</p>
+              <div className="flex items-center gap-1 mt-2 text-[9px] text-primary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                <ArrowRight className="h-3 w-3" /> 바로가기
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </div>
