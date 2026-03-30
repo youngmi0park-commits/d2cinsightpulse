@@ -5,6 +5,7 @@ import { RedditVocPostCards } from "@/components/RedditVocPostCards";
 import { RedditAiCopyModal } from "@/components/RedditAiCopyModal";
 import { RedditCompetitorMentions } from "@/components/RedditCompetitorMentions";
 import { RedditWeeklySummary } from "@/components/RedditWeeklySummary";
+import { RedditCategoryAnalysis } from "@/components/RedditCategoryAnalysis";
 import { PageHeader } from "@/components/PageHeader";
 
 const RedditPage = () => {
@@ -19,10 +20,11 @@ const RedditPage = () => {
       <RedditBucketDashboard />
       <RedditVocPostCards />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <RedditAiCopyModal />
+        <RedditCategoryAnalysis />
         <RedditCompetitorMentions />
       </div>
       <RedditCountryInsights />
+      <RedditAiCopyModal />
     </div>
   );
 };
