@@ -145,9 +145,6 @@ const Index = () => {
             )}
           </div>
           <SearchBar onSearch={handleSearch} isLoading={isLoading} />
-          <div className="mt-5">
-            <DataStatusBar />
-          </div>
         </div>
       </div>
 
