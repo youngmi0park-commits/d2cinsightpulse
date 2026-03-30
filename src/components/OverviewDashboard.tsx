@@ -370,8 +370,9 @@ function useWeeklyCategoryHighlights() {
 
       const { data } = await supabase
         .from("reviews")
-        .select("sentiment, content, products!inner(category, display_name)")
+        .select("sentiment, content, source, products!inner(category, display_name)")
         .gte("collected_at", weekAgo.toISOString())
+        .not("source", "like", "lge_com%")
         .limit(1000);
 
       if (!data || data.length === 0) return [];
