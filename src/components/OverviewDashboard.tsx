@@ -316,46 +316,62 @@ function useChannelPerformance() {
   });
 }
 
-function useVocSpotlight() {
+function useWeeklyCategoryHighlights() {
   return useQuery({
-    queryKey: ["overview-voc-spotlight"],
+    queryKey: ["overview-weekly-category-highlights"],
     queryFn: async () => {
-      const { data: posReviews } = await supabase
-        .from("reviews")
-        .select("content, author, source, sentiment, rating, published_at, products!inner(model_number, display_name)")
-        .eq("sentiment", "positive")
-        .gte("sentiment_score", 0.8)
-        .neq("source", "lge_com")
-        .order("published_at", { ascending: false })
-        .limit(2);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
 
-      const { data: negReviews } = await supabase
+      const { data } = await supabase
         .from("reviews")
-        .select("content, author, source, sentiment, review_type, rating, published_at, products!inner(model_number, display_name)")
-        .eq("sentiment", "negative")
-        .order("sentiment_score", { ascending: true })
-        .limit(2);
+        .select("sentiment, content, products!inner(category, display_name)")
+        .gte("collected_at", weekAgo.toISOString())
+        .limit(1000);
 
-      return {
-        positive: (posReviews || []).map((r: any) => ({
-          content: r.content?.slice(0, 120) + (r.content?.length > 120 ? "..." : ""),
-          author: r.author || "Anonymous",
-          source: r.source,
-          product: r.products?.display_name || r.products?.model_number,
-          rating: r.rating,
-          date: r.published_at?.split("T")[0],
-          type: "REVIEW" as const,
-        })),
-        negative: (negReviews || []).map((r: any) => ({
-          content: r.content?.slice(0, 120) + (r.content?.length > 120 ? "..." : ""),
-          author: r.author || "Anonymous",
-          source: r.source,
-          product: r.products?.display_name || r.products?.model_number,
-          rating: r.rating,
-          date: r.published_at?.split("T")[0],
-          type: (r.review_type === "VOC" ? "VOC · URGENT" : r.review_type || "VOC") as string,
-        })),
+      if (!data || data.length === 0) return [];
+
+      const catMap: Record<string, { pos: number; neg: number; total: number; topSnippet: string; topProduct: string }> = {};
+      const TV_KW = ["tv", "oled", "qned", "nanocell", "stanby", "objet"];
+
+      for (const r of data as any[]) {
+        let cat = (r.products?.category || "Other").toLowerCase();
+        if (TV_KW.some(kw => cat.includes(kw))) cat = "TV";
+        else if (cat.includes("refriger") || cat.includes("fridge")) cat = "Refrigerator";
+        else if (cat.includes("wash") || cat.includes("laundry")) cat = "Washer/Dryer";
+        else if (cat.includes("monitor") || cat.includes("ultragear")) cat = "Monitor";
+        else if (cat.includes("sound") || cat.includes("audio")) cat = "Audio";
+        else if (cat.includes("laptop") || cat.includes("gram")) cat = "Laptop";
+        else cat = cat.charAt(0).toUpperCase() + cat.slice(1);
+
+        if (!catMap[cat]) catMap[cat] = { pos: 0, neg: 0, total: 0, topSnippet: "", topProduct: "" };
+        catMap[cat].total++;
+        if (r.sentiment === "positive") {
+          catMap[cat].pos++;
+          if (!catMap[cat].topSnippet && r.content) catMap[cat].topSnippet = r.content.slice(0, 60);
+        }
+        if (r.sentiment === "negative") catMap[cat].neg++;
+        if (!catMap[cat].topProduct) catMap[cat].topProduct = r.products?.display_name || "";
+      }
+
+      const EMOJI: Record<string, string> = {
+        TV: "📺", Refrigerator: "🧊", "Washer/Dryer": "🧺", Monitor: "🖥️", Audio: "🔊", Laptop: "💻",
       };
+
+      return Object.entries(catMap)
+        .filter(([, v]) => v.total >= 3)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 6)
+        .map(([cat, v]) => ({
+          category: cat,
+          emoji: EMOJI[cat] || "📦",
+          total: v.total,
+          pos: v.pos,
+          neg: v.neg,
+          posPct: v.total > 0 ? Math.round((v.pos / v.total) * 100) : 0,
+          topSnippet: v.topSnippet,
+          topProduct: v.topProduct,
+        }));
     },
     staleTime: 60_000,
   });
@@ -364,10 +380,13 @@ function useVocSpotlight() {
 /* ───── Component ───── */
 
 export function OverviewDashboard() {
+  const { t } = useLang();
+  const navigate = useNavigate();
   const { data: kpis } = useOverviewKPIs();
   const { data: topActions } = useTopActions();
   const { data: channelPerf } = useChannelPerformance();
   const { data: vocSpotlight } = useVocSpotlight();
+  const { data: categoryHighlights } = useWeeklyCategoryHighlights();
 
   return (
     <div className="space-y-6">
