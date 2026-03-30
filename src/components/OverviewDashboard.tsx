@@ -621,14 +621,36 @@ function VocCard({ voc, variant }: {
   variant: "positive" | "negative";
 }) {
   const isPositive = variant === "positive";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const text = `"${voc.content}"\n— ${voc.source === "lge_com" ? "LG.com" : voc.source} · ${voc.product}${voc.rating ? ` · ${voc.rating}★` : ""}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast.success("Copied!");
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
     <Card className="border border-border bg-card">
       <CardContent className="p-4">
-        <Badge className={`text-[9px] mb-2 ${
-          isPositive ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
-        }`}>
-          {voc.type}
-        </Badge>
+        <div className="flex items-start justify-between gap-2">
+          <Badge className={`text-[9px] mb-2 ${
+            isPositive ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
+          }`}>
+            {voc.type}
+          </Badge>
+          <button
+            onClick={handleCopy}
+            className="p-1.5 rounded-md hover:bg-muted/60 transition-colors shrink-0"
+            title="Copy to clipboard"
+          >
+            {copied
+              ? <Check className="h-3.5 w-3.5 text-success" />
+              : <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+            }
+          </button>
+        </div>
         <p className="text-sm font-medium text-foreground italic leading-relaxed mb-3">"{voc.content}"</p>
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
           <span>{voc.source === "lge_com" ? "LG.com" : voc.source} · {voc.product}{voc.rating ? ` · ${voc.rating}★` : ""}</span>
