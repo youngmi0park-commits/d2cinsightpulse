@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
@@ -8,17 +8,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Store, ChevronDown, Copy, TrendingUp, AlertTriangle, HelpCircle, Hash, ArrowRight, Loader2 } from "lucide-react";
+import { Store, ChevronDown, Copy, TrendingUp, AlertTriangle, HelpCircle, Hash, ArrowRight, Loader2, Calendar, Globe } from "lucide-react";
 import { toast } from "sonner";
 
-function useLgComClassified() {
+type PeriodFilter = "weekly" | "all";
+type CountryFilter = "all" | "US" | "UK";
+
+function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
   return useQuery({
-    queryKey: ["lgcom-classified"],
+    queryKey: ["lgcom-classified", period, country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source")
-        .like("source", "lge_com%")
+        .select("id, content, title, sentiment, sentiment_score, source");
+
+      if (country === "US") {
+        query = query.eq("source", "lge_com_us");
+      } else if (country === "UK") {
+        query = query.eq("source", "lge_com_uk");
+      } else {
+        query = query.like("source", "lge_com%");
+      }
+
+      if (period === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        query = query.gte("collected_at", weekAgo);
+      }
+
+      const { data, error } = await query
         .order("collected_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -181,9 +198,21 @@ function PostItem({
 
 export function LgComBucketDashboard() {
   const { t } = useLang();
-  const { data: summaries, isLoading } = useLgComClassified();
+  const [period, setPeriod] = useState<PeriodFilter>("weekly");
+  const [country, setCountry] = useState<CountryFilter>("all");
+  const { data: summaries, isLoading } = useLgComClassified(period, country);
 
   const totalPosts = summaries?.reduce((s, b) => s + b.count, 0) || 0;
+
+  const periodOptions: { value: PeriodFilter; label: string }[] = [
+    { value: "weekly", label: t("Weekly", "주간") },
+    { value: "all", label: t("Cumulative", "누적") },
+  ];
+  const countryOptions: { value: CountryFilter; label: string; icon: string }[] = [
+    { value: "all", label: t("All", "전체"), icon: "🌐" },
+    { value: "US", label: "US", icon: "🇺🇸" },
+    { value: "UK", label: "UK", icon: "🇬🇧" },
+  ];
 
   return (
     <Card className="gradient-card border-border">
@@ -199,6 +228,42 @@ export function LgComBucketDashboard() {
                 {totalPosts}{t(" reviews analyzed", "건 분석")}
               </Badge>
             )}
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Period filter */}
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+              <Calendar className="h-3 w-3 text-muted-foreground ml-1.5" />
+              {periodOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setPeriod(opt.value)}
+                  className={`px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors ${
+                    period === opt.value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {/* Country filter */}
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+              <Globe className="h-3 w-3 text-muted-foreground ml-1.5" />
+              {countryOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setCountry(opt.value)}
+                  className={`px-2.5 py-1 text-[11px] rounded-md font-medium transition-colors ${
+                    country === opt.value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
@@ -220,7 +285,6 @@ export function LgComBucketDashboard() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Summary bar */}
             <div className="flex gap-2">
               {summaries.map((s) => {
                 const pct = totalPosts > 0 ? ((s.count / totalPosts) * 100).toFixed(0) : "0";
@@ -235,8 +299,6 @@ export function LgComBucketDashboard() {
                 );
               })}
             </div>
-
-            {/* Bucket cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {summaries.map((s) => (
                 <BucketCard key={s.bucket} summary={s} t={t} />
