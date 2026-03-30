@@ -190,22 +190,29 @@ export function LgComWeeklyReport() {
 
       <CardContent className="pt-0">
         {/* Category buttons */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-1.5 mb-4">
           {[
-            { cat: "all", icon: Sparkles, label: t("All Products", "전체 제품"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
-            { cat: "TV", icon: Tv, label: "TV / OLED", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+            { cat: "all", icon: Sparkles, label: t("All", "전체"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+            { cat: "TV_OLED", icon: Tv, label: "OLED TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+            { cat: "TV_Large", icon: Tv, label: t("Ultra Large TV", "극초대형 TV"), color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+            { cat: "TV_Lifestyle", icon: Tv, label: t("Lifestyle TV", "라이프스타일 TV"), color: "bg-indigo-500/10 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/20" },
             { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
-            { cat: "Washer", icon: WashingMachine, label: t("Washer/Dryer", "세탁기/건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+            { cat: "Washer", icon: WashingMachine, label: t("Washer", "세탁기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+            { cat: "Dryer", icon: WashingMachine, label: t("Dryer", "건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+            { cat: "Dishwasher", icon: Headphones, label: t("Dishwasher", "식기세척기"), color: "bg-teal-500/10 text-teal-700 border-teal-500/20 hover:bg-teal-500/20" },
+            { cat: "Audio", icon: Headphones, label: t("Audio", "사운드바·오디오"), color: "bg-orange-500/10 text-orange-700 border-orange-500/20 hover:bg-orange-500/20" },
+            { cat: "Monitor", icon: Cpu, label: t("Monitor", "모니터"), color: "bg-slate-500/10 text-slate-700 border-slate-500/20 hover:bg-slate-500/20" },
+            { cat: "AC", icon: Zap, label: t("AC", "에어컨"), color: "bg-sky-500/10 text-sky-700 border-sky-500/20 hover:bg-sky-500/20" },
           ].map((item) => (
             <button
               key={item.cat}
               onClick={() => runReport(item.cat)}
               disabled={isLoading}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all disabled:opacity-50 ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all disabled:opacity-50 ${
                 category === item.cat && report ? item.color + " ring-1 ring-primary/30" : item.color
               }`}
             >
-              <item.icon className="h-3.5 w-3.5" />
+              <item.icon className="h-3 w-3" />
               {item.label}
               {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
             </button>

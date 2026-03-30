@@ -25,8 +25,16 @@ Deno.serve(async (req) => {
     // Category matching patterns
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED"],
+      TV_OLED: ["OLED", "evo"],
+      TV_Large: ["QNED", "NanoCell", "86", "85", "90", "97", "98", "75"],
+      TV_Lifestyle: ["StanbyME", "Objet", "Easel", "Posé", "ART"],
       Refrigerator: ["Refrigerator", "Fridge", "InstaView"],
-      Washer: ["Washer", "Dryer", "WashTower", "Laundry"],
+      Washer: ["Washer", "WashTower", "Laundry"],
+      Dryer: ["Dryer"],
+      Dishwasher: ["Dishwasher"],
+      AC: ["Air Conditioner", "Artcool", "DualCool"],
+      Audio: ["Soundbar", "Speaker", "XBOOM"],
+      Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
     // 1. Get top products by review count (fetch more to filter by category)
