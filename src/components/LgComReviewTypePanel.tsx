@@ -1,24 +1,24 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileCheck, Share2, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, FileCheck, Share2, BarChart3, CalendarDays, Database } from "lucide-react";
 
-type ReviewTypeKey = "native" | "syndication";
+interface CountryStats { native: number; syndication: number; total: number }
 
 interface TypeStats {
   total: number;
   native: number;
   syndication: number;
-  byCountry: Record<string, { native: number; syndication: number; total: number }>;
-  weeklyNative: number;
-  weeklySyndication: number;
+  byCountry: Record<string, CountryStats>;
 }
 
 export function LgComReviewTypePanel() {
   const { t } = useLang();
+  const [mode, setMode] = useState<"weekly" | "cumulative">("weekly");
 
   const { data: reviews, isLoading } = useQuery({
     queryKey: ["lgcom-review-type-analysis"],
@@ -34,31 +34,28 @@ export function LgComReviewTypePanel() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const weekAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d;
+  }, []);
+
   const stats = useMemo<TypeStats | null>(() => {
     if (!reviews || reviews.length === 0) return null;
 
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
     let native = 0;
     let syndication = 0;
-    let weeklyNative = 0;
-    let weeklySyndication = 0;
-    const byCountry: Record<string, { native: number; syndication: number; total: number }> = {};
+    const byCountry: Record<string, CountryStats> = {};
 
     for (const r of reviews) {
+      if (mode === "weekly" && new Date(r.collected_at) < weekAgo) continue;
+
       const tag = (r.review_type || "").toLowerCase();
       const isSyndication = tag.includes("originally posted from");
       const country = r.source === "lge_com_us" ? "US" : r.source === "lge_com_uk" ? "UK" : "Other";
-      const isWeekly = new Date(r.collected_at) >= weekAgo;
 
-      if (isSyndication) {
-        syndication++;
-        if (isWeekly) weeklySyndication++;
-      } else {
-        native++;
-        if (isWeekly) weeklyNative++;
-      }
+      if (isSyndication) syndication++;
+      else native++;
 
       if (!byCountry[country]) byCountry[country] = { native: 0, syndication: 0, total: 0 };
       byCountry[country].total++;
@@ -66,8 +63,8 @@ export function LgComReviewTypePanel() {
       else byCountry[country].native++;
     }
 
-    return { total: reviews.length, native, syndication, byCountry, weeklyNative, weeklySyndication };
-  }, [reviews]);
+    return { total: native + syndication, native, syndication, byCountry };
+  }, [reviews, mode, weekAgo]);
 
   if (isLoading) {
     return (
@@ -83,23 +80,41 @@ export function LgComReviewTypePanel() {
 
   const nativePct = stats.total > 0 ? Math.round((stats.native / stats.total) * 100) : 0;
   const synPct = 100 - nativePct;
-
   const FLAG: Record<string, string> = { US: "🇺🇸", UK: "🇬🇧", Other: "🌐" };
 
   return (
     <Card className="gradient-card">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-base flex-wrap">
           <BarChart3 className="h-4 w-4 text-primary" />
           📋 {t("Review Type Analysis", "리뷰 유형 분석")}
-          <Badge variant="outline" className="ml-auto text-[10px]">
-            {t("Native vs Syndication", "자사몰 vs 신디케이션")}
-          </Badge>
+
+          {/* Weekly / Cumulative toggle */}
+          <div className="flex gap-1 ml-auto">
+            <Button
+              size="sm"
+              variant={mode === "weekly" ? "default" : "outline"}
+              className="h-6 text-[10px] px-2 gap-1"
+              onClick={() => setMode("weekly")}
+            >
+              <CalendarDays className="h-3 w-3" />
+              {t("Weekly", "주간")}
+            </Button>
+            <Button
+              size="sm"
+              variant={mode === "cumulative" ? "default" : "outline"}
+              className="h-6 text-[10px] px-2 gap-1"
+              onClick={() => setMode("cumulative")}
+            >
+              <Database className="h-3 w-3" />
+              {t("Cumulative", "누적")}
+            </Button>
+          </div>
         </CardTitle>
         <p className="text-[11px] text-muted-foreground">
           {t(
-            "Classifies reviews by origin: Native (direct LG.com) vs Syndication (tagged as 'original' from external sources)",
-            "리뷰 원본 출처를 분류합니다 — Native: LG.com 직접 작성 | Syndication: 외부 채널에서 유입된 리뷰 (review_type에 'original' 태그 포함)"
+            "Classifies reviews by origin: Native (direct LG.com) vs Syndication (tagged as 'originally posted from' external sources)",
+            "리뷰 원본 출처를 분류합니다 — Native: LG.com 직접 작성 | Syndication: 외부 채널에서 유입된 리뷰 ('originally posted from' 태그 포함)"
           )}
         </p>
       </CardHeader>
@@ -119,44 +134,35 @@ export function LgComReviewTypePanel() {
               )}
             </div>
             <div
-              className="h-full bg-amber-500 rounded-r-full flex items-center justify-center transition-all"
+              className="h-full bg-accent rounded-r-full flex items-center justify-center transition-all"
               style={{ width: `${synPct}%` }}
             >
               {synPct > 15 && (
-                <span className="text-[10px] font-bold text-white">
+                <span className="text-[10px] font-bold text-accent-foreground">
                   Syndication {synPct}%
                 </span>
               )}
             </div>
           </div>
           <span className="text-[11px] text-muted-foreground font-medium shrink-0">
-            {t("Total", "전체")} {stats.total.toLocaleString()}
+            {mode === "weekly" ? t("Weekly", "주간") : t("Cumulative", "누적")} {stats.total.toLocaleString()}
           </span>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Native */}
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-center">
             <FileCheck className="h-4 w-4 text-primary mx-auto mb-1" />
             <div className="text-lg font-bold text-foreground">{stats.native.toLocaleString()}</div>
             <div className="text-[10px] text-muted-foreground font-medium">Native</div>
-            <div className="text-[10px] text-primary font-semibold mt-0.5">
-              {t("This week", "주간")} +{stats.weeklyNative}
-            </div>
           </div>
 
-          {/* Syndication */}
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-center">
-            <Share2 className="h-4 w-4 text-amber-600 mx-auto mb-1" />
+          <div className="rounded-lg border border-accent/40 bg-accent/10 p-3 text-center">
+            <Share2 className="h-4 w-4 text-accent-foreground mx-auto mb-1" />
             <div className="text-lg font-bold text-foreground">{stats.syndication.toLocaleString()}</div>
             <div className="text-[10px] text-muted-foreground font-medium">Syndication</div>
-            <div className="text-[10px] text-amber-600 font-semibold mt-0.5">
-              {t("This week", "주간")} +{stats.weeklySyndication}
-            </div>
           </div>
 
-          {/* By country */}
           {Object.entries(stats.byCountry)
             .sort((a, b) => b[1].total - a[1].total)
             .map(([country, c]) => {
@@ -170,7 +176,7 @@ export function LgComReviewTypePanel() {
                   </div>
                   <div className="flex items-center gap-1 h-3 bg-muted/30 rounded-full overflow-hidden mb-1.5">
                     <div className="h-full bg-primary rounded-l-full" style={{ width: `${cNativePct}%` }} />
-                    <div className="h-full bg-amber-500 rounded-r-full" style={{ width: `${100 - cNativePct}%` }} />
+                    <div className="h-full bg-accent rounded-r-full" style={{ width: `${100 - cNativePct}%` }} />
                   </div>
                   <div className="flex justify-between text-[9px] text-muted-foreground">
                     <span>Native {c.native.toLocaleString()}</span>
