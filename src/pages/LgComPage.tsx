@@ -1,11 +1,12 @@
-import { Store, Loader2 } from "lucide-react";
+import { Store } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
 import { DataStatusBar } from "@/components/DataStatusBar";
-import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
+import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 function CountryReviewButtons() {
   const { data, isLoading } = useQuery({
@@ -71,7 +72,7 @@ const LgComPage = () => {
       <CountryReviewButtons />
       <DataStatusBar />
       <LgComReviewDashboard onProductClick={handleProductClick} />
-      <WeeklyInsightsPanel />
+      <LgComWeeklyReport />
     </div>
   );
 };
