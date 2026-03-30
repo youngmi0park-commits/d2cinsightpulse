@@ -74,10 +74,10 @@ const LgComPage = () => {
       <LgComBucketDashboard />
       {/* 4. AI 주간 리포트 (주제/강점/액션/제품별) */}
       <LgComWeeklyReport />
-      {/* 5. 긍/부정 리뷰 대시보드 */}
-      <LgComReviewDashboard onProductClick={handleProductClick} />
       {/* 5. 딥 인사이트 (페르소나/JTBD/CRM) — 별도 분석 */}
       <WeeklyInsightsPanel />
+      {/* 6. 긍/부정 리뷰 대시보드 */}
+      <LgComReviewDashboard onProductClick={handleProductClick} />
     </div>
   );
 };
