@@ -300,9 +300,9 @@ export function LgComWeeklyReport() {
               </div>
             )}
 
-            {/* ── Detail tabs (no Summary tab - already shown above) ── */}
+            {/* ── Detail tabs (Themes/Strengths/Actions/Products only) ── */}
             <Tabs defaultValue="themes" className="w-full">
-              <TabsList className="w-full grid grid-cols-5 h-9">
+              <TabsList className="w-full grid grid-cols-4 h-9">
                 <TabsTrigger value="themes" className="text-[10px] gap-1 px-1">
                   <TrendingUp className="h-3 w-3" />
                   {t("Themes", "주제 TOP5")}
@@ -318,10 +318,6 @@ export function LgComWeeklyReport() {
                 <TabsTrigger value="products" className="text-[10px] gap-1 px-1">
                   <Target className="h-3 w-3" />
                   {t("Products", "제품별")}
-                </TabsTrigger>
-                <TabsTrigger value="deep" className="text-[10px] gap-1 px-1">
-                  <Lightbulb className="h-3 w-3" />
-                  {t("Deep", "딥인사이트")}
                 </TabsTrigger>
               </TabsList>
 
