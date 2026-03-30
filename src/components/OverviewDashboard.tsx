@@ -316,6 +316,51 @@ function useChannelPerformance() {
   });
 }
 
+function useVocSpotlight() {
+  return useQuery({
+    queryKey: ["overview-voc-spotlight"],
+    queryFn: async () => {
+      const { data: posReviews } = await supabase
+        .from("reviews")
+        .select("content, author, source, sentiment, rating, published_at, products!inner(model_number, display_name)")
+        .eq("sentiment", "positive")
+        .gte("sentiment_score", 0.8)
+        .neq("source", "lge_com")
+        .order("published_at", { ascending: false })
+        .limit(2);
+
+      const { data: negReviews } = await supabase
+        .from("reviews")
+        .select("content, author, source, sentiment, review_type, rating, published_at, products!inner(model_number, display_name)")
+        .eq("sentiment", "negative")
+        .order("sentiment_score", { ascending: true })
+        .limit(2);
+
+      return {
+        positive: (posReviews || []).map((r: any) => ({
+          content: r.content?.slice(0, 120) + (r.content?.length > 120 ? "..." : ""),
+          author: r.author || "Anonymous",
+          source: r.source,
+          product: r.products?.display_name || r.products?.model_number,
+          rating: r.rating,
+          date: r.published_at?.split("T")[0],
+          type: "REVIEW" as const,
+        })),
+        negative: (negReviews || []).map((r: any) => ({
+          content: r.content?.slice(0, 120) + (r.content?.length > 120 ? "..." : ""),
+          author: r.author || "Anonymous",
+          source: r.source,
+          product: r.products?.display_name || r.products?.model_number,
+          rating: r.rating,
+          date: r.published_at?.split("T")[0],
+          type: (r.review_type === "VOC" ? "VOC · URGENT" : r.review_type || "VOC") as string,
+        })),
+      };
+    },
+    staleTime: 60_000,
+  });
+}
+
 function useWeeklyCategoryHighlights() {
   return useQuery({
     queryKey: ["overview-weekly-category-highlights"],
