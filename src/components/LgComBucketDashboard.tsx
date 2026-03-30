@@ -23,7 +23,7 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source");
+        .select("id, content, title, sentiment, sentiment_score, source, products!inner(display_name, category)");
 
       if (country === "US") {
         query = query.eq("source", "lge_com_us");
@@ -42,7 +42,11 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
         .order("collected_at", { ascending: false })
         .limit(500);
       if (error) throw error;
-      const classified = (data || []).map(classifyRedditPost);
+      const classified = (data || []).map((r: any) => ({
+        ...classifyRedditPost(r),
+        productName: r.products?.display_name || "",
+        productCategory: r.products?.category || "",
+      }));
       return generateBucketSummaries(classified);
     },
     staleTime: 1000 * 60 * 15,
