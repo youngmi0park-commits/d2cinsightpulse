@@ -2,12 +2,11 @@ import { Store, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComReviewDashboard } from "@/components/LgComReviewDashboard";
-import { DataStatusBar } from "@/components/DataStatusBar";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 
-function CountryReviewButtons() {
+function CountryReviewSummary() {
   const { data, isLoading } = useQuery({
     queryKey: ["lgcom-country-counts"],
     queryFn: async () => {
@@ -22,36 +21,37 @@ function CountryReviewButtons() {
   const FLAG: Record<string, string> = { US: "🇺🇸", UK: "🇬🇧", Other: "🌐" };
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <Store className="h-4 w-4 text-primary" />
-        <h4 className="text-sm font-semibold font-heading">국가별 LG.com 리뷰 수</h4>
-        {total > 0 && (
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            Total {total.toLocaleString()}
-          </Badge>
-        )}
-      </div>
-      {isLoading ? (
-        <div className="flex justify-center py-6">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {data?.map((c) => (
-            <div
-              key={c.country}
-              className="flex items-center gap-2 rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[120px]"
-            >
-              <span className="text-lg">{FLAG[c.country] || "🌐"}</span>
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Total */}
+          <div className="flex items-center gap-2.5">
+            <Store className="h-4 w-4 text-primary" />
+            <div>
+              <div className="text-[10px] text-muted-foreground font-medium">LG.com {isLoading ? "" : "Total"}</div>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground mt-0.5" />
+              ) : (
+                <div className="text-xl font-bold text-foreground">{total.toLocaleString()}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-8 bg-border" />
+
+          {/* Country breakdown */}
+          {!isLoading && data?.map((c) => (
+            <div key={c.country} className="flex items-center gap-2">
+              <span className="text-base">{FLAG[c.country] || "🌐"}</span>
               <div>
-                <div className="text-xs font-semibold text-foreground">{c.country}</div>
-                <div className="text-lg font-bold text-primary">{Number(c.count).toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground font-medium">{c.country}</div>
+                <div className="text-base font-bold text-foreground">{Number(c.count).toLocaleString()}</div>
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -68,12 +68,8 @@ const LgComPage = () => {
         title="🏬 LG.com Insights"
         description="LG.com 공식몰에서 수집된 인증 구매자(Verified Buyer) 리뷰를 분석합니다. 국가별·제품별 감성 트렌드, 주요 키워드, 주간 인사이트 리포트를 확인하세요."
       />
-      {/* 1. 국가별 수집 현황 */}
-      <CountryReviewButtons />
-      <DataStatusBar />
-      {/* 2. 주간 인사이트 리포트 (서머리 즉시 노출) */}
+      <CountryReviewSummary />
       <LgComWeeklyReport />
-      {/* 3. 긍/부정 리뷰 대시보드 (하단) */}
       <LgComReviewDashboard onProductClick={handleProductClick} />
     </div>
   );
