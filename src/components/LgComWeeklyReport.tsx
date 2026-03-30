@@ -245,15 +245,67 @@ export function LgComWeeklyReport() {
               </div>
             )}
 
-            <Tabs defaultValue="summary" className="w-full">
-              <TabsList className="w-full grid grid-cols-6 h-9">
-                <TabsTrigger value="summary" className="text-[10px] gap-1 px-1">
-                  <FileText className="h-3 w-3" />
-                  {t("Summary", "요약")}
-                </TabsTrigger>
+            {/* ── Executive Summary: always visible ── */}
+            {es && (
+              <div className="space-y-3">
+                {/* Metrics row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: t("Total Reviews", "전체 리뷰"), value: es.total_reviews?.toLocaleString() || "–", icon: FileText },
+                    { label: t("Avg Rating", "평균 평점"), value: es.avg_rating || "–", icon: Star },
+                    { label: t("Positive", "긍정"), value: `${es.sentiment_ratio?.positive_pct || 0}%`, icon: ThumbsUp },
+                    { label: t("Negative", "부정"), value: `${es.sentiment_ratio?.negative_pct || 0}%`, icon: ThumbsDown },
+                  ].map((m, i) => (
+                    <div key={i} className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                      <m.icon className="h-4 w-4 mx-auto mb-1 text-primary" />
+                      <div className="text-lg font-bold text-foreground">{m.value}</div>
+                      <div className="text-[10px] text-muted-foreground">{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sentiment bar */}
+                {es.sentiment_ratio && (
+                  <div className="rounded-lg border border-border p-3">
+                    <div className="text-xs font-semibold mb-2">{t("Sentiment Distribution", "감성 비율")}</div>
+                    <div className="flex h-4 rounded-full overflow-hidden">
+                      <div className="bg-success/70 transition-all" style={{ width: `${es.sentiment_ratio.positive_pct}%` }} />
+                      <div className="bg-muted transition-all" style={{ width: `${es.sentiment_ratio.neutral_pct}%` }} />
+                      <div className="bg-destructive/70 transition-all" style={{ width: `${es.sentiment_ratio.negative_pct}%` }} />
+                    </div>
+                    <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+                      <span>✅ {t("Positive", "긍정")} {es.sentiment_ratio.positive_pct}%</span>
+                      <span>⚪ {t("Neutral", "중립")} {es.sentiment_ratio.neutral_pct}%</span>
+                      <span>🔴 {t("Negative", "부정")} {es.sentiment_ratio.negative_pct}%</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Top 3 insights */}
+                {es.top3_insights && es.top3_insights.length > 0 && (
+                  <div className="bg-primary/5 border border-primary/15 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-sm">{t("Top 3 Insights", "핵심 인사이트 3줄 요약")}</span>
+                    </div>
+                    {es.top3_insights.map((ins, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="text-xs font-bold text-primary mt-0.5">{i + 1}.</span>
+                        <p className="text-xs text-foreground leading-relaxed flex-1">{ins}</p>
+                        <CopyBtn text={ins} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Detail tabs (no Summary tab - already shown above) ── */}
+            <Tabs defaultValue="themes" className="w-full">
+              <TabsList className="w-full grid grid-cols-5 h-9">
                 <TabsTrigger value="themes" className="text-[10px] gap-1 px-1">
                   <TrendingUp className="h-3 w-3" />
-                  {t("Themes", "주제")}
+                  {t("Themes", "주제 TOP5")}
                 </TabsTrigger>
                 <TabsTrigger value="strengths" className="text-[10px] gap-1 px-1">
                   <ThumbsUp className="h-3 w-3" />
@@ -272,64 +324,6 @@ export function LgComWeeklyReport() {
                   {t("Deep", "딥인사이트")}
                 </TabsTrigger>
               </TabsList>
-
-              {/* ─── 1. Executive Summary ─── */}
-              <TabsContent value="summary" className="space-y-3 mt-3">
-                {es && (
-                  <>
-                    {/* Metrics row */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { label: t("Total Reviews", "전체 리뷰"), value: es.total_reviews?.toLocaleString() || "–", icon: FileText },
-                        { label: t("Avg Rating", "평균 평점"), value: es.avg_rating || "–", icon: Star },
-                        { label: t("Positive", "긍정"), value: `${es.sentiment_ratio?.positive_pct || 0}%`, icon: ThumbsUp },
-                        { label: t("Negative", "부정"), value: `${es.sentiment_ratio?.negative_pct || 0}%`, icon: ThumbsDown },
-                      ].map((m, i) => (
-                        <div key={i} className="rounded-lg border border-border bg-muted/30 p-3 text-center">
-                          <m.icon className="h-4 w-4 mx-auto mb-1 text-primary" />
-                          <div className="text-lg font-bold text-foreground">{m.value}</div>
-                          <div className="text-[10px] text-muted-foreground">{m.label}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Sentiment bar */}
-                    {es.sentiment_ratio && (
-                      <div className="rounded-lg border border-border p-3">
-                        <div className="text-xs font-semibold mb-2">{t("Sentiment Distribution", "감성 비율")}</div>
-                        <div className="flex h-4 rounded-full overflow-hidden">
-                          <div className="bg-success/70 transition-all" style={{ width: `${es.sentiment_ratio.positive_pct}%` }} />
-                          <div className="bg-muted transition-all" style={{ width: `${es.sentiment_ratio.neutral_pct}%` }} />
-                          <div className="bg-destructive/70 transition-all" style={{ width: `${es.sentiment_ratio.negative_pct}%` }} />
-                        </div>
-                        <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-                          <span>✅ {t("Positive", "긍정")} {es.sentiment_ratio.positive_pct}%</span>
-                          <span>⚪ {t("Neutral", "중립")} {es.sentiment_ratio.neutral_pct}%</span>
-                          <span>🔴 {t("Negative", "부정")} {es.sentiment_ratio.negative_pct}%</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Top 3 insights */}
-                    {es.top3_insights && es.top3_insights.length > 0 && (
-                      <div className="bg-primary/5 border border-primary/15 rounded-lg p-3 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Lightbulb className="h-4 w-4 text-primary" />
-                          <span className="font-semibold text-sm">{t("Top 3 Insights", "핵심 인사이트 3줄 요약")}</span>
-                        </div>
-                        {es.top3_insights.map((ins, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="text-xs font-bold text-primary mt-0.5">{i + 1}.</span>
-                            <p className="text-xs text-foreground leading-relaxed flex-1">{ins}</p>
-                            <CopyBtn text={ins} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-                {!es && <p className="text-xs text-muted-foreground text-center py-4">{t("No summary data", "요약 데이터 없음")}</p>}
-              </TabsContent>
 
               {/* ─── 2. Top 5 Themes + Negative Priority ─── */}
               <TabsContent value="themes" className="space-y-3 mt-3">
