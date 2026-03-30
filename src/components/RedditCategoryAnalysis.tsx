@@ -7,14 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tv, Refrigerator, WashingMachine, Smartphone, Speaker,
-  ChevronDown, ChevronUp, Monitor, Maximize, Sofa,
+  ChevronDown, ChevronUp, Monitor,
   ThumbsUp, ThumbsDown, LayoutGrid
 } from "lucide-react";
 
 type CategoryKey =
-  | "tv_oled"
-  | "tv_large"
-  | "tv_lifestyle"
+  | "tv"
   | "refrigerator"
   | "washer"
   | "dryer"
@@ -33,25 +31,11 @@ interface CategoryDef {
 
 const CATEGORIES: CategoryDef[] = [
   {
-    key: "tv_oled",
-    label: "OLED TV",
-    subLabel: "C/G/M 시리즈",
+    key: "tv",
+    label: "TV",
+    subLabel: "OLED · 극초대형 · 라이프스타일 통합",
     icon: Tv,
-    keywords: ["oled", "c4", "c5", "c6", "g4", "g5", "g6", "m4", "m5", "evo"],
-  },
-  {
-    key: "tv_large",
-    label: "극초대형 TV",
-    subLabel: "85인치 이상 QNED/LCD",
-    icon: Maximize,
-    keywords: ["85", "86", "90", "97", "98", "qned", "nano", "large", "big"],
-  },
-  {
-    key: "tv_lifestyle",
-    label: "라이프스타일 TV",
-    subLabel: "StanbyME · Objet · 이젤",
-    icon: Sofa,
-    keywords: ["stanby", "standby", "stanbyme", "objet", "easel", "lifestyle", "art", "posé", "pose"],
+    keywords: ["oled", "c4", "c5", "c6", "g4", "g5", "g6", "m4", "m5", "evo", "85", "86", "90", "97", "98", "qned", "nano", "large", "big", "stanby", "standby", "stanbyme", "objet", "easel", "lifestyle", "art", "posé", "pose", "tv", "television"],
   },
   {
     key: "refrigerator",
@@ -102,8 +86,6 @@ function classifyToCategory(text: string): CategoryKey | null {
   for (const cat of CATEGORIES) {
     if (cat.keywords.some((kw) => lower.includes(kw))) return cat.key;
   }
-  // Fallback by generic TV mention
-  if (lower.includes("tv") || lower.includes("television")) return "tv_oled";
   return null;
 }
 

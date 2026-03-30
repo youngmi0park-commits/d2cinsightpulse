@@ -193,9 +193,7 @@ export function LgComWeeklyReport() {
         <div className="flex flex-wrap gap-1.5 mb-4">
           {[
             { cat: "all", icon: Sparkles, label: t("All", "전체"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
-            { cat: "TV_OLED", icon: Tv, label: "OLED TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
-            { cat: "TV_Large", icon: Tv, label: t("Ultra Large TV", "극초대형 TV"), color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
-            { cat: "TV_Lifestyle", icon: Tv, label: t("Lifestyle TV", "라이프스타일 TV"), color: "bg-indigo-500/10 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/20" },
+            { cat: "TV", icon: Tv, label: "TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
             { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
             { cat: "Washer", icon: WashingMachine, label: t("Washer", "세탁기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
             { cat: "Dryer", icon: WashingMachine, label: t("Dryer", "건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
