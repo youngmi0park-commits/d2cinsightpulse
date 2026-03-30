@@ -662,32 +662,39 @@ export default function ToolkitPage() {
 
       {/* ═══════ ANITA CREATIVE STUDIO ═══════ */}
       <a
-        href="https://anita-tv.lge.com"
+        href="https://anita-twincrew.lovable.app/studio"
         target="_blank"
         rel="noopener noreferrer"
-        className="group gradient-card rounded-xl border border-border p-5 md:p-6 flex items-center gap-4 hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer block"
+        className="group gradient-card rounded-xl border border-border p-5 md:p-6 hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer block"
       >
-        <span className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground shrink-0">
-          <Sparkles className="h-5 w-5" />
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="text-base font-bold text-foreground">🎨 LG CreW Anita — AI Image & Banner Studio</h3>
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            {t(
-              "Generate product-specific lifestyle images and instantly create ready-to-use banners with Anita AI. Click to open.",
-              "Anita AI로 제품별 라이프스타일 이미지 생성 및 배너 제작이 가능합니다. 클릭하여 이동하세요."
-            )}
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <span className="flex items-center gap-1.5 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-[11px] font-semibold">
-            <Image className="h-3.5 w-3.5" /> Image
+        <div className="flex items-center gap-4">
+          <span className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground shrink-0 shadow-md">
+            <Sparkles className="h-6 w-6" />
           </span>
-          <span className="flex items-center gap-1.5 rounded-lg bg-accent/30 text-accent-foreground px-3 py-1.5 text-[11px] font-semibold">
-            <LayoutTemplate className="h-3.5 w-3.5" /> Banner
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-base font-bold text-foreground">🎨 LG CreW Anita — AI Creative Studio</h3>
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+              {t(
+                "Create product lifestyle images & banners in one place. Click to open Anita Studio.",
+                "제품 라이프스타일 이미지 및 배너를 한 곳에서 제작합니다. 클릭하여 Anita Studio로 이동하세요."
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center gap-3 pl-[4.5rem]">
+          <span className="flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3.5 py-1.5 text-[11px] font-semibold">
+            <Image className="h-3.5 w-3.5" /> {t("Image Generation", "이미지 생성")}
+          </span>
+          <span className="text-muted-foreground text-xs">+</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-accent/30 text-accent-foreground px-3.5 py-1.5 text-[11px] font-semibold">
+            <LayoutTemplate className="h-3.5 w-3.5" /> {t("Banner Creation", "배너 제작")}
+          </span>
+          <span className="ml-auto text-[10px] text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-1">
+            {t("Open Studio →", "스튜디오 열기 →")}
           </span>
         </div>
       </a>
