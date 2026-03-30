@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
+import { DataStatusBar } from "@/components/DataStatusBar";
 import { PageHeader } from "@/components/PageHeader";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
@@ -144,6 +145,9 @@ const Index = () => {
             )}
           </div>
           <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+          <div className="mt-5">
+            <DataStatusBar />
+          </div>
         </div>
       </div>
 
