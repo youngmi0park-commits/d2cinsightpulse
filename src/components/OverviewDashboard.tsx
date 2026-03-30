@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, ArrowDownRight, Copy, Check, Tv, Refrigerator, WashingMachine, Speaker, Monitor, Store, MessageSquare, Wrench, HelpCircle, Sparkles, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, ArrowUpRight, ArrowDownRight, Copy, Check, Store, MessageSquare, Wrench, HelpCircle, Sparkles } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
