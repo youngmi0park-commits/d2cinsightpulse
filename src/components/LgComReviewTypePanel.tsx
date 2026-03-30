@@ -186,8 +186,8 @@ export function LgComReviewTypePanel() {
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             💡 <strong className="text-foreground">{t("Classification Rule", "분류 기준")}</strong>:{" "}
             {t(
-              "Reviews with no review_type tag → Native (direct LG.com). Reviews with 'original' in review_type tag → Syndication (sourced from external platforms).",
-              "review_type 태그가 없는 리뷰 → Native (LG.com 직접 작성). review_type에 'original'이 포함된 리뷰 → Syndication (외부 플랫폼 유입)."
+              "Reviews without 'originally posted from' in review_type → Native (direct LG.com). Reviews containing 'originally posted from' → Syndication (sourced from external platforms).",
+              "review_type에 'originally posted from' 문구가 없는 리뷰 → Native (LG.com 직접 작성). 'originally posted from'이 포함된 리뷰 → Syndication (외부 플랫폼 유입)."
             )}
           </p>
         </div>
