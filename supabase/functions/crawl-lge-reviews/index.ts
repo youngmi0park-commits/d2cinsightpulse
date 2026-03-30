@@ -148,6 +148,14 @@ function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
     else { sentiment = "neutral"; sentimentScore = 0.5; }
   }
 
+  // ── Syndication detection ──
+  // Bazaarvoice marks syndicated reviews with IsSyndicated=true and SyndicationSource
+  let reviewType = "organic";
+  if (bvReview.IsSyndicated === true || bvReview.SyndicationSource) {
+    const sourceName = bvReview.SyndicationSource?.Name || "external";
+    reviewType = `Originally posted on ${sourceName}`;
+  }
+
   return {
     model_number: bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`,
     display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`,
@@ -165,6 +173,7 @@ function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
     source_region: region,
     issue_tags: [],
     verified_purchase: bvReview.BadgesOrder?.includes("verifiedPurchaser") || false,
+    review_type: reviewType,
   };
 }
 
