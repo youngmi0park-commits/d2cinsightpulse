@@ -1,12 +1,152 @@
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
-import { TrendingUp, BarChart3, Loader2, Database, Layers } from "lucide-react";
+import { TrendingUp, BarChart3, Loader2, Database, Layers, Store, MessageCircle, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
+}
+
+interface ChannelTopProduct {
+  product_id: string;
+  model_number: string;
+  display_name: string;
+  category: string;
+  count: number;
+}
+
+function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 3) {
+  return useQuery({
+    queryKey: ["channel-top-products", sourcePrefix, sentiment, limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("product_id, products!inner(model_number, display_name, category, is_active)")
+        .like("source", `${sourcePrefix}%`)
+        .eq("sentiment", sentiment)
+        .limit(1000);
+
+      if (error) throw error;
+
+      const prodMap: Record<string, ChannelTopProduct> = {};
+      for (const r of data || []) {
+        const prod = r.products as any;
+        if (!prod?.is_active) continue;
+        const pid = r.product_id;
+        if (!prodMap[pid]) {
+          prodMap[pid] = {
+            product_id: pid,
+            model_number: prod.model_number,
+            display_name: prod.display_name,
+            category: prod.category,
+            count: 0,
+          };
+        }
+        prodMap[pid].count++;
+      }
+      return Object.values(prodMap)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+function ChannelSection({
+  icon: Icon,
+  label,
+  iconColor,
+  borderColor,
+  bgColor,
+  totalCount,
+  posProducts,
+  negProducts,
+  posLoading,
+  negLoading,
+  t,
+}: {
+  icon: any;
+  label: string;
+  iconColor: string;
+  borderColor: string;
+  bgColor: string;
+  totalCount: number;
+  posProducts: ChannelTopProduct[];
+  negProducts: ChannelTopProduct[];
+  posLoading: boolean;
+  negLoading: boolean;
+  t: (en: string, ko: string) => string;
+}) {
+  const loading = posLoading || negLoading;
+
+  return (
+    <div className={`rounded-lg border ${borderColor} ${bgColor} p-4 space-y-3`}>
+      <div className="flex items-center gap-2">
+        <Icon className={`h-4 w-4 ${iconColor}`} />
+        <span className="font-semibold text-sm text-foreground">{label}</span>
+        <Badge variant="secondary" className="text-[10px] ml-auto">
+          {totalCount.toLocaleString()}{t(" reviews", "건")}
+        </Badge>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 py-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{t("Loading...", "로딩 중...")}</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Positive Top 3 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ThumbsUp className="h-3 w-3 text-success" />
+              <span className="text-[11px] font-semibold text-success">{t("Positive TOP 3", "긍정 TOP 3")}</span>
+            </div>
+            {posProducts.length > 0 ? posProducts.map((p, i) => (
+              <div key={p.product_id} className="flex items-center gap-2 bg-background/60 rounded px-2.5 py-1.5">
+                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+                  i === 0 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
+                }`}>{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-medium text-foreground truncate">{p.display_name || p.model_number}</div>
+                  <div className="text-[9px] text-muted-foreground">{p.category}</div>
+                </div>
+                <span className="text-[11px] font-mono font-semibold text-success shrink-0">{p.count}</span>
+              </div>
+            )) : (
+              <p className="text-[10px] text-muted-foreground">{t("No data", "데이터 없음")}</p>
+            )}
+          </div>
+
+          {/* Negative Top 3 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <ThumbsDown className="h-3 w-3 text-destructive" />
+              <span className="text-[11px] font-semibold text-destructive">{t("Negative TOP 3", "부정 TOP 3")}</span>
+            </div>
+            {negProducts.length > 0 ? negProducts.map((p, i) => (
+              <div key={p.product_id} className="flex items-center gap-2 bg-background/60 rounded px-2.5 py-1.5">
+                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+                  i === 0 ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
+                }`}>{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-medium text-foreground truncate">{p.display_name || p.model_number}</div>
+                  <div className="text-[9px] text-muted-foreground">{p.category}</div>
+                </div>
+                <span className="text-[11px] font-mono font-semibold text-destructive shrink-0">{p.count}</span>
+              </div>
+            )) : (
+              <p className="text-[10px] text-muted-foreground">{t("No data", "데이터 없음")}</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingDashboardProps) {
@@ -15,6 +155,12 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
   const { data: allKeywords = [] } = useTrendingKeywords();
   const { data: stats } = useProductStats();
   const { data: sourceCounts = {} } = useSourceCounts();
+
+  // Channel top products
+  const { data: lgcomPos = [], isLoading: lgcomPosL } = useChannelTopProducts("lge_com", "positive");
+  const { data: lgcomNeg = [], isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
+  const { data: redditPos = [], isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
+  const { data: redditNeg = [], isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at
@@ -28,15 +174,8 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
     ? format(lastCollectedAt, "yyyy.MM.dd HH:mm")
     : null;
 
-  // Count total platforms with data
-  const totalPlatforms = useMemo(() => {
-    return Object.keys(sourceCounts).length;
-  }, [sourceCounts]);
-
-  // Total reviews across all sources
-  const totalReviews = useMemo(() => {
-    return Object.values(sourceCounts).reduce((sum, c) => sum + c, 0);
-  }, [sourceCounts]);
+  const totalPlatforms = useMemo(() => Object.keys(sourceCounts).length, [sourceCounts]);
+  const totalReviews = useMemo(() => Object.values(sourceCounts).reduce((sum, c) => sum + c, 0), [sourceCounts]);
 
   const lgcomCount = sourceCounts["lge_com"] || 0;
   const redditCount = sourceCounts["reddit"] || 0;
@@ -113,8 +252,9 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
         )}
       </div>
 
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
-        <div className="flex items-center gap-2 mb-3">
+      {/* Overall weekly summary */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
           <TrendingUp className="h-5 w-5 text-primary" />
           <h3 className="text-sm font-bold text-primary uppercase tracking-wider">📋 {t(`Cross-Channel Weekly Trend Insight Report (${dateRangeLabel})`, `전채널 주간 트렌드 인사이트 리포트 (${dateRangeLabel})`)}</h3>
         </div>
@@ -124,9 +264,43 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
             <span className="text-sm text-muted-foreground">{t("Loading real data...", "실제 데이터 로딩 중...")}</span>
           </div>
         ) : (
-          insights.map((line, i) => (
-            <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
-          ))
+          <div className="space-y-1">
+            {insights.map((line, i) => (
+              <p key={i} className="text-sm text-foreground/85 leading-relaxed">{line}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Channel-specific breakdowns */}
+        {totalReviews > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pt-2 border-t border-primary/10">
+            <ChannelSection
+              icon={Store}
+              label={t("LG.com Review Analysis", "🏬 LG.com 리뷰 분석")}
+              iconColor="text-primary"
+              borderColor="border-primary/15"
+              bgColor="bg-card/60"
+              totalCount={lgcomCount}
+              posProducts={lgcomPos}
+              negProducts={lgcomNeg}
+              posLoading={lgcomPosL}
+              negLoading={lgcomNegL}
+              t={t}
+            />
+            <ChannelSection
+              icon={MessageCircle}
+              label={t("Reddit Signal Analysis", "💬 Reddit 시그널 분석")}
+              iconColor="text-orange-500"
+              borderColor="border-orange-500/15"
+              bgColor="bg-card/60"
+              totalCount={redditCount}
+              posProducts={redditPos}
+              negProducts={redditNeg}
+              posLoading={redditPosL}
+              negLoading={redditNegL}
+              t={t}
+            />
+          </div>
         )}
       </div>
     </div>
