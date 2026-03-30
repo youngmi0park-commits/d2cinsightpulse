@@ -337,7 +337,75 @@ export default function ToolkitPage() {
         )}
       />
 
-      {/* ═══════ STEP 1 ═══════ */}
+      {/* ═══════ ANITA CREATIVE STUDIO ═══════ */}
+      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <div>
+            <h3 className="text-base font-bold text-foreground">🎨 LG CreW Anita — AI Creative Studio</h3>
+            <p className="text-[11px] text-muted-foreground">
+              {t(
+                "Generate product-specific lifestyle images and ready-to-use banners with Anita AI. Click below to open the tool.",
+                "Anita AI로 제품별 라이프스타일 이미지 및 바로 사용 가능한 배너를 생성합니다. 아래 링크를 클릭하여 도구를 열어보세요."
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Image Generation */}
+          <a
+            href="https://anita-tv.lge.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-start gap-4 rounded-lg border border-border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary shrink-0">
+              <Image className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-bold text-foreground">1. Image Generation</span>
+                <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {t(
+                  "Create localized and product-specific lifestyle visuals tailored by product and country with Anita AI.",
+                  "Anita AI를 통해 제품 및 국가별 맞춤형 라이프스타일 비주얼을 생성합니다."
+                )}
+              </p>
+            </div>
+          </a>
+
+          {/* Banner Creation */}
+          <a
+            href="https://anita-tv.lge.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-start gap-4 rounded-lg border border-border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/30 text-accent-foreground shrink-0">
+              <LayoutTemplate className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-bold text-foreground">2. Banner Creation (Beta)</span>
+                <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {t(
+                  "Take lifestyle images from Anita and instantly turn them into complete, ready-to-use banners via Banner Studio.",
+                  "Anita에서 생성한 라이프스타일 이미지를 Banner Studio를 통해 즉시 완성된 배너로 변환합니다."
+                )}
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
         <StepHeader step={1} title={t("Campaign Context", "캠페인 컨텍스트")} subtitle={t("Seasonal event & product selection · Korea excluded", "시즌 이벤트 & 제품 선택 · 한국 제외")} />
 
