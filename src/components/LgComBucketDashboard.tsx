@@ -23,7 +23,7 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source");
+        .select("id, content, title, sentiment, sentiment_score, source, products!inner(display_name, category)");
 
       if (country === "US") {
         query = query.eq("source", "lge_com_us");
@@ -42,7 +42,11 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
         .order("collected_at", { ascending: false })
         .limit(500);
       if (error) throw error;
-      const classified = (data || []).map(classifyRedditPost);
+      const classified = (data || []).map((r: any) => ({
+        ...classifyRedditPost(r),
+        productName: r.products?.display_name || "",
+        productCategory: r.products?.category || "",
+      }));
       return generateBucketSummaries(classified);
     },
     staleTime: 1000 * 60 * 15,
@@ -156,10 +160,10 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
   const handleCopyPosts = () => {
     const text = summary.posts
       .slice(0, 20)
-      .map((p) => `[${p.bucket}] ${p.title || ""}\n${p.content.slice(0, 200)}...\nKeywords: ${p.keywords.join(", ")}\nActions: ${p.actionTags.join(", ")}`)
+      .map((p: any) => `[${p.bucket}] ${p.productName || p.title || ""}\nKeywords: ${p.keywords.join(", ")}\nActions: ${p.actionTags.join(", ")}`)
       .join("\n\n---\n\n");
     navigator.clipboard.writeText(text);
-    toast.success(t("Posts copied!", "리뷰 복사 완료!"));
+    toast.success(t("Copied!", "복사 완료!"));
   };
 
   return (
@@ -221,20 +225,20 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
 
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className="w-full flex items-center justify-between py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <span>{t("View classified reviews", "분류된 리뷰 보기")}</span>
+          <span>{t("View classified products & keywords", "분류된 제품 · 키워드 보기")}</span>
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="space-y-2 mt-2">
-            {displayPosts.map((post) => (
-              <PostItem key={post.id} post={post} style={style} t={t} />
+            {displayPosts.map((post: any) => (
+              <ProductKeywordItem key={post.id} post={post} style={style} t={t} />
             ))}
             {summary.posts.length > 5 && !showAll && (
               <button
                 onClick={() => setShowAll(true)}
                 className="text-[11px] text-primary hover:underline"
               >
-                {t(`Show all ${summary.posts.length} reviews`, `전체 ${summary.posts.length}건 보기`)}
+                {t(`Show all ${summary.posts.length} items`, `전체 ${summary.posts.length}건 보기`)}
               </button>
             )}
           </div>
@@ -244,40 +248,41 @@ function BucketCard({ summary, t }: { summary: BucketSummary; t: (en: string, ko
   );
 }
 
-function PostItem({
+function ProductKeywordItem({
   post,
   style,
-  t,
 }: {
-  post: ClassifiedPost;
+  post: any;
   style: typeof BUCKET_STYLES.REVIEW;
   t: (en: string, ko: string) => string;
 }) {
+  const productName = post.productName || post.title || "Unknown Product";
   return (
     <div className="rounded-md bg-background/50 border border-border/50 p-2.5">
-      <div className="flex items-start justify-between gap-2 mb-1">
+      <div className="flex items-start justify-between gap-2 mb-1.5">
         <span className="text-[11px] font-medium text-foreground line-clamp-1">
-          {post.title || post.content.slice(0, 60) + "…"}
+          📦 {productName}
         </span>
-        <Badge variant="outline" className={`text-[9px] shrink-0 ${style.text} ${style.border}`}>
-          {(post.bucketConfidence * 100).toFixed(0)}%
-        </Badge>
+        <div className="flex items-center gap-1 shrink-0">
+          <Badge variant="outline" className={`text-[9px] ${style.text} ${style.border}`}>
+            {post.sentiment || "neutral"}
+          </Badge>
+          <span className="text-[9px] text-muted-foreground">
+            {post.source === "lge_com_us" ? "🇺🇸" : post.source === "lge_com_uk" ? "🇬🇧" : ""}
+          </span>
+        </div>
       </div>
-      <p className="text-[10px] text-muted-foreground line-clamp-2 mb-1.5">
-        {post.content.slice(0, 150)}
-      </p>
       <div className="flex items-center gap-1.5 flex-wrap">
-        <Badge variant="secondary" className="text-[9px] px-1 py-0">
-          {post.sentiment || "neutral"}
-        </Badge>
-        {post.actionTags.slice(0, 3).map((tag) => (
+        {post.keywords.slice(0, 5).map((kw: string) => (
+          <Badge key={kw} variant="secondary" className="text-[9px] px-1.5 py-0">
+            #{kw}
+          </Badge>
+        ))}
+        {post.actionTags.slice(0, 2).map((tag: string) => (
           <Badge key={tag} variant="outline" className="text-[9px] px-1 py-0 border-muted">
             {tag.replace(/_/g, " ")}
           </Badge>
         ))}
-        <span className="text-[9px] text-muted-foreground ml-auto">
-          {post.source === "lge_com_us" ? "🇺🇸 US" : post.source === "lge_com_uk" ? "🇬🇧 UK" : post.source}
-        </span>
       </div>
     </div>
   );
