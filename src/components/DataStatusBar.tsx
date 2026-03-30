@@ -29,15 +29,14 @@ export function DataStatusBar() {
     .reduce((sum, [, v]) => sum + v, 0);
 
   return (
-    <div className="bg-card border-b border-border px-5 py-2.5 rounded-xl">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        {/* Total channels badge */}
-        <span className="shrink-0 text-[11px] font-semibold text-primary border border-primary/30 rounded-full px-3 py-1">
+    <div className="gradient-card rounded-xl p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-sm font-bold text-foreground">📡 데이터 수집 현황</span>
+        <span className="text-[11px] font-semibold text-primary border border-primary/30 rounded-full px-3 py-0.5">
           {totalChannels} Channels Active
         </span>
-
-        <span className="w-px h-5 bg-border shrink-0" />
-
+      </div>
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
         {/* LG.com — highlighted solid */}
         <span className="shrink-0 text-[11px] font-semibold text-primary-foreground bg-primary rounded-full px-3 py-1">
           LG.com {lgCount.toLocaleString()}
