@@ -308,6 +308,49 @@ ${d.categoryHighlights.length > 0 ? `
   </table>
 </td></tr>` : ""}
 
+<!-- Marketing Quick Actions -->
+<tr><td style="padding:24px 28px 0;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#A51C30;text-transform:uppercase;margin-bottom:12px;border-left:3px solid #A51C30;padding-left:8px;">Marketing Quick Actions — 마케팅 활용 바로가기</div>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td width="25%" valign="top" style="padding:4px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
+        <tr><td style="padding:14px 12px;">
+          <div style="font-size:16px;margin-bottom:6px;">🏬</div>
+          <div style="font-weight:600;font-size:12px;color:#1a1a1a;">LG.com 인사이트</div>
+          <div style="font-size:10px;color:#999;margin-top:3px;">주간 리포트 · 리뷰 유형 분석</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" valign="top" style="padding:4px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
+        <tr><td style="padding:14px 12px;">
+          <div style="font-size:16px;margin-bottom:6px;">💬</div>
+          <div style="font-weight:600;font-size:12px;color:#1a1a1a;">Reddit Intelligence</div>
+          <div style="font-size:10px;color:#999;margin-top:3px;">커뮤니티 VOC · 제품군 분석</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" valign="top" style="padding:4px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
+        <tr><td style="padding:14px 12px;">
+          <div style="font-size:16px;margin-bottom:6px;">✏️</div>
+          <div style="font-weight:600;font-size:12px;color:#1a1a1a;">Marketing Toolkit</div>
+          <div style="font-size:10px;color:#999;margin-top:3px;">캠페인 카피 · 배너 소재 생성</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" valign="top" style="padding:4px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
+        <tr><td style="padding:14px 12px;">
+          <div style="font-size:16px;margin-bottom:6px;">❓</div>
+          <div style="font-weight:600;font-size:12px;color:#1a1a1a;">AI FAQ 생성</div>
+          <div style="font-size:10px;color:#999;margin-top:3px;">리뷰 기반 FAQ 자동 생성</div>
+        </td></tr>
+      </table>
+    </td>
+  </tr></table>
+</td></tr>
+
 <!-- Footer -->
 <tr><td style="padding:24px 28px;margin-top:16px;">
   <div style="border-top:1px solid #e5e7eb;padding-top:16px;text-align:center;">
