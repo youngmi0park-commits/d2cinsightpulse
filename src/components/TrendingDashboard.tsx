@@ -184,10 +184,25 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
   const avgSentiment = allTrendingProducts.length > 0
     ? Math.round(allTrendingProducts.reduce((sum, p) => sum + p.sentimentScore, 0) / allTrendingProducts.length)
     : 0;
-  const top3 = allTrendingProducts.slice(0, 3);
+  // Deduplicate products by displayName, keeping highest mentions
+  const uniqueProducts = allTrendingProducts.reduce<typeof allTrendingProducts>((acc, p) => {
+    if (!acc.find(x => x.displayName === p.displayName)) acc.push(p);
+    return acc;
+  }, []);
+  const top3 = uniqueProducts.slice(0, 3);
 
-  const posKeywords = allKeywords.filter(k => k.sentiment === "positive").slice(0, 3);
-  const negKeywords = allKeywords.filter(k => k.sentiment === "negative").slice(0, 3);
+  // Deduplicate keywords
+  const dedupeKeywords = (kws: DBTrendingKeyword[]) => {
+    const seen = new Set<string>();
+    return kws.filter(k => {
+      const key = k.keyword.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  const posKeywords = dedupeKeywords(allKeywords.filter(k => k.sentiment === "positive")).slice(0, 3);
+  const negKeywords = dedupeKeywords(allKeywords.filter(k => k.sentiment === "negative")).slice(0, 3);
 
   const formatKwList = (kws: DBTrendingKeyword[]) =>
     kws.map(kw => `"${kw.keyword}"`).join(", ");
