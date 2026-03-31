@@ -400,13 +400,6 @@ export function MarketingHub({
             })}
           </div>
 
-          {/* Link to full toolkit */}
-          <a
-            href={`/toolkit?product=${encodeURIComponent(productName)}&funnel=${selectedFunnel}`}
-            className="mt-3 block w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-sm font-bold text-center hover:opacity-90 transition-opacity"
-          >
-            ✨ {pName} — {activeFunnel.labelKo} 상세 AI 카피 생성하기
-          </a>
         </div>
 
         {/* ═══ 3. FAQ ═══ */}
