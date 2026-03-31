@@ -398,14 +398,6 @@ export function WeeklyNewsletterHTML() {
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          🚀 버튼을 클릭하면 AI 오버뷰가 자동 포함된 완성 뉴스레터 HTML이 클립보드에 복사됩니다. Outlook에 붙여넣기하여 발송하세요.
-        </p>
-        {fullGenHtml && (
-          <p className="text-xs text-primary font-semibold mt-0.5">
-            ✅ AI 뉴스레터 생성 완료 — 수신: youngmi0.park@lge.com | Outlook에서 Ctrl+V로 붙여넣기
-          </p>
-        )}
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
