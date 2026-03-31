@@ -21,7 +21,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, title, sentiment, sentiment_score, source, rating, products!inner(display_name, category)")
+        .select("id, title, content, sentiment, sentiment_score, source, rating, products!inner(display_name, category)")
         .order("collected_at", { ascending: false });
 
       if (country === "US") query = query.eq("source", "lge_com_us");
