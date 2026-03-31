@@ -293,7 +293,7 @@ ${overviewHTML("REDDIT", "💬", reddit)}
 <tr><td style="padding:24px 28px;">
   <div style="border-top:1px solid #e5e7eb;padding-top:16px;text-align:center;">
     <div style="font-size:11px;color:#999;">D2C Insight Pulse — Powered by AI-driven Review Analytics</div>
-    <div style="font-size:10px;color:#bbb;margin-top:4px;">매주 화요일 10:00 발행 · LG전자 글로벌마케팅센터</div>
+    <div style="font-size:10px;color:#bbb;margin-top:4px;">D2C Insight Pulse Created by LG Electronics D2C Marketing Strategy Team</div>
     <div style="font-size:10px;color:#ccc;margin-top:4px;">본 뉴스레터는 사내 배포용으로 외부 공유를 금합니다.</div>
   </div>
 </td></tr>
