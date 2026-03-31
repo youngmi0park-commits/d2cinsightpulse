@@ -359,7 +359,6 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   reviews={item.product.reviews}
                 />
               )}
-              <ReviewList reviews={item.product.reviews} />
             </div>
 
             {/* ── STEPS 3–6: 목표→채널→콘텐츠→생성 ── */}
@@ -367,6 +366,9 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               productName={item.product.name}
               displayName={item.product.displayName}
             />
+
+            {/* ── 실고객 리뷰 (참고용, 최하단) ── */}
+            <ReviewList reviews={item.product.reviews} />
           </div>
         );
       })()}
