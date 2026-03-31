@@ -13,21 +13,13 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number; us2025: number; uk2025: number }>({ us: 0, uk: 0, us2025: 0, uk2025: 0 });
+  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
   useEffect(() => {
-    Promise.all([
-      supabase.rpc("get_lgcom_country_counts"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2024-01-01"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2024-01-01"),
-    ]).then(([countRes, us2025Res, uk2025Res]) => {
+    supabase.rpc("get_lgcom_country_counts").then((countRes) => {
       const data = countRes.data || [];
       const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
       const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
-      setCounts({
-        us, uk,
-        us2025: us2025Res.count || 0,
-        uk2025: uk2025Res.count || 0,
-      });
+      setCounts({ us, uk });
     });
   }, []);
   return counts;
