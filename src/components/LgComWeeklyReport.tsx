@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductSearchInput } from "@/components/ProductSearchInput";
 import {
   BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, Copy, Check,
   Tv, Refrigerator, WashingMachine, FileText, ThumbsUp, ThumbsDown,
   AlertTriangle, Zap, Users, Megaphone, Wrench, Headphones, TrendingUp,
-  Eye, Cpu, MessageSquare, Star, Target, Lightbulb, Shield
+  Eye, Cpu, MessageSquare, Star, Target, Lightbulb, Shield, Search
 } from "lucide-react";
 import { toast } from "sonner";
 
