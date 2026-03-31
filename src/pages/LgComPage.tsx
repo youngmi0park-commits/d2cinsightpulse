@@ -1,7 +1,6 @@
 import { Store, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { LgComProductInsightCards } from "@/components/LgComProductInsightCards";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
@@ -53,8 +52,6 @@ const LgComPage = () => {
       <LgComWeeklyReport />
       {/* 2. 전략 심층분석: 사용자군/JTBD */}
       <WeeklyInsightsPanel />
-      {/* 3. 제품 인사이트 카드 (최하단) */}
-      <LgComProductInsightCards />
     </div>
   );
 };

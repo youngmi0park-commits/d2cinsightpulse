@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import {
   BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, Copy, Check,
@@ -95,15 +94,6 @@ function SectionCard({ icon: Icon, title, children, color = "border-border bg-ca
   );
 }
 
-function PriorityBadge({ level }: { level: string }) {
-  const map: Record<string, string> = {
-    "높음": "bg-destructive/15 text-destructive border-destructive/20",
-    "중간": "bg-yellow-500/15 text-yellow-700 border-yellow-500/20",
-    "낮음": "bg-muted text-muted-foreground border-border",
-  };
-  return <Badge variant="outline" className={`text-[10px] ${map[level] || map["중간"]}`}>{level}</Badge>;
-}
-
 /* ── main component ── */
 export function LgComWeeklyReport() {
   const { t } = useLang();
@@ -140,7 +130,6 @@ export function LgComWeeklyReport() {
     }
   };
 
-  // Auto-run "all" on mount
   useEffect(() => {
     runReport("all");
   }, []);
@@ -158,7 +147,6 @@ export function LgComWeeklyReport() {
             </CardTitle>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Region filter */}
             <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
               {[
                 { value: "all", label: t("All", "전체") },
@@ -176,7 +164,6 @@ export function LgComWeeklyReport() {
                 </button>
               ))}
             </div>
-            {/* Generate */}
             <button
               onClick={() => runReport()}
               disabled={isLoading}
@@ -191,14 +178,14 @@ export function LgComWeeklyReport() {
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered 6-section weekly insight report with country & product filters",
-            "AI 기반 6대 섹션 주간 인사이트 리포트 · 국가별/제품별 필터 지원"
+            "AI-powered weekly insight report with country & product filters",
+            "AI 기반 주간 인사이트 리포트 · 국가별/제품별 필터 지원"
           )}
         </p>
       </CardHeader>
 
       <CardContent className="pt-0">
-        {/* Mode toggle: Category vs Product Search */}
+        {/* Mode toggle */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex gap-0.5 bg-muted/50 rounded-lg p-0.5">
             <button
@@ -292,10 +279,9 @@ export function LgComWeeklyReport() {
               </div>
             )}
 
-            {/* ── Executive Summary: always visible ── */}
+            {/* Executive Summary */}
             {es && (
               <div className="space-y-3">
-                {/* Metrics row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { label: t("Total Reviews", "전체 리뷰"), value: es.total_reviews?.toLocaleString() || "–", icon: FileText },
@@ -311,7 +297,6 @@ export function LgComWeeklyReport() {
                   ))}
                 </div>
 
-                {/* Sentiment bar */}
                 {es.sentiment_ratio && (
                   <div className="rounded-lg border border-border p-3">
                     <div className="text-xs font-semibold mb-2">{t("Sentiment Distribution", "감성 비율")}</div>
@@ -328,7 +313,6 @@ export function LgComWeeklyReport() {
                   </div>
                 )}
 
-                {/* Top 3 insights */}
                 {es.top3_insights && es.top3_insights.length > 0 && (
                   <div className="bg-primary/5 border border-primary/15 rounded-lg p-3 space-y-2">
                     <div className="flex items-center gap-2">
@@ -347,187 +331,119 @@ export function LgComWeeklyReport() {
               </div>
             )}
 
-            {/* ── Detail tabs (Themes/Strengths/Actions/Products only) ── */}
-            <Tabs defaultValue="themes" className="w-full">
-              <TabsList className="w-full grid grid-cols-4 h-9">
-                <TabsTrigger value="themes" className="text-[10px] gap-1 px-1">
-                  <TrendingUp className="h-3 w-3" />
-                  {t("Themes", "주제 TOP5")}
-                </TabsTrigger>
-                <TabsTrigger value="strengths" className="text-[10px] gap-1 px-1">
-                  <ThumbsUp className="h-3 w-3" />
-                  {t("Strengths", "강점")}
-                </TabsTrigger>
-                <TabsTrigger value="actions" className="text-[10px] gap-1 px-1">
-                  <Zap className="h-3 w-3" />
-                  {t("Actions", "액션")}
-                </TabsTrigger>
-                <TabsTrigger value="products" className="text-[10px] gap-1 px-1">
-                  <Target className="h-3 w-3" />
-                  {t("Products", "제품별")}
-                </TabsTrigger>
-              </TabsList>
+            {/* ── All sections stacked (no tabs) ── */}
 
-              {/* ─── 2. Top 5 Themes + Negative Priority ─── */}
-              <TabsContent value="themes" className="space-y-3 mt-3">
-                <SectionCard icon={TrendingUp} title={t("Top 5 Customer Themes", "고객이 가장 많이 말하는 5가지 주제")} color="border-blue-500/20 bg-blue-500/5">
-                  {(report.top5_themes || []).map((th, i) => (
-                    <div key={i} className="bg-background/60 rounded-lg p-3 space-y-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="secondary" className="text-[10px] font-bold">{i + 1}. {th.theme}</Badge>
-                        <span className="text-[10px] text-muted-foreground">{t("Mentions", "언급")} {th.mention_pct}</span>
-                        <span className="text-[10px] text-success">👍 {th.positive_pct}</span>
-                        <span className="text-[10px] text-destructive">👎 {th.negative_pct}</span>
-                        <div className="ml-auto"><CopyBtn text={`${th.theme}: ${th.representative_quote}`} /></div>
-                      </div>
-                      <p className="text-xs text-foreground italic">"{th.representative_quote}"</p>
-                      <div className="flex flex-wrap gap-1">
-                        {(th.related_products || []).map((p, pi) => (
-                          <Badge key={pi} variant="outline" className="text-[9px] px-1.5 py-0">{p}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </SectionCard>
-
-                <SectionCard icon={AlertTriangle} title={t("Negative Priority TOP 3", "개선 시급 이슈 TOP 3")} color="border-destructive/20 bg-destructive/5">
-                  {(report.negative_priority_top3 || []).map((neg, i) => (
-                    <div key={i} className="bg-background/60 rounded-lg p-3 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="destructive" className="text-[10px]">{i + 1}</Badge>
-                        <span className="font-semibold text-xs text-foreground">{neg.issue}</span>
-                        <span className="text-[10px] text-destructive ml-auto">{neg.mention_pct}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground"><strong>{t("Pattern:", "패턴:")}</strong> {neg.recurring_pattern}</p>
-                      <p className="text-xs text-foreground"><strong>{t("Root Cause:", "원인:")}</strong> {neg.root_cause}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {(neg.related_products || []).map((p, pi) => (
-                          <Badge key={pi} variant="outline" className="text-[9px] px-1.5 py-0">{p}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </SectionCard>
-              </TabsContent>
-
-              {/* ─── 3. Strengths ─── */}
-              <TabsContent value="strengths" className="space-y-3 mt-3">
-                {report.strengths && (
-                  <>
-                    <SectionCard icon={ThumbsUp} title={t("Repeated Praise", "반복 칭찬 포인트")} color="border-success/20 bg-success/5">
-                      <div className="space-y-1">
-                        {(report.strengths.repeated_praise || []).map((p, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-background/60 rounded p-2">
-                            <span className="text-xs text-foreground flex-1">✅ {p}</span>
-                            <CopyBtn text={p} />
-                          </div>
-                        ))}
-                      </div>
-                    </SectionCard>
-
-                    <SectionCard icon={Star} title={t("Unconditional Praise", '"비교 없이" 칭찬하는 포인트')} color="border-amber-500/20 bg-amber-500/5">
-                      <div className="space-y-1">
-                        {(report.strengths.unconditional_praise || []).map((p, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-background/60 rounded p-2">
-                            <span className="text-xs text-foreground flex-1">⭐ {p}</span>
-                            <CopyBtn text={p} />
-                          </div>
-                        ))}
-                      </div>
-                    </SectionCard>
-
-                    <SectionCard icon={Shield} title={t("Competitive Advantage", "경쟁사 대비 우위")} color="border-primary/20 bg-primary/5">
-                      {(report.strengths.competitive_advantage || []).map((ca, i) => (
-                        <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px]">vs {ca.vs_competitor}</Badge>
-                            <div className="ml-auto"><CopyBtn text={`${ca.point} (vs ${ca.vs_competitor}): ${ca.evidence}`} /></div>
-                          </div>
-                          <p className="text-xs font-medium text-foreground">{ca.point}</p>
-                          <p className="text-[11px] text-muted-foreground">{ca.evidence}</p>
-                        </div>
-                      ))}
-                    </SectionCard>
-                  </>
-                )}
-              </TabsContent>
-
-              {/* ─── 4. Action Items ─── */}
-              <TabsContent value="actions" className="space-y-3 mt-3">
-                {report.action_items && (
-                  <>
-                    <SectionCard icon={Wrench} title={t("Product Team", "제품팀 액션")} color="border-blue-500/20 bg-blue-500/5">
-                      {(report.action_items.product_team || []).map((a, i) => (
-                        <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xs text-foreground flex-1">{a.item}</span>
-                            <PriorityBadge level={a.priority} />
-                          </div>
-                          <p className="text-[11px] text-muted-foreground">{a.detail}</p>
-                        </div>
-                      ))}
-                    </SectionCard>
-
-                    <SectionCard icon={Headphones} title={t("CS Team", "CS팀 액션")} color="border-orange-500/20 bg-orange-500/5">
-                      {(report.action_items.cs_team || []).map((a, i) => (
-                        <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                          <span className="font-semibold text-xs text-foreground">{a.item}</span>
-                          <p className="text-[11px] text-muted-foreground">{a.detail}</p>
-                        </div>
-                      ))}
-                    </SectionCard>
-
-                    <SectionCard icon={Megaphone} title={t("Marketing Team", "마케팅팀 액션")} color="border-violet-500/20 bg-violet-500/5">
-                      {(report.action_items.marketing_team || []).map((a, i) => (
-                        <div key={i} className="bg-background/60 rounded p-2.5 space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-xs text-foreground">{a.satisfaction_message}</span>
-                            <CopyBtn text={a.copy_suggestion} />
-                          </div>
-                          <p className="text-[11px] text-primary/80 italic">💬 "{a.copy_suggestion}"</p>
-                        </div>
-                      ))}
-                    </SectionCard>
-                  </>
-                )}
-              </TabsContent>
-
-              {/* ─── 5. Per-Product Insights ─── */}
-              <TabsContent value="products" className="space-y-3 mt-3">
-                {(report.product_insights || []).map((pi, i) => (
-                  <div key={i} className="rounded-lg border border-border bg-card p-3 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm text-foreground">{pi.product_name}</span>
-                      <Badge variant="secondary" className="text-[10px]">{pi.category}</Badge>
-                      <span className="text-[10px] text-muted-foreground ml-auto">{pi.review_count}{t(" reviews", "건")}</span>
-                    </div>
-
-                    <div className="flex gap-3 text-[10px]">
-                      <span className="text-success">👍 {pi.positive_pct}</span>
-                      <span className="text-destructive">👎 {pi.negative_pct}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      {(pi.top_praise_keywords || []).map((k, ki) => (
-                        <Badge key={ki} variant="secondary" className="text-[9px] px-1.5 py-0 bg-success/10 text-success border-success/15">{k}</Badge>
-                      ))}
-                      {(pi.top_complaint_keywords || []).map((k, ki) => (
-                        <Badge key={`n${ki}`} variant="secondary" className="text-[9px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/15">{k}</Badge>
-                      ))}
-                    </div>
-
-                    <div className="bg-muted/30 rounded p-2 space-y-1">
-                      <p className="text-xs text-foreground"><strong>{t("Insight:", "인사이트:")}</strong> {pi.key_insight}</p>
-                      <p className="text-[11px] text-primary/80">→ {pi.action_suggestion}</p>
-                    </div>
+            {/* Top 5 Themes + Negative Priority */}
+            <SectionCard icon={TrendingUp} title={t("Top 5 Customer Themes", "고객이 가장 많이 말하는 5가지 주제")} color="border-blue-500/20 bg-blue-500/5">
+              {(report.top5_themes || []).map((th, i) => (
+                <div key={i} className="bg-background/60 rounded-lg p-3 space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="text-[10px] font-bold">{i + 1}. {th.theme}</Badge>
+                    <span className="text-[10px] text-muted-foreground">{t("Mentions", "언급")} {th.mention_pct}</span>
+                    <span className="text-[10px] text-success">👍 {th.positive_pct}</span>
+                    <span className="text-[10px] text-destructive">👎 {th.negative_pct}</span>
+                    <div className="ml-auto"><CopyBtn text={`${th.theme}: ${th.representative_quote}`} /></div>
                   </div>
-                ))}
-                {(!report.product_insights || report.product_insights.length === 0) && (
-                  <p className="text-xs text-muted-foreground text-center py-4">{t("No product data", "제품별 데이터 없음")}</p>
-                )}
-              </TabsContent>
+                  <p className="text-xs text-foreground italic">"{th.representative_quote}"</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(th.related_products || []).map((p, pi) => (
+                      <Badge key={pi} variant="outline" className="text-[9px] px-1.5 py-0">{p}</Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </SectionCard>
 
-            </Tabs>
+            <SectionCard icon={AlertTriangle} title={t("Negative Priority TOP 3", "개선 시급 이슈 TOP 3")} color="border-destructive/20 bg-destructive/5">
+              {(report.negative_priority_top3 || []).map((neg, i) => (
+                <div key={i} className="bg-background/60 rounded-lg p-3 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="destructive" className="text-[10px]">{i + 1}</Badge>
+                    <span className="font-semibold text-xs text-foreground">{neg.issue}</span>
+                    <span className="text-[10px] text-destructive ml-auto">{neg.mention_pct}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground"><strong>{t("Pattern:", "패턴:")}</strong> {neg.recurring_pattern}</p>
+                  <p className="text-xs text-foreground"><strong>{t("Root Cause:", "원인:")}</strong> {neg.root_cause}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(neg.related_products || []).map((p, pi) => (
+                      <Badge key={pi} variant="outline" className="text-[9px] px-1.5 py-0">{p}</Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </SectionCard>
+
+            {/* Strengths */}
+            {report.strengths && (
+              <>
+                <SectionCard icon={ThumbsUp} title={t("Repeated Praise", "반복 칭찬 포인트")} color="border-success/20 bg-success/5">
+                  <div className="space-y-1">
+                    {(report.strengths.repeated_praise || []).map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-background/60 rounded p-2">
+                        <span className="text-xs text-foreground flex-1">✅ {p}</span>
+                        <CopyBtn text={p} />
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+
+                <SectionCard icon={Star} title={t("Unconditional Praise", '"비교 없이" 칭찬하는 포인트')} color="border-amber-500/20 bg-amber-500/5">
+                  <div className="space-y-1">
+                    {(report.strengths.unconditional_praise || []).map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-background/60 rounded p-2">
+                        <span className="text-xs text-foreground flex-1">⭐ {p}</span>
+                        <CopyBtn text={p} />
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+
+                <SectionCard icon={Shield} title={t("Competitive Advantage", "경쟁사 대비 우위")} color="border-primary/20 bg-primary/5">
+                  {(report.strengths.competitive_advantage || []).map((ca, i) => (
+                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px]">vs {ca.vs_competitor}</Badge>
+                        <div className="ml-auto"><CopyBtn text={`${ca.point} (vs ${ca.vs_competitor}): ${ca.evidence}`} /></div>
+                      </div>
+                      <p className="text-xs font-medium text-foreground">{ca.point}</p>
+                      <p className="text-[11px] text-muted-foreground">{ca.evidence}</p>
+                    </div>
+                  ))}
+                </SectionCard>
+              </>
+            )}
+
+            {/* Per-Product Insights */}
+            <SectionCard icon={Target} title={t("Per-Product Insights", "제품별 인사이트")} color="border-border bg-card">
+              {(report.product_insights || []).map((pi, i) => (
+                <div key={i} className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm text-foreground">{pi.product_name}</span>
+                    <Badge variant="secondary" className="text-[10px]">{pi.category}</Badge>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{pi.review_count}{t(" reviews", "건")}</span>
+                  </div>
+                  <div className="flex gap-3 text-[10px]">
+                    <span className="text-success">👍 {pi.positive_pct}</span>
+                    <span className="text-destructive">👎 {pi.negative_pct}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(pi.top_praise_keywords || []).map((k, ki) => (
+                      <Badge key={ki} variant="secondary" className="text-[9px] px-1.5 py-0 bg-success/10 text-success border-success/15">{k}</Badge>
+                    ))}
+                    {(pi.top_complaint_keywords || []).map((k, ki) => (
+                      <Badge key={`n${ki}`} variant="secondary" className="text-[9px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/15">{k}</Badge>
+                    ))}
+                  </div>
+                  <div className="bg-muted/30 rounded p-2 space-y-1">
+                    <p className="text-xs text-foreground"><strong>{t("Insight:", "인사이트:")}</strong> {pi.key_insight}</p>
+                    <p className="text-[11px] text-primary/80">→ {pi.action_suggestion}</p>
+                  </div>
+                </div>
+              ))}
+              {(!report.product_insights || report.product_insights.length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-4">{t("No product data", "제품별 데이터 없음")}</p>
+              )}
+            </SectionCard>
 
             {/* Timestamp */}
             {meta?.generated_at && (
