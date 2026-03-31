@@ -281,7 +281,7 @@ export function WeeklyInsightsPanel() {
               <TabsList className="w-full grid grid-cols-3 h-9">
                 <TabsTrigger value="persona" className="text-xs gap-1">
                   <Users className="h-3.5 w-3.5" />
-                  {t("Persona", "페르소나")}
+                  {t("User Groups", "사용자군 정의")}
                 </TabsTrigger>
                 <TabsTrigger value="jtbd" className="text-xs gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
