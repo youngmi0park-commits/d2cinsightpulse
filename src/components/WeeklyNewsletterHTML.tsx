@@ -344,13 +344,23 @@ export function WeeklyNewsletterHTML() {
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-heading">📬 금주의 뉴스레터</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{data.dateRange}</Badge>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 10:00 발행</Badge>
+            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 08:00 발행</Badge>
           </div>
           <div className="flex items-center gap-2">
+            {/* 원클릭 AI 뉴스레터 생성 */}
+            <Button
+              onClick={generateFullNewsletter}
+              disabled={fullGenLoading}
+              size="sm"
+              className="gap-1.5 bg-gradient-to-r from-primary to-primary/80"
+            >
+              {fullGenLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Rocket className="h-3.5 w-3.5" />}
+              {fullGenLoading ? "AI 분석 + HTML 생성 중..." : fullGenHtml ? "✅ AI 뉴스레터 복사 완료" : "🚀 AI 뉴스레터 원클릭 생성 & 복사"}
+            </Button>
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
               <button onClick={() => setViewMode("preview")} className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${viewMode === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                 <Eye className="h-3 w-3" /> 미리보기
