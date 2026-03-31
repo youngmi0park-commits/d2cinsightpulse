@@ -184,7 +184,8 @@ function getSourceWeight(source: string): number {
 }
 
 /** Split text into sentence-like segments */
-function splitSentences(text: string): string[] {
+function splitSentences(text: string | undefined | null): string[] {
+  if (!text) return [];
   return text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 3);
 }
 
