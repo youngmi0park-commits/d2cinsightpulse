@@ -113,7 +113,6 @@ export function OverviewDashboard() {
         overview={lgcomOverview}
         isLoading={lgcomLoading}
         onGenerate={() => generateOverview("lgcom")}
-        accentClass="primary"
       />
 
       {/* Reddit Weekly Overview */}
@@ -123,7 +122,6 @@ export function OverviewDashboard() {
         overview={redditOverview}
         isLoading={redditLoading}
         onGenerate={() => generateOverview("reddit")}
-        accentClass="orange-500"
       />
 
       {/* Quick Actions */}
