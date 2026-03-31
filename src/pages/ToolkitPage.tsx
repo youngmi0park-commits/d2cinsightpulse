@@ -62,9 +62,11 @@ const CAMPAIGN_TYPES = [
   "📦 Inventory Liquidation", "🆕 Pre-order / Launch",
 ];
 
-const BUDGET_TIERS = [
-  "💰 Tier 1 — Hero (>$100K)", "💵 Tier 2 — Priority ($50–100K)",
-  "🪙 Tier 3 — Standard ($10–50K)", "🆓 Tier 4 — Organic Only (<$10K)",
+const PRODUCT_CATEGORIES = [
+  "📺 TV", "🧊 냉장고 (Refrigerator)", "👕 세탁기 (Washer)",
+  "🍳 식기세척기 (Dishwasher)", "💻 노트북 (Laptop)",
+  "🖥️ 모니터 (Monitor)", "🔊 사운드바 (Soundbar)",
+  "🌀 에어컨 (Air Care)", "🤖 청소기 (Vacuum)",
 ];
 
 const PERSONAS = [
