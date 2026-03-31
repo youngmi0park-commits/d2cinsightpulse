@@ -125,14 +125,17 @@ export function WeeklyInsightsPanel() {
   const [category, setCategory] = useState("all");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState<"category" | "product">("category");
 
-  const runAnalysis = async (cat?: string) => {
+  const runAnalysis = async (cat?: string, productId?: string) => {
     const targetCategory = cat ?? category;
     setIsLoading(true);
-    setCategory(targetCategory);
+    if (!productId) setCategory(targetCategory);
     try {
+      const invokeBody: any = { region, limit: 5, category: targetCategory };
+      if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
-        body: { region, limit: 5, category: targetCategory },
+        body: invokeBody,
       });
       if (error) throw error;
       if (data?.insights) {
