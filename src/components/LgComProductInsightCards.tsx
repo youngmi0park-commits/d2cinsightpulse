@@ -122,6 +122,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
             count: p.count,
             topPhrases,
             keywords,
+            snippets: p.snippets.slice(0, 3), // top 3 content excerpts
             avgRating: p.ratingCount > 0 ? (p.avgRating / p.ratingCount).toFixed(1) : null,
             sources: Array.from(p.sources),
           };
