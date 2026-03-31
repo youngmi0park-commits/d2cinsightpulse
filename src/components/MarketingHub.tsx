@@ -322,14 +322,28 @@ export function MarketingHub({
           />
           <div className="space-y-3">
             {channelCopies.map((cc, i) => {
-              const fullText = `[${cc.channel}]\nHeadline: ${cc.headline}\nBody: ${cc.body}\nCTA: ${cc.cta}`;
+              const fullText = `[${cc.channel}]\nHeadline (${cc.limits.headline}ch): ${cc.headline}\nBody (${cc.limits.body}ch): ${cc.body}\nCTA (${cc.limits.cta}ch): ${cc.cta}`;
               const key = `ch-${selectedFunnel}-${i}`;
+              const hLen = cc.headline.length;
+              const bLen = cc.body.length;
+              const cLen = cc.cta.length;
               return (
-                <div key={key} className="rounded-xl border border-border bg-card p-4 space-y-2">
+                <div key={key} className="rounded-xl border border-border bg-card p-4 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
-                      {cc.channel}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
+                        {cc.channel}
+                      </Badge>
+                      {cc.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#006600]/30 text-[#006600]">
+                          <ShieldCheck className="h-3 w-3" /> Compliant
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {cc.compliance.issues.length} fix applied
+                        </Badge>
+                      )}
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -340,12 +354,46 @@ export function MarketingHub({
                       {copiedKey === key ? "복사됨" : "전체 복사"}
                     </Button>
                   </div>
-                  <p className="text-sm font-bold text-foreground">{cc.headline}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{cc.body}</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                      CTA: {cc.cta}
-                    </Badge>
+
+                  {/* Headline */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="text-[9px] text-muted-foreground mb-0.5">
+                        Headline · <span className={hLen > cc.limits.headline ? "text-destructive font-bold" : "text-[#006600]"}>{hLen}/{cc.limits.headline}ch</span>
+                      </p>
+                      <p className="text-sm font-bold text-foreground">{cc.headline}</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-6 text-[9px] shrink-0" onClick={() => copyText(cc.headline, `${key}-h`)}>
+                      {copiedKey === `${key}-h` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="text-[9px] text-muted-foreground mb-0.5">
+                        Body · <span className={bLen > cc.limits.body ? "text-destructive font-bold" : "text-[#006600]"}>{bLen}/{cc.limits.body}ch</span>
+                      </p>
+                      <p className="text-xs text-foreground/80 leading-relaxed">{cc.body}</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-6 text-[9px] shrink-0" onClick={() => copyText(cc.body, `${key}-b`)}>
+                      {copiedKey === `${key}-b` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[9px] text-muted-foreground mb-0.5">
+                        CTA · <span className={cLen > cc.limits.cta ? "text-destructive font-bold" : "text-[#006600]"}>{cLen}/{cc.limits.cta}ch</span>
+                      </p>
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                        {cc.cta}
+                      </Badge>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-6 text-[9px] shrink-0" onClick={() => copyText(cc.cta, `${key}-c`)}>
+                      {copiedKey === `${key}-c` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </Button>
                   </div>
                 </div>
               );
