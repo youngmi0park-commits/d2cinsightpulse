@@ -1,0 +1,188 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+
+    const body = await req.json().catch(() => ({}));
+    const channel: string = body.channel || "lgcom"; // "lgcom" | "reddit"
+
+    // Fetch recent reviews for the channel
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    let query = sb
+      .from("reviews")
+      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category)")
+      .order("collected_at", { ascending: false })
+      .limit(500);
+
+    if (channel === "lgcom") {
+      query = query.like("source", "lge_com%");
+    } else {
+      query = query.eq("source", "reddit");
+    }
+
+    const { data: reviews, error } = await query;
+    if (error) throw error;
+    if (!reviews || reviews.length === 0) {
+      return new Response(
+        JSON.stringify({ overview: null, message: "No reviews found" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Build review summary for AI
+    const posReviews = reviews.filter((r: any) => r.sentiment === "positive");
+    const negReviews = reviews.filter((r: any) => r.sentiment === "negative");
+
+    // Aggregate by product
+    const productMap: Record<string, { name: string; model: string; category: string; pos: number; neg: number; titles: string[] }> = {};
+    for (const r of reviews as any[]) {
+      const pName = r.products?.display_name || "Unknown";
+      if (!productMap[pName]) {
+        productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", pos: 0, neg: 0, titles: [] };
+      }
+      if (r.sentiment === "positive") productMap[pName].pos++;
+      if (r.sentiment === "negative") productMap[pName].neg++;
+      if (r.title && productMap[pName].titles.length < 10) productMap[pName].titles.push(r.title);
+    }
+
+    const topProducts = Object.values(productMap).sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 15);
+    const productSummary = topProducts.map(p =>
+      `${p.name} (${p.model}, ${p.category}): 긍정 ${p.pos}건, 부정 ${p.neg}건, 키워드: ${p.titles.slice(0, 5).join(", ")}`
+    ).join("\n");
+
+    const posTitles = posReviews.slice(0, 50).map((r: any) => r.title).filter(Boolean).join(", ");
+    const negTitles = negReviews.slice(0, 50).map((r: any) => r.title).filter(Boolean).join(", ");
+
+    const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : "Reddit 커뮤니티";
+
+    const systemPrompt = `You are an expert consumer insight analyst for LG Electronics. Analyze ${channelLabel} data and provide structured weekly overview in Korean. Be specific with product names and real patterns from the data. Write in a format suitable for marketing team weekly briefing.`;
+
+    const userPrompt = `다음은 ${channelLabel}의 최근 수집된 리뷰 데이터입니다:
+
+총 리뷰: ${reviews.length}건 (긍정 ${posReviews.length}건, 부정 ${negReviews.length}건)
+
+제품별 현황:
+${productSummary}
+
+긍정 키워드 TOP: ${posTitles.slice(0, 500)}
+부정 키워드 TOP: ${negTitles.slice(0, 500)}
+
+위 데이터를 기반으로 아래 4가지 섹션을 분석해주세요:
+
+## 1. 고객이 가장 많이 말하는 5가지 주제 (TOP 5 Topics)
+각 주제별로:
+- 주제명 (구체적, 예: "OLED TV의 뛰어난 화질 및 성능")
+- 전체 언급 비율 (%)
+- 긍정 비율 (%) / 부정 비율 (%)
+- 대표 코멘트 (리뷰 데이터에서 추출한 1줄 요약, 큰따옴표로)
+- 관련 제품 모델명 리스트
+
+## 2. 개선 시급 이슈 TOP 3 (Urgent Issues)
+각 이슈별로:
+- 이슈명 (구체적)
+- 언급 비율 (%)
+- 패턴: 어떤 상황에서 발생하는지
+- 원인: 추정되는 원인
+- 관련 제품 모델명 리스트
+
+## 3. 반복 칭찬 포인트 (Recurring Praise Points)
+- 5개 항목, 각각 한 줄로 (예: "OLED TV의 압도적인 화질 (선명함, 색감, 명암비)")
+
+## 4. "비교 없이" 칭찬하는 포인트 (Unmatched Praise)
+- 고객이 경쟁사 대비가 아닌 절대적으로 칭찬하는 포인트 4~5개
+- 각각 고객 말투를 살린 한 줄 코멘트 (큰따옴표)
+
+JSON 형태로 응답:
+{
+  "top_topics": [
+    {
+      "rank": 1,
+      "topic": "주제명",
+      "mention_pct": 40,
+      "positive_pct": 95,
+      "negative_pct": 5,
+      "representative_comment": "대표 코멘트",
+      "related_products": ["모델명1", "모델명2"]
+    }
+  ],
+  "urgent_issues": [
+    {
+      "rank": 1,
+      "issue": "이슈명",
+      "mention_pct": 70,
+      "pattern": "패턴 설명",
+      "cause": "원인 설명",
+      "related_products": ["모델명1"]
+    }
+  ],
+  "recurring_praise": ["칭찬 포인트1", "칭찬 포인트2"],
+  "unmatched_praise": ["코멘트1", "코멘트2"]
+}`;
+
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      throw new Error(`AI API error: ${aiResponse.status} - ${errText}`);
+    }
+
+    const aiData = await aiResponse.json();
+    const content = aiData.choices?.[0]?.message?.content || "{}";
+    let overview;
+    try {
+      overview = JSON.parse(content);
+    } catch {
+      overview = { raw: content };
+    }
+
+    return new Response(
+      JSON.stringify({
+        overview,
+        metadata: {
+          channel,
+          total_reviews: reviews.length,
+          positive_count: posReviews.length,
+          negative_count: negReviews.length,
+          generated_at: new Date().toISOString(),
+        },
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(
+      JSON.stringify({ error: (error as Error).message || "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
