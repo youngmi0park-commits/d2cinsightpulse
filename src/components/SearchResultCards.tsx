@@ -352,6 +352,12 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               />
             )}
             <ReviewList reviews={item.product.reviews} />
+
+            {/* Content Creation Quick Actions */}
+            <ContentCreationActions
+              productName={item.product.name}
+              displayName={item.product.displayName}
+            />
           </div>
         );
       })()}
