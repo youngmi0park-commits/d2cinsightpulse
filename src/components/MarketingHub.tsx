@@ -58,6 +58,43 @@ const AD_FUNNELS = [
   },
 ];
 
+/* ── Channel text limits ── */
+const CHANNEL_LIMITS: Record<string, { headline: number; body: number; cta: number }> = {
+  "YouTube Bumper": { headline: 30, body: 90, cta: 15 },
+  "Meta Stories": { headline: 40, body: 125, cta: 20 },
+  Display: { headline: 30, body: 90, cta: 15 },
+  PMAX: { headline: 30, body: 90, cta: 15 },
+  "Meta Carousel": { headline: 40, body: 125, cta: 20 },
+  Affiliate: { headline: 50, body: 150, cta: 20 },
+  "Search RSA": { headline: 30, body: 90, cta: 15 },
+  Criteo: { headline: 30, body: 90, cta: 15 },
+  "LG.com": { headline: 50, body: 150, cta: 35 },
+  "Email CRM": { headline: 60, body: 200, cta: 25 },
+  Meta: { headline: 40, body: 125, cta: 20 },
+};
+
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : text.slice(0, max - 1) + "…";
+}
+
+/* ── Compliance quick-check ── */
+function quickComply(text: string): { ok: boolean; issues: string[] } {
+  const issues: string[] = [];
+  const lower = text.toLowerCase();
+  const superlatives = ["best", "#1", "unprecedented", "most reliable", "top-rated", "number one", "world's first", "unmatched", "ultimate"];
+  const comparatives = ["better than", "superior to", "beats", "outperforms"];
+  for (const s of superlatives) if (lower.includes(s)) issues.push(`Superlative "${s}" removed`);
+  for (const c of comparatives) if (lower.includes(c)) issues.push(`Comparative "${c}" flagged`);
+  return { ok: issues.length === 0, issues };
+}
+
+function cleanCopy(text: string): string {
+  return text
+    .replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 /* ── Generate channel copy based on funnel + product insights ── */
 function generateChannelCopy(
   funnelKey: string,
@@ -65,88 +102,97 @@ function generateChannelCopy(
   productName: string,
   sentiment: SentimentResult,
 ) {
-  const s1 = sentiment.keywords.positive?.[0] || "Quality";
-  const s2 = sentiment.keywords.positive?.[1] || "Performance";
+  const s1 = sentiment.keywords.positive?.[0] || "quality";
+  const s2 = sentiment.keywords.positive?.[1] || "performance";
   const pain = sentiment.keywords.negative?.[0] || "";
   const scene = sentiment.usageScenes?.[0] || "living room";
   const posCount = sentiment.positive;
+  const limits = CHANNEL_LIMITS[channel] || { headline: 50, body: 150, cta: 20 };
 
   const templates: Record<string, Record<string, { headline: string; body: string; cta: string }>> = {
     awareness: {
       "YouTube Bumper": {
-        headline: `${productName} — ${s1}이 다릅니다`,
-        body: `실사용자 ${posCount}명이 선택한 이유. ${s2}까지 완벽한 경험.`,
-        cta: "지금 확인하기",
+        headline: `${productName} — ${s1} Redefined`,
+        body: `Chosen by ${posCount} verified users. ${s2} that speaks for itself.`,
+        cta: "Discover Now",
       },
       "Meta Stories": {
-        headline: `${scene}에서 만나는 ${productName}`,
-        body: `"${s1}" — 고객들이 반복 언급하는 키워드. 직접 경험해보세요.`,
-        cta: "더 알아보기",
+        headline: `Meet ${productName} in Your ${scene}`,
+        body: `"${s1}" — the keyword customers keep mentioning. Experience it yourself.`,
+        cta: "Learn More",
       },
       Display: {
         headline: `${productName} | ${s1} · ${s2}`,
-        body: `${posCount}건의 실제 리뷰가 증명하는 품질.`,
-        cta: "자세히 보기",
+        body: `${posCount} real reviews prove the quality.`,
+        cta: "See Details",
       },
     },
     consideration: {
       PMAX: {
-        headline: `${productName} — ${s1} 실사용 후기`,
-        body: `${posCount}명의 검증된 리뷰. ${s2} 성능을 직접 확인하세요.`,
-        cta: "상세페이지 방문",
+        headline: `${productName} — Real ${s1} Reviews`,
+        body: `${posCount} verified reviews. See how ${s2} performs in real life.`,
+        cta: "View Details",
       },
       "Meta Carousel": {
-        headline: `왜 ${productName}인가?`,
-        body: `① ${s1} ② ${s2} — 실사용자 리뷰에서 추출한 Top 강점.`,
-        cta: "비교해보기",
+        headline: `Why ${productName}?`,
+        body: `① ${s1} ② ${s2} — Top strengths extracted from real user reviews.`,
+        cta: "Compare Now",
       },
       Affiliate: {
-        headline: `${productName} 리얼 리뷰 요약`,
-        body: `${posCount}건 분석 결과: "${s1}"이(가) 가장 많이 언급된 강점입니다.`,
-        cta: "구매 링크",
+        headline: `${productName} Review Summary`,
+        body: `${posCount} reviews analyzed: "${s1}" is the most mentioned strength.`,
+        cta: "Shop Now",
       },
     },
     conversion: {
       "Search RSA": {
-        headline: `${productName} — ${s1} | 지금 구매`,
-        body: `${posCount}명이 선택한 ${s2}. ${pain ? `"${pain}" 걱정? 리뷰로 확인하세요.` : "한정 혜택 진행 중."}`,
-        cta: "바로 구매",
+        headline: `${productName} — ${s1} | Buy Now`,
+        body: `${posCount} users chose ${s2}. ${pain ? `Worried about "${pain}"? Reviews tell a different story.` : "Limited-time offer available."}`,
+        cta: "Buy Now",
       },
       Criteo: {
-        headline: `다시 돌아온 ${productName}`,
-        body: `이전에 확인하신 ${productName}, 지금이 최적의 구매 타이밍입니다.`,
-        cta: "장바구니 담기",
+        headline: `${productName} Is Calling You Back`,
+        body: `You viewed ${productName} before. Now is the perfect time to make it yours.`,
+        cta: "Add to Cart",
       },
       "LG.com": {
-        headline: `${productName} 공식몰 단독 혜택`,
-        body: `실사용자 ${posCount}명이 인정한 ${s1}. 공식몰에서만 만나는 특별 오퍼.`,
-        cta: "지금 주문하기",
+        headline: `${productName} — Exclusive LG.com Offer`,
+        body: `${posCount} real users love the ${s1}. Get an exclusive deal only on LG.com.`,
+        cta: "Order Now",
       },
     },
     retention: {
       "Email CRM": {
-        headline: `${productName} 고객님, 새로운 경험이 기다립니다`,
-        body: `${s1}에 만족하셨다면, 업그레이드된 라인업을 확인해보세요.`,
-        cta: "신제품 보기",
+        headline: `${productName} Owner — A New Experience Awaits`,
+        body: `Loved the ${s1}? Explore our upgraded lineup designed for you.`,
+        cta: "See What's New",
       },
       Meta: {
-        headline: `${productName} 오너를 위한 특별 제안`,
-        body: `기존 고객 전용 혜택. ${s1}을(를) 사랑하는 분들을 위해 준비했습니다.`,
-        cta: "혜택 확인",
+        headline: `Exclusive for ${productName} Owners`,
+        body: `A special offer for those who love ${s1}. Reserved just for you.`,
+        cta: "Claim Offer",
       },
       Affiliate: {
-        headline: `${productName} 액세서리 & 번들`,
-        body: `${productName}과(와) 함께 사용하면 좋은 추천 조합.`,
-        cta: "추천 보기",
+        headline: `${productName} Accessories & Bundles`,
+        body: `Recommended pairings that complement your ${productName} experience.`,
+        cta: "View Bundles",
       },
     },
   };
 
-  return templates[funnelKey]?.[channel] || {
+  const raw = templates[funnelKey]?.[channel] || {
     headline: `${productName} — ${s1}`,
-    body: `실사용자 ${posCount}명이 선택한 제품.`,
-    cta: "자세히 보기",
+    body: `Chosen by ${posCount} real users.`,
+    cta: "Learn More",
   };
+
+  // Clean compliance + truncate to limits
+  const headline = truncate(cleanCopy(raw.headline), limits.headline);
+  const body = truncate(cleanCopy(raw.body), limits.body);
+  const cta = truncate(cleanCopy(raw.cta), limits.cta);
+  const compliance = quickComply(raw.headline + " " + raw.body + " " + raw.cta);
+
+  return { headline, body, cta, limits, compliance };
 }
 
 /* ── Section header ── */
