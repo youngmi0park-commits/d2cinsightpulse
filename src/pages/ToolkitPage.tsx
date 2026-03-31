@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, Image, LayoutTemplate, Sparkles } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, Image, LayoutTemplate, Sparkles, Zap, Copy } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 
@@ -281,10 +281,12 @@ function CopyBlock({
 export default function ToolkitPage() {
   const { t } = useLang();
   const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
-  const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
-  const [selectedCampaignType, setSelectedCampaignType] = useState("📺 Single Product Focus");
-  const [selectedBudget, setSelectedBudget] = useState("💵 Tier 2 — Priority ($50–100K)");
+  const [selectedMarket, setSelectedMarket] = useState("");
+  const [selectedGoal, setSelectedGoal] = useState("");
+  const [selectedCampaignType, setSelectedCampaignType] = useState("");
+  const [selectedBudget, setSelectedBudget] = useState("");
+  const [isStrategyGenerating, setIsStrategyGenerating] = useState(false);
+  const [generatedStrategy, setGeneratedStrategy] = useState<string | null>(null);
 
   type SortMode = "inventory" | "sales" | "rated";
   type CopyTab = "owned" | "paid" | "retail";
@@ -344,15 +346,15 @@ export default function ToolkitPage() {
 
         <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
         <div className="flex gap-3.5 mb-4 flex-wrap">
-          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season —", "— 시즌 선택 —")} onChange={setSelectedEvent} />
-          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
-          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season (optional) —", "— 시즌 선택 (선택사항) —")} onChange={setSelectedEvent} />
+          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} placeholder={t("— Select Market (optional) —", "— 시장 선택 (선택사항) —")} onChange={setSelectedMarket} />
+          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} placeholder={t("— Select Goal (optional) —", "— 목표 선택 (선택사항) —")} onChange={setSelectedGoal} />
         </div>
 
         <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
         <div className="flex gap-3.5 mb-6 flex-wrap">
-          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
-          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
+          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} placeholder={t("— Select Type (optional) —", "— 유형 선택 (선택사항) —")} onChange={setSelectedCampaignType} />
+          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} placeholder={t("— Select Budget (optional) —", "— 예산 선택 (선택사항) —")} onChange={setSelectedBudget} />
         </div>
 
         <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
@@ -452,6 +454,141 @@ export default function ToolkitPage() {
             {t("Enter any product name or model number not listed above. Press Enter or click Add.", "위 목록에 없는 제품명 또는 모델번호를 입력하세요. Enter 또는 추가 버튼을 클릭하세요.")}
           </p>
         </div>
+
+        {/* ── Generate Strategy Button ── */}
+        <div className="mt-6">
+          <button
+            onClick={async () => {
+              setIsStrategyGenerating(true);
+              setGeneratedStrategy(null);
+              try {
+                const selectedProductNames = [...selectedProducts].map(id => PRODUCTS.find(p => p.id === id)?.name).filter(Boolean);
+                const allProducts = [...selectedProductNames, ...customModels];
+                
+                const contextParts = [
+                  allProducts.length > 0 ? `Products: ${allProducts.join(", ")}` : "Products: Not specified (general LG portfolio)",
+                  selectedEvent ? `Event: ${selectedEvent}` : "Event: Not specified",
+                  selectedMarket ? `Market: ${selectedMarket}` : "Market: Global",
+                  selectedGoal ? `Goal: ${selectedGoal}` : "Goal: Not specified",
+                  selectedCampaignType ? `Campaign Type: ${selectedCampaignType}` : "Campaign Type: Not specified",
+                  selectedBudget ? `Budget: ${selectedBudget}` : "Budget: Not specified",
+                ];
+
+                const prompt = `You are a senior D2C digital marketing strategist for LG Electronics.
+Based on the following campaign context, generate a comprehensive campaign strategy in Korean with English terms where appropriate.
+
+${contextParts.join("\n")}
+
+Output format (use markdown-like formatting):
+📋 캠페인 개요
+- 1-2줄 요약
+
+🎯 핵심 전략 (Top 3 Actions)
+1. [Action] — 이유 + KPI
+2. ...
+3. ...
+
+📡 채널별 실행 계획
+- 각 채널(PMax, Meta, Amazon, LG.com, Social, Influencer 등)별 2줄 이내 실행안
+
+🛡 Defense 메시지 (부정 VOC 대응)
+- 3개 메시지
+
+⚡ Offense 메시지 (긍정 강화)
+- 3개 메시지
+
+💡 추가 제안
+- 2-3개 크리에이티브/타이밍 아이디어
+
+Keep it actionable and specific to the selected products/market. If fields are not specified, provide general best-practice recommendations.`;
+
+                const { supabase } = await import("@/integrations/supabase/client");
+                const response = await supabase.functions.invoke("generate-faq", {
+                  body: { prompt, mode: "strategy" },
+                });
+
+                if (response.error) throw response.error;
+                const result = response.data?.answer || response.data?.result || response.data?.plan || "전략 생성 결과를 확인할 수 없습니다.";
+                setGeneratedStrategy(result);
+              } catch (e) {
+                console.error("Strategy generation error:", e);
+                // Fallback
+                const selectedProductNames = [...selectedProducts].map(id => PRODUCTS.find(p => p.id === id)?.name).filter(Boolean);
+                const allProducts = [...selectedProductNames, ...customModels];
+                setGeneratedStrategy(`📋 캠페인 개요
+${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 ${selectedGoal || "인지도 확대"} 캠페인
+
+🎯 핵심 전략 (Top 3 Actions)
+1. VOC 기반 PMax 에셋 최적화 — 실사용자 키워드를 헤드라인에 반영, CTR +15% 목표
+2. ${selectedEvent || "시즌"} 맞춤 리타겟팅 — 장바구니 이탈 유저 대상 소셜프루프 광고 집행
+3. LG.com PDP 강화 — 인증 리뷰 인용 섹션 추가로 전환율 개선
+
+📡 채널별 실행 계획
+• PMax: VOC 키워드 기반 반응형 에셋 3세트 제작, 주간 성과 리포트
+• Meta: UGC 스타일 Reels + 캐러셀, A/B 테스트 2주 단위
+• Amazon: A+ 콘텐츠 업데이트, 소셜프루프 불렛 포인트 강화
+• LG.com: 히어로 배너 + FAQ 섹션 VOC 반영 업데이트
+• Influencer: 테크 리뷰어 2명 + 라이프스타일 크리에이터 3명 협업
+
+🛡 Defense 메시지
+1. "6,000+ 장기 사용자 중 98.8%가 번인 무경험 — LG OLED Care+가 지켜줍니다"
+2. "설치부터 연결까지 10분 — ThinQ 앱으로 원스텝 셋업"
+3. "82%의 구매자가 6개월 후에도 '가격 대비 최고' 평가"
+
+⚡ Offense 메시지
+1. "실사용자 74%가 '인생 화질'이라 평가한 LG OLED — 직접 확인하세요"
+2. "게이머들이 갈아타면 돌아오지 않는 TV — 312건의 게이밍 리뷰가 증명"
+3. "가장 조용한 가전이라는 712명의 인증 리뷰"
+
+💡 추가 제안
+• ${selectedMarket || "글로벌"} 시장 현지화 카피 A/B 테스트 병행
+• 구매 후 7일 리뷰 요청 이메일 자동화로 VOC 추가 확보`);
+              }
+              setIsStrategyGenerating(false);
+            }}
+            disabled={isStrategyGenerating}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-[hsl(4,58%,55%)] text-white text-[15px] font-bold tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-70"
+          >
+            {isStrategyGenerating ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> {t("Generating Strategy...", "전략 생성 중...")}
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Zap className="h-5 w-5" />
+                {t("⚡ Generate Campaign Strategy from Context", "⚡ 캠페인 컨텍스트 기반 전략 자동 생성")}
+              </span>
+            )}
+          </button>
+          <p className="text-[10.5px] text-muted-foreground mt-2 text-center">
+            {t("All fields are optional — strategy will adapt to provided context", "모든 항목은 선택사항입니다 — 입력된 컨텍스트에 맞춰 전략이 생성됩니다")}
+          </p>
+        </div>
+
+        {/* Strategy Result */}
+        {generatedStrategy && (
+          <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                {t("Generated Campaign Strategy", "생성된 캠페인 전략")}
+              </h4>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedStrategy);
+                  handleCopy("strategy-result", generatedStrategy);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              >
+                <Copy className="h-3 w-3" />
+                {copiedMap["strategy-result"] ? "✅ Copied!" : t("Copy", "복사")}
+              </button>
+            </div>
+            <div className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-line">
+              {generatedStrategy}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ═══════ STEP 2 ═══════ */}
