@@ -110,47 +110,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* MARKETING INSIGHTS */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
-            {!collapsed && "🚀 MKT COPY GENERATION"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {marketingItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={active} className="text-[13px]">
-                      <NavLink
-                        to={item.url}
-                        end
-                        className={`rounded-md px-3 py-2 transition-all ${
-                          active
-                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
-                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
-                        }`}
-                        activeClassName=""
-                      >
-                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
-                        {!collapsed && (
-                          <span className="flex items-center gap-2">
-                            {item.title}
-                            {item.isNew && (
-                              <span className="text-[9px] bg-[hsl(4,58%,44%)] text-white px-1.5 py-0.5 rounded font-bold leading-none">
-                                NEW
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* DATA PIPELINE */}
         <SidebarGroup>
