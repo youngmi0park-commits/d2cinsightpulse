@@ -76,18 +76,6 @@ export function ContentCreationActions({ productName, displayName }: ContentCrea
 
   return (
     <div className="space-y-4">
-      {/* Flow indicator */}
-      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground overflow-x-auto pb-1">
-        {["제품 검색", "리뷰 인사이트", "목표 설정", "채널 · 메시지", "콘텐츠 타입", "생성 실행"].map((label, i) => (
-          <span key={i} className="flex items-center gap-1 shrink-0">
-            <span className={`px-1.5 py-0.5 rounded font-semibold ${i <= 1 ? "bg-primary/15 text-primary" : i === 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              {i + 1}
-            </span>
-            <span className={i <= 1 ? "text-primary font-semibold" : ""}>{label}</span>
-            {i < 5 && <ArrowRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />}
-          </span>
-        ))}
-      </div>
 
       {/* ═══ STEP 3: Goal Setting ═══ */}
       <div className="gradient-card rounded-xl border border-border p-5">
