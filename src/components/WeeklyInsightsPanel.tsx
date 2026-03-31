@@ -13,6 +13,25 @@ import { toast } from "sonner";
 
 interface InsightData {
   persona_insights?: {
+    core_user_groups?: {
+      product: string;
+      main_purpose: string;
+      use_scenes: string[];
+      evaluation_criteria: string[];
+      lifestyle: string;
+      purchase_motivation: string;
+      satisfaction_points: string[];
+      pain_points: string[];
+    }[];
+    potential_user_groups?: {
+      product: string;
+      target_group: string;
+      expected_use_scenes: string[];
+      interests: string[];
+      lifestyle_context: string;
+      creative_direction: string;
+    }[];
+    // legacy fields for backward compat
     edge_cases?: { product: string; insight: string; marketing_angle: string }[];
     killer_points?: { persona: string; product: string; aha_moment: string; message: string }[];
     target_expansion?: { new_target: string; product: string; rationale: string; message: string }[];
