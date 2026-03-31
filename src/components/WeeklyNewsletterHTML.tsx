@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
-import { Copy, Check, Eye, Code, Loader2, Sparkles } from "lucide-react";
+import { Copy, Check, Eye, Code, Loader2, Sparkles, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -286,6 +286,8 @@ export function WeeklyNewsletterHTML() {
   const [redditOverview, setRedditOverview] = useState<ChannelOverview | null>(null);
   const [lgcomLoading, setLgcomLoading] = useState(false);
   const [redditLoading, setRedditLoading] = useState(false);
+  const [fullGenLoading, setFullGenLoading] = useState(false);
+  const [fullGenHtml, setFullGenHtml] = useState<string | null>(null);
 
   const generateOverview = async (channel: "lgcom" | "reddit") => {
     const setLoading = channel === "lgcom" ? setLgcomLoading : setRedditLoading;
@@ -297,6 +299,27 @@ export function WeeklyNewsletterHTML() {
       if (result?.overview) { setData(result.overview); toast.success(`${channel === "lgcom" ? "LG.com" : "Reddit"} 오버뷰 생성 완료!`); }
     } catch (err: any) { toast.error("생성 실패: " + (err.message || "Unknown")); }
     finally { setLoading(false); }
+  };
+
+  /** 원클릭: AI 오버뷰 포함된 전체 뉴스레터 HTML 서버 생성 → 복사 */
+  const generateFullNewsletter = async () => {
+    setFullGenLoading(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+        body: { format: "json", baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      const htmlContent = result?.html;
+      if (htmlContent) {
+        setFullGenHtml(htmlContent);
+        await navigator.clipboard.writeText(htmlContent);
+        toast.success("✅ AI 오버뷰 포함 뉴스레터 HTML이 클립보드에 복사되었습니다!\nyoungmi0.park@lge.com 으로 Outlook에서 발송하세요.");
+      }
+    } catch (err: any) {
+      toast.error("뉴스레터 생성 실패: " + (err.message || "Unknown"));
+    } finally {
+      setFullGenLoading(false);
+    }
   };
 
   if (isLoading || !data) {
@@ -321,13 +344,23 @@ export function WeeklyNewsletterHTML() {
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-heading">📬 금주의 뉴스레터</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{data.dateRange}</Badge>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 10:00 발행</Badge>
+            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 08:00 발행</Badge>
           </div>
           <div className="flex items-center gap-2">
+            {/* 원클릭 AI 뉴스레터 생성 */}
+            <Button
+              onClick={generateFullNewsletter}
+              disabled={fullGenLoading}
+              size="sm"
+              className="gap-1.5 bg-gradient-to-r from-primary to-primary/80"
+            >
+              {fullGenLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Rocket className="h-3.5 w-3.5" />}
+              {fullGenLoading ? "AI 분석 + HTML 생성 중..." : fullGenHtml ? "✅ AI 뉴스레터 복사 완료" : "🚀 AI 뉴스레터 원클릭 생성 & 복사"}
+            </Button>
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
               <button onClick={() => setViewMode("preview")} className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${viewMode === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                 <Eye className="h-3 w-3" /> 미리보기
@@ -343,8 +376,13 @@ export function WeeklyNewsletterHTML() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          AI 오버뷰를 먼저 생성한 후 HTML을 복사하면 채널별 분석 결과가 함께 포함됩니다.
+          🚀 버튼을 클릭하면 AI 오버뷰가 자동 포함된 완성 뉴스레터 HTML이 클립보드에 복사됩니다. Outlook에 붙여넣기하여 발송하세요.
         </p>
+        {fullGenHtml && (
+          <p className="text-xs text-primary font-semibold mt-0.5">
+            ✅ AI 뉴스레터 생성 완료 — 수신: youngmi0.park@lge.com | Outlook에서 Ctrl+V로 붙여넣기
+          </p>
+        )}
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
@@ -362,10 +400,10 @@ export function WeeklyNewsletterHTML() {
 
         {viewMode === "preview" ? (
           <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
-            <iframe srcDoc={html} title="Newsletter Preview" className="w-full border-0" style={{ height: "900px" }} />
+            <iframe srcDoc={fullGenHtml || html} title="Newsletter Preview" className="w-full border-0" style={{ height: "900px" }} />
           </div>
         ) : (
-          <pre className="bg-muted/50 border border-border rounded-lg p-4 text-[11px] text-foreground/80 overflow-auto max-h-[600px] whitespace-pre-wrap break-all font-mono">{html}</pre>
+          <pre className="bg-muted/50 border border-border rounded-lg p-4 text-[11px] text-foreground/80 overflow-auto max-h-[600px] whitespace-pre-wrap break-all font-mono">{fullGenHtml || html}</pre>
         )}
       </CardContent>
     </Card>
