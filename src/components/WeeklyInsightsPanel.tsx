@@ -161,7 +161,7 @@ export function WeeklyInsightsPanel() {
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
-              {t("Strategic Deep-Dive: Persona · JTBD · CRM", "전략 심층분석: 페르소나 · JTBD · CRM")}
+              {t("Strategic Deep-Dive: Main User · JTBD", "전략 심층분석: Main User · JTBD")}
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -204,8 +204,8 @@ export function WeeklyInsightsPanel() {
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered deep analysis of top 5 weekly products across 3 strategic frameworks",
-            "주간 리뷰 상위 5개 제품에 대한 AI 기반 3대 전략 프레임워크 분석"
+            "AI-powered deep analysis based on all collected reviews across strategic frameworks",
+            "수집된 전체 리뷰 기반 AI 전략 프레임워크 분석"
           )}
         </p>
       </CardHeader>
@@ -318,7 +318,7 @@ export function WeeklyInsightsPanel() {
               <TabsList className="w-full grid grid-cols-2 h-9">
                 <TabsTrigger value="persona" className="text-xs gap-1">
                   <Users className="h-3.5 w-3.5" />
-                  {t("User Groups", "사용자군 정의")}
+                  Main User
                 </TabsTrigger>
                 <TabsTrigger value="jtbd" className="text-xs gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
