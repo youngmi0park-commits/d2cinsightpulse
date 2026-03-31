@@ -156,7 +156,7 @@ Focus on "Why LG?" - what makes customers choose and love LG products.
 Be specific with examples from the data. Use marketing-ready language.
 IMPORTANT: Do NOT expose any original review text. Only use extracted keywords and patterns for analysis.`;
 
-    const userPrompt = `다음은 LG.com에서 이번 주 리뷰가 가장 많은 상위 제품들의 리뷰 데이터 요약입니다:
+    const userPrompt = `다음은 LG.com에서 수집된 전체 리뷰 기반 상위 제품들의 리뷰 데이터 요약입니다:
 
 ${reviewSummary}
 
