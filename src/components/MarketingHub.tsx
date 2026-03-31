@@ -413,7 +413,7 @@ export function MarketingHub({
         {/* ═══ 3. FAQ ═══ */}
         <Collapsible open={openSections.faq} onOpenChange={() => toggleSection("faq")}>
           <CollapsibleTrigger className="w-full">
-            <SectionHeader title="❓ AI FAQ 생성" subtitle="리뷰 기반 FAQ 자동 생성 · 고객 불안 해소 콘텐츠" />
+            <SectionHeader title="❓ AI FAQ 생성" subtitle="리뷰 기반 FAQ 자동 생성 · 고객 불안 해소 콘텐츠" collapsible isOpen={openSections.faq} />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-4">
             <FaqToolkitPanel
