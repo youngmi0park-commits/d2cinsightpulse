@@ -323,6 +323,18 @@ export function LgComProductInsightCards() {
                   </div>
                 )}
 
+                {/* Review snippets — understandable excerpts */}
+                {item.snippets && item.snippets.length > 0 && (
+                  <div className="space-y-1 border-t border-border/30 pt-2">
+                    <div className="text-[10px] text-muted-foreground font-medium">💬 {t("Review Excerpts", "리뷰 발췌")}</div>
+                    {item.snippets.map((s: string, i: number) => (
+                      <p key={i} className="text-[10px] text-foreground/80 leading-relaxed pl-2 border-l-2 border-primary/20">
+                        {s}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
                 {/* Keywords */}
                 {item.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
