@@ -38,7 +38,6 @@ const App = () => (
                     <Route path="/newsletter" element={<NewsletterPage />} />
                     <Route path="/communities" element={<CommunitiesPage />} />
                     <Route path="/toolkit" element={<ToolkitPage />} />
-                    <Route path="/faq-gen" element={<FaqGenPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
