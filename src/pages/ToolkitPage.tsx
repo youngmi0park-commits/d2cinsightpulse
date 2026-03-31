@@ -186,7 +186,7 @@ function SelectDropdown({ label, value, options, placeholder, onChange }: {
 // ═══════════════════════════════════════════════════════════════
 
 export default function ToolkitPage() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
 
   // Campaign context
   const [selectedEvent, setSelectedEvent] = useState("");
