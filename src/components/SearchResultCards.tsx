@@ -150,8 +150,13 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   </div>
                 </div>
 
-                {/* Category + Review Count */}
-                <div className="flex items-center gap-2 flex-wrap">
+                {/* Category + SubCategory + Review Count */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {item.product.subCategory && (
+                    <Badge variant="secondary" className="text-[9px] bg-accent/50 text-accent-foreground">
+                      {item.product.subCategory}
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                     {item.product.category}
                   </Badge>

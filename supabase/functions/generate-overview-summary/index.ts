@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     let query = sb
       .from("reviews")
-      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category)")
+      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
       .order("collected_at", { ascending: false })
       .limit(500);
 
@@ -50,11 +50,11 @@ Deno.serve(async (req) => {
     const negReviews = reviews.filter((r: any) => r.sentiment === "negative");
 
     // Aggregate by product
-    const productMap: Record<string, { name: string; model: string; category: string; pos: number; neg: number; titles: string[] }> = {};
+    const productMap: Record<string, { name: string; model: string; category: string; subCategory: string; pos: number; neg: number; titles: string[] }> = {};
     for (const r of reviews as any[]) {
       const pName = r.products?.display_name || "Unknown";
       if (!productMap[pName]) {
-        productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", pos: 0, neg: 0, titles: [] };
+        productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, titles: [] };
       }
       if (r.sentiment === "positive") productMap[pName].pos++;
       if (r.sentiment === "negative") productMap[pName].neg++;
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     const topProducts = Object.values(productMap).sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 15);
     const productSummary = topProducts.map(p =>
-      `${p.name} (${p.model}, ${p.category}): 긍정 ${p.pos}건, 부정 ${p.neg}건, 키워드: ${p.titles.slice(0, 5).join(", ")}`
+      `${p.name} (${p.model}, ${p.category}${p.subCategory ? ` > ${p.subCategory}` : ""}): 긍정 ${p.pos}건, 부정 ${p.neg}건, 키워드: ${p.titles.slice(0, 5).join(", ")}`
     ).join("\n");
 
     const posTitles = posReviews.slice(0, 50).map((r: any) => r.title).filter(Boolean).join(", ");

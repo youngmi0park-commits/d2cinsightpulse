@@ -72,6 +72,7 @@ const Index = () => {
             name: product.model_number,
             displayName: product.display_name,
             category: product.category as any,
+            subCategory: (product as any).sub_category || undefined,
             reviews: formattedReviews,
           },
           sentiment,

@@ -1,0 +1,3 @@
+UPDATE products SET category = 'Refrigerator' WHERE sub_category LIKE 'French Door%' AND category = 'General';
+UPDATE products SET category = 'Dishwasher' WHERE (sub_category LIKE 'Top Control%' OR sub_category LIKE 'Front Control%') AND category = 'General';
+UPDATE products SET category = 'Audio' WHERE (sub_category LIKE 'Soundbar%' OR sub_category LIKE 'Bluetooth%' OR sub_category LIKE 'Wireless Earbuds%') AND category IN ('Soundbar', 'General');
