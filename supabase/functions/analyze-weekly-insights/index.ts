@@ -20,7 +20,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const region = body.region || "all";
     const limit = body.limit || 5;
-    const category = body.category || "all"; // "all", "TV", "Refrigerator", "Washer"
+    const category = body.category || "all";
+    const productId = body.product_id || null;
 
     // Category matching patterns
     const categoryPatterns: Record<string, string[]> = {
@@ -37,34 +38,43 @@ Deno.serve(async (req) => {
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
-    // 1. Get top products by review count (fetch more to filter by category)
-    const fetchLimit = category === "all" ? limit : 50;
-    const { data: topProducts, error: topErr } = await sb.rpc(
-      "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
-    );
-    if (topErr) throw topErr;
-
-    const { data: negProducts } = await sb.rpc(
-      "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
-    );
-
-    // Filter by category if specified
-    const matchesCategory = (p: any) => {
-      if (category === "all") return true;
-      const patterns = categoryPatterns[category] || [category];
-      const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
-      return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
-    };
-
-    const filteredPos = (topProducts || []).filter(matchesCategory).slice(0, limit);
-    const filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
-
-    // Collect all unique product IDs
+    // 1. Get top products or specific product
     const allProductIds = new Set<string>();
-    for (const p of [...filteredPos, ...filteredNeg]) {
-      allProductIds.add(p.product_id);
+    let filteredPos: any[] = [];
+    let filteredNeg: any[] = [];
+
+    if (productId) {
+      allProductIds.add(productId);
+      const { data: prodInfo } = await sb.from("products").select("*").eq("id", productId).single();
+      if (prodInfo) {
+        filteredPos = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region }];
+      }
+    } else {
+      const fetchLimit = category === "all" ? limit : 50;
+      const { data: topProducts, error: topErr } = await sb.rpc(
+        "get_lgcom_weekly_top_products",
+        { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
+      );
+      if (topErr) throw topErr;
+
+      const { data: negProducts } = await sb.rpc(
+        "get_lgcom_weekly_top_products",
+        { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
+      );
+
+      const matchesCategory = (p: any) => {
+        if (category === "all") return true;
+        const patterns = categoryPatterns[category] || [category];
+        const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
+        return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
+      };
+
+      filteredPos = (topProducts || []).filter(matchesCategory).slice(0, limit);
+      filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
+
+      for (const p of [...filteredPos, ...filteredNeg]) {
+        allProductIds.add(p.product_id);
+      }
     }
 
     if (allProductIds.size === 0) {
