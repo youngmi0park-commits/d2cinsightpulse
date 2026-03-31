@@ -113,7 +113,7 @@ export function AppSidebar() {
         {/* MARKETING INSIGHTS */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
-            {!collapsed && "🚀 MARKETING INSIGHTS"}
+            {!collapsed && "🚀 MKT COPY GENERATION"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
