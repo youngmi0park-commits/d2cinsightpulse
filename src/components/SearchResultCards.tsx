@@ -328,12 +328,9 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               </div>
             </div>
 
-            {/* ── STEP 2: 리뷰 인사이트 ── */}
+            {/* ── 리뷰 인사이트 ── */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shrink-0">2</span>
-                <h4 className="text-sm font-bold">📊 리뷰 인사이트</h4>
-              </div>
+              <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
               {/* Evidence & Signals */}
               <EvidenceSignalsSection sentiment={item.sentiment} />
