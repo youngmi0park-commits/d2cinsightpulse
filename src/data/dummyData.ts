@@ -15,6 +15,7 @@ export interface ProductData {
   name: string;
   displayName: string;
   category: ProductCategory;
+  subCategory?: string;
   reviews: Review[];
 }
 
