@@ -346,15 +346,15 @@ export default function ToolkitPage() {
 
         <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
         <div className="flex gap-3.5 mb-4 flex-wrap">
-          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season —", "— 시즌 선택 —")} onChange={setSelectedEvent} />
-          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} onChange={setSelectedMarket} />
-          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} onChange={setSelectedGoal} />
+          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season (optional) —", "— 시즌 선택 (선택사항) —")} onChange={setSelectedEvent} />
+          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} placeholder={t("— Select Market (optional) —", "— 시장 선택 (선택사항) —")} onChange={setSelectedMarket} />
+          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} placeholder={t("— Select Goal (optional) —", "— 목표 선택 (선택사항) —")} onChange={setSelectedGoal} />
         </div>
 
         <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
         <div className="flex gap-3.5 mb-6 flex-wrap">
-          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} onChange={setSelectedCampaignType} />
-          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} onChange={setSelectedBudget} />
+          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} placeholder={t("— Select Type (optional) —", "— 유형 선택 (선택사항) —")} onChange={setSelectedCampaignType} />
+          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} placeholder={t("— Select Budget (optional) —", "— 예산 선택 (선택사항) —")} onChange={setSelectedBudget} />
         </div>
 
         <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
