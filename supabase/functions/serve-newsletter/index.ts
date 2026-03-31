@@ -225,19 +225,42 @@ ${channelProductsHTML("REDDIT", "💬", d.redditSentiment)}
 ${overviewHTML("LG.COM", "🏪", lgcom)}
 ${overviewHTML("REDDIT", "💬", reddit)}
 
-<!-- Marketing Copy Creation -->
+<!-- Review-to-Asset CTA Banner -->
 <tr><td style="padding:24px 28px 0;">
-  <a href="${baseUrl}/" style="text-decoration:none;display:block;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:12px;overflow:hidden;border:1px solid #A51C30;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:14px;overflow:hidden;">
+    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
     <tr>
-      <td style="background:linear-gradient(135deg,#A51C30 0%,#7a1424 100%);padding:20px 24px;text-align:center;">
-        <div style="font-weight:700;font-size:16px;color:#ffffff;letter-spacing:0.5px;">Review-to-Asset, Instantly.</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:8px;line-height:1.6;">광고 카피부터 이미지 에셋까지 — 리뷰가 증명한 메시지로 만듭니다.</div>
-        <div style="display:inline-block;margin-top:14px;background:#ffffff;border-radius:24px;padding:8px 22px;font-size:12px;font-weight:700;color:#A51C30;letter-spacing:0.3px;">마케팅 에셋 스튜디오 바로가기 →</div>
+      <td style="padding:20px 18px;vertical-align:middle;" width="140">
+        <table cellpadding="0" cellspacing="6" border="0"><tr>
+          <td style="width:58px;height:52px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;">
+            <div style="font-size:18px;line-height:1;">⚡</div>
+            <div style="font-family:Inter,Arial,sans-serif;font-size:8px;color:#999999;margin-top:2px;">광고 카피</div>
+          </td>
+          <td style="width:58px;height:52px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;">
+            <div style="font-size:18px;line-height:1;">❓</div>
+            <div style="font-family:Inter,Arial,sans-serif;font-size:8px;color:#999999;margin-top:2px;">FAQ</div>
+          </td>
+        </tr><tr>
+          <td style="width:58px;height:52px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;">
+            <div style="font-size:18px;line-height:1;">📝</div>
+            <div style="font-family:Inter,Arial,sans-serif;font-size:8px;color:#999999;margin-top:2px;">SEO · GEO</div>
+          </td>
+          <td style="width:58px;height:52px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;">
+            <div style="font-size:18px;line-height:1;">🎨</div>
+            <div style="font-family:Inter,Arial,sans-serif;font-size:8px;color:#999999;margin-top:2px;">이미지 에셋</div>
+          </td>
+        </tr></table>
+      </td>
+      <td style="width:1px;padding:12px 0;vertical-align:middle;">
+        <div style="width:1px;height:80px;background:#E8E4DC;"></div>
+      </td>
+      <td style="padding:20px 22px;vertical-align:middle;">
+        <div style="font-family:Inter,Arial,sans-serif;font-size:22px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:1.3;">Review-to-Asset, <span style="color:#A50034;">Instantly.</span></div>
+        <div style="font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:400;color:#6B6B6B;line-height:1.7;margin-top:8px;">광고 카피부터 이미지 에셋까지 — 리뷰가 증명한 메시지로 만듭니다.</div>
+        <a href="${baseUrl}/" style="display:inline-block;margin-top:14px;border:1.5px solid #1A1A1A;color:#1A1A1A;background:transparent;border-radius:7px;padding:9px 18px;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;letter-spacing:0.2px;">마케팅 에셋 스튜디오 바로가기 →</a>
       </td>
     </tr>
   </table>
-  </a>
 </td></tr>
 
 <!-- Footer -->
