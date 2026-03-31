@@ -119,13 +119,6 @@ const ASSETS = [
 //  SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.6px] mb-3">
-      {children}
-    </p>
-  );
-}
 
 function CopyBlock({
   label, meta, id, content, charInfo, legalStatus, copiedMap, onCopy,
