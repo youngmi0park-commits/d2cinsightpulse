@@ -286,7 +286,7 @@ export default function ToolkitPage() {
   const [selectedMarket, setSelectedMarket] = useState("");
   const [selectedGoal, setSelectedGoal] = useState("");
   const [selectedCampaignType, setSelectedCampaignType] = useState("");
-  const [selectedBudget, setSelectedBudget] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [isStrategyGenerating, setIsStrategyGenerating] = useState(false);
   const [generatedStrategy, setGeneratedStrategy] = useState<string | null>(null);
 
