@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy, AlertTriangle, Swords, DollarSign } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { SentimentResult } from "@/lib/sentiment";
@@ -39,21 +39,45 @@ function getSourceDistribution(reviews: { source: string }[]) {
   return counts;
 }
 
+/** Composite score color */
+function scoreColor(score: number): string {
+  if (score >= 76) return "text-[#006600]";
+  if (score >= 56) return "text-primary";
+  if (score >= 31) return "text-amber-600";
+  return "text-destructive";
+}
+function scoreBg(score: number): string {
+  if (score >= 76) return "bg-[#006600]/10 border-[#006600]/20";
+  if (score >= 56) return "bg-primary/10 border-primary/20";
+  if (score >= 31) return "bg-amber-500/10 border-amber-500/20";
+  return "bg-destructive/10 border-destructive/20";
+}
+function scoreLabel(score: number, t: (en: string, ko: string) => string): string {
+  if (score >= 76) return t("Strongly Positive", "매우 긍정");
+  if (score >= 56) return t("Positive", "긍정");
+  if (score >= 31) return t("Mixed", "복합");
+  return t("Negative", "부정");
+}
+
 function SentimentMiniBar({ sentiment }: { sentiment: SentimentResult }) {
   const total = sentiment.positive + sentiment.negative + sentiment.neutral;
   if (total === 0) return null;
   const pPct = Math.round((sentiment.positive / total) * 100);
+  const mixPct = Math.round((sentiment.neutral / total) * 100);
   const nPct = Math.round((sentiment.negative / total) * 100);
 
   return (
-    <div className="flex items-center gap-2 w-full max-w-[180px]">
-      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden flex">
+    <div className="space-y-1">
+      <div className="flex h-2 rounded-full bg-muted overflow-hidden">
         <div className="h-full bg-[#006600]" style={{ width: `${pPct}%` }} />
+        <div className="h-full bg-amber-400" style={{ width: `${mixPct}%` }} />
         <div className="h-full bg-destructive" style={{ width: `${nPct}%` }} />
       </div>
-      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-        {pPct}% / {nPct}%
-      </span>
+      <div className="flex justify-between text-[9px] text-muted-foreground">
+        <span>👍 {pPct}%</span>
+        <span>➖ {mixPct}%</span>
+        <span>👎 {nPct}%</span>
+      </div>
     </div>
   );
 }
@@ -89,15 +113,79 @@ function UsageSceneSection({ scenes }: { scenes: string[] }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {scenes.map((scene, i) => (
-          <div
-            key={i}
-            className="p-3 rounded-lg border border-[#006600]/15 bg-[#006600]/5 flex items-center gap-2.5"
-          >
+          <div key={i} className="p-3 rounded-lg border border-[#006600]/15 bg-[#006600]/5 flex items-center gap-2.5">
             <span className="shrink-0">🏠</span>
             <span className="text-xs text-foreground">📍 {scene}</span>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Evidence & Signals section in expanded view */
+function EvidenceSignalsSection({ sentiment }: { sentiment: SentimentResult }) {
+  const { t } = useLang();
+  return (
+    <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+      <h4 className="text-sm font-bold flex items-center gap-1.5">
+        🔍 {t("Key Evidence & Signals", "핵심 근거 & 시그널")}
+      </h4>
+
+      {/* Top evidence phrases */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {sentiment.topPositivePhrase && (
+          <div className="p-3 rounded-lg border border-[#006600]/20 bg-[#006600]/5">
+            <p className="text-[10px] font-semibold text-[#006600] mb-1">👍 {t("Top Positive Evidence", "핵심 긍정 근거")}</p>
+            <p className="text-xs text-foreground italic">"{sentiment.topPositivePhrase}"</p>
+          </div>
+        )}
+        {sentiment.topNegativePhrase && (
+          <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5">
+            <p className="text-[10px] font-semibold text-destructive mb-1">👎 {t("Top Negative Evidence", "핵심 부정 근거")}</p>
+            <p className="text-xs text-foreground italic">"{sentiment.topNegativePhrase}"</p>
+          </div>
+        )}
+      </div>
+
+      {/* Flags row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge variant="outline" className="text-[10px] gap-1">
+          🏷️ {sentiment.dominantIssueCategory}
+        </Badge>
+        {sentiment.priceSensitivityFlag && (
+          <Badge variant="destructive" className="text-[10px] gap-1">
+            <DollarSign className="h-3 w-3" /> {t("Price Sensitivity", "가격 민감도")} ⚠️
+          </Badge>
+        )}
+        {sentiment.competitiveMentions.length > 0 && (
+          <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/50 text-amber-700">
+            <Swords className="h-3 w-3" /> {t("Competitive", "경쟁")}
+            {" "}
+            {sentiment.competitiveMentions.filter(c => c.win).length}W / {sentiment.competitiveMentions.filter(c => !c.win).length}L
+          </Badge>
+        )}
+      </div>
+
+      {/* Top signals list */}
+      {sentiment.signals.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground">{t("Top Sentiment Signals", "주요 감성 시그널")} ({sentiment.signals.length})</p>
+          <div className="max-h-48 overflow-y-auto space-y-1">
+            {sentiment.signals.slice(0, 10).map((sig, i) => (
+              <div key={i} className="flex items-start gap-2 text-[11px] p-1.5 rounded bg-muted/30">
+                <span className={sig.sentiment === "positive" ? "text-[#006600]" : sig.sentiment === "negative" ? "text-destructive" : "text-amber-600"}>
+                  {sig.sentiment === "positive" ? "👍" : sig.sentiment === "negative" ? "👎" : "➖"}
+                </span>
+                <span className="text-foreground flex-1 italic">"{sig.evidencePhrase}"</span>
+                {sig.category && sig.category !== "General" && (
+                  <Badge variant="secondary" className="text-[8px] shrink-0">{sig.category}</Badge>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -118,6 +206,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
           const isExpanded = expandedProduct === item.product.name;
           const sourceDist = getSourceDistribution(item.product.reviews);
           const reviewCount = item.product.reviews.length;
+          const cs = item.sentiment.compositeScore;
 
           return (
             <Card
@@ -129,8 +218,8 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               }`}
               onClick={() => toggleExpand(item.product.name)}
             >
-              <div className="p-4 space-y-3">
-                {/* Header */}
+              <div className="p-4 space-y-2.5">
+                {/* Header: Name + Composite Score Badge */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold truncate">
@@ -140,8 +229,11 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                       {item.product.name}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <SentimentIcon sentiment={item.sentiment} />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Composite Score Badge */}
+                    <div className={`px-2 py-0.5 rounded-md border text-xs font-bold ${scoreBg(cs)} ${scoreColor(cs)}`}>
+                      {cs}
+                    </div>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     ) : (
@@ -150,7 +242,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   </div>
                 </div>
 
-                {/* Category + SubCategory + Review Count */}
+                {/* Category + SubCategory + Issue Category */}
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {item.product.subCategory && (
                     <Badge variant="secondary" className="text-[9px] bg-accent/50 text-accent-foreground">
@@ -160,43 +252,49 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
                     {item.product.category}
                   </Badge>
+                  {item.sentiment.dominantIssueCategory !== "General" && (
+                    <Badge variant="secondary" className="text-[9px]">
+                      🏷️ {item.sentiment.dominantIssueCategory}
+                    </Badge>
+                  )}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <MessageSquare className="h-3 w-3" />
                     <span>{reviewCount}{t(" reviews", "건")}</span>
                   </div>
                 </div>
 
-                {/* Sentiment Mini Bar */}
+                {/* 3-bar Sentiment Breakdown */}
                 <SentimentMiniBar sentiment={item.sentiment} />
 
-                {/* Source Distribution */}
+                {/* Evidence Phrase (top) */}
+                {(item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase) && (
+                  <p className="text-[10px] text-muted-foreground italic line-clamp-2 border-l-2 border-primary/30 pl-2">
+                    "{item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase}"
+                  </p>
+                )}
+
+                {/* Flags: Price Sensitivity + Competitive */}
                 <div className="flex flex-wrap gap-1">
+                  {item.sentiment.priceSensitivityFlag && (
+                    <Badge variant="destructive" className="text-[8px] px-1.5 py-0 h-4 gap-0.5">
+                      <AlertTriangle className="h-2.5 w-2.5" /> {t("Price", "가격")} ⚠️
+                    </Badge>
+                  )}
+                  {item.sentiment.competitiveMentions.length > 0 && (
+                    <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 gap-0.5 border-amber-500/50 text-amber-700">
+                      <Swords className="h-2.5 w-2.5" />
+                      {item.sentiment.competitiveMentions.filter(c => c.win).length}W/{item.sentiment.competitiveMentions.filter(c => !c.win).length}L
+                    </Badge>
+                  )}
+                  {/* Source Distribution */}
                   {Object.entries(sourceDist)
                     .sort(([, a], [, b]) => b - a)
                     .map(([source, count]) => (
-                      <Badge
-                        key={source}
-                        variant="secondary"
-                        className="text-[9px] px-1.5 py-0 h-4 font-normal"
-                      >
+                      <Badge key={source} variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-normal">
                         {source} {count}
                       </Badge>
                     ))}
                 </div>
-
-                {/* Top Usage Scenes (preview) */}
-                {item.sentiment.usageScenes.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {item.sentiment.usageScenes.slice(0, 3).map((scene, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 text-[9px] text-[#006600] bg-[#006600]/8 border border-[#006600]/15 rounded-md px-1.5 py-0.5"
-                      >
-                        📍 {scene}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </Card>
           );
@@ -207,19 +305,29 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
       {expandedProduct && (() => {
         const item = results.find((r) => r.product.name === expandedProduct);
         if (!item) return null;
+        const cs = item.sentiment.compositeScore;
         return (
           <div className="animate-slide-up border border-primary/20 rounded-xl bg-card p-5 space-y-5">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                 {item.product.category}
               </Badge>
+              {item.product.subCategory && (
+                <Badge variant="secondary" className="text-[10px]">{item.product.subCategory}</Badge>
+              )}
               <h3 className="text-lg font-bold">
                 {item.product.displayName || item.product.name}
               </h3>
               <span className="text-xs text-muted-foreground font-mono">
                 {item.product.name}
               </span>
+              <div className={`ml-auto px-3 py-1 rounded-lg border font-bold text-sm ${scoreBg(cs)} ${scoreColor(cs)}`}>
+                {cs}/100 · {scoreLabel(cs, t)}
+              </div>
             </div>
+
+            {/* Evidence & Signals */}
+            <EvidenceSignalsSection sentiment={item.sentiment} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <SentimentChart sentiment={item.sentiment} />
