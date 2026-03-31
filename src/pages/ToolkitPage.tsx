@@ -281,10 +281,12 @@ function CopyBlock({
 export default function ToolkitPage() {
   const { t } = useLang();
   const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedMarket, setSelectedMarket] = useState("🇺🇸 US (LGEUS)");
-  const [selectedGoal, setSelectedGoal] = useState("🚀 Awareness");
-  const [selectedCampaignType, setSelectedCampaignType] = useState("📺 Single Product Focus");
-  const [selectedBudget, setSelectedBudget] = useState("💵 Tier 2 — Priority ($50–100K)");
+  const [selectedMarket, setSelectedMarket] = useState("");
+  const [selectedGoal, setSelectedGoal] = useState("");
+  const [selectedCampaignType, setSelectedCampaignType] = useState("");
+  const [selectedBudget, setSelectedBudget] = useState("");
+  const [isStrategyGenerating, setIsStrategyGenerating] = useState(false);
+  const [generatedStrategy, setGeneratedStrategy] = useState<string | null>(null);
 
   type SortMode = "inventory" | "sales" | "rated";
   type CopyTab = "owned" | "paid" | "retail";
