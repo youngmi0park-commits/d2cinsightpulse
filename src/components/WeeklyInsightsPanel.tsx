@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Users, Briefcase, AlertTriangle, Loader2, Brain, Lightbulb,
+  Users, Briefcase, Loader2, Brain, Lightbulb,
   ShieldAlert, Heart, ArrowRightLeft, TrendingUp, Sparkles,
   ChevronDown, ChevronUp, Copy, Check, Tv, Refrigerator, WashingMachine
 } from "lucide-react";
