@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     const region = body.region || "all";
     const category = body.category || "all";
     const limit = body.limit || 10;
+    const productId = body.product_id || null; // specific product search
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
