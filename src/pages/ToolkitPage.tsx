@@ -62,9 +62,11 @@ const CAMPAIGN_TYPES = [
   "📦 Inventory Liquidation", "🆕 Pre-order / Launch",
 ];
 
-const BUDGET_TIERS = [
-  "💰 Tier 1 — Hero (>$100K)", "💵 Tier 2 — Priority ($50–100K)",
-  "🪙 Tier 3 — Standard ($10–50K)", "🆓 Tier 4 — Organic Only (<$10K)",
+const PRODUCT_CATEGORIES = [
+  "📺 TV", "🧊 냉장고 (Refrigerator)", "👕 세탁기 (Washer)",
+  "🍳 식기세척기 (Dishwasher)", "💻 노트북 (Laptop)",
+  "🖥️ 모니터 (Monitor)", "🔊 사운드바 (Soundbar)",
+  "🌀 에어컨 (Air Care)", "🤖 청소기 (Vacuum)",
 ];
 
 const PERSONAS = [
@@ -284,7 +286,7 @@ export default function ToolkitPage() {
   const [selectedMarket, setSelectedMarket] = useState("");
   const [selectedGoal, setSelectedGoal] = useState("");
   const [selectedCampaignType, setSelectedCampaignType] = useState("");
-  const [selectedBudget, setSelectedBudget] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [isStrategyGenerating, setIsStrategyGenerating] = useState(false);
   const [generatedStrategy, setGeneratedStrategy] = useState<string | null>(null);
 
@@ -349,12 +351,12 @@ export default function ToolkitPage() {
           <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season (optional) —", "— 시즌 선택 (선택사항) —")} onChange={setSelectedEvent} />
           <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} placeholder={t("— Select Market (optional) —", "— 시장 선택 (선택사항) —")} onChange={setSelectedMarket} />
           <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} placeholder={t("— Select Goal (optional) —", "— 목표 선택 (선택사항) —")} onChange={setSelectedGoal} />
+          <SelectDropdown label={t("PRODUCT CATEGORY", "제품 카테고리")} value={selectedCategory} options={PRODUCT_CATEGORIES} placeholder={t("— Select Category (optional) —", "— 카테고리 선택 (선택사항) —")} onChange={setSelectedCategory} />
         </div>
 
         <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
         <div className="flex gap-3.5 mb-6 flex-wrap">
           <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} placeholder={t("— Select Type (optional) —", "— 유형 선택 (선택사항) —")} onChange={setSelectedCampaignType} />
-          <SelectDropdown label={t("BUDGET TIER", "예산 등급")} value={selectedBudget} options={BUDGET_TIERS} placeholder={t("— Select Budget (optional) —", "— 예산 선택 (선택사항) —")} onChange={setSelectedBudget} />
         </div>
 
         <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
@@ -471,7 +473,7 @@ export default function ToolkitPage() {
                   selectedMarket ? `Market: ${selectedMarket}` : "Market: Global",
                   selectedGoal ? `Goal: ${selectedGoal}` : "Goal: Not specified",
                   selectedCampaignType ? `Campaign Type: ${selectedCampaignType}` : "Campaign Type: Not specified",
-                  selectedBudget ? `Budget: ${selectedBudget}` : "Budget: Not specified",
+                  selectedCategory ? `Product Category: ${selectedCategory}` : "Product Category: Not specified",
                 ];
 
                 const prompt = `You are a senior D2C digital marketing strategist for LG Electronics.
