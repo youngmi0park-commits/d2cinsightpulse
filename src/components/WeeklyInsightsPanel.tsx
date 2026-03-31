@@ -161,7 +161,7 @@ export function WeeklyInsightsPanel() {
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
-              {t("Strategic Deep-Dive: Persona · JTBD · CRM", "전략 심층분석: 페르소나 · JTBD · CRM")}
+              {t("Strategic Deep-Dive: Main User · JTBD", "전략 심층분석: Main User · JTBD")}
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
