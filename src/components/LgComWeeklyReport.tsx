@@ -112,14 +112,17 @@ export function LgComWeeklyReport() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [meta, setMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState<"category" | "product">("category");
 
-  const runReport = async (cat?: string) => {
+  const runReport = async (cat?: string, productId?: string) => {
     const target = cat ?? category;
     setIsLoading(true);
-    setCategory(target);
+    if (!productId) setCategory(target);
     try {
+      const invokeBody: any = { region, limit: 10, category: target };
+      if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("generate-lgcom-weekly-report", {
-        body: { region, limit: 10, category: target },
+        body: invokeBody,
       });
       if (error) throw error;
       if (data?.report) {
@@ -136,6 +139,11 @@ export function LgComWeeklyReport() {
       setIsLoading(false);
     }
   };
+
+  // Auto-run "all" on mount
+  useEffect(() => {
+    runReport("all");
+  }, []);
 
   const es = report?.executive_summary;
 
