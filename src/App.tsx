@@ -8,7 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
 import ToolkitPage from "./pages/ToolkitPage";
-import FaqGenPage from "./pages/FaqGenPage";
+
 import RedditPage from "./pages/RedditPage";
 import LgComPage from "./pages/LgComPage";
 import CollectionPage from "./pages/CollectionPage";
