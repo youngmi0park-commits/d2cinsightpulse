@@ -212,10 +212,10 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
           return (
             <Card
               key={item.product.name}
-              className={`cursor-pointer transition-all duration-200 hover:shadow-md border ${
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md border group ${
                 isExpanded
                   ? "border-primary ring-1 ring-primary/30 bg-primary/5"
-                  : "border-border hover:border-primary/40"
+                  : "border-border hover:border-primary/40 hover:bg-muted/20"
               }`}
               onClick={() => toggleExpand(item.product.name)}
             >
@@ -236,9 +236,9 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                       {cs}
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      <ChevronUp className="h-4 w-4 text-primary" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     )}
                   </div>
                 </div>
