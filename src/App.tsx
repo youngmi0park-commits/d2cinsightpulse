@@ -8,7 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
 import ToolkitPage from "./pages/ToolkitPage";
-import FaqGenPage from "./pages/FaqGenPage";
+
 import RedditPage from "./pages/RedditPage";
 import LgComPage from "./pages/LgComPage";
 import CollectionPage from "./pages/CollectionPage";
@@ -38,7 +38,6 @@ const App = () => (
                     <Route path="/newsletter" element={<NewsletterPage />} />
                     <Route path="/communities" element={<CommunitiesPage />} />
                     <Route path="/toolkit" element={<ToolkitPage />} />
-                    <Route path="/faq-gen" element={<FaqGenPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

@@ -286,17 +286,6 @@ ${overviewHTML("REDDIT", "💬", reddit)}
       </table>
       </a>
     </td>
-    <td width="25%" valign="top" style="padding:4px;">
-      <a href="${BASE_URL}/faq-gen" style="text-decoration:none;display:block;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
-        <tr><td style="padding:14px 10px;text-align:center;">
-          <div style="font-size:18px;margin-bottom:6px;">❓</div>
-          <div style="font-weight:600;font-size:11px;color:#1a1a1a;">AI FAQ 생성</div>
-          <div style="font-size:9px;color:#999;margin-top:3px;">리뷰 기반 FAQ 자동</div>
-        </td></tr>
-      </table>
-      </a>
-    </td>
   </tr></table>
 </td></tr>
 

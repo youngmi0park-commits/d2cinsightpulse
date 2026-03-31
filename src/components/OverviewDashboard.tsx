@@ -132,7 +132,7 @@ export function OverviewDashboard() {
             { icon: Store, label: "LG.com 인사이트", desc: "주간 리포트 · 리뷰 분석", path: "/lgcom", color: "text-primary" },
             { icon: MessageSquare, label: "Reddit Intelligence", desc: "커뮤니티 VOC · 제품군 분석", path: "/reddit", color: "text-orange-400" },
             { icon: Wrench, label: "Marketing Toolkit", desc: "캠페인 카피 · 배너 소재 생성", path: "/toolkit", color: "text-accent-foreground" },
-            { icon: HelpCircle, label: "AI FAQ 생성", desc: "리뷰 기반 FAQ 자동 생성", path: "/faq-gen", color: "text-muted-foreground" },
+            
           ].map((item) => (
             <button key={item.path} onClick={() => navigate(item.path)}
               className="group border border-border rounded-xl bg-card p-4 text-left hover:border-primary/50 hover:shadow-md transition-all">
