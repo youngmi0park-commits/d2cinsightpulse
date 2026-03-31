@@ -25,6 +25,7 @@ const analyticsItems = [
 const marketingItems = [
   { title: "MKT Copy Generation", url: "/toolkit", icon: Wrench, isNew: true },
   { title: "Paid Marketing Gen", url: "/faq-gen", icon: HelpCircle },
+  { title: "Onsite FAQ", url: "/onsite-faq", icon: MessageSquare },
 ];
 
 const pipelineItems = [
