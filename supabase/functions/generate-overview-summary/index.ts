@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     let query = sb
       .from("reviews")
-      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category)")
+      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
       .order("collected_at", { ascending: false })
       .limit(500);
 
