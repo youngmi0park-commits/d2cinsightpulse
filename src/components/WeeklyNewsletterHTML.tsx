@@ -286,6 +286,8 @@ export function WeeklyNewsletterHTML() {
   const [redditOverview, setRedditOverview] = useState<ChannelOverview | null>(null);
   const [lgcomLoading, setLgcomLoading] = useState(false);
   const [redditLoading, setRedditLoading] = useState(false);
+  const [fullGenLoading, setFullGenLoading] = useState(false);
+  const [fullGenHtml, setFullGenHtml] = useState<string | null>(null);
 
   const generateOverview = async (channel: "lgcom" | "reddit") => {
     const setLoading = channel === "lgcom" ? setLgcomLoading : setRedditLoading;
@@ -297,6 +299,27 @@ export function WeeklyNewsletterHTML() {
       if (result?.overview) { setData(result.overview); toast.success(`${channel === "lgcom" ? "LG.com" : "Reddit"} 오버뷰 생성 완료!`); }
     } catch (err: any) { toast.error("생성 실패: " + (err.message || "Unknown")); }
     finally { setLoading(false); }
+  };
+
+  /** 원클릭: AI 오버뷰 포함된 전체 뉴스레터 HTML 서버 생성 → 복사 */
+  const generateFullNewsletter = async () => {
+    setFullGenLoading(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+        body: { format: "json", baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      const htmlContent = result?.html;
+      if (htmlContent) {
+        setFullGenHtml(htmlContent);
+        await navigator.clipboard.writeText(htmlContent);
+        toast.success("✅ AI 오버뷰 포함 뉴스레터 HTML이 클립보드에 복사되었습니다!\nyoungmi0.park@lge.com 으로 Outlook에서 발송하세요.");
+      }
+    } catch (err: any) {
+      toast.error("뉴스레터 생성 실패: " + (err.message || "Unknown"));
+    } finally {
+      setFullGenLoading(false);
+    }
   };
 
   if (isLoading || !data) {
