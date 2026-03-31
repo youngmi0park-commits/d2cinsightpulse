@@ -236,9 +236,9 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                       {cs}
                     </div>
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      <ChevronUp className="h-4 w-4 text-primary" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     )}
                   </div>
                 </div>
