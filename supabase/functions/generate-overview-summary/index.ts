@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     const topProducts = Object.values(productMap).sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 15);
     const productSummary = topProducts.map(p =>
-      `${p.name} (${p.model}, ${p.category}): 긍정 ${p.pos}건, 부정 ${p.neg}건, 키워드: ${p.titles.slice(0, 5).join(", ")}`
+      `${p.name} (${p.model}, ${p.category}${p.subCategory ? ` > ${p.subCategory}` : ""}): 긍정 ${p.pos}건, 부정 ${p.neg}건, 키워드: ${p.titles.slice(0, 5).join(", ")}`
     ).join("\n");
 
     const posTitles = posReviews.slice(0, 50).map((r: any) => r.title).filter(Boolean).join(", ");
