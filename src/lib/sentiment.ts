@@ -1,265 +1,527 @@
 import type { Review } from "@/data/dummyData";
 
+// ═══════════════════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════════════════
+
+export interface SentimentSignal {
+  product: string;
+  sentiment: "positive" | "negative" | "mixed";
+  score: number; // -1.0 to +1.0
+  evidencePhrase: string;
+  category?: string;
+  type?: "competitive_win" | "competitive_loss" | "brand_erosion" | "price_value" | "general";
+}
+
+export interface CompetitiveMention {
+  brand: string;
+  win: boolean;
+}
+
 export interface SentimentResult {
   positive: number;
   negative: number;
   neutral: number;
   averageScore: number;
+  compositeScore: number; // 0–100 normalized
   keywords: { positive: string[]; negative: string[] };
-  /** Adjective+Feature compound phrases extracted from reviews, ranked by frequency */
   phrases: { positive: string[]; negative: string[] };
-  /** Usage scenes/situations extracted from reviews (place + situation) */
   usageScenes: string[];
+  // New multi-layer fields
+  topPositivePhrase: string;
+  topNegativePhrase: string;
+  dominantIssueCategory: string;
+  priceSensitivityFlag: boolean;
+  competitiveMentions: CompetitiveMention[];
+  signals: SentimentSignal[];
 }
 
-// Adjective-focused keywords only (no product names or nouns)
-const positiveKeywords = [
-  // Feature/Spec descriptors
-  "stunning", "amazing", "incredible", "perfect", "great", "excellent",
-  "phenomenal", "gorgeous", "breathtaking", "brilliant", "impressive",
-  "beautiful", "smooth", "sharp", "vivid", "crisp", "reliable",
-  "intuitive", "responsive", "quiet", "efficient", "convenient",
-  "comfortable", "durable", "lightweight", "sleek", "fast",
-  // Emotional descriptors
-  "satisfied", "impressed", "delighted", "premium", "worth it",
-  "must-have", "fantastic", "superior", "unmatched", "flawless",
-  // Sentiment/Attitude keywords
-  "recommend", "love", "good",
+// ═══════════════════════════════════════════════════════════════════
+// DICTIONARIES
+// ═══════════════════════════════════════════════════════════════════
+
+const POSITIVE_WORDS: Record<string, number> = {
+  stunning: 0.85, amazing: 0.8, incredible: 0.85, perfect: 0.9, great: 0.7,
+  excellent: 0.85, phenomenal: 0.9, gorgeous: 0.85, breathtaking: 0.9,
+  brilliant: 0.8, impressive: 0.8, beautiful: 0.8, smooth: 0.6, sharp: 0.6,
+  vivid: 0.65, crisp: 0.65, reliable: 0.7, intuitive: 0.65, responsive: 0.6,
+  quiet: 0.55, efficient: 0.6, convenient: 0.6, comfortable: 0.6,
+  durable: 0.65, lightweight: 0.5, sleek: 0.6, fast: 0.6, satisfied: 0.65,
+  impressed: 0.7, delighted: 0.8, premium: 0.6, fantastic: 0.8,
+  superior: 0.75, unmatched: 0.8, flawless: 0.9, recommend: 0.7,
+  love: 0.8, good: 0.5, outstanding: 0.85, best: 0.8, "top-notch": 0.8,
+  "well-built": 0.7, "well-designed": 0.7, "cutting-edge": 0.75,
+  "must-have": 0.75, "class-leading": 0.8, "worth it": 0.7,
+};
+
+const NEGATIVE_WORDS: Record<string, number> = {
+  slow: -0.6, bloated: -0.65, frustrating: -0.75, disappointing: -0.7,
+  poor: -0.7, cheap: -0.55, plasticky: -0.5, noisy: -0.55, dim: -0.5,
+  blurry: -0.6, laggy: -0.65, bulky: -0.45, flimsy: -0.6, unreliable: -0.75,
+  uncomfortable: -0.55, complicated: -0.5, fragile: -0.6, defective: -0.85,
+  overpriced: -0.7, mediocre: -0.5, annoying: -0.6, clunky: -0.55,
+  buggy: -0.7, inconsistent: -0.55, incomplete: -0.5, unstable: -0.65,
+  glitchy: -0.65, unresponsive: -0.7, outdated: -0.55, inferior: -0.65,
+  disappointed: -0.7, terrible: -0.9, awful: -0.9, worst: -0.95,
+  regret: -0.8, waste: -0.75, avoid: -0.8, broken: -0.85, unusable: -0.9,
+  "do not buy": -0.9,
+};
+
+const NEGATION_TOKENS = [
+  "not", "never", "no", "isn't", "wasn't", "don't", "can't",
+  "won't", "barely", "hardly", "fails to", "unable to",
+  "doesn't", "didn't", "couldn't", "shouldn't", "wouldn't",
+  "neither", "nor", "without",
 ];
 
-const negativeKeywords = [
-  // Feature/Spec descriptors
-  "slow", "bloated", "frustrating", "disappointing", "poor", "cheap",
-  "plasticky", "noisy", "dim", "blurry", "laggy", "bulky",
-  "flimsy", "unreliable", "uncomfortable", "complicated", "fragile",
-  "defective", "overpriced", "mediocre", "annoying", "clunky",
-  // Problem descriptors
-  "buggy", "inconsistent", "incomplete", "unstable", "glitchy",
-  "unresponsive", "outdated", "inferior",
-  // Sentiment/Attitude keywords
-  "disappointed", "terrible", "awful", "worst", "regret",
-  "waste", "avoid", "do not buy",
+const STRONG_POS_INTENSIFIERS = [
+  "absolutely", "incredibly", "love", "perfect", "outstanding",
+  "best ever", "blown away", "mind-blowing", "worth every penny",
+  "amazingly", "exceptionally", "remarkably", "extremely", "truly",
 ];
 
-// Feature nouns that adjectives commonly attach to in product reviews
-const featureNouns = [
-  // Display / Visual
+const STRONG_NEG_INTENSIFIERS = [
+  "total waste", "complete disaster", "terrible", "worst ever",
+  "deeply disappointed", "never again", "regret buying",
+  "completely", "utterly", "absolutely terrible", "total garbage",
+];
+
+const COMPETITORS = [
+  "samsung", "sony", "lg competitor", "vizio", "hisense", "tcl",
+  "panasonic", "philips", "whirlpool", "ge appliances", "bosch",
+  "electrolux", "maytag", "frigidaire", "kitchenaid", "dell",
+  "hp", "lenovo", "asus", "acer", "apple", "bose", "sonos",
+  "jbl", "klipsch",
+];
+
+// Issue categories and their indicator words
+const ISSUE_CATEGORIES: Record<string, string[]> = {
+  "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention"],
+  "Sound": ["sound", "audio", "bass", "speaker", "dialogue", "volume", "surround", "dolby atmos", "subwoofer", "treble", "soundbar"],
+  "Build Quality": ["build", "design", "finish", "stand", "slim", "weight", "aesthetic", "bezel", "mount", "material", "plastic", "metal", "premium feel"],
+  "App/Software": ["app", "software", "webos", "thinq", "interface", "remote", "update", "smart", "voice control", "alexa", "google", "airplay", "cast", "streaming", "netflix", "youtube app", "ui", "menu", "navigation"],
+  "Value for Money": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced"],
+  "Reliability": ["reliability", "reliable", "break", "broke", "broken", "last", "lifespan", "warranty", "replace", "defect", "fail", "malfunction", "dead", "stop working", "issue", "problem"],
+  "Customer Service": ["service", "support", "customer", "repair", "technician", "return", "refund", "exchange", "response", "call center", "chat support", "warranty claim"],
+  "Performance": ["performance", "speed", "input lag", "gaming", "refresh rate", "response time", "processing", "upscaling", "motion", "fps", "latency", "smooth", "fast"],
+  "Installation": ["install", "setup", "delivery", "mount", "assemble", "instruction", "manual", "connection", "plug"],
+  "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
+  "Wash/Clean Quality": ["wash", "clean", "stain", "rinse", "spin", "cycle", "drum", "detergent", "fabric", "gentle", "heavy duty"],
+  "Cooling/Temperature": ["cool", "cold", "temperature", "freeze", "ice", "fresh", "chill", "thermostat", "compressor"],
+};
+
+// Price-value expressions
+const PRICE_POSITIVE = ["worth every penny", "great value", "worth the price", "budget-friendly", "good deal", "great deal", "fair price", "bang for the buck", "bang for your buck", "affordable", "reasonably priced"];
+const PRICE_NEGATIVE = ["overpriced", "not worth it", "too expensive", "rip off", "ripoff", "expensive for what you get", "feels cheap", "not worth the money", "waste of money", "highway robbery"];
+
+// Temporal/decline patterns
+const DECLINE_PATTERNS = ["used to be", "was great but", "not as good as it was", "quality has dropped", "they don't make them like", "went downhill", "has gotten worse", "declined in quality", "not what it used to be"];
+const CONDITIONAL_PATTERNS = ["would be perfect if", "great except for", "love it but", "almost ideal", "good but", "nice but", "excellent except", "would be better if", "only complaint"];
+
+// Source weight adjustments
+const SOURCE_WEIGHTS: Record<string, number> = {
+  lge_com: 1.0, amazon: 1.0, bestbuy: 1.0, trustpilot: 1.0,
+  reddit: 0.85, youtube: 0.75,
+};
+
+// Feature nouns for phrase extraction
+const FEATURE_NOUNS = [
   "picture quality", "image quality", "picture", "display", "screen", "colors", "contrast",
   "brightness", "black levels", "viewing angles", "resolution", "HDR", "motion handling",
-  // Audio
   "sound quality", "sound", "audio", "bass", "speakers", "dialogue clarity",
-  // Smart / Software
   "smart features", "interface", "remote", "apps", "webOS", "ThinQ",
   "voice control", "setup", "navigation", "software", "updates",
-  // Design / Build
   "design", "build quality", "build", "finish", "stand", "slim profile",
   "form factor", "aesthetics", "bezels", "mounting",
-  // Performance
   "performance", "speed", "response time", "input lag", "gaming",
   "refresh rate", "processing", "upscaling",
-  // Cooling / Appliance
   "cooling", "airflow", "temperature control", "energy efficiency",
   "noise level", "installation", "cleaning", "capacity",
-  // Laundry
   "wash quality", "spin cycle", "vibration", "cycle time", "drum",
-  // General
   "value", "price", "quality", "durability", "reliability",
   "connectivity", "features", "functionality",
 ];
 
-// Positive adverb+adjective intensifiers
-const positiveIntensifiers = [
-  "incredibly", "amazingly", "exceptionally", "remarkably", "surprisingly",
-  "absolutely", "truly", "really", "very", "extremely", "super",
-];
+// ═══════════════════════════════════════════════════════════════════
+// LAYER 1: Product Entity Extraction
+// ═══════════════════════════════════════════════════════════════════
 
-// Additional positive expression patterns (not pure adjectives)
-const positiveExpressions = [
-  "best", "top", "leading", "award-winning", "top-rated",
-  "high-quality", "well-built", "well-designed", "top-notch",
-  "cutting-edge", "state-of-the-art", "next-level", "must-see",
-  "standout", "flagship", "class-leading", "top contender",
-  "top pick", "highly rated", "crowd favorite",
-];
+const PRODUCT_ALIASES: Record<string, string> = {
+  "the oled": "OLED TV", "my lg tv": "LG TV", "this tv": "LG TV",
+  "the tv": "LG TV", "this washer": "Washer", "the washer": "Washer",
+  "this dryer": "Dryer", "the fridge": "Refrigerator",
+  "this fridge": "Refrigerator", "the refrigerator": "Refrigerator",
+  "my fridge": "Refrigerator", "this monitor": "Monitor",
+  "the monitor": "Monitor", "this laptop": "Laptop",
+  "the gram": "LG gram", "my gram": "LG gram",
+  "this soundbar": "Soundbar", "the soundbar": "Soundbar",
+  "this projector": "Projector", "the projector": "Projector",
+  "washtower": "WashTower", "wash tower": "WashTower",
+  "standby me": "StanbyME", "standbyme": "StanbyME",
+};
 
-/**
- * Extract "adjective + feature" and "adverb + adjective + feature" compound phrases
- * from review text. Returns phrases ranked by frequency.
- */
+function extractProductEntity(text: string, contextProduct?: string): string {
+  const lower = text.toLowerCase();
+  // Check known aliases
+  for (const [alias, product] of Object.entries(PRODUCT_ALIASES)) {
+    if (lower.includes(alias)) return product;
+  }
+  // Check LG model patterns (e.g. "LG C4", "OLED65C4")
+  const modelMatch = text.match(/\b(?:LG\s+)?(?:OLED|QNED|Nano|UHD)?[\s-]?[A-Z]\d{1,2}[A-Z]?\b/i);
+  if (modelMatch) return modelMatch[0].toUpperCase();
+  return contextProduct || "Unknown";
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LAYER 2: Linguistic Pattern Rules
+// ═══════════════════════════════════════════════════════════════════
+
+function getSourceWeight(source: string): number {
+  for (const [key, w] of Object.entries(SOURCE_WEIGHTS)) {
+    if (source.startsWith(key)) return w;
+  }
+  return 0.9;
+}
+
+/** Split text into sentence-like segments */
+function splitSentences(text: string): string[] {
+  return text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 3);
+}
+
+/** Check if any negation token appears within window words before position */
+function hasNegation(words: string[], sentimentWordIdx: number, windowSize = 4): boolean {
+  const start = Math.max(0, sentimentWordIdx - windowSize);
+  const preceding = words.slice(start, sentimentWordIdx).join(" ").toLowerCase();
+  return NEGATION_TOKENS.some(neg => preceding.includes(neg));
+}
+
+/** Check for intensifiers near a position */
+function getIntensifierMultiplier(text: string): number {
+  const lower = text.toLowerCase();
+  for (const int of STRONG_POS_INTENSIFIERS) {
+    if (lower.includes(int)) return 1.4;
+  }
+  for (const int of STRONG_NEG_INTENSIFIERS) {
+    if (lower.includes(int)) return 1.4;
+  }
+  return 1.0;
+}
+
+/** Rule D: Competitive expressions */
+function detectCompetitive(text: string): { type: "competitive_win" | "competitive_loss"; brand: string; score: number } | null {
+  const lower = text.toLowerCase();
+  const mentionedCompetitor = COMPETITORS.find(c => lower.includes(c));
+  if (!mentionedCompetitor) return null;
+
+  const winPatterns = ["better than", "beats", "ahead of", "prefer lg over", "prefer lg to", "lg is better", "lg wins", "lg crushes", "lg destroys", "switched to lg", "moved to lg"];
+  const losePatterns = ["is better", "prefer " + mentionedCompetitor, "switched from lg", "going back to", "went with " + mentionedCompetitor, "chose " + mentionedCompetitor, mentionedCompetitor + " is better", mentionedCompetitor + " beats"];
+
+  for (const p of winPatterns) {
+    if (lower.includes(p)) return { type: "competitive_win", brand: mentionedCompetitor, score: 0.75 };
+  }
+  for (const p of losePatterns) {
+    if (lower.includes(p)) return { type: "competitive_loss", brand: mentionedCompetitor, score: -0.75 };
+  }
+
+  return null;
+}
+
+/** Rule E: Temporal/conditional sentiment */
+function detectTemporalConditional(text: string): { type: "brand_erosion" | "mixed"; score: number } | null {
+  const lower = text.toLowerCase();
+  for (const p of DECLINE_PATTERNS) {
+    if (lower.includes(p)) return { type: "brand_erosion", score: -0.65 };
+  }
+  for (const p of CONDITIONAL_PATTERNS) {
+    if (lower.includes(p)) return { type: "mixed", score: 0.15 };
+  }
+  return null;
+}
+
+/** Rule F: Price/value sentiment */
+function detectPriceValue(text: string): { score: number; positive: boolean } | null {
+  const lower = text.toLowerCase();
+  for (const p of PRICE_POSITIVE) {
+    if (lower.includes(p)) return { score: 0.7, positive: true };
+  }
+  for (const p of PRICE_NEGATIVE) {
+    if (lower.includes(p)) return { score: -0.8, positive: false };
+  }
+  return null;
+}
+
+/** Determine dominant issue category from text */
+function classifyIssueCategory(text: string): string {
+  const lower = text.toLowerCase();
+  let bestCategory = "General";
+  let bestScore = 0;
+  for (const [cat, indicators] of Object.entries(ISSUE_CATEGORIES)) {
+    let score = 0;
+    for (const ind of indicators) {
+      if (lower.includes(ind)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestCategory = cat;
+    }
+  }
+  return bestCategory;
+}
+
+/** Extract best evidence phrase (5-12 words) from a sentence */
+function extractEvidencePhrase(sentence: string, maxWords = 12, minWords = 4): string {
+  const words = sentence.trim().split(/\s+/);
+  if (words.length <= maxWords) return sentence.trim();
+  // Try to find the segment with most sentiment-bearing words
+  let bestStart = 0;
+  let bestScore = 0;
+  const allSentimentWords = new Set([...Object.keys(POSITIVE_WORDS), ...Object.keys(NEGATIVE_WORDS)]);
+  for (let i = 0; i <= words.length - minWords; i++) {
+    const end = Math.min(i + maxWords, words.length);
+    const segment = words.slice(i, end);
+    let score = 0;
+    for (const w of segment) {
+      if (allSentimentWords.has(w.toLowerCase().replace(/[^a-z-]/g, ""))) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestStart = i;
+    }
+  }
+  return words.slice(bestStart, bestStart + maxWords).join(" ");
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CORE ANALYSIS
+// ═══════════════════════════════════════════════════════════════════
+
+interface ReviewSignals {
+  baseScore: number;
+  intensifierMult: number;
+  negationApplied: boolean;
+  comparativeBonus: number;
+  valueSignal: number;
+  sentiment: "positive" | "negative" | "mixed" | "neutral";
+  evidencePhrase: string;
+  issueCategory: string;
+  competitive: CompetitiveMention | null;
+  priceFlag: boolean;
+}
+
+function analyzeReviewText(text: string, source: string, existingSentiment?: string, existingScore?: number): ReviewSignals {
+  const sentences = splitSentences(text);
+  const sourceWeight = getSourceWeight(source);
+  let totalScore = 0;
+  let sentenceCount = 0;
+  let bestPosPhrase = "";
+  let bestNegPhrase = "";
+  let bestPosScore = 0;
+  let bestNegScore = 0;
+  let intensifierMult = 1.0;
+  let negationApplied = false;
+  let comparativeBonus = 0;
+  let valueSignal = 0;
+  let competitive: CompetitiveMention | null = null;
+  let priceFlag = false;
+
+  for (const sentence of sentences) {
+    const lower = sentence.toLowerCase();
+    const words = lower.split(/\s+/);
+    let sentenceScore = 0;
+    let matchCount = 0;
+
+    // Rule A + B: Word-level scoring with negation & intensifier
+    for (let i = 0; i < words.length; i++) {
+      const cleanWord = words[i].replace(/[^a-z'-]/g, "");
+      let wordScore = 0;
+
+      if (POSITIVE_WORDS[cleanWord] !== undefined) {
+        wordScore = POSITIVE_WORDS[cleanWord];
+      } else if (NEGATIVE_WORDS[cleanWord] !== undefined) {
+        wordScore = NEGATIVE_WORDS[cleanWord];
+      } else {
+        continue;
+      }
+
+      // Rule A: Negation check
+      if (hasNegation(words, i)) {
+        if (wordScore > 0) {
+          wordScore *= -1; // Flip positive to negative
+        } else {
+          wordScore *= -0.7; // Flip negative to weakly positive
+        }
+        negationApplied = true;
+      }
+
+      matchCount++;
+      sentenceScore += wordScore;
+    }
+
+    // Rule B: Intensifier amplification at sentence level
+    const intMult = getIntensifierMultiplier(sentence);
+    if (intMult > 1.0) {
+      sentenceScore *= intMult;
+      intensifierMult = Math.max(intensifierMult, intMult);
+    }
+
+    // Rule D: Competitive
+    const comp = detectCompetitive(sentence);
+    if (comp) {
+      comparativeBonus += comp.score;
+      competitive = { brand: comp.brand, win: comp.type === "competitive_win" };
+    }
+
+    // Rule E: Temporal/conditional
+    const temporal = detectTemporalConditional(sentence);
+    if (temporal) {
+      sentenceScore += temporal.score;
+    }
+
+    // Rule F: Price/value
+    const pv = detectPriceValue(sentence);
+    if (pv) {
+      valueSignal += pv.score;
+      if (!pv.positive) priceFlag = true;
+    }
+
+    // Apply source weight
+    sentenceScore *= sourceWeight;
+
+    if (matchCount > 0) {
+      // Track best evidence
+      const evidence = extractEvidencePhrase(sentence);
+      if (sentenceScore > bestPosScore) {
+        bestPosScore = sentenceScore;
+        bestPosPhrase = evidence;
+      }
+      if (sentenceScore < bestNegScore) {
+        bestNegScore = sentenceScore;
+        bestNegPhrase = evidence;
+      }
+    }
+
+    totalScore += sentenceScore;
+    sentenceCount++;
+  }
+
+  // If we got no matched words, fall back to existing sentiment/score
+  if (sentenceCount === 0 || (bestPosScore === 0 && bestNegScore === 0)) {
+    if (existingSentiment && existingScore !== undefined) {
+      const baseScore = existingSentiment === "positive" ? Math.abs(existingScore) :
+        existingSentiment === "negative" ? -Math.abs(existingScore) : 0;
+      return {
+        baseScore,
+        intensifierMult: 1.0,
+        negationApplied: false,
+        comparativeBonus: 0,
+        valueSignal: 0,
+        sentiment: existingSentiment as any,
+        evidencePhrase: extractEvidencePhrase(text),
+        issueCategory: classifyIssueCategory(text),
+        competitive: null,
+        priceFlag: false,
+      };
+    }
+    return {
+      baseScore: 0,
+      intensifierMult: 1.0,
+      negationApplied: false,
+      comparativeBonus: 0,
+      valueSignal: 0,
+      sentiment: "neutral",
+      evidencePhrase: "",
+      issueCategory: "General",
+      competitive: null,
+      priceFlag: false,
+    };
+  }
+
+  // Layer 3: Composite calculation
+  const avgSentenceScore = totalScore / Math.max(sentenceCount, 1);
+  const compositeRaw = avgSentenceScore + comparativeBonus * 0.3 + valueSignal * 0.2;
+
+  let sentiment: "positive" | "negative" | "mixed" | "neutral";
+  if (compositeRaw > 0.2) sentiment = "positive";
+  else if (compositeRaw < -0.2) sentiment = "negative";
+  else if (Math.abs(bestPosScore) > 0 && Math.abs(bestNegScore) > 0) sentiment = "mixed";
+  else sentiment = "neutral";
+
+  return {
+    baseScore: compositeRaw,
+    intensifierMult,
+    negationApplied,
+    comparativeBonus,
+    valueSignal,
+    sentiment: sentiment === "mixed" ? "neutral" : sentiment,
+    evidencePhrase: sentiment === "negative" ? bestNegPhrase : bestPosPhrase,
+    issueCategory: classifyIssueCategory(text),
+    competitive,
+    priceFlag,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHRASE EXTRACTION (kept for backward compat)
+// ═══════════════════════════════════════════════════════════════════
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+function capitalizePhrase(str: string): string {
+  return str.split(" ").map((w, i) => i === 0 || w.length > 3 ? capitalize(w) : w).join(" ");
+}
+
 function extractPhrases(reviews: Review[]): { positive: Map<string, number>; negative: Map<string, number> } {
   const posPhrases = new Map<string, number>();
   const negPhrases = new Map<string, number>();
 
   for (const review of reviews) {
     const text = review.text.toLowerCase();
-
-    for (const noun of featureNouns) {
+    for (const noun of FEATURE_NOUNS) {
       const nounLower = noun.toLowerCase();
-      // Check if the feature noun appears in the text
       if (!text.includes(nounLower)) continue;
 
-      // Look for adjective near the noun (within ~4 words before)
-      // Build regex: (adjective) (0-3 words) (noun)
-      for (const adj of positiveKeywords) {
-        // Pattern: "adj ... noun" or "intensifier adj ... noun"
-        const simplePattern = new RegExp(
-          `\\b(${positiveIntensifiers.join("|")})?\\s*${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`,
-          "i"
-        );
-        const match = text.match(simplePattern);
-        if (match) {
-          const intensifier = match[1] ? `${capitalize(match[1])} ` : "";
-          const phrase = `${intensifier}${capitalize(adj)} ${capitalizePhrase(noun)}`;
+      for (const adj of Object.keys(POSITIVE_WORDS)) {
+        const pattern = new RegExp(`\\b${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`, "i");
+        if (pattern.test(text)) {
+          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
+          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
+        }
+        // Reverse: noun is/are adj
+        const revPattern = new RegExp(`\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+${escapeRegex(adj)}\\b`, "i");
+        if (revPattern.test(text)) {
+          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
           posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
         }
       }
 
-      for (const adj of negativeKeywords) {
-        const pattern = new RegExp(
-          `\\b${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`,
-          "i"
-        );
+      for (const adj of Object.keys(NEGATIVE_WORDS)) {
+        const pattern = new RegExp(`\\b${escapeRegex(adj)}\\b[\\w\\s,]{0,30}\\b${escapeRegex(nounLower)}\\b`, "i");
         if (pattern.test(text)) {
           const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
           negPhrases.set(phrase, (negPhrases.get(phrase) || 0) + 1);
         }
-      }
-
-      // Also check positive expressions (e.g. "best picture quality", "top-rated display")
-      for (const expr of positiveExpressions) {
-        const exprPattern = new RegExp(
-          `\\b${escapeRegex(expr)}\\b[\\w\\s,]{0,20}\\b${escapeRegex(nounLower)}\\b`,
-          "i"
-        );
-        if (exprPattern.test(text)) {
-          const phrase = `${capitalizePhrase(expr)} ${capitalizePhrase(noun)}`;
-          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
-        }
-        // Reverse: "noun ... best/top"
-        const revExprPattern = new RegExp(
-          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,15}\\b${escapeRegex(expr)}\\b`,
-          "i"
-        );
-        if (revExprPattern.test(text)) {
-          const phrase = `${capitalizePhrase(expr)} ${capitalizePhrase(noun)}`;
-          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
-        }
-      }
-    }
-
-    // Also capture "noun is/are/was adjective" patterns
-    for (const noun of featureNouns) {
-      const nounLower = noun.toLowerCase();
-      if (!text.includes(nounLower)) continue;
-
-      for (const adj of positiveKeywords) {
-        const reversePattern = new RegExp(
-          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+(?:${positiveIntensifiers.join("|")}\\s+)?${escapeRegex(adj)}\\b`,
-          "i"
-        );
-        if (reversePattern.test(text)) {
-          const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
-          posPhrases.set(phrase, (posPhrases.get(phrase) || 0) + 1);
-        }
-      }
-
-      for (const adj of negativeKeywords) {
-        const reversePattern = new RegExp(
-          `\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+${escapeRegex(adj)}\\b`,
-          "i"
-        );
-        if (reversePattern.test(text)) {
+        const revPattern = new RegExp(`\\b${escapeRegex(nounLower)}\\b[\\w\\s]{0,10}\\b(?:is|are|was|were|feels?|looks?)\\s+${escapeRegex(adj)}\\b`, "i");
+        if (revPattern.test(text)) {
           const phrase = `${capitalize(adj)} ${capitalizePhrase(noun)}`;
           negPhrases.set(phrase, (negPhrases.get(phrase) || 0) + 1);
         }
       }
     }
   }
-
   return { positive: posPhrases, negative: negPhrases };
 }
 
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function capitalizePhrase(str: string): string {
-  // Keep short words like "of", "and" lowercase; capitalize main words
-  return str.split(" ").map((w, i) =>
-    i === 0 || w.length > 3 ? capitalize(w) : w
-  ).join(" ");
-}
-
-/** Sort a frequency map by count descending, return keys */
 function sortByFrequency(map: Map<string, number>): string[] {
-  return [...map.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([phrase]) => phrase);
+  return [...map.entries()].sort((a, b) => b[1] - a[1]).map(([phrase]) => phrase);
 }
 
-export function analyzeSentiment(reviews: Review[]): SentimentResult {
-  let positive = 0, negative = 0, neutral = 0;
-  let totalScore = 0;
-  const posKeywords = new Set<string>();
-  const negKeywords = new Set<string>();
-
-  reviews.forEach((review) => {
-    const sentiment = review.sentiment || classifyText(review.text);
-    if (sentiment === "positive") positive++;
-    else if (sentiment === "negative") negative++;
-    else neutral++;
-
-    totalScore += review.score ?? (sentiment === "positive" ? 0.8 : sentiment === "negative" ? 0.2 : 0.5);
-
-    const textLower = review.text.toLowerCase();
-    positiveKeywords.forEach((kw) => {
-      if (textLower.includes(kw.toLowerCase())) posKeywords.add(kw);
-    });
-    negativeKeywords.forEach((kw) => {
-      if (textLower.includes(kw.toLowerCase())) negKeywords.add(kw);
-    });
-  });
-
-  // Extract compound phrases
-  const phraseResult = extractPhrases(reviews);
-
-  // Extract usage scenes (places, situations)
-  const usageScenes = extractUsageScenes(reviews);
-
-  return {
-    positive,
-    negative,
-    neutral,
-    averageScore: reviews.length > 0 ? totalScore / reviews.length : 0,
-    keywords: {
-      positive: Array.from(posKeywords),
-      negative: Array.from(negKeywords),
-    },
-    phrases: {
-      positive: sortByFrequency(phraseResult.positive),
-      negative: sortByFrequency(phraseResult.negative),
-    },
-    usageScenes,
-  };
-}
-
-function classifyText(text: string): "positive" | "negative" | "neutral" {
-  const lower = text.toLowerCase();
-  let posCount = 0, negCount = 0;
-  positiveKeywords.forEach((kw) => { if (lower.includes(kw.toLowerCase())) posCount++; });
-  negativeKeywords.forEach((kw) => { if (lower.includes(kw.toLowerCase())) negCount++; });
-  if (posCount > negCount) return "positive";
-  if (negCount > posCount) return "negative";
-  return "neutral";
-}
-
-// ──────────────────────────────────────────────────────────────────
-// Usage Scene Extraction — places, situations, contexts
-// ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// USAGE SCENE EXTRACTION
+// ═══════════════════════════════════════════════════════════════════
 
 const SCENE_PLACES = [
   "kitchen", "bedroom", "living room", "bathroom", "office", "desk", "garage",
@@ -269,7 +531,6 @@ const SCENE_PLACES = [
   "nursery", "kids room", "game room", "man cave", "shed", "RV", "van",
   "poolside", "beach", "park", "rooftop", "terrace", "laundry room",
 ];
-
 const SCENE_SITUATIONS = [
   "cooking", "working from home", "WFH", "remote work", "work from bed",
   "movie night", "binge watching", "gaming", "streaming", "video call",
@@ -281,66 +542,174 @@ const SCENE_SITUATIONS = [
   "outdoor movie", "tailgate party", "picnic", "barbecue", "BBQ",
   "travel", "commute", "flight", "hotel room",
 ];
-
 const SCENE_PATTERNS = [
-  // "I use it in/at/for ..."
   /\b(?:use|using|used)\s+(?:it|this|mine)\s+(?:in|at|for|during|while)\s+(?:the\s+)?([^,.!?]{3,40})/gi,
-  // "great for / perfect for ..."
   /\b(?:great|perfect|ideal|amazing|awesome|convenient|handy)\s+(?:for|in|at|during)\s+(?:the\s+)?([^,.!?]{3,40})/gi,
-  // "in my kitchen / in the bedroom ..."
   /\b(?:in|at)\s+(?:my|the|our)\s+([^,.!?]{3,30})/gi,
-  // "while cooking / while working ..."
   /\b(?:while|when|during)\s+([^,.!?]{3,30})/gi,
-  // "from room to room / kitchen to bedroom"
-  /\bfrom\s+(?:the\s+)?(\w+)\s+to\s+(?:the\s+)?(\w+)/gi,
 ];
 
 function extractUsageScenes(reviews: Review[]): string[] {
   const sceneMap = new Map<string, number>();
-
   for (const review of reviews) {
-    const text = review.text;
-    const textLower = text.toLowerCase();
-
-    // Direct place matches
+    const textLower = review.text.toLowerCase();
     for (const place of SCENE_PLACES) {
       if (textLower.includes(place.toLowerCase())) {
-        const normalized = place.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-        sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+        const n = place.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        sceneMap.set(n, (sceneMap.get(n) || 0) + 1);
       }
     }
-
-    // Direct situation matches
-    for (const situation of SCENE_SITUATIONS) {
-      if (textLower.includes(situation.toLowerCase())) {
-        const normalized = situation.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-        sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+    for (const sit of SCENE_SITUATIONS) {
+      if (textLower.includes(sit.toLowerCase())) {
+        const n = sit.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+        sceneMap.set(n, (sceneMap.get(n) || 0) + 1);
       }
     }
-
-    // Pattern-based extraction for richer context
     for (const pattern of SCENE_PATTERNS) {
       pattern.lastIndex = 0;
       let match;
-      while ((match = pattern.exec(text)) !== null) {
+      while ((match = pattern.exec(review.text)) !== null) {
         const scene = (match[1] || "").trim();
         if (scene.length >= 4 && scene.length <= 40) {
-          // Check it's not just filler words
-          const fillerWords = ["the", "a", "an", "it", "this", "that", "my", "your", "i", "we"];
+          const filler = ["the", "a", "an", "it", "this", "that", "my", "your", "i", "we"];
           const words = scene.toLowerCase().split(/\s+/);
-          const meaningfulWords = words.filter(w => !fillerWords.includes(w));
-          if (meaningfulWords.length >= 1) {
-            const normalized = scene.charAt(0).toUpperCase() + scene.slice(1);
-            sceneMap.set(normalized, (sceneMap.get(normalized) || 0) + 1);
+          if (words.filter(w => !filler.includes(w)).length >= 1) {
+            const n = scene.charAt(0).toUpperCase() + scene.slice(1);
+            sceneMap.set(n, (sceneMap.get(n) || 0) + 1);
           }
         }
       }
     }
   }
+  return [...sceneMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([s, c]) => `${s} (${c}x)`);
+}
 
-  // Sort by frequency, return top scenes
-  return [...sceneMap.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([scene, count]) => `${scene} (${count}x)`);
+// ═══════════════════════════════════════════════════════════════════
+// PUBLIC API: analyzeSentiment
+// ═══════════════════════════════════════════════════════════════════
+
+export function analyzeSentiment(reviews: Review[]): SentimentResult {
+  let positive = 0, negative = 0, neutral = 0;
+  let totalComposite = 0;
+  const posKeywords = new Map<string, number>();
+  const negKeywords = new Map<string, number>();
+  const allCompetitive: CompetitiveMention[] = [];
+  let priceNegCount = 0;
+  const issueCounts = new Map<string, number>();
+  const signals: SentimentSignal[] = [];
+
+  // Track best evidence phrases
+  let bestPosEvidence = { phrase: "", score: -Infinity };
+  let bestNegEvidence = { phrase: "", score: Infinity };
+
+  for (const review of reviews) {
+    const result = analyzeReviewText(
+      review.text,
+      review.source,
+      review.sentiment,
+      review.score
+    );
+
+    // Count sentiment buckets
+    if (result.sentiment === "positive") positive++;
+    else if (result.sentiment === "negative") negative++;
+    else neutral++;
+
+    // Composite score (normalize -1..+1 to 0..100)
+    const normalized = Math.max(0, Math.min(100, (result.baseScore + 1) * 50));
+    totalComposite += normalized;
+
+    // Keywords: extract from text
+    const textLower = review.text.toLowerCase();
+    for (const [word, baseScore] of Object.entries(POSITIVE_WORDS)) {
+      if (textLower.includes(word)) {
+        posKeywords.set(word, (posKeywords.get(word) || 0) + 1);
+      }
+    }
+    for (const [word, baseScore] of Object.entries(NEGATIVE_WORDS)) {
+      if (textLower.includes(word)) {
+        negKeywords.set(word, (negKeywords.get(word) || 0) + 1);
+      }
+    }
+
+    // Best evidence
+    if (result.baseScore > bestPosEvidence.score && result.evidencePhrase) {
+      bestPosEvidence = { phrase: result.evidencePhrase, score: result.baseScore };
+    }
+    if (result.baseScore < bestNegEvidence.score && result.evidencePhrase) {
+      bestNegEvidence = { phrase: result.evidencePhrase, score: result.baseScore };
+    }
+
+    // Competitive
+    if (result.competitive) allCompetitive.push(result.competitive);
+
+    // Price sensitivity
+    if (result.priceFlag) priceNegCount++;
+
+    // Issue category
+    issueCounts.set(result.issueCategory, (issueCounts.get(result.issueCategory) || 0) + 1);
+
+    // Build signal
+    if (result.evidencePhrase) {
+      signals.push({
+        product: extractProductEntity(review.text),
+        sentiment: result.sentiment === "neutral" ? "mixed" : result.sentiment,
+        score: result.baseScore,
+        evidencePhrase: result.evidencePhrase,
+        category: result.issueCategory,
+        type: result.competitive
+          ? (result.competitive.win ? "competitive_win" : "competitive_loss")
+          : result.priceFlag ? "price_value" : "general",
+      });
+    }
+  }
+
+  const total = positive + negative + neutral;
+  const compositeScore = total > 0 ? Math.round(totalComposite / total) : 50;
+
+  // Dominant issue category
+  let dominantIssue = "General";
+  let dominantCount = 0;
+  for (const [cat, cnt] of issueCounts) {
+    if (cnt > dominantCount && cat !== "General") {
+      dominantCount = cnt;
+      dominantIssue = cat;
+    }
+  }
+
+  // Price sensitivity flag: >5% of reviews
+  const priceSensitivityFlag = total > 0 && (priceNegCount / total) > 0.05;
+
+  // Sorted keywords by frequency
+  const sortedPosKw = [...posKeywords.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([w]) => w);
+  const sortedNegKw = [...negKeywords.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15).map(([w]) => w);
+
+  // Phrases
+  const phraseResult = extractPhrases(reviews);
+
+  // Usage scenes
+  const usageScenes = extractUsageScenes(reviews);
+
+  // Sort signals by absolute score for display
+  signals.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
+
+  return {
+    positive,
+    negative,
+    neutral,
+    averageScore: compositeScore / 100,
+    compositeScore,
+    keywords: { positive: sortedPosKw, negative: sortedNegKw },
+    phrases: {
+      positive: sortByFrequency(phraseResult.positive),
+      negative: sortByFrequency(phraseResult.negative),
+    },
+    usageScenes,
+    topPositivePhrase: bestPosEvidence.phrase,
+    topNegativePhrase: bestNegEvidence.phrase,
+    dominantIssueCategory: dominantIssue,
+    priceSensitivityFlag,
+    competitiveMentions: allCompetitive,
+    signals: signals.slice(0, 20), // Top 20 signals
+  };
 }
