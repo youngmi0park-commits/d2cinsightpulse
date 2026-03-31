@@ -13,21 +13,13 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number; us2025: number; uk2025: number }>({ us: 0, uk: 0, us2025: 0, uk2025: 0 });
+  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
   useEffect(() => {
-    Promise.all([
-      supabase.rpc("get_lgcom_country_counts"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_us").gte("published_at", "2024-01-01"),
-      supabase.from("reviews").select("source", { count: "exact", head: true }).like("source", "lge_com_uk").gte("published_at", "2024-01-01"),
-    ]).then(([countRes, us2025Res, uk2025Res]) => {
+    supabase.rpc("get_lgcom_country_counts").then((countRes) => {
       const data = countRes.data || [];
       const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
       const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
-      setCounts({
-        us, uk,
-        us2025: us2025Res.count || 0,
-        uk2025: uk2025Res.count || 0,
-      });
+      setCounts({ us, uk });
     });
   }, []);
   return counts;
@@ -440,18 +432,16 @@ export const CollectionCriteria = () => {
           <div className="grid grid-cols-1 gap-2.5 text-xs">
             <div>
               <span className="text-muted-foreground">🇺🇸 {t("US LG.com", "미국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 중 `)}
-              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
-              <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
+              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 — `)}
+              <span className="font-bold text-foreground">{counts.us.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
             <div>
               <span className="text-muted-foreground">🇬🇧 {t("UK LG.com", "영국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 중 `)}
-              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
-              <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
+              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 — `)}
+              <span className="font-bold text-foreground">{counts.uk.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 20자 미만 및 중복 리뷰 제외")}</p>
+          <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
         </div>
         <p className="text-sm text-muted-foreground mb-6">
           {t(
