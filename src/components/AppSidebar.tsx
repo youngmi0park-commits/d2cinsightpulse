@@ -23,8 +23,8 @@ const analyticsItems = [
 ];
 
 const marketingItems = [
-  { title: "Marketing Toolkit", url: "/toolkit", icon: Wrench, isNew: true },
-  { title: "AI FAQ Generation", url: "/faq-gen", icon: HelpCircle },
+  { title: "MKT Copy Generation", url: "/toolkit", icon: Wrench, isNew: true },
+  { title: "Paid Marketing Gen", url: "/faq-gen", icon: HelpCircle },
 ];
 
 const pipelineItems = [
