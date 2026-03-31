@@ -400,10 +400,10 @@ export function WeeklyNewsletterHTML() {
 
         {viewMode === "preview" ? (
           <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
-            <iframe srcDoc={html} title="Newsletter Preview" className="w-full border-0" style={{ height: "900px" }} />
+            <iframe srcDoc={fullGenHtml || html} title="Newsletter Preview" className="w-full border-0" style={{ height: "900px" }} />
           </div>
         ) : (
-          <pre className="bg-muted/50 border border-border rounded-lg p-4 text-[11px] text-foreground/80 overflow-auto max-h-[600px] whitespace-pre-wrap break-all font-mono">{html}</pre>
+          <pre className="bg-muted/50 border border-border rounded-lg p-4 text-[11px] text-foreground/80 overflow-auto max-h-[600px] whitespace-pre-wrap break-all font-mono">{fullGenHtml || html}</pre>
         )}
       </CardContent>
     </Card>
