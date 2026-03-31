@@ -442,69 +442,6 @@ export function WeeklyInsightsPanel() {
                 </InsightCard>
               </TabsContent>
 
-              {/* === Framework 3: Negative CRM === */}
-              <TabsContent value="negative" className="space-y-3 mt-3">
-                <InsightCard
-                  icon={AlertTriangle}
-                  title={t("Expectation Gap", "기대치와 현실의 괴리")}
-                  color="border-red-500/20 bg-red-500/5"
-                >
-                  {(ins.negative_insights?.expectation_gap || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <ProductTag name={item.product} />
-                        <SeverityBadge level={item.severity} />
-                        <div className="ml-auto"><CopyButton text={`[${item.product}] Gap: ${item.gap_description} (${item.severity})`} /></div>
-                      </div>
-                      <p className="text-xs text-foreground">{item.gap_description}</p>
-                    </div>
-                  ))}
-                  {(!ins.negative_insights?.expectation_gap?.length) && (
-                    <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
-                  )}
-                </InsightCard>
-
-                <InsightCard
-                  icon={Lightbulb}
-                  title={t("Paid Service Opportunities", "유료 서비스 기회 포착")}
-                  color="border-amber-500/20 bg-amber-500/5"
-                >
-                  {(ins.negative_insights?.paid_service_opportunities || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <ProductTag name={item.product} />
-                        <CopyButton text={`페인포인트: ${item.pain_point}\n서비스 기회: ${item.service_idea}`} />
-                      </div>
-                      <p className="text-xs text-foreground"><strong>{t("Pain:", "페인포인트:")}</strong> {item.pain_point}</p>
-                      <p className="text-[11px] text-primary/80">→ {item.service_idea}</p>
-                    </div>
-                  ))}
-                  {(!ins.negative_insights?.paid_service_opportunities?.length) && (
-                    <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
-                  )}
-                </InsightCard>
-
-                <InsightCard
-                  icon={ShieldAlert}
-                  title={t("CRM Response Strategy", "CRM 대응 전략")}
-                  color="border-rose-500/20 bg-rose-500/5"
-                >
-                  {(ins.negative_insights?.crm_strategy || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <ProductTag name={item.product} />
-                        <CopyButton text={`이슈: ${item.issue}\n대응: ${item.response}\n보상: ${item.compensation}`} />
-                      </div>
-                      <p className="text-xs text-foreground"><strong>{t("Issue:", "이슈:")}</strong> {item.issue}</p>
-                      <p className="text-xs text-foreground"><strong>{t("Response:", "대응:")}</strong> {item.response}</p>
-                      <p className="text-[11px] text-success"><strong>{t("Compensation:", "보상:")}</strong> {item.compensation}</p>
-                    </div>
-                  ))}
-                  {(!ins.negative_insights?.crm_strategy?.length) && (
-                    <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
-                  )}
-                </InsightCard>
-              </TabsContent>
             </Tabs>
 
             {/* Timestamp */}
