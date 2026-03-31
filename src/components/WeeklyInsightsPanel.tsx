@@ -278,7 +278,7 @@ export function WeeklyInsightsPanel() {
             )}
 
             <Tabs defaultValue="persona" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 h-9">
+              <TabsList className="w-full grid grid-cols-2 h-9">
                 <TabsTrigger value="persona" className="text-xs gap-1">
                   <Users className="h-3.5 w-3.5" />
                   {t("User Groups", "사용자군 정의")}
@@ -286,10 +286,6 @@ export function WeeklyInsightsPanel() {
                 <TabsTrigger value="jtbd" className="text-xs gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
                   JTBD
-                </TabsTrigger>
-                <TabsTrigger value="negative" className="text-xs gap-1">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  {t("CRM", "CRM")}
                 </TabsTrigger>
               </TabsList>
 
