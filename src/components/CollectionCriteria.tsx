@@ -432,18 +432,16 @@ export const CollectionCriteria = () => {
           <div className="grid grid-cols-1 gap-2.5 text-xs">
             <div>
               <span className="text-muted-foreground">🇺🇸 {t("US LG.com", "미국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 중 `)}
-              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
-              <span className="font-bold text-foreground">{counts.us2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
+              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 — `)}
+              <span className="font-bold text-foreground">{counts.us.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
             <div>
               <span className="text-muted-foreground">🇬🇧 {t("UK LG.com", "영국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 중 `)}
-              {t("Since Jan 2024: ", "24년 1월 이후 작성된 ")}
-              <span className="font-bold text-foreground">{counts.uk2025.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
+              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 — `)}
+              <span className="font-bold text-foreground">{counts.uk.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 20자 미만 및 중복 리뷰 제외")}</p>
+          <p className="text-[10px] text-muted-foreground mt-1.5">{t("Source: Bazaarvoice Conversations API (Production) · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
         </div>
         <p className="text-sm text-muted-foreground mb-6">
           {t(
