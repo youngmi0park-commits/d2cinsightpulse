@@ -23,9 +23,8 @@ const analyticsItems = [
 ];
 
 const marketingItems = [
-  { title: "MKT Copy Generation", url: "/toolkit", icon: Wrench, isNew: true },
-  { title: "Paid Marketing Gen", url: "/faq-gen", icon: HelpCircle },
-  { title: "Onsite FAQ", url: "/onsite-faq", icon: MessageSquare },
+  { title: "Paid Marketing Gen", url: "/toolkit", icon: Wrench, isNew: true },
+  { title: "Onsite FAQ", url: "/faq-gen", icon: HelpCircle },
 ];
 
 const pipelineItems = [
@@ -114,7 +113,7 @@ export function AppSidebar() {
         {/* MARKETING INSIGHTS */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
-            {!collapsed && "🚀 MARKETING INSIGHTS"}
+            {!collapsed && "🚀 MKT COPY GENERATION"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
