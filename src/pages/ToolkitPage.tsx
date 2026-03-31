@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, Image, LayoutTemplate, Sparkles, Zap, Copy, Users, TrendingUp, ShieldAlert, Heart, ArrowRightLeft } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ExternalLink, Loader2, Check, Wrench, X, Briefcase, Image, LayoutTemplate, Sparkles, Zap, Copy, Users, TrendingUp, ShieldAlert, Heart, ArrowRightLeft } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import { useLang } from "@/contexts/LanguageContext";
