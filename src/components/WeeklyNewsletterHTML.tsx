@@ -371,7 +371,7 @@ export function WeeklyNewsletterHTML() {
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-heading">📬 금주의 뉴스레터</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{data.dateRange}</Badge>
-            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 08:00 발행</Badge>
+            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 10:00 발행</Badge>
           </div>
           <div className="flex items-center gap-2">
             {/* 원클릭 AI 뉴스레터 생성 */}
