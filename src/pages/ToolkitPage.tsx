@@ -740,7 +740,6 @@ ${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 $
         {activeCopyTab === "owned" && (
           <>
             <CopyBlock {...OWNED_COPY.bullets} content={OWNED_COPY.bullets.text} charInfo={OWNED_COPY.bullets.charInfo} legalStatus={OWNED_COPY.bullets.legal} copiedMap={copiedMap} onCopy={handleCopy} />
-            <CopyBlock {...OWNED_COPY.faq} content={OWNED_COPY.faq.text} charInfo={OWNED_COPY.faq.charInfo} legalStatus={OWNED_COPY.faq.legal} copiedMap={copiedMap} onCopy={handleCopy} />
           </>
         )}
         {activeCopyTab === "paid" && (
