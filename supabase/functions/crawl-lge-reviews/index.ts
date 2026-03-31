@@ -149,11 +149,10 @@ function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
   }
 
   // ── Syndication detection ──
-  // Bazaarvoice marks syndicated reviews with IsSyndicated=true and SyndicationSource
+  // review_type must be one of: organic, paid, syndication, mixed
   let reviewType = "organic";
   if (bvReview.IsSyndicated === true || bvReview.SyndicationSource) {
-    const sourceName = bvReview.SyndicationSource?.Name || "external";
-    reviewType = `Originally posted on ${sourceName}`;
+    reviewType = "syndication";
   }
 
   return {
