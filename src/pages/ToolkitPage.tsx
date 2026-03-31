@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Image, LayoutTemplate, Sparkles, Zap, Copy, Target, Users, MapPin, Star, ArrowRight, Eye, MousePointer, ShoppingCart, RefreshCw, MessageSquare } from "lucide-react";
+import { ExternalLink, Loader2, Wrench, Search, X, Image, LayoutTemplate, Sparkles, Target, Users, MapPin, Star, Eye, MousePointer, ShoppingCart, RefreshCw, MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
