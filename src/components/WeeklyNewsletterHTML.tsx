@@ -256,9 +256,9 @@ ${overviewHTML("REDDIT", "💬", reddit)}
     <tr>
       <td style="background:linear-gradient(135deg,#A51C30 0%,#7a1424 100%);padding:20px 24px;text-align:center;">
         <div style="font-size:22px;margin-bottom:8px;">✏️</div>
-        <div style="font-weight:700;font-size:15px;color:#ffffff;letter-spacing:0.5px;">Marketing Copy Creation</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:8px;line-height:1.6;">Review-driven insights powering channel-specific, objective-aligned marketing assets — from awareness to retention.</div>
-        <div style="display:inline-block;margin-top:12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 18px;font-size:11px;font-weight:600;color:#ffffff;letter-spacing:0.5px;">Go to Dashboard →</div>
+        <div style="font-weight:700;font-size:15px;color:#ffffff;letter-spacing:0.5px;">마케팅 카피 크리에이션</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:8px;line-height:1.6;">리뷰 분석 기반 인사이트로 채널별 · 목적별 최적화된 마케팅 에셋을 제공합니다 — 인지 제고부터 재구매까지.</div>
+        <div style="display:inline-block;margin-top:12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 18px;font-size:11px;font-weight:600;color:#ffffff;letter-spacing:0.5px;">대시보드 바로가기 →</div>
       </td>
     </tr>
   </table>
