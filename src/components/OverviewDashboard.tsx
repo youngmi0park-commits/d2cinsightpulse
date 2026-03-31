@@ -156,7 +156,7 @@ export function OverviewDashboard() {
 function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoading, onGenerate }: {
   channelLabel: string; channelEmoji: string;
   overview: OverviewData | null; isLoading: boolean;
-  onGenerate: () => void; accentClass: string;
+  onGenerate: () => void;
 }) {
   const [topicsOpen, setTopicsOpen] = useState(true);
   const [issuesOpen, setIssuesOpen] = useState(true);
