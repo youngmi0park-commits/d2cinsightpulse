@@ -429,8 +429,8 @@ export function MarketingHub({
         {/* ═══ 4. CRM Segment & Retargeting Insights ═══ */}
         {marketing.crmInsights && (
           <Collapsible open={openSections.crm} onOpenChange={() => toggleSection("crm")}>
-            <CollapsibleTrigger className="w-full">
-              <SectionHeader title="📞 리타겟팅 · CRM 세그먼트 인사이트" subtitle="리뷰 기반 CRM 대응 전략과 세그먼트 아이디어" />
+          <CollapsibleTrigger className="w-full">
+              <SectionHeader title="📞 리타겟팅 · CRM 세그먼트 인사이트" subtitle="리뷰 기반 CRM 대응 전략과 세그먼트 아이디어" collapsible isOpen={openSections.crm} />
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
