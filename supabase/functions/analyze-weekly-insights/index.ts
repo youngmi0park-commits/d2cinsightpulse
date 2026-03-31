@@ -38,41 +38,57 @@ Deno.serve(async (req) => {
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
-    // 1. Get top products or specific product
+    // 1. Get top products from ALL collected reviews (not just weekly)
     const allProductIds = new Set<string>();
-    let filteredPos: any[] = [];
-    let filteredNeg: any[] = [];
+    let topProductsList: any[] = [];
 
     if (productId) {
       allProductIds.add(productId);
       const { data: prodInfo } = await sb.from("products").select("*").eq("id", productId).single();
       if (prodInfo) {
-        filteredPos = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region }];
+        topProductsList = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region }];
       }
     } else {
-      const fetchLimit = category === "all" ? limit : 50;
-      const { data: topProducts, error: topErr } = await sb.rpc(
-        "get_lgcom_weekly_top_products",
-        { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
-      );
-      if (topErr) throw topErr;
+      // Fetch top products by total review count (all time, not weekly)
+      let reviewQuery = sb
+        .from("reviews")
+        .select("product_id, products!inner(model_number, display_name, category)")
+        .in("source", ["lge_com_us", "lge_com_uk"]);
 
-      const { data: negProducts } = await sb.rpc(
-        "get_lgcom_weekly_top_products",
-        { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
-      );
+      if (region !== "all") {
+        const sourceMap: Record<string, string> = { US: "lge_com_us", UK: "lge_com_uk" };
+        if (sourceMap[region]) reviewQuery = reviewQuery.eq("source", sourceMap[region]);
+      }
 
-      const matchesCategory = (p: any) => {
+      const { data: allReviews } = await reviewQuery.limit(1000);
+
+      const matchesCategory = (catText: string) => {
         if (category === "all") return true;
         const patterns = categoryPatterns[category] || [category];
-        const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
         return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
       };
 
-      filteredPos = (topProducts || []).filter(matchesCategory).slice(0, limit);
-      filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
+      // Group by product and count
+      const productCounts: Record<string, { count: number; product: any }> = {};
+      for (const r of (allReviews || []) as any[]) {
+        const catText = `${r.products?.category || ""} ${r.products?.display_name || ""}`;
+        if (!matchesCategory(catText)) continue;
+        const pid = r.product_id;
+        if (!productCounts[pid]) {
+          productCounts[pid] = {
+            count: 0,
+            product: { product_id: pid, model_number: r.products.model_number, display_name: r.products.display_name, category: r.products.category, region },
+          };
+        }
+        productCounts[pid].count++;
+      }
 
-      for (const p of [...filteredPos, ...filteredNeg]) {
+      topProductsList = Object.values(productCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit)
+        .map((p) => p.product);
+
+      for (const p of topProductsList) {
         allProductIds.add(p.product_id);
       }
     }
