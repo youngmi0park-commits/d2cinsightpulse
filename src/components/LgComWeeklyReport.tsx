@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductSearchInput } from "@/components/ProductSearchInput";
 import {
   BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, Copy, Check,
   Tv, Refrigerator, WashingMachine, FileText, ThumbsUp, ThumbsDown,
   AlertTriangle, Zap, Users, Megaphone, Wrench, Headphones, TrendingUp,
-  Eye, Cpu, MessageSquare, Star, Target, Lightbulb, Shield
+  Eye, Cpu, MessageSquare, Star, Target, Lightbulb, Shield, Search
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -111,14 +112,17 @@ export function LgComWeeklyReport() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [meta, setMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchMode, setSearchMode] = useState<"category" | "product">("category");
 
-  const runReport = async (cat?: string) => {
+  const runReport = async (cat?: string, productId?: string) => {
     const target = cat ?? category;
     setIsLoading(true);
-    setCategory(target);
+    if (!productId) setCategory(target);
     try {
+      const invokeBody: any = { region, limit: 10, category: target };
+      if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("generate-lgcom-weekly-report", {
-        body: { region, limit: 10, category: target },
+        body: invokeBody,
       });
       if (error) throw error;
       if (data?.report) {
@@ -135,6 +139,11 @@ export function LgComWeeklyReport() {
       setIsLoading(false);
     }
   };
+
+  // Auto-run "all" on mount
+  useEffect(() => {
+    runReport("all");
+  }, []);
 
   const es = report?.executive_summary;
 
@@ -189,39 +198,72 @@ export function LgComWeeklyReport() {
       </CardHeader>
 
       <CardContent className="pt-0">
-        {/* Category buttons */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {[
-            { cat: "all", icon: Sparkles, label: t("All", "전체"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
-            { cat: "TV", icon: Tv, label: "TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
-            { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
-            { cat: "Washer", icon: WashingMachine, label: t("Washer", "세탁기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
-            { cat: "Dryer", icon: WashingMachine, label: t("Dryer", "건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
-            { cat: "Dishwasher", icon: Headphones, label: t("Dishwasher", "식기세척기"), color: "bg-teal-500/10 text-teal-700 border-teal-500/20 hover:bg-teal-500/20" },
-            { cat: "Audio", icon: Headphones, label: t("Audio", "사운드바·오디오"), color: "bg-orange-500/10 text-orange-700 border-orange-500/20 hover:bg-orange-500/20" },
-            { cat: "Monitor", icon: Cpu, label: t("Monitor", "모니터"), color: "bg-slate-500/10 text-slate-700 border-slate-500/20 hover:bg-slate-500/20" },
-            { cat: "AC", icon: Zap, label: t("AC", "에어컨"), color: "bg-sky-500/10 text-sky-700 border-sky-500/20 hover:bg-sky-500/20" },
-          ].map((item) => (
+        {/* Mode toggle: Category vs Product Search */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex gap-0.5 bg-muted/50 rounded-lg p-0.5">
             <button
-              key={item.cat}
-              onClick={() => runReport(item.cat)}
-              disabled={isLoading}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all disabled:opacity-50 ${
-                category === item.cat && report ? item.color + " ring-1 ring-primary/30" : item.color
+              onClick={() => setSearchMode("category")}
+              className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                searchMode === "category" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <item.icon className="h-3 w-3" />
-              {item.label}
-              {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
+              <Sparkles className="h-3 w-3" />
+              {t("Category", "카테고리")}
             </button>
-          ))}
+            <button
+              onClick={() => setSearchMode("product")}
+              className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                searchMode === "product" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Search className="h-3 w-3" />
+              {t("Product Search", "제품 검색")}
+            </button>
+          </div>
         </div>
+
+        {searchMode === "product" ? (
+          <div className="mb-4">
+            <ProductSearchInput
+              onSelect={(product) => runReport(undefined, product.id)}
+              placeholder={t("Search product to analyze...", "분석할 제품을 검색하세요...")}
+              className="max-w-md"
+            />
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {[
+              { cat: "all", icon: Sparkles, label: t("All", "전체"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
+              { cat: "TV", icon: Tv, label: "TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
+              { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
+              { cat: "Washer", icon: WashingMachine, label: t("Washer", "세탁기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+              { cat: "Dryer", icon: WashingMachine, label: t("Dryer", "건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
+              { cat: "Dishwasher", icon: Headphones, label: t("Dishwasher", "식기세척기"), color: "bg-teal-500/10 text-teal-700 border-teal-500/20 hover:bg-teal-500/20" },
+              { cat: "Audio", icon: Headphones, label: t("Audio", "사운드바·오디오"), color: "bg-orange-500/10 text-orange-700 border-orange-500/20 hover:bg-orange-500/20" },
+              { cat: "Monitor", icon: Cpu, label: t("Monitor", "모니터"), color: "bg-slate-500/10 text-slate-700 border-slate-500/20 hover:bg-slate-500/20" },
+              { cat: "AC", icon: Zap, label: t("AC", "에어컨"), color: "bg-sky-500/10 text-sky-700 border-sky-500/20 hover:bg-sky-500/20" },
+            ].map((item) => (
+              <button
+                key={item.cat}
+                onClick={() => runReport(item.cat)}
+                disabled={isLoading}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all disabled:opacity-50 ${
+                  category === item.cat && report ? item.color + " ring-1 ring-primary/30" : item.color
+                }`}
+              >
+                <item.icon className="h-3 w-3" />
+                {item.label}
+                {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Empty state */}
         {!report && !isLoading && (
           <div className="text-center py-10 text-muted-foreground">
             <BarChart3 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{t("Select a category to generate the weekly report", "카테고리를 선택하여 주간 리포트를 생성하세요")}</p>
+            <p className="text-sm">{t("Select a category or search a product", "카테고리를 선택하거나 제품을 검색하세요")}</p>
           </div>
         )}
 

@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     const region = body.region || "all";
     const category = body.category || "all";
     const limit = body.limit || 10;
+    const productId = body.product_id || null; // specific product search
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
@@ -37,32 +38,44 @@ Deno.serve(async (req) => {
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
-    // 1. Fetch top products
-    const fetchLimit = category === "all" ? limit : 50;
-    const { data: posProducts, error: posErr } = await sb.rpc(
-      "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
-    );
-    if (posErr) throw posErr;
+    // 1. Fetch top products (or specific product)
+    let allProductIds = new Set<string>();
+    let filteredPos: any[] = [];
+    let filteredNeg: any[] = [];
 
-    const { data: negProducts } = await sb.rpc(
-      "get_lgcom_weekly_top_products",
-      { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
-    );
+    if (productId) {
+      // Specific product search
+      allProductIds.add(productId);
+      const { data: prodInfo } = await sb.from("products").select("*").eq("id", productId).single();
+      if (prodInfo) {
+        filteredPos = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region, review_count: 0, avg_score: 0 }];
+      }
+    } else {
+      const fetchLimit = category === "all" ? limit : 50;
+      const { data: posProducts, error: posErr } = await sb.rpc(
+        "get_lgcom_weekly_top_products",
+        { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
+      );
+      if (posErr) throw posErr;
 
-    const matchesCategory = (p: any) => {
-      if (category === "all") return true;
-      const patterns = categoryPatterns[category] || [category];
-      const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
-      return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
-    };
+      const { data: negProducts } = await sb.rpc(
+        "get_lgcom_weekly_top_products",
+        { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
+      );
 
-    const filteredPos = (posProducts || []).filter(matchesCategory).slice(0, limit);
-    const filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
+      const matchesCategory = (p: any) => {
+        if (category === "all") return true;
+        const patterns = categoryPatterns[category] || [category];
+        const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
+        return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
+      };
 
-    const allProductIds = new Set<string>();
-    for (const p of [...filteredPos, ...filteredNeg]) {
-      allProductIds.add(p.product_id);
+      filteredPos = (posProducts || []).filter(matchesCategory).slice(0, limit);
+      filteredNeg = (negProducts || []).filter(matchesCategory).slice(0, limit);
+
+      for (const p of [...filteredPos, ...filteredNeg]) {
+        allProductIds.add(p.product_id);
+      }
     }
 
     if (allProductIds.size === 0) {
