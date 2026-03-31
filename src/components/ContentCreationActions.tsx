@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, Image, LayoutTemplate, Sparkles, Copy } from "lucide-react";
+import { ExternalLink, Image, LayoutTemplate, Sparkles } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
