@@ -249,55 +249,20 @@ ${overviewHTML("LG.COM", "🏪", lgcom)}
 <!-- Reddit AI Overview -->
 ${overviewHTML("REDDIT", "💬", reddit)}
 
-<!-- Marketing Quick Actions -->
+<!-- Marketing Copy Creation -->
 <tr><td style="padding:24px 28px 0;">
-  <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#A51C30;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #A51C30;padding-left:8px;">🚀 Marketing Quick Actions</div>
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td width="25%" valign="top" style="padding:4px;">
-      <a href="${BASE_URL}/lgcom" style="text-decoration:none;display:block;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
-        <tr><td style="padding:14px 10px;text-align:center;">
-          <div style="font-size:18px;margin-bottom:6px;">🏪</div>
-          <div style="font-weight:600;font-size:11px;color:#1a1a1a;">LG.com 인사이트</div>
-          <div style="font-size:9px;color:#999;margin-top:3px;">주간 리포트 · 리뷰 분석</div>
-        </td></tr>
-      </table>
-      </a>
-    </td>
-    <td width="25%" valign="top" style="padding:4px;">
-      <a href="${BASE_URL}/reddit" style="text-decoration:none;display:block;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
-        <tr><td style="padding:14px 10px;text-align:center;">
-          <div style="font-size:18px;margin-bottom:6px;">💬</div>
-          <div style="font-weight:600;font-size:11px;color:#1a1a1a;">Reddit Intelligence</div>
-          <div style="font-size:9px;color:#999;margin-top:3px;">커뮤니티 VOC · 제품군 분석</div>
-        </td></tr>
-      </table>
-      </a>
-    </td>
-    <td width="25%" valign="top" style="padding:4px;">
-      <a href="${BASE_URL}/toolkit" style="text-decoration:none;display:block;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
-        <tr><td style="padding:14px 10px;text-align:center;">
-          <div style="font-size:18px;margin-bottom:6px;">✏️</div>
-          <div style="font-weight:600;font-size:11px;color:#1a1a1a;">Marketing Toolkit</div>
-          <div style="font-size:9px;color:#999;margin-top:3px;">캠페인 카피 · 배너 소재</div>
-        </td></tr>
-      </table>
-      </a>
-    </td>
-    <td width="25%" valign="top" style="padding:4px;">
-      <a href="${BASE_URL}/faq-gen" style="text-decoration:none;display:block;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;">
-        <tr><td style="padding:14px 10px;text-align:center;">
-          <div style="font-size:18px;margin-bottom:6px;">❓</div>
-          <div style="font-weight:600;font-size:11px;color:#1a1a1a;">AI FAQ 생성</div>
-          <div style="font-size:9px;color:#999;margin-top:3px;">리뷰 기반 FAQ 자동</div>
-        </td></tr>
-      </table>
-      </a>
-    </td>
-  </tr></table>
+  <a href="${BASE_URL}/" style="text-decoration:none;display:block;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:12px;overflow:hidden;border:1px solid #A51C30;">
+    <tr>
+      <td style="background:linear-gradient(135deg,#A51C30 0%,#7a1424 100%);padding:20px 24px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:8px;">✏️</div>
+        <div style="font-weight:700;font-size:15px;color:#ffffff;letter-spacing:0.5px;">Marketing Copy Creation</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:8px;line-height:1.6;">Review-driven insights powering channel-specific, objective-aligned marketing assets — from awareness to retention.</div>
+        <div style="display:inline-block;margin-top:12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 18px;font-size:11px;font-weight:600;color:#ffffff;letter-spacing:0.5px;">Go to Dashboard →</div>
+      </td>
+    </tr>
+  </table>
+  </a>
 </td></tr>
 
 <!-- Footer -->
