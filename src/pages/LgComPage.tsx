@@ -2,13 +2,11 @@ import { Store, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComProductInsightCards } from "@/components/LgComProductInsightCards";
-import { LgComBucketDashboard } from "@/components/LgComBucketDashboard";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
-import { Badge } from "@/components/ui/badge";
 
-/* Compact inline summary — just total + country split, no large KPI cards */
+/* Compact inline summary — just total + country split */
 function CompactDataBar() {
   const { data, isLoading } = useQuery({
     queryKey: ["lgcom-country-counts"],
@@ -50,16 +48,13 @@ const LgComPage = () => {
         title="🏬 LG.com Insights"
         description="LG.com 리뷰에서 어떤 제품이 긍정/부정 언급되고 있는지, 핵심 키워드는 무엇인지 확인하고 마케팅 콘텐츠로 활용하세요."
       />
-      {/* Compact data bar — minimal metrics */}
       <CompactDataBar />
-      {/* 1. 핵심: 제품별 인사이트 카드 (Reddit PostCard 스타일) */}
-      <LgComProductInsightCards />
-      {/* 2. 리뷰 자동 분류 (REVIEW/VOC) — 제품+키워드 중심 */}
-      <LgComBucketDashboard />
-      {/* 3. AI 주간 리포트 */}
+      {/* 1. AI 주간 인사이트 리포트 (최상단) */}
       <LgComWeeklyReport />
-      {/* 4. 딥 인사이트 (사용자군/JTBD/CRM) */}
+      {/* 2. 전략 심층분석: 사용자군/JTBD */}
       <WeeklyInsightsPanel />
+      {/* 3. 제품 인사이트 카드 (최하단) */}
+      <LgComProductInsightCards />
     </div>
   );
 };
