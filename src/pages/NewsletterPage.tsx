@@ -93,7 +93,7 @@ const NewsletterPage = () => {
       <PageHeader
         icon={Mail}
         title="📮 Newsletter"
-        description="금주의 뉴스레터를 HTML로 복사하여 Outlook에서 발송하고, 지난 호의 인사이트 리포트를 아카이브에서 확인할 수 있습니다."
+        description="매주 화요일 오전 10시 발행 | 금주의 뉴스레터를 HTML로 복사하여 Outlook에서 발송하고, 지난 호의 인사이트 리포트를 아카이브에서 확인할 수 있습니다."
       />
 
       {/* ─── This Week's Newsletter ─── */}
