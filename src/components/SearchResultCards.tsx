@@ -358,7 +358,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               )}
             </div>
 
-            {/* ── STEPS 3–6: 목표→채널→콘텐츠→생성 ── */}
+            {/* ── 미디어 에셋 & LG Crew ── */}
             <ContentCreationActions
               productName={item.product.name}
               displayName={item.product.displayName}

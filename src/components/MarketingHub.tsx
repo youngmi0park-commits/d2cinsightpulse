@@ -3,7 +3,7 @@ import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
 import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
-  TrendingUp, Zap, Check,
+  TrendingUp, Check,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

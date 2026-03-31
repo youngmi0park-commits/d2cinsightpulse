@@ -16,7 +16,7 @@ interface ContentCreationActionsProps {
 }
 
 export function ContentCreationActions({ productName, displayName }: ContentCreationActionsProps) {
-  const { t } = useLang();
+  useLang();
   const [copiedMap, setCopiedMap] = useState<Record<string, boolean>>({});
 
   const handleCopy = (id: string, text: string) => {
