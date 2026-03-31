@@ -196,11 +196,19 @@ function generateChannelCopy(
 }
 
 /* ── Section header ── */
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+function SectionHeader({ title, subtitle, collapsible, isOpen }: { title: string; subtitle: string; collapsible?: boolean; isOpen?: boolean }) {
   return (
-    <div className="pb-3 mb-4 border-b border-border">
-      <h3 className="text-sm font-bold text-foreground">{title}</h3>
-      <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+    <div className={`pb-3 mb-4 border-b border-border ${collapsible ? "flex items-center justify-between cursor-pointer hover:bg-muted/30 rounded-lg -mx-2 px-2 py-2 transition-colors" : ""}`}>
+      <div>
+        <h3 className="text-sm font-bold text-foreground">{title}</h3>
+        <p className="text-[11px] text-muted-foreground">{subtitle}</p>
+      </div>
+      {collapsible && (
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] text-primary font-semibold">{isOpen ? "접기" : "펼치기"}</span>
+          {isOpen ? <ChevronDown className="h-4 w-4 text-primary" /> : <ChevronRight className="h-4 w-4 text-primary" />}
+        </div>
+      )}
     </div>
   );
 }
