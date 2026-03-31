@@ -309,6 +309,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
         const cs = item.sentiment.compositeScore;
         return (
           <div className="animate-slide-up border border-primary/20 rounded-xl bg-card p-5 space-y-5">
+            {/* Header */}
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs border-primary/30 text-primary">
                 {item.product.category}
@@ -327,33 +328,41 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               </div>
             </div>
 
-            {/* Evidence & Signals */}
-            <EvidenceSignalsSection sentiment={item.sentiment} />
+            {/* ── STEP 2: 리뷰 인사이트 ── */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shrink-0">2</span>
+                <h4 className="text-sm font-bold">📊 리뷰 인사이트</h4>
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <SentimentChart sentiment={item.sentiment} />
-              <KeywordCloud keywords={item.sentiment.keywords} />
+              {/* Evidence & Signals */}
+              <EvidenceSignalsSection sentiment={item.sentiment} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <SentimentChart sentiment={item.sentiment} />
+                <KeywordCloud keywords={item.sentiment.keywords} />
+              </div>
+
+              {/* 고객 실제 Using Scene */}
+              {item.sentiment.usageScenes.length > 0 && (
+                <UsageSceneSection scenes={item.sentiment.usageScenes} />
+              )}
+
+              {item.product.reviews.length > 0 && (
+                <MarketingHub
+                  geoMessages={item.geoMessages}
+                  productName={item.product.name}
+                  displayName={item.product.displayName}
+                  totalReviews={item.product.reviews.length}
+                  marketing={item.marketing}
+                  sentiment={item.sentiment}
+                  reviews={item.product.reviews}
+                />
+              )}
+              <ReviewList reviews={item.product.reviews} />
             </div>
 
-            {/* 고객 실제 Using Scene */}
-            {item.sentiment.usageScenes.length > 0 && (
-              <UsageSceneSection scenes={item.sentiment.usageScenes} />
-            )}
-
-            {item.product.reviews.length > 0 && (
-              <MarketingHub
-                geoMessages={item.geoMessages}
-                productName={item.product.name}
-                displayName={item.product.displayName}
-                totalReviews={item.product.reviews.length}
-                marketing={item.marketing}
-                sentiment={item.sentiment}
-                reviews={item.product.reviews}
-              />
-            )}
-            <ReviewList reviews={item.product.reviews} />
-
-            {/* Content Creation Quick Actions */}
+            {/* ── STEPS 3–6: 목표→채널→콘텐츠→생성 ── */}
             <ContentCreationActions
               productName={item.product.name}
               displayName={item.product.displayName}
