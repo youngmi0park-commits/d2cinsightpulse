@@ -1,109 +1,25 @@
-import { useState, useMemo, useCallback } from "react";
-import { ExternalLink, Loader2, Check, Wrench, Search, X, Briefcase, Image, LayoutTemplate, Sparkles, Zap, Copy } from "lucide-react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ExternalLink, Loader2, Wrench, Search, X, Image, LayoutTemplate, Sparkles, Target, Users, MapPin, Star, Eye, MousePointer, ShoppingCart, RefreshCw, MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { analyzeSentiment } from "@/lib/sentiment";
 
 // ═══════════════════════════════════════════════════════════════
-//  DATA
+//  AD FUNNEL / PURPOSE
 // ═══════════════════════════════════════════════════════════════
 
-const PRODUCTS = [
-  { id: 0, name: 'LG OLED65G6WUA · 65" G6', cis: 92, inventory: 158, sales: 1380, rating: 4.9 },
-  { id: 1, name: 'LG OLED65G5WUA · 65" G5', cis: 89, inventory: 142, sales: 1243, rating: 4.8 },
-  { id: 2, name: 'LG OLED55C5PUA · 55" C5', cis: 82, inventory: 287, sales: 987, rating: 4.7 },
-  { id: 3, name: 'LG OLED48C5PUA · 48" C5', cis: 68, inventory: 198, sales: 890, rating: 4.6 },
-  { id: 4, name: 'LG OLED77G5WUA · 77" G5', cis: 54, inventory: 45, sales: 234, rating: 4.9 },
-  { id: 5, name: 'LG OLED65C6H · 65" C6H Tandem', cis: 85, inventory: 95, sales: 412, rating: 4.8 },
-  { id: 6, name: 'LG OLED83W6 · 83" W6 Wireless', cis: 78, inventory: 32, sales: 98, rating: 4.9 },
-  { id: 7, name: 'LG UltraGear 27GR83Q-B', cis: 71, inventory: 312, sales: 445, rating: 4.6 },
-  { id: 8, name: 'LG UltraGear 32GS95UE', cis: 76, inventory: 189, sales: 378, rating: 4.7 },
-  { id: 9, name: 'LG Gram 17Z90TP', cis: 61, inventory: 178, sales: 389, rating: 4.5 },
-  { id: 10, name: 'LG Gram Pro 16 2-in-1', cis: 73, inventory: 112, sales: 267, rating: 4.6 },
-  { id: 11, name: 'LG Soundbar S95TR', cis: 64, inventory: 134, sales: 289, rating: 4.5 },
-  { id: 12, name: 'LG Soundbar S80QY', cis: 58, inventory: 201, sales: 345, rating: 4.4 },
-  { id: 13, name: 'LG WashTower WKEX200HBA', cis: 74, inventory: 89, sales: 567, rating: 4.5 },
-  { id: 14, name: 'LG CordZero A9 ThinQ', cis: 66, inventory: 245, sales: 412, rating: 4.4 },
-  { id: 15, name: 'LG InstaView LRMVS3006S', cis: 70, inventory: 67, sales: 198, rating: 4.6 },
-  { id: 16, name: 'LG PuriCare AeroTower', cis: 62, inventory: 156, sales: 223, rating: 4.3 },
-  { id: 17, name: 'LG StanbyME 27LX6TYGA', cis: 59, inventory: 88, sales: 145, rating: 4.5 },
+const AD_FUNNELS = [
+  { key: "awareness", icon: <Eye className="h-4 w-4" />, emoji: "👁️", labelEn: "Awareness", labelKo: "인지도 제고", descEn: "Brand awareness, reach, impressions — top of funnel", descKo: "브랜드 인지도, 도달, 노출 — 상위 퍼널" },
+  { key: "consideration", icon: <MousePointer className="h-4 w-4" />, emoji: "🔍", labelEn: "Traffic & Consideration", labelKo: "방문 유도 & 고려", descEn: "Site visits, product page views, engagement", descKo: "사이트 방문, 상세페이지 조회, 인게이지먼트" },
+  { key: "conversion", icon: <ShoppingCart className="h-4 w-4" />, emoji: "🛒", labelEn: "Purchase Conversion", labelKo: "구매 전환", descEn: "Add to cart, checkout, purchase — bottom of funnel", descKo: "장바구니 담기, 결제, 구매 — 하위 퍼널" },
+  { key: "retention", icon: <RefreshCw className="h-4 w-4" />, emoji: "🔁", labelEn: "Retention & Repurchase", labelKo: "재구매 & 리텐션", descEn: "Loyalty, cross-sell, upsell, repeat purchase", descKo: "로열티, 크로스셀, 업셀, 반복 구매" },
 ];
 
-const EVENTS = [
-  // Mega Sales
-  "🖤 Black Friday (Nov)", "💻 Cyber Monday (Nov)", "⚡ Prime Day (Jul)", "🛒 Amazon Spring Sale (Mar)",
-  // Seasonal
-  "🎒 Back to School (Jul–Aug)", "🎄 Holiday Season (Dec)", "💝 Valentine's Day (Feb)", "👨 Father's Day (Jun)",
-  "🏠 Home Refresh (Spring)", "🍂 Fall Refresh (Sep–Oct)",
-  // Category-specific
-  "🎮 Gaming Season (Q4)", "🏈 Super Bowl / Big Game (Feb)", "🏆 FIFA / World Cup Season",
-  "📺 New Model Launch (CES Jan)", "📺 Mid-Year Line Refresh (Jun)",
-  // Regional
-  "🇬🇧 Boxing Day (Dec 26)", "🇨🇦 Canada Day (Jul 1)", "🇩🇪 German Unity Day (Oct)",
-  // Clearance
-  "🏷️ End-of-Season Clearance", "📦 Warehouse / Outlet Sale",
-];
-
-const MARKETS = [
-  "🇺🇸 US (LGEUS)", "🇬🇧 UK (LGEUK)", "🇨🇦 CA (LGECI)", "🇦🇺 AU (LGEAP)",
-  "🇩🇪 DE (LGEDG)", "🇫🇷 FR (LGEFS)", "🇮🇹 IT (LGEIS)", "🇪🇸 ES (LGEES)",
-  "🇳🇱 NL (LGENL)", "🇸🇪 SE (LGEND)", "🇵🇱 PL (LGEPL)", "🇮🇳 IN (LGEIL)",
-  "🇸🇬 SG (LGESL)", "🇲🇽 MX (LGEMS)", "🇧🇷 BR (LGEBR)", "🌐 Global All",
-];
-
-const GOALS = [
-  "🚀 Awareness", "💡 Consideration", "🛒 Conversion", "🔁 Retention / Upsell",
-  "🆕 New Launch Hype", "⚔️ Competitive Conquest", "🏷️ Clearance / Sell-through",
-  "📈 Market Share Growth", "💎 Premium Positioning",
-];
-
-const CAMPAIGN_TYPES = [
-  "📺 Single Product Focus", "🎁 Bundle / Cross-sell", "🏷️ Category Push (e.g. All OLED TVs)",
-  "🏠 Lifestyle / Ecosystem (Multi-category)", "🆚 Competitive Switch",
-  "📦 Inventory Liquidation", "🆕 Pre-order / Launch",
-];
-
-const PRODUCT_CATEGORIES = [
-  "📺 TV", "🧊 냉장고 (Refrigerator)", "👕 세탁기 (Washer)",
-  "🍳 식기세척기 (Dishwasher)", "💻 노트북 (Laptop)",
-  "🖥️ 모니터 (Monitor)", "🔊 사운드바 (Soundbar)",
-  "🌀 에어컨 (Air Care)", "🤖 청소기 (Vacuum)",
-];
-
-const PERSONAS = [
-  { icon: "🎮", name: "The Gamer", region: "US · AU · DE · 18–34", desc: "High-spec gaming setup. Sensitive to response time & VRR. Active on r/buildapc.", tags: ["Input lag", "VRR", "4K120Hz", "HDMI 2.1"] },
-  { icon: "🎬", name: "Home Cinema Fan", region: "UK · CA · US · 35–55", desc: "Values 4K streaming & audio. Embraces Dolby Vision/Atmos. Premium budget.", tags: ["Dolby Vision", "OLED Black", "Atmos", '77"–83"'] },
-  { icon: "🏠", name: "Smart Home Adopter", region: "DE · NL · CA · 30–50", desc: "Prioritizes Matter/Thread & energy efficiency. A+++ rating matters. ThinQ ecosystem expansion.", tags: ["ThinQ", "Energy A+++", "Matter", "AI features"] },
-];
-
-const DEFENSE_MESSAGES = [
-  { icon: "🔥", text: '"Burn-in is a thing of the past — 6,000+ owners, 1.2% incident rate only."', sub: "Burn-in concern 228 cases → FAQ P0 · PDP Section · Remarketing" },
-  { icon: "📱", text: '"ThinQ connects in 3 taps — verified by 18,000+ US owners."', sub: "App concern 154 cases → Setup guide · A+ Content" },
-  { icon: "💰", text: '"82% of buyers say \'worth every penny\' after 6 months of ownership."', sub: "Price anxiety 198 cases → Value proof · Amazon A+" },
-];
-
-const OFFENSE_MESSAGES = [
-  { icon: "🖼️", text: '"The moment you turn it on — 74% cite picture quality as life-changing."', sub: "Positive #1 keyword → PDP Hero · PMax creative" },
-  { icon: "🎮", text: '"Gamers switch to LG OLED and never look back — 312 gamer reviews say so."', sub: "Gaming NPS 34% above avg → YouTube · Reddit Ads" },
-  { icon: "🤫", text: '"Whisper-quiet. 712 owners called it the quietest appliance they own."', sub: "Quiet #2 keyword → Meta video hook · Affiliate" },
-];
-
-const HOOKS = [
-  { keyword: "best oled tv", copy: '"Rated #1 by 26,000+ verified buyers. See why LG OLED dominates every top list."', score: "CIS 89 · P0" },
-  { keyword: "oled burn in", copy: '"Worried about burn-in? So were 6,000 LG OLED owners — 98.8% report zero issues."', score: "CIS 84 · P0" },
-  { keyword: "lg vs samsung", copy: '"26,000 owners chose LG. Here\'s exactly why — in their own words."', score: "CIS 79 · P1" },
-  { keyword: "gaming tv 4k", copy: '"1ms. 4K120Hz. VRR. The only gaming TV serious players actually recommend."', score: "CIS 82 · P0" },
-  { keyword: "black friday tv", copy: '"Now or never — LG OLED\'s lowest price of the year. 26K+ owners say it\'s worth full price."', score: "Seasonal · BF" },
-  { keyword: "worst tv brand", copy: '"We saw the complaints about other brands — that\'s why we checked 26,000 LG reviews first."', score: "Defensive · P1" },
-];
-
-const VOCS = [
-  { quote: "\"I didn't realize how different it would look until I turned it on. Absolutely stunning.\"", source: "Verified · LG.com US · OLED C5" },
-  { quote: "\"Worth every single penny. I've had it for 8 months and zero burn-in. Games look incredible.\"", source: "Verified · LG.com US · OLED G5" },
-  { quote: "\"Switched from Samsung and I genuinely can't believe I waited this long. The blacks are unreal.\"", source: "Verified · Amazon US · OLED C4" },
-  { quote: "\"My whole family said 'wow' the moment the screen came on. Best purchase decision of the year.\"", source: "Verified · Best Buy US" },
-  { quote: "\"Setup took 10 minutes. ThinQ works flawlessly with my smart home. Whisper quiet too.\"", source: "Verified · LG.com UK · ThinQ" },
-  { quote: "\"As a competitive gamer this is the best investment I've made. Zero input lag, perfect colors.\"", source: "Verified · LG.com US · UltraGear" },
-];
+// ═══════════════════════════════════════════════════════════════
+//  STATIC DATA (kept from original)
+// ═══════════════════════════════════════════════════════════════
 
 const OWNED_COPY = {
   bullets: {
@@ -117,21 +33,6 @@ const OWNED_COPY = {
 • Virtually Zero Burn-In Risk: LG OLED Care+ with 6,000+ long-term owners — 98.8% report zero visible burn-in.
 • Whisper-Quiet Intelligence: AI-powered noise reduction rated "whisper quiet" by 712 verified buyers.
 • Connected Your Way: ThinQ AI with Matter & Thread — works with every smart home ecosystem.`,
-  },
-  faq: {
-    label: "❓ AI FAQ for PDP",
-    meta: "PDP FAQ Section · CIS P0",
-    id: "copy-pdp-faq",
-    legal: "pass" as const,
-    charInfo: "✅ Legal PASS · evidence ≥2",
-    text: `Q. Will I experience burn-in with LG OLED?
-A. Among 6,000+ verified long-term owners, only 1.2% reported any visible burn-in. LG OLED Care+ further minimizes risk with automatic pixel management.
-
-Q. Is LG OLED worth the price premium?
-A. 82% of verified US buyers rated value positively after ownership. Most common 5-star phrase: "worth every penny."
-
-Q. How does ThinQ smart home integration work?
-A. LG ThinQ supports Matter and Thread — compatible with Apple HomeKit, Google Home, and Amazon Alexa out of the box.`,
   },
 };
 
@@ -218,25 +119,6 @@ const ASSETS = [
 //  SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
-function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle: string }) {
-  return (
-    <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
-      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">
-        {step}
-      </span>
-      <h2 className="text-base font-bold font-heading text-foreground">{title}</h2>
-      <span className="text-xs text-muted-foreground ml-auto">{subtitle}</span>
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.6px] mb-3">
-      {children}
-    </p>
-  );
-}
 
 function CopyBlock({
   label, meta, id, content, charInfo, legalStatus, copiedMap, onCopy,
@@ -247,7 +129,6 @@ function CopyBlock({
   onCopy: (id: string, text: string) => void;
 }) {
   const [regen, setRegen] = useState(false);
-
   const legalColor = legalStatus === "pass" ? "text-success" : legalStatus === "warn" ? "text-warning" : "text-destructive";
 
   return (
@@ -281,23 +162,23 @@ function CopyBlock({
 // ═══════════════════════════════════════════════════════════════
 
 export default function ToolkitPage() {
-  const { t } = useLang();
-  const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedMarket, setSelectedMarket] = useState("");
-  const [selectedGoal, setSelectedGoal] = useState("");
-  const [selectedCampaignType, setSelectedCampaignType] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [isStrategyGenerating, setIsStrategyGenerating] = useState(false);
-  const [generatedStrategy, setGeneratedStrategy] = useState<string | null>(null);
+  const { t, lang } = useLang();
 
-  type SortMode = "inventory" | "sales" | "rated";
+  // Product search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Funnel
+  const [selectedFunnel, setSelectedFunnel] = useState("awareness");
+
+  // Reviews & insights
+  const [productReviews, setProductReviews] = useState<any[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+
+  // Copy gen
   type CopyTab = "owned" | "paid" | "retail";
-
-  const [sortMode, setSortMode] = useState<SortMode>("inventory");
-  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(new Set([0]));
-  const [customModelInput, setCustomModelInput] = useState("");
-  const [customModels, setCustomModels] = useState<string[]>([]);
-  const [activePersona, setActivePersona] = useState(0);
   const [activeCopyTab, setActiveCopyTab] = useState<CopyTab>("owned");
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedMap, setCopiedMap] = useState<Record<string, boolean>>({});
@@ -308,403 +189,369 @@ export default function ToolkitPage() {
     setTimeout(() => setCopiedMap((prev) => ({ ...prev, [id]: false })), 2000);
   };
 
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMap((prev) => ({ ...prev, [text.slice(0, 20)]: true }));
+    setTimeout(() => setCopiedMap((prev) => ({ ...prev, [text.slice(0, 20)]: false })), 2000);
+  };
+
   const handleGenerate = () => {
     setIsGenerating(true);
     setTimeout(() => setIsGenerating(false), 1800);
   };
 
-  const sortedProducts = useMemo(() => {
-    return [...PRODUCTS].sort((a, b) => {
-      if (sortMode === "inventory") return b.inventory - a.inventory;
-      if (sortMode === "sales") return b.sales - a.sales;
-      return b.rating - a.rating;
-    });
-  }, [sortMode]);
+  // Search products from DB
+  const searchProducts = useCallback(async (query: string) => {
+    if (query.length < 2) { setSearchResults([]); return; }
+    setIsSearching(true);
+    try {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .or(`display_name.ilike.%${query}%,model_number.ilike.%${query}%`)
+        .eq("is_active", true)
+        .limit(10);
+      setSearchResults(data || []);
+    } catch { setSearchResults([]); }
+    setIsSearching(false);
+  }, []);
 
-  const toggleProduct = (id: number) => {
-    setSelectedProducts((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  useEffect(() => {
+    const timer = setTimeout(() => searchProducts(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchProducts]);
+
+  // Load reviews for selected product
+  const loadReviews = useCallback(async (productId: string) => {
+    setIsLoadingReviews(true);
+    try {
+      const { data } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("product_id", productId)
+        .limit(500);
+      setProductReviews(data || []);
+    } catch { setProductReviews([]); }
+    setIsLoadingReviews(false);
+  }, []);
+
+  const selectProduct = (product: any) => {
+    setSelectedProduct(product);
+    setSearchQuery("");
+    setSearchResults([]);
+    loadReviews(product.id);
   };
+
+  // Derived: sentiment & insights
+  const sentimentData = useMemo(() => {
+    if (productReviews.length === 0) return null;
+    return analyzeSentiment(productReviews.map(r => r.content || ""));
+  }, [productReviews]);
+
+  // Non-LG.com reviews for direct quote usage (privacy safe)
+  const externalReviews = useMemo(() => {
+    return productReviews.filter(r => !r.source?.startsWith("lge_com"));
+  }, [productReviews]);
+
+  // Strategic insights derived from reviews
+  const strategicInsights = useMemo(() => {
+    if (!sentimentData || productReviews.length === 0) return null;
+
+    const positiveReviews = productReviews.filter(r => r.sentiment === "positive");
+    const negativeReviews = productReviews.filter(r => r.sentiment === "negative");
+
+    // Extract usage scenes
+    const scenes = sentimentData.usageScenes || [];
+
+    // Extract USP keywords
+    const uspKeywords = [
+      ...(sentimentData.phrases?.positive || []),
+      ...(sentimentData.keywords.positive || []),
+    ].filter(k => k.length > 3 && k.length < 40).slice(0, 8);
+
+    // Target audience inference
+    const audienceSignals: string[] = [];
+    const allText = productReviews.map(r => (r.content || "").toLowerCase()).join(" ");
+    if (allText.includes("gam")) audienceSignals.push(lang === "en" ? "🎮 Gamers (high-spec setup seekers)" : "🎮 게이머 (고성능 셋업 추구)");
+    if (allText.includes("movie") || allText.includes("cinema") || allText.includes("film")) audienceSignals.push(lang === "en" ? "🎬 Home Cinema Enthusiasts" : "🎬 홈시네마 애호가");
+    if (allText.includes("family") || allText.includes("kid")) audienceSignals.push(lang === "en" ? "👨‍👩‍👧‍👦 Family-oriented Buyers" : "👨‍👩‍👧‍👦 가족 중심 구매자");
+    if (allText.includes("smart home") || allText.includes("alexa") || allText.includes("homekit")) audienceSignals.push(lang === "en" ? "🏠 Smart Home Adopters" : "🏠 스마트홈 얼리어답터");
+    if (allText.includes("energy") || allText.includes("efficient") || allText.includes("quiet")) audienceSignals.push(lang === "en" ? "🌿 Eco-conscious Consumers" : "🌿 친환경 소비자");
+    if (allText.includes("upgrade") || allText.includes("switch") || allText.includes("replace")) audienceSignals.push(lang === "en" ? "🔄 Upgraders from Competitor/Old Model" : "🔄 경쟁사/구형 모델 교체자");
+    if (audienceSignals.length === 0) audienceSignals.push(lang === "en" ? "🛒 General Premium Consumers" : "🛒 일반 프리미엄 소비자");
+
+    return {
+      totalReviews: productReviews.length,
+      positiveCount: positiveReviews.length,
+      negativeCount: negativeReviews.length,
+      scenes: scenes.slice(0, 6),
+      uspKeywords,
+      audienceSignals: audienceSignals.slice(0, 4),
+      topStrengths: (sentimentData.phrases?.positive || sentimentData.keywords.positive || []).slice(0, 5),
+      topPainPoints: (sentimentData.phrases?.negative || sentimentData.keywords.negative || []).slice(0, 5),
+    };
+  }, [sentimentData, productReviews, lang]);
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       <PageHeader
         icon={Wrench}
-        title="🚀 Global Marketing Toolkit"
+        title="🚀 Paid Marketing Generation"
         description={t(
-          "Auto-generates campaign content based on real customer review data. Set product selection, target market, and marketing goal to get ready-to-use copy and banner assets.",
-          "실제 고객 리뷰 데이터를 기반으로 캠페인용 콘텐츠를 자동 생성합니다. 제품 선택, 타겟 시장, 마케팅 목표를 설정하면 바로 활용 가능한 카피와 배너 소재를 제공합니다."
+          "Search a product → Select ad purpose → Get AI-generated marketing copy, strategic insights, and media assets instantly.",
+          "제품 검색 → 광고 목적 선택 → AI 기반 마케팅 카피, 전략 인사이트, 미디어 에셋을 즉시 생성합니다."
         )}
       />
 
-
-
+      {/* ═══════ STEP 1: Product Search ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={1} title={t("Campaign Context", "캠페인 컨텍스트")} subtitle={t("Seasonal event & product selection · Korea excluded", "시즌 이벤트 & 제품 선택 · 한국 제외")} />
-
-        <SectionLabel>{t("GLOBAL SEASONAL EVENT", "글로벌 시즌 이벤트")}</SectionLabel>
-        <div className="flex gap-3.5 mb-4 flex-wrap">
-          <SelectDropdown label={t("SEASONAL EVENT", "시즌 이벤트")} value={selectedEvent} options={EVENTS} placeholder={t("— Select Season (optional) —", "— 시즌 선택 (선택사항) —")} onChange={setSelectedEvent} />
-          <SelectDropdown label={t("TARGET MARKET", "타겟 시장")} value={selectedMarket} options={MARKETS} placeholder={t("— Select Market (optional) —", "— 시장 선택 (선택사항) —")} onChange={setSelectedMarket} />
-          <SelectDropdown label={t("CAMPAIGN GOAL", "캠페인 목표")} value={selectedGoal} options={GOALS} placeholder={t("— Select Goal (optional) —", "— 목표 선택 (선택사항) —")} onChange={setSelectedGoal} />
-          <SelectDropdown label={t("PRODUCT CATEGORY", "제품 카테고리")} value={selectedCategory} options={PRODUCT_CATEGORIES} placeholder={t("— Select Category (optional) —", "— 카테고리 선택 (선택사항) —")} onChange={setSelectedCategory} />
+        <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">1</span>
+          <h2 className="text-base font-bold font-heading text-foreground">{t("Product Search", "제품 검색")}</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{t("Search by name or model number", "제품명 또는 모델번호로 검색")}</span>
         </div>
 
-        <SectionLabel>{t("CAMPAIGN SETUP", "캠페인 설정")}</SectionLabel>
-        <div className="flex gap-3.5 mb-6 flex-wrap">
-          <SelectDropdown label={t("CAMPAIGN TYPE", "캠페인 유형")} value={selectedCampaignType} options={CAMPAIGN_TYPES} placeholder={t("— Select Type (optional) —", "— 유형 선택 (선택사항) —")} onChange={setSelectedCampaignType} />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("e.g. OLED C5, WashTower, UltraGear ...", "예: OLED C5, WashTower, UltraGear ...")}
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+          />
+          {isSearching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
 
-        <SectionLabel>{t("PRODUCT SELECTION", "제품 선택")}</SectionLabel>
-        <div className="flex items-center gap-0 mb-3.5 border border-border rounded-[10px] overflow-hidden w-fit">
-          {([["inventory", "📦 High Inventory"], ["sales", "🏆 Best Seller"], ["rated", "⭐ Top Rated"]] as const).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => setSortMode(key)}
-              className={`px-4 py-2 text-xs font-medium transition-colors ${
-                sortMode === key ? "bg-primary text-white font-semibold" : "bg-card text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 mt-3.5">
-          {sortedProducts.map((p) => {
-            const sel = selectedProducts.has(p.id);
-            return (
+        {/* Search results dropdown */}
+        {searchResults.length > 0 && (
+          <div className="mt-2 rounded-xl border border-border bg-card shadow-lg max-h-[300px] overflow-y-auto">
+            {searchResults.map((p) => (
               <button
                 key={p.id}
-                onClick={() => toggleProduct(p.id)}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border text-left transition-all ${
-                  sel ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary"
-                }`}
+                onClick={() => selectProduct(p)}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary/40 transition-colors border-b border-border/50 last:border-0"
               >
-                <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                  CIS {p.cis}
-                </span>
-                <span className="flex-1 text-xs font-medium text-foreground leading-tight truncate">{p.name}</span>
-                <span className={`w-[18px] h-[18px] rounded-full border flex items-center justify-center shrink-0 text-[10px] ${
-                  sel ? "bg-primary border-primary text-white" : "border-muted"
-                }`}>
-                  {sel && <Check className="h-3 w-3" />}
-                </span>
+                <span className="text-xs bg-secondary px-2 py-0.5 rounded text-muted-foreground">{p.sub_category || p.category}</span>
+                <span className="text-sm font-medium text-foreground flex-1">{p.display_name}</span>
+                <span className="text-[11px] text-muted-foreground font-mono">{p.model_number}</span>
               </button>
-            );
-          })}
-        </div>
-        <p className="text-[11.5px] text-muted-foreground mt-2">{t("Click to select (multi-select enabled)", "클릭하여 선택 (복수 선택 가능)")}</p>
-
-        {/* Custom Model Input */}
-        <div className="mt-5 p-4 rounded-xl border border-border bg-card">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[1px] mb-2.5">
-            ✏️ {t("ADD CUSTOM PRODUCT / MODEL NUMBER", "제품명 / 모델번호 직접 입력")}
-          </p>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                value={customModelInput}
-                onChange={(e) => setCustomModelInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && customModelInput.trim()) {
-                    setCustomModels((prev) => [...prev, customModelInput.trim()]);
-                    setCustomModelInput("");
-                  }
-                }}
-                placeholder={t("e.g. OLED65C4PUA, WashTower, UltraGear 27GR95QE ...", "예: OLED65C4PUA, WashTower, UltraGear 27GR95QE ...")}
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-              />
-            </div>
-            <button
-              onClick={() => {
-                if (customModelInput.trim()) {
-                  setCustomModels((prev) => [...prev, customModelInput.trim()]);
-                  setCustomModelInput("");
-                }
-              }}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
-            >
-              {t("Add", "추가")}
-            </button>
+            ))}
           </div>
-          {customModels.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {customModels.map((model, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/5 text-xs font-medium text-foreground"
-                >
-                  🔍 {model}
-                  <button
-                    onClick={() => setCustomModels((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="text-muted-foreground hover:text-destructive transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
+        )}
+
+        {/* Selected product */}
+        {selectedProduct && (
+          <div className="mt-4 p-4 rounded-xl border-2 border-primary/30 bg-primary/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">📦</span>
+              <div>
+                <p className="text-sm font-bold text-foreground">{selectedProduct.display_name}</p>
+                <p className="text-[11px] text-muted-foreground">{selectedProduct.sub_category || selectedProduct.category} · {selectedProduct.model_number}</p>
+              </div>
             </div>
-          )}
-          <p className="text-[10.5px] text-muted-foreground mt-2">
-            {t("Enter any product name or model number not listed above. Press Enter or click Add.", "위 목록에 없는 제품명 또는 모델번호를 입력하세요. Enter 또는 추가 버튼을 클릭하세요.")}
-          </p>
-        </div>
-
-        {/* ── Generate Strategy Button ── */}
-        <div className="mt-6">
-          <button
-            onClick={async () => {
-              setIsStrategyGenerating(true);
-              setGeneratedStrategy(null);
-              try {
-                const selectedProductNames = [...selectedProducts].map(id => PRODUCTS.find(p => p.id === id)?.name).filter(Boolean);
-                const allProducts = [...selectedProductNames, ...customModels];
-                
-                const contextParts = [
-                  allProducts.length > 0 ? `Products: ${allProducts.join(", ")}` : "Products: Not specified (general LG portfolio)",
-                  selectedEvent ? `Event: ${selectedEvent}` : "Event: Not specified",
-                  selectedMarket ? `Market: ${selectedMarket}` : "Market: Global",
-                  selectedGoal ? `Goal: ${selectedGoal}` : "Goal: Not specified",
-                  selectedCampaignType ? `Campaign Type: ${selectedCampaignType}` : "Campaign Type: Not specified",
-                  selectedCategory ? `Product Category: ${selectedCategory}` : "Product Category: Not specified",
-                ];
-
-                const prompt = `You are a senior D2C digital marketing strategist for LG Electronics.
-Based on the following campaign context, generate a comprehensive campaign strategy in Korean with English terms where appropriate.
-
-${contextParts.join("\n")}
-
-Output format (use markdown-like formatting):
-📋 캠페인 개요
-- 1-2줄 요약
-
-🎯 핵심 전략 (Top 3 Actions)
-1. [Action] — 이유 + KPI
-2. ...
-3. ...
-
-📡 채널별 실행 계획
-- 각 채널(PMax, Meta, Amazon, LG.com, Social, Influencer 등)별 2줄 이내 실행안
-
-🛡 Defense 메시지 (부정 VOC 대응)
-- 3개 메시지
-
-⚡ Offense 메시지 (긍정 강화)
-- 3개 메시지
-
-💡 추가 제안
-- 2-3개 크리에이티브/타이밍 아이디어
-
-Keep it actionable and specific to the selected products/market. If fields are not specified, provide general best-practice recommendations.`;
-
-                const { supabase } = await import("@/integrations/supabase/client");
-                const response = await supabase.functions.invoke("generate-faq", {
-                  body: { prompt, mode: "strategy" },
-                });
-
-                if (response.error) throw response.error;
-                const result = response.data?.answer || response.data?.result || response.data?.plan || "전략 생성 결과를 확인할 수 없습니다.";
-                setGeneratedStrategy(result);
-              } catch (e) {
-                console.error("Strategy generation error:", e);
-                // Fallback
-                const selectedProductNames = [...selectedProducts].map(id => PRODUCTS.find(p => p.id === id)?.name).filter(Boolean);
-                const allProducts = [...selectedProductNames, ...customModels];
-                setGeneratedStrategy(`📋 캠페인 개요
-${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 ${selectedGoal || "인지도 확대"} 캠페인
-
-🎯 핵심 전략 (Top 3 Actions)
-1. VOC 기반 PMax 에셋 최적화 — 실사용자 키워드를 헤드라인에 반영, CTR +15% 목표
-2. ${selectedEvent || "시즌"} 맞춤 리타겟팅 — 장바구니 이탈 유저 대상 소셜프루프 광고 집행
-3. LG.com PDP 강화 — 인증 리뷰 인용 섹션 추가로 전환율 개선
-
-📡 채널별 실행 계획
-• PMax: VOC 키워드 기반 반응형 에셋 3세트 제작, 주간 성과 리포트
-• Meta: UGC 스타일 Reels + 캐러셀, A/B 테스트 2주 단위
-• Amazon: A+ 콘텐츠 업데이트, 소셜프루프 불렛 포인트 강화
-• LG.com: 히어로 배너 + FAQ 섹션 VOC 반영 업데이트
-• Influencer: 테크 리뷰어 2명 + 라이프스타일 크리에이터 3명 협업
-
-🛡 Defense 메시지
-1. "6,000+ 장기 사용자 중 98.8%가 번인 무경험 — LG OLED Care+가 지켜줍니다"
-2. "설치부터 연결까지 10분 — ThinQ 앱으로 원스텝 셋업"
-3. "82%의 구매자가 6개월 후에도 '가격 대비 최고' 평가"
-
-⚡ Offense 메시지
-1. "실사용자 74%가 '인생 화질'이라 평가한 LG OLED — 직접 확인하세요"
-2. "게이머들이 갈아타면 돌아오지 않는 TV — 312건의 게이밍 리뷰가 증명"
-3. "가장 조용한 가전이라는 712명의 인증 리뷰"
-
-💡 추가 제안
-• ${selectedMarket || "글로벌"} 시장 현지화 카피 A/B 테스트 병행
-• 구매 후 7일 리뷰 요청 이메일 자동화로 VOC 추가 확보`);
-              }
-              setIsStrategyGenerating(false);
-            }}
-            disabled={isStrategyGenerating}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-[hsl(4,58%,55%)] text-white text-[15px] font-bold tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-70"
-          >
-            {isStrategyGenerating ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> {t("Generating Strategy...", "전략 생성 중...")}
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                <Zap className="h-5 w-5" />
-                {t("⚡ Generate Campaign Strategy from Context", "⚡ 캠페인 컨텍스트 기반 전략 자동 생성")}
-              </span>
-            )}
-          </button>
-          <p className="text-[10.5px] text-muted-foreground mt-2 text-center">
-            {t("All fields are optional — strategy will adapt to provided context", "모든 항목은 선택사항입니다 — 입력된 컨텍스트에 맞춰 전략이 생성됩니다")}
-          </p>
-        </div>
-
-        {/* Strategy Result */}
-        {generatedStrategy && (
-          <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                {t("Generated Campaign Strategy", "생성된 캠페인 전략")}
-              </h4>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(generatedStrategy);
-                  handleCopy("strategy-result", generatedStrategy);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                <Copy className="h-3 w-3" />
-                {copiedMap["strategy-result"] ? "✅ Copied!" : t("Copy", "복사")}
-              </button>
-            </div>
-            <div className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-line">
-              {generatedStrategy}
+            <div className="flex items-center gap-3">
+              {isLoadingReviews ? (
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> {t("Loading reviews...", "리뷰 로딩중...")}</span>
+              ) : (
+                <span className="text-xs text-muted-foreground">{productReviews.length} {t("reviews loaded", "건 리뷰 로드됨")}</span>
+              )}
+              <button onClick={() => { setSelectedProduct(null); setProductReviews([]); }} className="text-muted-foreground hover:text-destructive"><X className="h-4 w-4" /></button>
             </div>
           </div>
         )}
       </div>
 
-      {/* ═══════ STEP 2 ═══════ */}
+      {/* ═══════ STEP 2: Ad Purpose / Funnel ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={2} title={t("Global Strategy & Persona", "글로벌 전략 & 페르소나")} subtitle={t("Target persona · JTBD messaging strategy", "타겟 페르소나 · JTBD 메시징 전략")} />
+        <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">2</span>
+          <h2 className="text-base font-bold font-heading text-foreground">{t("Ad Purpose (Funnel Stage)", "광고 목적 (퍼널 단계)")}</h2>
+        </div>
 
-        <SectionLabel>{t("TARGET PERSONA", "타겟 페르소나")}</SectionLabel>
-        <div className="grid grid-cols-3 gap-3.5 mb-6">
-          {PERSONAS.map((p, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {AD_FUNNELS.map((f) => (
             <button
-              key={i}
-              onClick={() => setActivePersona(i)}
-              className={`text-left p-5 rounded-xl border transition-all ${
-                activePersona === i
-                  ? "border-primary bg-primary/5 shadow-[0_4px_16px_rgba(184,50,40,0.08)]"
-                  : "border-border bg-card hover:border-primary"
+              key={f.key}
+              onClick={() => setSelectedFunnel(f.key)}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                selectedFunnel === f.key
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border bg-card hover:border-primary/30"
               }`}
             >
-              <span className="text-2xl">{p.icon}</span>
-              <h4 className="text-sm font-bold text-foreground mt-2.5 mb-1">{p.name}</h4>
-              <p className="text-[11px] font-semibold text-primary mb-2">{p.region}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{p.desc}</p>
-              <div className="flex flex-wrap gap-1.5 mt-2.5">
-                {p.tags.map((t) => (
-                  <span key={t} className="text-[10.5px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">{t}</span>
-                ))}
+              <div className="flex items-center gap-2 mb-2">
+                <span className={selectedFunnel === f.key ? "text-primary" : "text-muted-foreground"}>{f.icon}</span>
+                <span className="text-xs font-bold">{lang === "en" ? f.labelEn : f.labelKo}</span>
               </div>
+              <p className="text-[10px] text-muted-foreground leading-tight">{lang === "en" ? f.descEn : f.descKo}</p>
             </button>
           ))}
         </div>
+      </div>
 
-        <SectionLabel>{t("JTBD & KEY MESSAGING", "JTBD & 핵심 메시징")}</SectionLabel>
-        <div className="bg-muted/40 border border-border rounded-lg p-3 mb-4 flex items-start gap-2">
-          <Briefcase className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">JTBD (Jobs to be Done)</strong>{" "}
+      {/* ═══════ Strategic Insights (shown when product selected) ═══════ */}
+      {selectedProduct && strategicInsights && (
+        <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
+          <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">
+              <Target className="h-3.5 w-3.5" />
+            </span>
+            <h2 className="text-base font-bold font-heading text-foreground">{t("Strategic Insights", "전략 인사이트")}</h2>
+            <Badge variant="outline" className="text-[10px] border-primary/30 text-primary ml-auto">
+              {strategicInsights.totalReviews} {t("reviews analyzed", "건 리뷰 분석")}
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Target Audience */}
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-bold">{t("Target Audience", "주사용 공략대상")}</h4>
+              </div>
+              <div className="space-y-2">
+                {strategicInsights.audienceSignals.map((signal, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-secondary/30 rounded-lg px-3 py-2">
+                    <span className="text-xs text-foreground/90">{signal}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-border/50">
+                <p className="text-[10px] text-muted-foreground">
+                  {t("Positive:", "긍정:")} <span className="text-success font-medium">{strategicInsights.positiveCount}</span> · {t("Negative:", "부정:")} <span className="text-destructive font-medium">{strategicInsights.negativeCount}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Usage Scenes */}
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-bold">{t("Key Usage Scenes", "주요 사용씬")}</h4>
+              </div>
+              <div className="space-y-2">
+                {strategicInsights.scenes.length > 0 ? strategicInsights.scenes.map((scene, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-blue-500/5 rounded-lg px-3 py-2 border border-blue-500/10">
+                    <span className="text-[10px] font-bold text-blue-400 shrink-0">📍 {i + 1}</span>
+                    <span className="text-xs text-foreground/90">{scene}</span>
+                  </div>
+                )) : (
+                  <p className="text-xs text-muted-foreground">{t("Not enough data", "데이터 부족")}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Product USP */}
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-bold">{t("Product USP", "제품 핵심 강점 (USP)")}</h4>
+              </div>
+              <div className="space-y-1.5">
+                {strategicInsights.topStrengths.map((s, i) => (
+                  <div key={i} className="flex items-start gap-2 bg-success/5 rounded-lg px-3 py-2 border border-success/10">
+                    <span className="text-[10px] font-bold text-success shrink-0">💪</span>
+                    <span className="text-xs text-foreground/90">{s}</span>
+                  </div>
+                ))}
+              </div>
+              {strategicInsights.topPainPoints.length > 0 && (
+                <div className="pt-2 border-t border-border/50 space-y-1.5">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase">{t("Pain Points to Address", "대응 필요 포인트")}</p>
+                  {strategicInsights.topPainPoints.slice(0, 3).map((p, i) => (
+                    <div key={i} className="flex items-start gap-2 bg-destructive/5 rounded-lg px-3 py-1.5 border border-destructive/10">
+                      <span className="text-[10px]">⚠️</span>
+                      <span className="text-[11px] text-foreground/80">{p}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* USP Keywords cloud */}
+          {strategicInsights.uspKeywords.length > 0 && (
+            <div className="mt-4 p-3 rounded-lg border border-primary/20 bg-primary/5">
+              <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-2">🔑 {t("USP Keywords (from reviews)", "USP 키워드 (리뷰 기반)")}</p>
+              <div className="flex flex-wrap gap-2">
+                {strategicInsights.uspKeywords.map((kw, i) => (
+                  <button
+                    key={i}
+                    onClick={() => copyText(kw)}
+                    className="text-[11px] bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer"
+                  >
+                    {kw}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════ External Reviews (non-LG.com — privacy-safe for direct use) ═══════ */}
+      {selectedProduct && externalReviews.length > 0 && (
+        <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
+          <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-bold font-heading text-foreground">{t("Customer Voices (External Channels)", "고객 목소리 (외부 채널)")}</h2>
+            <Badge variant="outline" className="text-[10px] text-muted-foreground ml-auto">
+              {t("Privacy-safe: Reddit, Amazon, YouTube etc.", "개인정보 안전: Reddit, Amazon, YouTube 등")}
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground mb-3">
             {t(
-              "— Focuses on the 'job' customers are trying to accomplish. Instead of asking 'who is the customer?', it asks 'what problem are they hiring this product to solve?'",
-              "— 고객이 제품을 '고용'해서 해결하려는 과제에 집중하는 분석법입니다. '누가 사는가'가 아닌 '왜, 어떤 문제를 해결하려고 사는가'를 파악합니다."
+              "⚖️ LG.com reviews contain user-generated content subject to the platform's terms of service. For external marketing use, we prioritize reviews from third-party channels (Reddit, Amazon, YouTube) which are publicly available UGC.",
+              "⚖️ LG.com 리뷰는 플랫폼 서비스 약관이 적용되는 사용자 생성 콘텐츠입니다. 외부 마케팅 활용 시에는 공개적으로 이용 가능한 UGC인 제3자 채널(Reddit, Amazon, YouTube) 리뷰를 우선 활용합니다."
             )}
           </p>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {/* Defense */}
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5">
-            <p className="text-[10px] font-bold text-primary uppercase tracking-[1px] mb-3">
-              🛡 {t("ANXIETY → DEFENSE (Pre-purchase concern)", "불안 요소 → 디펜스 (구매 전 우려)")}
-            </p>
-            {DEFENSE_MESSAGES.map((m, i) => (
-              <div key={i} className={`flex gap-2 py-2.5 ${i < DEFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
-                <span className="text-sm shrink-0 mt-0.5">{m.icon}</span>
-                <div>
-                  <p className="text-[13px] text-foreground leading-snug">{m.text}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{m.sub}</p>
+
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            {externalReviews.slice(0, 20).map((review, i) => {
+              const summary = (review.content || "").slice(0, 150).trim();
+              const sentimentColor = review.sentiment === "positive" ? "text-success" : review.sentiment === "negative" ? "text-destructive" : "text-muted-foreground";
+              const sourceLabel = review.source?.replace(/_/g, " ").replace(/^reddit/, "Reddit").replace(/^youtube/, "YouTube") || "External";
+              return (
+                <div key={i} className="flex items-start gap-3 bg-card rounded-lg p-3 border border-border/50 group hover:border-primary/30 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-bold uppercase ${sentimentColor}`}>
+                        {review.sentiment === "positive" ? "👍" : review.sentiment === "negative" ? "👎" : "➖"} {review.sentiment || "neutral"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">{sourceLabel}</span>
+                      {review.rating && <span className="text-[10px] text-warning">{"★".repeat(Math.min(review.rating, 5))}</span>}
+                    </div>
+                    <p className="text-xs text-foreground/80 leading-relaxed">{summary}{(review.content || "").length > 150 ? "..." : ""}</p>
+                  </div>
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <button
+                      onClick={() => copyText(summary)}
+                      className="px-2.5 py-1 rounded-md border border-border text-[10px] font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                    >
+                      {t("1-line", "1줄요약")}
+                    </button>
+                    <button
+                      onClick={() => copyText(`"${summary}" — ${sourceLabel}`)}
+                      className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-[10px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      {t("Copy", "카피")}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {/* Offense */}
-          <div className="rounded-xl border border-success/20 bg-success/5 p-5">
-            <p className="text-[10px] font-bold text-success uppercase tracking-[1px] mb-3">
-              ⚡ {t("DELIGHT → OFFENSE (Post-purchase satisfaction)", "만족 포인트 → 오펜스 (구매 후 만족)")}
-            </p>
-            {OFFENSE_MESSAGES.map((m, i) => (
-              <div key={i} className={`flex gap-2 py-2.5 ${i < OFFENSE_MESSAGES.length - 1 ? "border-b border-border/30" : ""}`}>
-                <span className="text-sm shrink-0 mt-0.5">{m.icon}</span>
-                <div>
-                  <p className="text-[13px] text-foreground leading-snug">{m.text}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{m.sub}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* ═══════ STEP 3 ═══════ */}
+      {/* ═══════ AI Text Copy Generation ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={3} title={t("Content Hooks & VoC", "콘텐츠 훅 & VoC")} subtitle={t("Search intent ad hooks · Verified customer quotes", "검색 인텐트 광고 훅 · 인증 고객 리뷰 인용")} />
-
-        <SectionLabel>🔍 {t("SEARCH INTENT HOOKS", "검색 인텐트 훅")}</SectionLabel>
-        <div className="space-y-2.5 mb-8">
-          {HOOKS.map((h, i) => (
-            <div key={i} className="grid grid-cols-[100px_1fr_auto] items-center gap-3 bg-card border border-border rounded-[10px] px-4 py-3">
-              <span className="text-[11px] bg-secondary rounded-md px-2 py-0.5 font-medium text-muted-foreground text-center">{h.keyword}</span>
-              <span className="text-[12.5px] text-foreground leading-snug">{h.copy}</span>
-              <span className="text-[11px] font-bold text-success whitespace-nowrap">{h.score}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">3</span>
+          <h2 className="text-base font-bold font-heading text-foreground">{t("AI Text Copy Generation", "AI 텍스트 카피 생성")}</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{t("Channel-specific auto-generation · Legal pre-review included", "채널별 자동 생성 · 법률 사전 검토 포함")}</span>
         </div>
-
-        <SectionLabel>💬 {t("VERIFIED VOC — Ready-to-use 1-line English reviews", "인증 VOC — 바로 활용 가능한 1줄 영문 리뷰")}</SectionLabel>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
-          {VOCS.map((v, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 hover:border-primary transition-colors">
-              <span className="text-xs text-warning">★★★★★</span>
-              <p className="text-[13px] text-foreground leading-relaxed italic flex-1">{v.quote}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">{v.source}</span>
-                <button
-                  onClick={() => handleCopy(`voc-${i}`, v.quote)}
-                  className="px-3 py-1 rounded-md border border-border text-[11.5px] font-semibold text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                >
-                  {copiedMap[`voc-${i}`] ? "✅ Copied" : "Copy"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══════ STEP 4 ═══════ */}
-      <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={4} title={t("AI Text Copy Generation", "AI 텍스트 카피 생성")} subtitle={t("Channel-specific auto-generation · Legal pre-review included", "채널별 자동 생성 · 법률 사전 검토 포함")} />
 
         <button
           onClick={handleGenerate}
@@ -738,9 +585,7 @@ ${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 $
         </div>
 
         {activeCopyTab === "owned" && (
-          <>
-            <CopyBlock {...OWNED_COPY.bullets} content={OWNED_COPY.bullets.text} charInfo={OWNED_COPY.bullets.charInfo} legalStatus={OWNED_COPY.bullets.legal} copiedMap={copiedMap} onCopy={handleCopy} />
-          </>
+          <CopyBlock {...OWNED_COPY.bullets} content={OWNED_COPY.bullets.text} charInfo={OWNED_COPY.bullets.charInfo} legalStatus={OWNED_COPY.bullets.legal} copiedMap={copiedMap} onCopy={handleCopy} />
         )}
         {activeCopyTab === "paid" && (
           <>
@@ -757,9 +602,13 @@ ${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 $
         )}
       </div>
 
-      {/* ═══════ STEP 5 ═══════ */}
+      {/* ═══════ Media Asset Creation ═══════ */}
       <div className="gradient-card rounded-xl border border-border p-5 md:p-6">
-        <StepHeader step={5} title={t("Media Asset Handoff", "미디어 에셋 핸드오프")} subtitle={t("Image/video/banner external tool integration · Auto design prompt", "이미지/영상/배너 외부 툴 연동 · 자동 디자인 프롬프트")} />
+        <div className="flex items-center gap-3 pb-3 mb-4 border-b border-border">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-xs font-bold shrink-0">4</span>
+          <h2 className="text-base font-bold font-heading text-foreground">{t("Media Asset Creation", "미디어 에셋 크리에이션")}</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{t("Image/video/banner external tool integration · Auto design prompt", "이미지/영상/배너 외부 툴 연동 · 자동 디자인 프롬프트")}</span>
+        </div>
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           {ASSETS.map((a, i) => (
@@ -836,32 +685,6 @@ ${allProducts.length > 0 ? allProducts.join(", ") : "LG 전 제품군"} 대상 $
           </span>
         </div>
       </a>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  HELPER — SelectDropdown
-// ═══════════════════════════════════════════════════════════════
-
-function SelectDropdown({
-  label, value, options, placeholder, onChange,
-}: {
-  label: string; value: string; options: string[]; placeholder?: string; onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.6px]">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="min-w-[200px] px-3.5 py-2.5 rounded-[10px] border border-border bg-card text-[13.5px] text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
     </div>
   );
 }
