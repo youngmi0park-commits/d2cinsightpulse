@@ -204,8 +204,8 @@ export function WeeklyInsightsPanel() {
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered deep analysis of top 5 weekly products across 3 strategic frameworks",
-            "주간 리뷰 상위 5개 제품에 대한 AI 기반 3대 전략 프레임워크 분석"
+            "AI-powered deep analysis based on all collected reviews across strategic frameworks",
+            "수집된 전체 리뷰 기반 AI 전략 프레임워크 분석"
           )}
         </p>
       </CardHeader>
