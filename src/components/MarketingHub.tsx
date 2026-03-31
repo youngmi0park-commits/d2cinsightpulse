@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
-import { ContentCreatorPanel } from "@/components/ContentCreatorPanel";
 import { useLang } from "@/contexts/LanguageContext";
 import {
-  Wrench, Copy, ThumbsUp, AlertTriangle,
-  Lightbulb, Users, TrendingUp,
+  Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
+  TrendingUp, Check,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,43 +22,139 @@ interface MarketingHubProps {
   reviews: { text: string; sentiment?: string; source?: string }[];
 }
 
-/* ── keyword extractor ── */
-const STOP = new Set([
-  "the","a","an","and","or","but","in","on","at","to","for","of","with","by",
-  "is","it","was","are","were","be","been","have","has","had","this","that",
-  "from","as","not","so","very","just","i","my","me","we","our","you","your",
-  "they","their","its","no","do","does","did","will","would","can","could",
-  "should","about","all","one","two","if","up","out","more","also","than",
-  "then","into","over","after","only","any","each","which","what","when",
-  "some","other","new","like","get","got","much","really","product","lg",
-  "good","great","review","use","used","using","bought","buy","still",
-]);
+/* ── Funnel definitions ── */
+const AD_FUNNELS = [
+  {
+    key: "awareness",
+    icon: <Eye className="h-4 w-4" />,
+    labelKo: "인지도 제고",
+    descKo: "브랜드 인지도, 도달, 노출",
+    channels: ["YouTube Bumper", "Meta Stories", "Display"],
+    messageCore: "감성 훅, 시각 임팩트",
+  },
+  {
+    key: "consideration",
+    icon: <MousePointer className="h-4 w-4" />,
+    labelKo: "방문 유도 & 고려",
+    descKo: "사이트 방문, 상세페이지 조회",
+    channels: ["PMAX", "Meta Carousel", "Affiliate"],
+    messageCore: "기능 증명, 리뷰 신뢰",
+  },
+  {
+    key: "conversion",
+    icon: <ShoppingCart className="h-4 w-4" />,
+    labelKo: "구매 전환",
+    descKo: "장바구니, 결제, 구매",
+    channels: ["Search RSA", "Criteo", "LG.com"],
+    messageCore: "오퍼, 긴급성, CTA",
+  },
+  {
+    key: "retention",
+    icon: <RefreshCw className="h-4 w-4" />,
+    labelKo: "재구매 & 리텐션",
+    descKo: "로열티, 크로스셀, 반복 구매",
+    channels: ["Email CRM", "Meta", "Affiliate"],
+    messageCore: "업그레이드, 커뮤니티",
+  },
+];
 
-function extractKw(texts: string[], limit = 6) {
-  const freq: Record<string, number> = {};
-  for (const t of texts) {
-    const words = t.toLowerCase().replace(/[^a-z0-9\s'-]/g, "").split(/\s+/);
-    const seen = new Set<string>();
-    for (const w of words) {
-      if (w.length < 3 || STOP.has(w) || seen.has(w)) continue;
-      seen.add(w);
-      freq[w] = (freq[w] || 0) + 1;
-    }
-  }
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, limit).map(([w, c]) => ({ word: w, count: c }));
+/* ── Generate channel copy based on funnel + product insights ── */
+function generateChannelCopy(
+  funnelKey: string,
+  channel: string,
+  productName: string,
+  sentiment: SentimentResult,
+) {
+  const s1 = sentiment.keywords.positive?.[0] || "Quality";
+  const s2 = sentiment.keywords.positive?.[1] || "Performance";
+  const pain = sentiment.keywords.negative?.[0] || "";
+  const scene = sentiment.usageScenes?.[0] || "living room";
+  const posCount = sentiment.positive;
+
+  const templates: Record<string, Record<string, { headline: string; body: string; cta: string }>> = {
+    awareness: {
+      "YouTube Bumper": {
+        headline: `${productName} — ${s1}이 다릅니다`,
+        body: `실사용자 ${posCount}명이 선택한 이유. ${s2}까지 완벽한 경험.`,
+        cta: "지금 확인하기",
+      },
+      "Meta Stories": {
+        headline: `${scene}에서 만나는 ${productName}`,
+        body: `"${s1}" — 고객들이 반복 언급하는 키워드. 직접 경험해보세요.`,
+        cta: "더 알아보기",
+      },
+      Display: {
+        headline: `${productName} | ${s1} · ${s2}`,
+        body: `${posCount}건의 실제 리뷰가 증명하는 품질.`,
+        cta: "자세히 보기",
+      },
+    },
+    consideration: {
+      PMAX: {
+        headline: `${productName} — ${s1} 실사용 후기`,
+        body: `${posCount}명의 검증된 리뷰. ${s2} 성능을 직접 확인하세요.`,
+        cta: "상세페이지 방문",
+      },
+      "Meta Carousel": {
+        headline: `왜 ${productName}인가?`,
+        body: `① ${s1} ② ${s2} — 실사용자 리뷰에서 추출한 Top 강점.`,
+        cta: "비교해보기",
+      },
+      Affiliate: {
+        headline: `${productName} 리얼 리뷰 요약`,
+        body: `${posCount}건 분석 결과: "${s1}"이(가) 가장 많이 언급된 강점입니다.`,
+        cta: "구매 링크",
+      },
+    },
+    conversion: {
+      "Search RSA": {
+        headline: `${productName} — ${s1} | 지금 구매`,
+        body: `${posCount}명이 선택한 ${s2}. ${pain ? `"${pain}" 걱정? 리뷰로 확인하세요.` : "한정 혜택 진행 중."}`,
+        cta: "바로 구매",
+      },
+      Criteo: {
+        headline: `다시 돌아온 ${productName}`,
+        body: `이전에 확인하신 ${productName}, 지금이 최적의 구매 타이밍입니다.`,
+        cta: "장바구니 담기",
+      },
+      "LG.com": {
+        headline: `${productName} 공식몰 단독 혜택`,
+        body: `실사용자 ${posCount}명이 인정한 ${s1}. 공식몰에서만 만나는 특별 오퍼.`,
+        cta: "지금 주문하기",
+      },
+    },
+    retention: {
+      "Email CRM": {
+        headline: `${productName} 고객님, 새로운 경험이 기다립니다`,
+        body: `${s1}에 만족하셨다면, 업그레이드된 라인업을 확인해보세요.`,
+        cta: "신제품 보기",
+      },
+      Meta: {
+        headline: `${productName} 오너를 위한 특별 제안`,
+        body: `기존 고객 전용 혜택. ${s1}을(를) 사랑하는 분들을 위해 준비했습니다.`,
+        cta: "혜택 확인",
+      },
+      Affiliate: {
+        headline: `${productName} 액세서리 & 번들`,
+        body: `${productName}과(와) 함께 사용하면 좋은 추천 조합.`,
+        cta: "추천 보기",
+      },
+    },
+  };
+
+  return templates[funnelKey]?.[channel] || {
+    headline: `${productName} — ${s1}`,
+    body: `실사용자 ${posCount}명이 선택한 제품.`,
+    cta: "자세히 보기",
+  };
 }
 
-/* ── step header ── */
-function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle: string }) {
+/* ── Section header ── */
+function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="flex items-center gap-3 pb-3 mb-4 border-b-2 border-border">
-      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-        {step}
-      </span>
-      <div>
-        <h3 className="text-sm font-bold text-foreground">{title}</h3>
-        <p className="text-[11px] text-muted-foreground">{subtitle}</p>
-      </div>
+    <div className="pb-3 mb-4 border-b border-border">
+      <h3 className="text-sm font-bold text-foreground">{title}</h3>
+      <p className="text-[11px] text-muted-foreground">{subtitle}</p>
     </div>
   );
 }
@@ -74,24 +169,54 @@ export function MarketingHub({
   reviews,
 }: MarketingHubProps) {
   const { t } = useLang();
+  const [selectedFunnel, setSelectedFunnel] = useState("awareness");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    step1: true, step2: true, step3: false, step4: false,
+    faq: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
 
-  const copyText = (text: string, label?: string) => {
+  const copyText = (text: string, key?: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(label || t("Copied!", "복사 완료!"));
+    if (key) {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    }
+    toast.success(t("Copied!", "복사 완료!"));
   };
 
-  // Derived data
-  const posReviews = reviews.filter((r) => r.sentiment === "positive");
-  const negReviews = reviews.filter((r) => r.sentiment === "negative");
-  const posKw = extractKw(posReviews.map((r) => r.text));
-  const negKw = extractKw(negReviews.map((r) => r.text));
-  const posPercent = totalReviews > 0 ? Math.round((posReviews.length / totalReviews) * 100) : 0;
-  const negPercent = totalReviews > 0 ? Math.round((negReviews.length / totalReviews) * 100) : 0;
+  const pName = displayName || productName;
+  const activeFunnel = AD_FUNNELS.find(f => f.key === selectedFunnel)!;
+
+  /* Channel copies for active funnel */
+  const channelCopies = useMemo(() => {
+    return activeFunnel.channels.map(ch => ({
+      channel: ch,
+      ...generateChannelCopy(selectedFunnel, ch, pName, sentiment),
+    }));
+  }, [selectedFunnel, pName, sentiment, activeFunnel]);
+
+  /* Search intent ad ideas */
+  const searchIntentIdeas = useMemo(() => {
+    const kw = sentiment.keywords.positive?.slice(0, 3) || [];
+    const pain = sentiment.keywords.negative?.slice(0, 2) || [];
+    const ideas: { query: string; adIdea: string }[] = [];
+
+    for (const k of kw) {
+      ideas.push({
+        query: `${pName} ${k}`,
+        adIdea: `"${k}" — ${sentiment.positive}명의 사용자가 인정한 강점을 검색 광고 헤드라인에 활용`,
+      });
+    }
+    for (const p of pain) {
+      ideas.push({
+        query: `${pName} ${p} 문제`,
+        adIdea: `"${p}" 검색 시 → 해소형 카피로 전환: "걱정과 달리..." 메시지 노출`,
+      });
+    }
+    return ideas.slice(0, 5);
+  }, [pName, sentiment]);
 
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
@@ -107,149 +232,93 @@ export function MarketingHub({
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          {displayName || productName}의 실제 고객 리뷰를 분석하여 바로 활용 가능한 마케팅 액션을 제공합니다.
+          {pName}의 실제 리뷰 기반 — 목적별 채널 카피를 바로 생성합니다.
         </p>
       </div>
 
       <div className="p-6 space-y-6">
 
-        {/* ═══ STEP 1: Review Snapshot ═══ */}
-        <Collapsible open={openSections.step1} onOpenChange={() => toggleSection("step1")}>
-          <CollapsibleTrigger className="w-full">
-            <StepHeader step={1} title="Review Snapshot" subtitle="감성 분포 · 주요 키워드 · 핵심 인사이트 요약" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4">
-            {/* Sentiment summary bar */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-success/20 bg-success/5 p-4 text-center">
-                <ThumbsUp className="h-4 w-4 text-success mx-auto mb-1" />
-                <div className="text-2xl font-bold text-success">{posPercent}%</div>
-                <div className="text-[10px] text-muted-foreground">긍정 ({posReviews.length}건)</div>
-              </div>
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-center">
-                <AlertTriangle className="h-4 w-4 text-destructive mx-auto mb-1" />
-                <div className="text-2xl font-bold text-destructive">{negPercent}%</div>
-                <div className="text-[10px] text-muted-foreground">부정 ({negReviews.length}건)</div>
-              </div>
-            </div>
+        {/* ═══ 1. 퍼널 목표 설정 ═══ */}
+        <div>
+          <SectionHeader title="🎯 광고 목적 (퍼널 단계)" subtitle="캠페인 목적에 맞는 채널과 메시지를 자동 매핑합니다" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {AD_FUNNELS.map(f => {
+              const isActive = selectedFunnel === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setSelectedFunnel(f.key)}
+                  className={`relative p-3.5 rounded-xl border-2 text-left transition-all ${
+                    isActive
+                      ? "border-primary bg-primary/5 shadow-sm"
+                      : "border-border hover:border-primary/40 bg-card"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={isActive ? "text-primary" : "text-muted-foreground"}>{f.icon}</span>
+                    <span className={`text-xs font-bold ${isActive ? "text-primary" : "text-foreground"}`}>
+                      {f.labelKo}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{f.descKo}</p>
+                  {isActive && <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-primary" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-            {/* Keywords */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] font-semibold text-success uppercase tracking-wider mb-2">✅ 긍정 키워드</p>
-                <div className="flex flex-wrap gap-1">
-                  {posKw.map((kw) => (
-                    <Badge key={kw.word} variant="outline" className="text-[10px] border-success/30 text-success">
-                      {kw.word} ({kw.count})
+        {/* ═══ 2. 채널별 마케팅 카피 ═══ */}
+        <div>
+          <SectionHeader
+            title={`📡 ${activeFunnel.labelKo} — 채널별 카피`}
+            subtitle={`메시지 핵심: ${activeFunnel.messageCore}`}
+          />
+          <div className="space-y-3">
+            {channelCopies.map((cc, i) => {
+              const fullText = `[${cc.channel}]\nHeadline: ${cc.headline}\nBody: ${cc.body}\nCTA: ${cc.cta}`;
+              const key = `ch-${selectedFunnel}-${i}`;
+              return (
+                <div key={key} className="rounded-xl border border-border bg-card p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
+                      {cc.channel}
                     </Badge>
-                  ))}
-                  {posKw.length === 0 && <span className="text-[10px] text-muted-foreground">데이터 부족</span>}
-                </div>
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-2">⚠️ 부정 키워드</p>
-                <div className="flex flex-wrap gap-1">
-                  {negKw.map((kw) => (
-                    <Badge key={kw.word} variant="outline" className="text-[10px] border-destructive/30 text-destructive">
-                      {kw.word} ({kw.count})
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-[10px] gap-1"
+                      onClick={() => copyText(fullText, key)}
+                    >
+                      {copiedKey === key ? <Check className="h-3 w-3 text-[#006600]" /> : <Copy className="h-3 w-3" />}
+                      {copiedKey === key ? "복사됨" : "전체 복사"}
+                    </Button>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{cc.headline}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{cc.body}</p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      CTA: {cc.cta}
                     </Badge>
-                  ))}
-                  {negKw.length === 0 && <span className="text-[10px] text-muted-foreground">데이터 부족</span>}
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Strength / Weakness */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg border border-success/20 bg-success/5">
-                <p className="text-xs font-semibold text-success mb-1">💪 만족 포인트</p>
-                <p className="text-xs text-foreground/80 leading-relaxed">{marketing.strengthsSummary}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5">
-                <p className="text-xs font-semibold text-destructive mb-1">🔧 개선 영역</p>
-                <p className="text-xs text-foreground/80 leading-relaxed">{marketing.weaknessesSummary}</p>
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+          {/* Link to full toolkit */}
+          <a
+            href={`/toolkit?product=${encodeURIComponent(productName)}&funnel=${selectedFunnel}`}
+            className="mt-3 block w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-sm font-bold text-center hover:opacity-90 transition-opacity"
+          >
+            ✨ {pName} — {activeFunnel.labelKo} 상세 AI 카피 생성하기
+          </a>
+        </div>
 
-        {/* ═══ STEP 2: Persona & Strategy ═══ */}
-        <Collapsible open={openSections.step2} onOpenChange={() => toggleSection("step2")}>
+        {/* ═══ 3. FAQ ═══ */}
+        <Collapsible open={openSections.faq} onOpenChange={() => toggleSection("faq")}>
           <CollapsibleTrigger className="w-full">
-            <StepHeader step={2} title="Target Persona & Strategy" subtitle="페르소나 · JTBD · Defense/Offense 메시징 전략" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4">
-            {/* Personas */}
-            {marketing.personas && marketing.personas.length > 0 && (
-              <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  <Users className="h-3 w-3 inline mr-1" />TARGET PERSONAS
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {marketing.personas.map((p, i) => (
-                    <div key={i} className="p-3 rounded-lg border border-border bg-secondary/20">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-lg">{p.emoji}</span>
-                        <div>
-                          <p className="text-xs font-bold">{p.label}</p>
-                          <p className="text-[9px] text-muted-foreground">{p.age}</p>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-foreground/70">🎯 {p.lifestyle}</p>
-                      <p className="text-[10px] text-foreground/70">💡 {p.motivation}</p>
-                      <p className="text-[10px] text-destructive/70">⚡ {p.painPoint}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* JTBD */}
-            {marketing.jtbdInsights && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg border border-destructive/15 bg-destructive/5">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-wide mb-2">
-                    🛡 DEFENSE — 구매 전 불안 해소
-                  </p>
-                  <p className="text-xs text-foreground/80 leading-relaxed">{marketing.jtbdInsights.anxiety}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-success/15 bg-success/5">
-                  <p className="text-[10px] font-bold text-success uppercase tracking-wide mb-2">
-                    ⚡ OFFENSE — 구매 후 만족 강화
-                  </p>
-                  <p className="text-xs text-foreground/80 leading-relaxed">{marketing.jtbdInsights.delight}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Usage Tips */}
-            {marketing.userTips.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    <Lightbulb className="h-3 w-3 inline mr-1" />USAGE TIPS
-                  </p>
-                  <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => copyText(marketing.userTips.join("\n"))}>
-                    <Copy className="h-3 w-3 mr-1" />복사
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {marketing.userTips.map((tip, i) => (
-                    <div key={i} className="p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5 text-xs text-foreground/80 flex gap-2">
-                      <span className="shrink-0">💡</span>
-                      <span className="leading-relaxed">{tip}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* ═══ STEP 3: FAQ & Content ═══ */}
-        <Collapsible open={openSections.step3} onOpenChange={() => toggleSection("step3")}>
-          <CollapsibleTrigger className="w-full">
-            <StepHeader step={3} title="AI FAQ & Content Creator" subtitle="리뷰 기반 FAQ 자동 생성 · 채널별 콘텐츠 제작" />
+            <SectionHeader title="❓ AI FAQ 생성" subtitle="리뷰 기반 FAQ 자동 생성 · 고객 불안 해소 콘텐츠" />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-4">
             <FaqToolkitPanel
@@ -262,41 +331,52 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
-        {/* ═══ STEP 4: Content Creator ═══ */}
-        <Collapsible open={openSections.step4} onOpenChange={() => toggleSection("step4")}>
-          <CollapsibleTrigger className="w-full">
-            <StepHeader step={4} title="Ad Copy & Banner Generation" subtitle="채널별 광고 카피 · 배너 소재 자동 생성" />
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <ContentCreatorPanel
-              productName={productName}
-              displayName={displayName}
-              sentiment={sentiment}
-              reviews={reviews}
-              marketing={marketing}
-            />
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* CRM Insights */}
+        {/* ═══ 4. CRM Segment & Retargeting Insights ═══ */}
         {marketing.crmInsights && (
-          <div className="border-t border-border pt-4">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              📞 CRM & SERVICE INSIGHTS
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div className="p-3 rounded-lg border border-rose-500/20 bg-rose-500/5">
-                <p className="text-[10px] font-semibold text-rose-600 mb-1">⚡ 기대 괴리</p>
-                <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.expectationGap}</p>
+          <Collapsible open={openSections.crm} onOpenChange={() => toggleSection("crm")}>
+            <CollapsibleTrigger className="w-full">
+              <SectionHeader title="📞 리타겟팅 · CRM 세그먼트 인사이트" subtitle="리뷰 기반 CRM 대응 전략과 세그먼트 아이디어" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="p-3 rounded-lg border border-rose-500/20 bg-rose-500/5">
+                  <p className="text-[10px] font-semibold text-rose-600 mb-1">⚡ 기대 괴리</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.expectationGap}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-amber-600/20 bg-amber-600/5">
+                  <p className="text-[10px] font-semibold text-amber-700 mb-1">💰 서비스 기회</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.serviceOpportunity}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-sky-500/20 bg-sky-500/5">
+                  <p className="text-[10px] font-semibold text-sky-600 mb-1">🤝 CRM 대응</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.crmResponse}</p>
+                </div>
               </div>
-              <div className="p-3 rounded-lg border border-amber-600/20 bg-amber-600/5">
-                <p className="text-[10px] font-semibold text-amber-700 mb-1">💰 서비스 기회</p>
-                <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.serviceOpportunity}</p>
-              </div>
-              <div className="p-3 rounded-lg border border-sky-500/20 bg-sky-500/5">
-                <p className="text-[10px] font-semibold text-sky-600 mb-1">🤝 CRM 대응</p>
-                <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.crmResponse}</p>
-              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* ═══ 5. 검색의도 기반 광고 아이디어 ═══ */}
+        {searchIntentIdeas.length > 0 && (
+          <div>
+            <SectionHeader title="🔍 검색의도 기반 광고 아이디어" subtitle="리뷰 키워드에서 추출한 검색 광고 기회" />
+            <div className="space-y-2">
+              {searchIntentIdeas.map((idea, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
+                  <Badge variant="outline" className="text-[10px] shrink-0 border-primary/30 text-primary mt-0.5">
+                    🔎 {idea.query}
+                  </Badge>
+                  <p className="text-xs text-foreground/80 leading-relaxed flex-1">{idea.adIdea}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] shrink-0"
+                    onClick={() => copyText(`${idea.query}\n${idea.adIdea}`, `si-${i}`)}
+                  >
+                    {copiedKey === `si-${i}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
         )}
