@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { LgComProductInsightCards } from "@/components/LgComProductInsightCards";
 import { LgComBucketDashboard } from "@/components/LgComBucketDashboard";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
-import { LgComReviewTypePanel } from "@/components/LgComReviewTypePanel";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -57,11 +56,9 @@ const LgComPage = () => {
       <LgComProductInsightCards />
       {/* 2. 리뷰 자동 분류 (REVIEW/VOC) — 제품+키워드 중심 */}
       <LgComBucketDashboard />
-      {/* 3. 리뷰 유형 분석 (Native vs Syndication) */}
-      <LgComReviewTypePanel />
-      {/* 4. AI 주간 리포트 */}
+      {/* 3. AI 주간 리포트 */}
       <LgComWeeklyReport />
-      {/* 5. 딥 인사이트 (페르소나/JTBD/CRM) */}
+      {/* 4. 딥 인사이트 (사용자군/JTBD/CRM) */}
       <WeeklyInsightsPanel />
     </div>
   );

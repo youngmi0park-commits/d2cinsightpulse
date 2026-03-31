@@ -2,13 +2,12 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
-import { classifyRedditPost } from "@/lib/redditBucketClassifier";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Store, ThumbsUp, ThumbsDown, Filter, ChevronDown, Copy, Globe, Calendar,
-  Loader2, Package, Hash, Sparkles
+  Loader2, Package, Hash, Sparkles, MessageSquareQuote
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,23 +15,13 @@ type SentimentFilter = "ALL" | "positive" | "negative";
 type CountryFilter = "all" | "US" | "UK";
 type PeriodFilter = "weekly" | "all";
 
-interface ProductInsight {
-  productName: string;
-  category: string;
-  sentiment: string;
-  keywords: string[];
-  actionTags: string[];
-  source: string;
-  id: string;
-}
-
 function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
   return useQuery({
-    queryKey: ["lgcom-product-insights", period, country],
+    queryKey: ["lgcom-product-insights-v2", period, country],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source, products!inner(display_name, category)")
+        .select("id, title, sentiment, sentiment_score, source, rating, products!inner(display_name, category)")
         .order("collected_at", { ascending: false });
 
       if (country === "US") query = query.eq("source", "lge_com_us");
@@ -47,21 +36,21 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
       const { data, error } = await query.limit(1000);
       if (error) throw error;
 
-      // Group by product + sentiment → aggregate keywords
+      // Group by product + sentiment → aggregate title phrases as insights
       const productMap: Record<string, {
         productName: string;
         category: string;
         sentiment: string;
-        keywords: Record<string, number>;
-        actionTags: Set<string>;
+        titlePhrases: Record<string, number>; // title → count
         sources: Set<string>;
         count: number;
+        avgRating: number;
+        ratingCount: number;
       }> = {};
 
       for (const r of data || []) {
         const prod = (r as any).products;
         if (!prod) continue;
-        const classified = classifyRedditPost(r);
         const key = `${prod.display_name}__${r.sentiment}`;
 
         if (!productMap[key]) {
@@ -69,39 +58,69 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
             productName: prod.display_name,
             category: prod.category,
             sentiment: r.sentiment || "neutral",
-            keywords: {},
-            actionTags: new Set(),
+            titlePhrases: {},
             sources: new Set(),
             count: 0,
+            avgRating: 0,
+            ratingCount: 0,
           };
         }
         productMap[key].count++;
         productMap[key].sources.add(r.source);
-        classified.keywords.forEach((kw: string) => {
-          productMap[key].keywords[kw] = (productMap[key].keywords[kw] || 0) + 1;
-        });
-        classified.actionTags.forEach((tag: string) => productMap[key].actionTags.add(tag));
+        if (r.rating) {
+          productMap[key].avgRating += r.rating;
+          productMap[key].ratingCount++;
+        }
+
+        // Use title as representative comment phrase
+        const title = (r.title || "").trim();
+        if (title && title.length > 1) {
+          productMap[key].titlePhrases[title] = (productMap[key].titlePhrases[title] || 0) + 1;
+        }
       }
 
-      // Convert to sorted array
       return Object.values(productMap)
-        .map((p) => ({
-          productName: p.productName,
-          category: p.category,
-          sentiment: p.sentiment,
-          count: p.count,
-          keywords: Object.entries(p.keywords)
+        .map((p) => {
+          // Sort title phrases by frequency, take top ones as "key comments"
+          const sortedPhrases = Object.entries(p.titlePhrases)
+            .sort((a, b) => b[1] - a[1]);
+          
+          // Top phrases (most frequent) as key insights
+          const topPhrases = sortedPhrases.slice(0, 5).map(([phrase, count]) => ({ phrase, count }));
+          
+          // Extract single-word keywords from all titles for tag cloud
+          const wordFreq: Record<string, number> = {};
+          for (const [phrase, cnt] of sortedPhrases) {
+            const words = phrase.toLowerCase().split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
+            words.forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + cnt; });
+          }
+          const keywords = Object.entries(wordFreq)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 6)
-            .map(([w]) => w),
-          actionTags: Array.from(p.actionTags).slice(0, 3),
-          sources: Array.from(p.sources),
-        }))
+            .map(([w]) => w);
+
+          return {
+            productName: p.productName,
+            category: p.category,
+            sentiment: p.sentiment,
+            count: p.count,
+            topPhrases,
+            keywords,
+            avgRating: p.ratingCount > 0 ? (p.avgRating / p.ratingCount).toFixed(1) : null,
+            sources: Array.from(p.sources),
+          };
+        })
         .sort((a, b) => b.count - a.count);
     },
     staleTime: 60_000 * 10,
   });
 }
+
+const STOP_WORDS = new Set([
+  "the", "and", "for", "this", "that", "with", "but", "are", "was", "has", "have",
+  "not", "very", "just", "been", "will", "its", "than", "also", "from", "they",
+  "can", "had", "would", "could", "our", "your", "one", "all", "there", "their",
+]);
 
 const SENTIMENT_STYLES = {
   positive: { bg: "bg-success/8", border: "border-success/20", text: "text-success", icon: ThumbsUp },
@@ -136,7 +155,8 @@ export function LgComProductInsightCards() {
   }, [insights]);
 
   const handleCopy = (item: typeof displayed[0]) => {
-    const text = `[${item.sentiment?.toUpperCase()}] ${item.productName} (${item.category})\nKeywords: ${item.keywords.join(", ")}\nMentions: ${item.count}`;
+    const phrases = item.topPhrases.map(p => `• "${p.phrase}" (${p.count}건)`).join("\n");
+    const text = `[${item.sentiment?.toUpperCase()}] ${item.productName} (${item.category})\n${item.avgRating ? `⭐ ${item.avgRating}` : ""}\n언급 ${item.count}건\n\n주요 코멘트:\n${phrases}\n\n키워드: ${item.keywords.join(", ")}`;
     navigator.clipboard.writeText(text);
     toast.success("복사 완료!");
   };
@@ -201,8 +221,8 @@ export function LgComProductInsightCards() {
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "Which products are getting positive/negative mentions and what keywords are being discussed",
-            "어떤 제품이 긍정/부정 언급되고 있고, 어떤 키워드가 논의되는지 한눈에 확인하세요"
+            "Which products are getting positive/negative mentions and what comments are being made",
+            "어떤 제품이 긍정/부정 언급되고 있고, 어떤 코멘트가 달리는지 한눈에 확인하세요"
           )}
         </p>
 
@@ -239,13 +259,16 @@ export function LgComProductInsightCards() {
                 key={`${item.productName}-${item.sentiment}-${idx}`}
                 className={`rounded-lg border ${style.border} ${style.bg} p-3.5 space-y-2.5 hover:shadow-md transition-shadow`}
               >
-                {/* Header: sentiment + count */}
+                {/* Header: sentiment + count + rating */}
                 <div className="flex items-center justify-between gap-2">
                   <Badge variant="outline" className={`text-[9px] ${style.text} ${style.border} gap-1`}>
                     <Icon className="h-3 w-3" />
                     {item.sentiment?.toUpperCase()}
                   </Badge>
                   <div className="flex items-center gap-1.5">
+                    {item.avgRating && (
+                      <span className="text-[10px] font-medium text-foreground">⭐ {item.avgRating}</span>
+                    )}
                     <span className="text-[10px] font-mono font-semibold text-muted-foreground">
                       {item.count}{t(" mentions", "건")}
                     </span>
@@ -265,23 +288,30 @@ export function LgComProductInsightCards() {
                   <p className="text-[10px] text-muted-foreground mt-0.5">{item.category}</p>
                 </div>
 
+                {/* Key comment phrases — the main insight */}
+                {item.topPhrases.length > 0 && (
+                  <div className="space-y-1 bg-background/50 rounded-md p-2">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+                      <MessageSquareQuote className="h-3 w-3" />
+                      <span className="font-medium">{t("Key Comments", "주요 코멘트")}</span>
+                    </div>
+                    {item.topPhrases.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between text-[11px]">
+                        <span className="text-foreground truncate flex-1">"{p.phrase}"</span>
+                        <Badge variant="secondary" className="text-[8px] px-1 py-0 ml-1 shrink-0">
+                          ×{p.count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Keywords */}
                 {item.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {item.keywords.map((kw) => (
                       <Badge key={kw} variant="secondary" className="text-[9px] px-1.5 py-0">
                         <Hash className="h-2.5 w-2.5 mr-0.5" />{kw}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                {/* Action Tags */}
-                {item.actionTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {item.actionTags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-[8px] px-1 py-0 border-muted">
-                        → {tag.replace(/_/g, " ")}
                       </Badge>
                     ))}
                   </div>
