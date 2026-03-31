@@ -23,7 +23,7 @@ const analyticsItems = [
 ];
 
 const marketingItems = [
-  { title: "Paid Marketing Gen", url: "/toolkit", icon: Wrench, isNew: true },
+  { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench, isNew: true },
   { title: "Onsite FAQ", url: "/faq-gen", icon: HelpCircle },
 ];
 

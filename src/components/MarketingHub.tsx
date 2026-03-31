@@ -271,7 +271,7 @@ export function MarketingHub({
         <div className="flex items-center gap-2 mb-1">
           <Wrench className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-bold font-heading text-foreground tracking-tight">
-            Marketing Toolkit
+            Marketing Asset Studio
           </h2>
           <Badge variant="secondary" className="text-[10px] ml-2">
             {totalReviews}건 리뷰 기반
