@@ -153,7 +153,7 @@ export function OverviewDashboard() {
 }
 
 /* ───── Channel Overview Section ───── */
-function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoading, onGenerate, accentClass }: {
+function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoading, onGenerate }: {
   channelLabel: string; channelEmoji: string;
   overview: OverviewData | null; isLoading: boolean;
   onGenerate: () => void; accentClass: string;
