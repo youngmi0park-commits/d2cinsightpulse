@@ -126,24 +126,7 @@ function generateNewsletterHTML(d: NewsletterData, lgcom: ChannelOverview | null
   const wowSign = d.wow >= 0 ? "+" : "";
   const BASE_URL = window.location.origin;
 
-  function channelProductsHTML(label: string, emoji: string, products: ChannelProduct[], sentiment: { posPct: number; negPct: number; neutralPct: number; total: number }) {
-    const rows = products.map((p, i) => {
-      const posKw = p.posKeywords.map(k => `<span style="display:inline-block;background:#f0fdf4;color:#15803d;padding:1px 6px;border-radius:10px;font-size:10px;margin:1px 2px;">${k}</span>`).join("");
-      const negKw = p.negKeywords.map(k => `<span style="display:inline-block;background:#fef2f2;color:#dc2626;padding:1px 6px;border-radius:10px;font-size:10px;margin:1px 2px;">${k}</span>`).join("");
-      const samples = [...p.posSamples.map(s => `<div style="font-size:10px;color:#555;padding:3px 0;border-left:2px solid #22c55e;padding-left:8px;margin:2px 0;">"${s}${s.length >= 118 ? '...' : ''}"</div>`), ...p.negSamples.map(s => `<div style="font-size:10px;color:#555;padding:3px 0;border-left:2px solid #ef4444;padding-left:8px;margin:2px 0;">"${s}${s.length >= 118 ? '...' : ''}"</div>`)].join("");
-
-      return `<tr><td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${i < 3 ? '#A51C30' : '#999'};color:#fff;text-align:center;line-height:22px;font-size:10px;font-weight:bold;">${i + 1}</span>
-          ${p.subCategory ? `<span style="background:#f3e8ff;color:#7c3aed;padding:1px 6px;border-radius:4px;font-size:9px;">${p.subCategory}</span>` : ''}
-          <span style="font-weight:600;font-size:12px;color:#1a1a1a;">${p.name}</span>
-        </div>
-        <div style="font-size:11px;color:#666;margin-bottom:4px;"><span style="color:#22c55e">👍 ${p.posCount}건</span> · <span style="color:#ef4444">👎 ${p.negCount}건</span></div>
-        ${posKw || negKw ? `<div style="margin-bottom:4px;">${posKw}${negKw}</div>` : ""}
-        ${samples}
-      </td></tr>`;
-    }).join("");
-
+  function channelProductsHTML(label: string, emoji: string, _products: ChannelProduct[], sentiment: { posPct: number; negPct: number; neutralPct: number; total: number }) {
     return `
     <tr><td style="padding:20px 28px 0;">
       <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#A51C30;text-transform:uppercase;margin-bottom:8px;border-left:3px solid #A51C30;padding-left:8px;">${emoji} ${label} 주간 리뷰 요약</div>
@@ -155,10 +138,6 @@ function generateNewsletterHTML(d: NewsletterData, lgcom: ChannelOverview | null
         </div>
         <div style="font-size:10px;color:#888;">긍정 ${sentiment.posPct}% · 중립 ${sentiment.neutralPct}% · 부정 ${sentiment.negPct}%</div>
       </div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:6px;">📦 긍정/부정 언급 TOP 5 제품</div>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-        ${rows || '<tr><td style="padding:16px;text-align:center;color:#aaa;font-size:12px;">주간 데이터 없음</td></tr>'}
-      </table>
     </td></tr>`;
   }
 
