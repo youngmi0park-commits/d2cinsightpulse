@@ -136,10 +136,25 @@ ${reviewSummary}
 
 위 데이터를 기반으로 다음 3가지 프레임워크로 분석해주세요. 각 프레임워크별로 제품별 구체적 인사이트를 제공하세요.
 
-## 1. 페르소나 기반 타겟 확장 인사이트
-- **의외의 사용성(Edge Cases)**: 마케팅 상세페이지에 없던 방식이나 장소에서 제품을 쓰는 고객층
-- **페르소나별 킬러 포인트**: 1인 가구, 워킹맘, 테크 헤비유저 등 각 타겟군의 AHA Moment
-- **타겟 확장 제안**: 주류 타겟 외 잠재 고객군과 공략 마케팅 메시지
+## 1. 리뷰 기반 사용자군 정의 (User Group Profiling)
+
+### 1-1. 주 사용층 (Core User Group)
+리뷰 데이터에서 파악되는 핵심 사용자군을 제품별로 분석:
+- 주 사용 목적
+- 자주 언급되는 사용 장면(Use Scene)
+- 관심사/중요 평가 기준
+- 암묵적 라이프스타일 특징
+- 구매 동기
+- 만족 포인트
+- 불만 포인트
+
+### 1-2. 사용자 확장층 (Potential User Group)
+현재 주 사용층 외에 확장 가능한 잠재 타깃을 제품별로 제안:
+- 확장 가능성이 높은 타깃층
+- 확장 예상 사용씬
+- 해당 타깃의 관심사
+- 라이프스타일/컨텍스트 제안
+- 이 타깃을 잡기 위한 메시지/크리에이티브 방향
 
 ## 2. JTBD(Jobs to be Done) 프레임워크 분석
 - **구매 전 불안 요소(Anxiety)**: 고객이 구매 버튼 전 가장 걱정한 부분
@@ -154,9 +169,28 @@ ${reviewSummary}
 각 섹션을 JSON 형태로 구조화해서 응답해주세요:
 {
   "persona_insights": {
-    "edge_cases": [{"product": "제품명", "insight": "인사이트", "marketing_angle": "마케팅 활용 방안"}],
-    "killer_points": [{"persona": "페르소나", "product": "제품명", "aha_moment": "킬러 포인트", "message": "추천 마케팅 메시지"}],
-    "target_expansion": [{"new_target": "새로운 타겟", "product": "제품명", "rationale": "근거", "message": "공략 메시지"}]
+    "core_user_groups": [
+      {
+        "product": "제품명",
+        "main_purpose": "주 사용 목적",
+        "use_scenes": ["사용 장면1", "사용 장면2"],
+        "evaluation_criteria": ["관심사/평가 기준1", "기준2"],
+        "lifestyle": "암묵적 라이프스타일 특징",
+        "purchase_motivation": "구매 동기",
+        "satisfaction_points": ["만족 포인트1", "포인트2"],
+        "pain_points": ["불만 포인트1", "포인트2"]
+      }
+    ],
+    "potential_user_groups": [
+      {
+        "product": "제품명",
+        "target_group": "확장 가능성이 높은 타깃층",
+        "expected_use_scenes": ["확장 예상 사용씬1", "사용씬2"],
+        "interests": ["해당 타깃의 관심사1", "관심사2"],
+        "lifestyle_context": "라이프스타일/컨텍스트 제안",
+        "creative_direction": "이 타깃을 잡기 위한 메시지/크리에이티브 방향"
+      }
+    ]
   },
   "jtbd_insights": {
     "anxiety": [{"product": "제품명", "concern": "불안 요소", "frequency": "빈도(높음/중간/낮음)"}],

@@ -6,13 +6,32 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users, Briefcase, AlertTriangle, Loader2, Brain, Lightbulb,
-  Target, ShieldAlert, Heart, ArrowRightLeft, TrendingUp, Sparkles,
+  ShieldAlert, Heart, ArrowRightLeft, TrendingUp, Sparkles,
   ChevronDown, ChevronUp, Copy, Check, Tv, Refrigerator, WashingMachine
 } from "lucide-react";
 import { toast } from "sonner";
 
 interface InsightData {
   persona_insights?: {
+    core_user_groups?: {
+      product: string;
+      main_purpose: string;
+      use_scenes: string[];
+      evaluation_criteria: string[];
+      lifestyle: string;
+      purchase_motivation: string;
+      satisfaction_points: string[];
+      pain_points: string[];
+    }[];
+    potential_user_groups?: {
+      product: string;
+      target_group: string;
+      expected_use_scenes: string[];
+      interests: string[];
+      lifestyle_context: string;
+      creative_direction: string;
+    }[];
+    // legacy fields for backward compat
     edge_cases?: { product: string; insight: string; marketing_angle: string }[];
     killer_points?: { persona: string; product: string; aha_moment: string; message: string }[];
     target_expansion?: { new_target: string; product: string; rationale: string; message: string }[];
@@ -262,7 +281,7 @@ export function WeeklyInsightsPanel() {
               <TabsList className="w-full grid grid-cols-3 h-9">
                 <TabsTrigger value="persona" className="text-xs gap-1">
                   <Users className="h-3.5 w-3.5" />
-                  {t("Persona", "페르소나")}
+                  {t("User Groups", "사용자군 정의")}
                 </TabsTrigger>
                 <TabsTrigger value="jtbd" className="text-xs gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -274,66 +293,71 @@ export function WeeklyInsightsPanel() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* === Framework 1: Persona === */}
+              {/* === Framework 1: 사용자군 정의 === */}
               <TabsContent value="persona" className="space-y-3 mt-3">
+                {/* 1-1. 주 사용층 Core User Group */}
                 <InsightCard
-                  icon={Target}
-                  title={t("Edge Cases — Unexpected Usage", "의외의 사용성 (Edge Cases)")}
+                  icon={Users}
+                  title={t("Core User Group — 주 사용층", "주 사용층 (Core User Group)")}
                   color="border-blue-500/20 bg-blue-500/5"
                 >
-                  {(ins.persona_insights?.edge_cases || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
+                  {(ins.persona_insights?.core_user_groups || []).map((item, i) => (
+                    <div key={i} className="bg-background/60 rounded p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <ProductTag name={item.product} />
-                        <CopyButton text={`${item.insight}\n→ ${item.marketing_angle}`} />
+                        <CopyButton text={`[${item.product}]\n주 사용 목적: ${item.main_purpose}\n사용 장면: ${item.use_scenes?.join(", ")}\n평가 기준: ${item.evaluation_criteria?.join(", ")}\n라이프스타일: ${item.lifestyle}\n구매 동기: ${item.purchase_motivation}\n만족: ${item.satisfaction_points?.join(", ")}\n불만: ${item.pain_points?.join(", ")}`} />
                       </div>
-                      <p className="text-xs text-foreground">{item.insight}</p>
-                      <p className="text-[11px] text-primary/80">→ {item.marketing_angle}</p>
+                      <div className="grid gap-1.5 text-xs">
+                        <div><span className="text-muted-foreground font-medium">🎯 주 사용 목적:</span> <span className="text-foreground">{item.main_purpose}</span></div>
+                        <div><span className="text-muted-foreground font-medium">🏠 사용 장면:</span> <span className="text-foreground">{item.use_scenes?.join(" · ") || "—"}</span></div>
+                        <div><span className="text-muted-foreground font-medium">📋 평가 기준:</span> <span className="text-foreground">{item.evaluation_criteria?.join(" · ") || "—"}</span></div>
+                        <div><span className="text-muted-foreground font-medium">🧬 라이프스타일:</span> <span className="text-foreground">{item.lifestyle}</span></div>
+                        <div><span className="text-muted-foreground font-medium">💡 구매 동기:</span> <span className="text-foreground">{item.purchase_motivation}</span></div>
+                        <div className="flex gap-1.5 flex-wrap items-center">
+                          <span className="text-muted-foreground font-medium">👍 만족:</span>
+                          {(item.satisfaction_points || []).map((p, j) => (
+                            <Badge key={j} variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">{p}</Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-1.5 flex-wrap items-center">
+                          <span className="text-muted-foreground font-medium">👎 불만:</span>
+                          {(item.pain_points || []).map((p, j) => (
+                            <Badge key={j} variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20">{p}</Badge>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ))}
-                  {(!ins.persona_insights?.edge_cases?.length) && (
+                  {(!ins.persona_insights?.core_user_groups?.length) && (
                     <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
                   )}
                 </InsightCard>
 
-                <InsightCard
-                  icon={Heart}
-                  title={t("Persona Killer Points — AHA Moments", "페르소나별 킬러 포인트")}
-                  color="border-pink-500/20 bg-pink-500/5"
-                >
-                  {(ins.persona_insights?.killer_points || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] bg-pink-500/10 text-pink-600 border-pink-500/20">{item.persona}</Badge>
-                        <ProductTag name={item.product} />
-                        <div className="ml-auto"><CopyButton text={`[${item.persona}] ${item.aha_moment}\n메시지: ${item.message}`} /></div>
-                      </div>
-                      <p className="text-xs text-foreground font-medium">{item.aha_moment}</p>
-                      <p className="text-[11px] text-muted-foreground italic">"{item.message}"</p>
-                    </div>
-                  ))}
-                  {(!ins.persona_insights?.killer_points?.length) && (
-                    <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
-                  )}
-                </InsightCard>
-
+                {/* 1-2. 사용자 확장층 Potential User Group */}
                 <InsightCard
                   icon={TrendingUp}
-                  title={t("Target Expansion Proposals", "타겟 확장 제안")}
+                  title={t("Potential User Group — 사용자 확장층", "사용자 확장층 (Potential User Group)")}
                   color="border-success/20 bg-success/5"
                 >
-                  {(ins.persona_insights?.target_expansion || []).map((item, i) => (
-                    <div key={i} className="bg-background/60 rounded p-2.5 space-y-1">
+                  {(ins.persona_insights?.potential_user_groups || []).map((item, i) => (
+                    <div key={i} className="bg-background/60 rounded p-3 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">{item.new_target}</Badge>
                         <ProductTag name={item.product} />
-                        <div className="ml-auto"><CopyButton text={`타겟: ${item.new_target}\n근거: ${item.rationale}\n메시지: ${item.message}`} /></div>
+                        <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">{item.target_group}</Badge>
+                        <div className="ml-auto"><CopyButton text={`[${item.product}] 타깃: ${item.target_group}\n예상 사용씬: ${item.expected_use_scenes?.join(", ")}\n관심사: ${item.interests?.join(", ")}\n라이프스타일: ${item.lifestyle_context}\n크리에이티브 방향: ${item.creative_direction}`} /></div>
                       </div>
-                      <p className="text-xs text-foreground">{item.rationale}</p>
-                      <p className="text-[11px] text-primary/80">→ {item.message}</p>
+                      <div className="grid gap-1.5 text-xs">
+                        <div><span className="text-muted-foreground font-medium">🎬 예상 사용씬:</span> <span className="text-foreground">{item.expected_use_scenes?.join(" · ") || "—"}</span></div>
+                        <div><span className="text-muted-foreground font-medium">💎 관심사:</span> <span className="text-foreground">{item.interests?.join(" · ") || "—"}</span></div>
+                        <div><span className="text-muted-foreground font-medium">🧬 라이프스타일:</span> <span className="text-foreground">{item.lifestyle_context}</span></div>
+                        <div className="bg-primary/5 border border-primary/15 rounded p-2 mt-1">
+                          <span className="text-muted-foreground font-medium text-[11px]">💬 메시지/크리에이티브 방향:</span>
+                          <p className="text-xs text-foreground mt-0.5">{item.creative_direction}</p>
+                        </div>
+                      </div>
                     </div>
                   ))}
-                  {(!ins.persona_insights?.target_expansion?.length) && (
+                  {(!ins.persona_insights?.potential_user_groups?.length) && (
                     <p className="text-xs text-muted-foreground">{t("No data", "데이터 없음")}</p>
                   )}
                 </InsightCard>
