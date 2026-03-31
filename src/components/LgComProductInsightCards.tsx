@@ -41,7 +41,8 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
         productName: string;
         category: string;
         sentiment: string;
-        titlePhrases: Record<string, number>; // title → count
+        titlePhrases: Record<string, number>;
+        snippets: string[]; // short content excerpts
         sources: Set<string>;
         count: number;
         avgRating: number;
@@ -59,6 +60,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
             category: prod.category,
             sentiment: r.sentiment || "neutral",
             titlePhrases: {},
+            snippets: [],
             sources: new Set(),
             count: 0,
             avgRating: 0,
@@ -72,10 +74,24 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
           productMap[key].ratingCount++;
         }
 
-        // Use title as representative comment phrase
         const title = (r.title || "").trim();
         if (title && title.length > 1) {
           productMap[key].titlePhrases[title] = (productMap[key].titlePhrases[title] || 0) + 1;
+        }
+
+        // Extract a meaningful snippet from content (first meaningful sentence, max 80 chars)
+        if (r.content && productMap[key].snippets.length < 8) {
+          const sentences = r.content
+            .replace(/\n+/g, ". ")
+            .split(/[.!?]+/)
+            .map((s: string) => s.trim())
+            .filter((s: string) => s.length > 15 && s.length < 120);
+          if (sentences.length > 0) {
+            const snippet = sentences[0].length > 80 ? sentences[0].slice(0, 77) + "..." : sentences[0];
+            if (!productMap[key].snippets.includes(snippet)) {
+              productMap[key].snippets.push(snippet);
+            }
+          }
         }
       }
 
