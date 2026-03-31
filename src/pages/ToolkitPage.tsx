@@ -473,7 +473,7 @@ export default function ToolkitPage() {
                   selectedMarket ? `Market: ${selectedMarket}` : "Market: Global",
                   selectedGoal ? `Goal: ${selectedGoal}` : "Goal: Not specified",
                   selectedCampaignType ? `Campaign Type: ${selectedCampaignType}` : "Campaign Type: Not specified",
-                  selectedBudget ? `Budget: ${selectedBudget}` : "Budget: Not specified",
+                  selectedCategory ? `Product Category: ${selectedCategory}` : "Product Category: Not specified",
                 ];
 
                 const prompt = `You are a senior D2C digital marketing strategist for LG Electronics.
