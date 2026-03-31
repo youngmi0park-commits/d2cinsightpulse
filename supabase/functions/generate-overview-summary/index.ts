@@ -50,11 +50,11 @@ Deno.serve(async (req) => {
     const negReviews = reviews.filter((r: any) => r.sentiment === "negative");
 
     // Aggregate by product
-    const productMap: Record<string, { name: string; model: string; category: string; pos: number; neg: number; titles: string[] }> = {};
+    const productMap: Record<string, { name: string; model: string; category: string; subCategory: string; pos: number; neg: number; titles: string[] }> = {};
     for (const r of reviews as any[]) {
       const pName = r.products?.display_name || "Unknown";
       if (!productMap[pName]) {
-        productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", pos: 0, neg: 0, titles: [] };
+        productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, titles: [] };
       }
       if (r.sentiment === "positive") productMap[pName].pos++;
       if (r.sentiment === "negative") productMap[pName].neg++;
