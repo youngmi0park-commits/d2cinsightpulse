@@ -66,7 +66,7 @@ interface OverviewData {
 
 /* ───── Component ───── */
 export function OverviewDashboard() {
-  const { t } = useLang();
+  useLang();
   const navigate = useNavigate();
   const { data: kpis } = useOverviewKPIs();
 
