@@ -87,7 +87,7 @@ ${productSummary}
 - 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
 - category는 TV, Refrigerator, Washer, Dishwasher 등 제품 카테고리
 
-JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...] }`;
+JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [{"text": "...", "product": "...", "category": "..."}] }`;
 
   const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
