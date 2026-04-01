@@ -220,14 +220,18 @@ const criteria: CriteriaItem[] = [
     titleEn: "Selection Logic",
     titleKo: "선정 로직",
     itemsEn: [
-      "Primary metric: Reddit annual users by country (WorldPopulationReview)",
-      "Weighting: English-speaking proportion (English-speaking countries ↑, non-English English activity included)",
+      "Primary metric: Reddit annual users by country (WorldPopulationReview) + e-commerce platform activity",
+      "Weighting: English-speaking proportion + Asia e-commerce penetration (Shopee/Lazada market share)",
       "Verification: lg.com traffic distribution for CE interest validation (SimilarWeb)",
+      "🆕 Asia expansion: Shopee/Lazada GMV rankings, Amazon JP market share, YouTube regional channel engagement",
+      "🆕 Middle East: ComplaintsBoard activity for Iraq/GCC region coverage",
     ],
     itemsKo: [
-      "1차 지표: Reddit 국가별 연간 사용자 수 (WorldPopulationReview)",
-      "가중치: 영어권/영문 사용 비중 (영어권 국가 ↑, 비영어권 영문 활동 포함)",
+      "1차 지표: Reddit 국가별 연간 사용자 수 (WorldPopulationReview) + 이커머스 플랫폼 활동량",
+      "가중치: 영어권/영문 사용 비중 + 아시아 이커머스 침투율 (Shopee/Lazada 시장점유율)",
       "보조 확인: lg.com 트래픽 분포로 CE 관심도 검증 (SimilarWeb)",
+      "🆕 아시아 확장: Shopee/Lazada GMV 순위, Amazon JP 점유율, YouTube 지역 채널 참여도",
+      "🆕 중동: 이라크/GCC 지역 ComplaintsBoard 활동 기반",
     ],
   },
   {
@@ -237,6 +241,8 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "⏰ Automated daily collection at 07:00 AM KST (22:00 UTC) via pg_cron scheduled job",
       "📦 collect-reviews runs at 07:00 KST → collect-youtube-comments follows at 07:05 KST",
+      "🆕 collect-asian-reviews runs at 07:10 KST → Firecrawl-based scraping for Shopee/Lazada/Reviews.io/ComplaintsBoard",
+      "🆕 LG.com review collection: Bazaarvoice API (US & UK) — No date restriction, all categories, daily incremental",
       "Trending dashboard updates automatically after each collection cycle (same timing)",
       "Weekly aggregation period: Last 7 days rolling window for trend snapshots & keywords",
       "Based on last 12 months data for long-term analysis (rolling update)",
@@ -245,6 +251,8 @@ const criteria: CriteriaItem[] = [
     itemsKo: [
       "⏰ 매일 오전 7:00 KST (UTC 22:00)에 pg_cron 스케줄링으로 자동 일괄 수집",
       "📦 collect-reviews 07:00 KST 실행 → collect-youtube-comments 07:05 KST 후속 실행",
+      "🆕 collect-asian-reviews 07:10 KST 실행 → Shopee/Lazada/Reviews.io/ComplaintsBoard Firecrawl 기반 스크래핑",
+      "🆕 LG.com 리뷰 수집: Bazaarvoice API (US & UK) — 작성시점 제한 없음, 전 카테고리, 매일 증분 수집",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
       "주간 집계 기간: 최근 7일 롤링 윈도우 기준 트렌드 스냅샷 및 키워드 추출",
       "장기 분석을 위한 최근 12개월 데이터 기준 (롤링 업데이트)",
@@ -280,6 +288,37 @@ const criteria: CriteriaItem[] = [
       "81-90: InstaView, Door-in-Door, Craft Ice, Linear Compressor, Direct Drive Motor, TurboWash, Steam cycle, Heat pump dryer, QuadWash, TrueSteam",
       "91-100: SEO, Organic traffic, PPC bidding, Long-tail keywords, Influencer collaboration, Customer satisfaction, Brand reputation, Social listening",
       "이 100개 키워드는 실제 검색 기반 사용자 관심을 포착하기 위해 매일 자동 수집에 포함됩니다",
+    ],
+  },
+  {
+    icon: Globe,
+    titleEn: "🆕 Non-US/NL Country Inbound Keywords Top 100",
+    titleKo: "🆕 비미국/네덜란드 국가 유입 키워드 Top 100",
+    itemsEn: [
+      "1-10: ar condicionado dual inverter 12000, lava e seca vc2 14kg, lg oled g5, lava e seca, oled, ar condicionado dual inverter 9000, ar condicionado, lavasecadora, tv, lg oled c5",
+      "11-20: lava e seca vc4 12kg, refrigerador, g5, washing machine, c5, controle remoto smart magic, microondas, vc2, monitor, refrigerador 22 pies",
+      "21-30: tv 50 polegadas, soundbar, lavadora, secadora, lg oled c4, geladeira, refrigerador 14 pies, controle remoto smart tv, refrigerador 29 pies, tv 55 polegadas",
+      "31-40: vc4, ar condicionado portátil, lg oled g4, smart tv 43 polegadas, microwave, xboom, lg g5, c4, tv 65 polegadas, fridge",
+      "41-50: lavadoras, lavasecadora 12 kg, stand by me, lg c5, refrigerador 11 pies, lavasecadora 16 kg, qned, tv oled, ar condicionado dual inverter 9000 q., smart tv 32 polegadas",
+      "51-60: dishwasher, ar condicionado dual inverter 12000, freezer, waschmaschine, waschtrockner, tv 75 polegadas, lg c4, controle, control remoto, g4",
+      "61-70: oled c5, sound bar, dryer, estufa, ar condicionado dual inverter 18000, lg oled g5 65, washer dryer, pantalla 75 pulgadas, kühlschrank, ar condicionado 127v",
+      "71-80: smart tv, oled g5, lavavajillas, trockner, ar condicionado portatil, lg oled, minisplit, secadora de roupa, lg g4, tv 55",
+      "81-90: lavasecadora 22kg, pantalla, pantallas, lava e seca vc4 14kg, lg oled c5 55, lg oled c4 65, tv 65, washtower, smart tv lg oled evo c4 55 4k 2024, lg oled c5 65",
+      "91-100: 65 inch tv, lava louça, lava e seca vc2, ultragear, lg oled g5 77, refrigerador 25 pies, celular, fridge freezer, controle remoto",
+      "Source: lg.com search analytics (excl. US/NL) — last 12 months. All keywords registered as product catalog entries for automated collection.",
+    ],
+    itemsKo: [
+      "1-10: ar condicionado dual inverter 12000, lava e seca vc2 14kg, lg oled g5, lava e seca, oled, ar condicionado dual inverter 9000, ar condicionado, lavasecadora, tv, lg oled c5",
+      "11-20: lava e seca vc4 12kg, refrigerador, g5, washing machine, c5, controle remoto smart magic, microondas, vc2, monitor, refrigerador 22 pies",
+      "21-30: tv 50 polegadas, soundbar, lavadora, secadora, lg oled c4, geladeira, refrigerador 14 pies, controle remoto smart tv, refrigerador 29 pies, tv 55 polegadas",
+      "31-40: vc4, ar condicionado portátil, lg oled g4, smart tv 43 polegadas, microwave, xboom, lg g5, c4, tv 65 polegadas, fridge",
+      "41-50: lavadoras, lavasecadora 12 kg, stand by me, lg c5, refrigerador 11 pies, lavasecadora 16 kg, qned, tv oled, ar condicionado dual inverter 9000 q., smart tv 32 polegadas",
+      "51-60: dishwasher, ar condicionado dual inverter 12000, freezer, waschmaschine, waschtrockner, tv 75 polegadas, lg c4, controle, control remoto, g4",
+      "61-70: oled c5, sound bar, dryer, estufa, ar condicionado dual inverter 18000, lg oled g5 65, washer dryer, pantalla 75 pulgadas, kühlschrank, ar condicionado 127v",
+      "71-80: smart tv, oled g5, lavavajillas, trockner, ar condicionado portatil, lg oled, minisplit, secadora de roupa, lg g4, tv 55",
+      "81-90: lavasecadora 22kg, pantalla, pantallas, lava e seca vc4 14kg, lg oled c5 55, lg oled c4 65, tv 65, washtower, smart tv lg oled evo c4 55 4k 2024, lg oled c5 65",
+      "91-100: 65 inch tv, lava louça, lava e seca vc2, ultragear, lg oled g5 77, refrigerador 25 pies, celular, fridge freezer, controle remoto",
+      "출처: lg.com 검색 분석 (미국/네덜란드 제외) — 최근 12개월. 모든 키워드는 자동 수집을 위한 제품 카탈로그에 등록 완료.",
     ],
   },
   {
@@ -326,13 +365,17 @@ const criteria: CriteriaItem[] = [
       "English reviews collected first (English-speaking perspective)",
       "Non-English Reddit activity in English included (Germany, Netherlands, etc.)",
       "All extracted keywords standardized to English regardless of source language",
-      "Multi-language NLP expansion planned",
+      "🆕 Multi-language auto-translation: Japanese, Traditional/Simplified Chinese, Thai, Vietnamese, Indonesian, Malay, Hindi → Korean output",
+      "🆕 Firecrawl + Gemini AI extraction pipeline for non-English review sources",
+      "🆕 Country-of-origin auto-detection from source URL and content language",
     ],
     itemsKo: [
       "영어 리뷰 1차 수집 (영어권 중심 관점)",
       "비영어권 영문 Reddit 활동 포함 (독일, 네덜란드 등)",
       "추출된 모든 키워드는 소스 언어에 관계없이 영문으로 통일",
-      "향후 다국어 NLP 확장 예정",
+      "🆕 다국어 자동 번역: 일본어, 번체/간체 중국어, 태국어, 베트남어, 인도네시아어, 말레이어, 힌디어 → 한국어 출력",
+      "🆕 Firecrawl + Gemini AI 추출 파이프라인으로 비영어 리뷰 소스 처리",
+      "🆕 소스 URL 및 콘텐츠 언어 기반 원산지 국가 자동 감지",
     ],
   },
   {
@@ -473,8 +516,8 @@ export const CollectionCriteria = () => {
         </div>
         <p className="text-sm text-muted-foreground mb-6">
           {t(
-            "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. Top 10 countries were selected by combining Reddit user counts (WorldPopulationReview), English usage proportion, and lg.com traffic (SimilarWeb).",
-            "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수(WorldPopulationReview), 영어 사용 비중, lg.com 트래픽(SimilarWeb)을 종합하여 상위 10개국을 선정하였습니다."
+            "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. 20+ countries selected by combining Reddit user counts, e-commerce platform activity (Shopee/Lazada/Amazon), and lg.com traffic. Asia expansion includes JP, SG, MY, ID, TH, PH, VN, TW, HK, IN, and Middle East.",
+            "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수, 이커머스 플랫폼 활동량(Shopee/Lazada/Amazon), lg.com 트래픽을 종합하여 20개국 이상을 선정하였습니다. 아시아 확장: 일본, 싱가포르, 말레이시아, 인도네시아, 태국, 필리핀, 베트남, 대만, 홍콩, 인도, 중동."
           )}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
