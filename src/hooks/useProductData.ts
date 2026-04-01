@@ -170,7 +170,7 @@ export function useCountryCounts() {
   return useQuery({
     queryKey: ["country-counts"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_country_counts");
+      const { data, error } = await supabase.rpc("get_country_counts" as any);
       if (error) throw error;
 
       const counts: Record<string, number> = {};
