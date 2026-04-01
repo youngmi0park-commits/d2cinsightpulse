@@ -572,8 +572,8 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <SentimentChart sentiment={item.sentiment} />
                 <KeywordCloud keywords={item.sentiment.keywords} />
+                <SentimentChart sentiment={item.sentiment} />
               </div>
 
               {/* 고객 실제 Using Scene */}
