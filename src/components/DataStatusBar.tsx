@@ -39,8 +39,10 @@ const COUNTRY_FLAGS: Record<string, string> = {
 
 export function DataStatusBar() {
   const [expanded, setExpanded] = useState(false);
+  const [countryExpanded, setCountryExpanded] = useState(false);
   const { data: counts } = useSourceCounts();
   const { data: stats } = useProductStats();
+  const { data: countryCounts } = useCountryCounts();
 
   if (!counts) return null;
 
