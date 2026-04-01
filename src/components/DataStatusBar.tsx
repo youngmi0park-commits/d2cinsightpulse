@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useSourceCounts, useProductStats } from "@/hooks/useProductData";
-import { Database, BarChart3 } from "lucide-react";
+import { Database, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ChannelBadge {
   key: string;
