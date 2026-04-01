@@ -327,18 +327,43 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} ~ ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-    const [weeklyRes, lastWeekRes] = await Promise.all([
+    const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }),
+      sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
     ]);
 
     const wow = (lastWeekRes.count || 0) > 0
       ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100)
       : 0;
 
+    // Source counts for channel bar
+    const { data: sourceCounts } = await sb.rpc("get_source_counts");
+    const CHANNEL_COLORS: Record<string, { label: string; color: string }> = {
+      lge_com: { label: "LG.com", color: "#A50034" },
+      reddit: { label: "Reddit", color: "#FF4500" },
+      trustpilot: { label: "Trustpilot", color: "#00B67A" },
+      youtube: { label: "YouTube", color: "#FF0000" },
+      consumer_reports: { label: "Consumer Reports", color: "#0066CC" },
+      amazon: { label: "Amazon", color: "#FF9900" },
+    };
+    const sortedSources = (sourceCounts || []).sort((a: any, b: any) => b.count - a.count);
+    const topChannels = sortedSources.slice(0, 6).map((s: any) => {
+      const cfg = CHANNEL_COLORS[s.source] || { label: s.source, color: "#888" };
+      return { name: cfg.label, count: s.count, color: cfg.color };
+    });
+    const otherCount = sortedSources.slice(6).reduce((sum: number, s: any) => sum + s.count, 0);
+    if (otherCount > 0) {
+      topChannels.push({ name: `+${sortedSources.length - 6}개 채널`, count: otherCount, color: "#999" });
+    }
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
+      totalReviews: totalRes.count || 0,
+      productCount: productRes.count || 0,
+      channels: topChannels,
     };
 
     // ── Generate AI insights (parallel) ──
