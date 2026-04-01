@@ -153,8 +153,12 @@ ${dataBarHTML(d)}
     <tr><td colspan="2" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
     <tr><td style="padding:20px 24px;">
       <div style="font-family:Inter,Arial,sans-serif;font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:1.3;">Review-to-Asset, <span style="color:#A50034;">Instantly.</span></div>
-      <div style="font-size:12px;color:#6B6B6B;line-height:1.7;margin-top:6px;">리뷰 분석부터 광고 카피까지 — 리뷰가 증명한 메시지로 만듭니다.</div>
-      <a href="${BASE_URL}/" style="display:inline-block;margin-top:12px;background:#A50034;color:#fff;border-radius:6px;padding:10px 20px;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
+      <div style="font-size:12px;color:#6B6B6B;line-height:1.8;margin-top:8px;">
+        리뷰 분석부터 광고 카피까지 — 진짜 고객의 목소리로 증명된 메시지를 만듭니다.<br/>
+        실제 사용자 리뷰에서 핵심 인사이트를 추출하고, 그 안에 담긴 감정과 언어를 그대로 마케팅 에셋으로 변환합니다.<br/>
+        지금 바로 리뷰가 증명한 메시지로 더 설득력 있는 캠페인을 만들어보세요.
+      </div>
+      <a href="${BASE_URL}/" style="display:inline-block;margin-top:14px;background:#A50034;color:#fff;border-radius:6px;padding:10px 20px;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;">👉 마케팅 에셋 스튜디오 바로가기</a>
     </td></tr>
   </table>
 </td></tr>
