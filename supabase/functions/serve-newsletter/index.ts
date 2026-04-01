@@ -10,7 +10,7 @@ interface ChannelInsight {
   top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[] }[];
   top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[] }[];
   urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[] }[];
-  recurring_praise: string[];
+  recurring_praise: { text: string; product?: string; category?: string }[];
 }
 
 /* ── AI insight generation per channel ── */
@@ -84,9 +84,10 @@ ${productSummary}
 - rank, issue (한국어), mention_pct (%), pattern (패턴 한국어), cause (원인 추정 한국어), related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 한국어 문장 배열
+- 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
+- category는 TV, Refrigerator, Washer, Dishwasher 등 제품 카테고리
 
-JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...] }`;
+JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [{"text": "...", "product": "...", "category": "..."}] }`;
 
   const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -166,7 +167,11 @@ function buildNewsletterHTML(d: {
       </td></tr>`).join("");
 
     // Recurring praise
-    const praiseHTML = (insight.recurring_praise || []).map(p => `<div style="padding:3px 0;font-size:11px;color:#006600;line-height:1.5;">✅ ${p}</div>`).join("");
+    const praiseHTML = (insight.recurring_praise || []).map(p => {
+      const item = typeof p === "string" ? { text: p } : p;
+      const catLabel = item.category ? `<span style="display:inline-block;background:#E6F4EA;border:1px solid #BBF7D0;border-radius:3px;padding:1px 6px;font-size:9px;color:#006600;font-weight:600;margin-right:6px;">${item.category}${item.product ? ` · ${item.product}` : ""}</span>` : "";
+      return `<div style="padding:4px 0;font-size:11px;color:#006600;line-height:1.6;">✅ ${catLabel}${item.text}</div>`;
+    }).join("");
 
     return `
     <tr><td style="padding:24px 28px 0;">

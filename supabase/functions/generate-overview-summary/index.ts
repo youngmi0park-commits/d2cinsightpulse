@@ -102,7 +102,8 @@ ${productSummary}
 - 관련 제품 모델명 리스트
 
 ## 3. 반복 칭찬 포인트 (Recurring Praise Points)
-- 5개 항목, 각각 한 줄로 (예: "OLED TV의 압도적인 화질 (선명함, 색감, 명암비)")
+- 5개 항목, 각각 제품명과 카테고리를 포함한 객체 형태
+- 예: { "text": "OLED TV의 압도적인 화질 (선명함, 색감, 명암비)", "product": "LG OLED evo G5", "category": "TV" }
 
 ## 4. "비교 없이" 칭찬하는 포인트 (Unmatched Praise)
 - 고객이 경쟁사 대비가 아닌 절대적으로 칭찬하는 포인트 4~5개
@@ -131,7 +132,7 @@ JSON 형태로 응답:
       "related_products": ["모델명1"]
     }
   ],
-  "recurring_praise": ["칭찬 포인트1", "칭찬 포인트2"],
+  "recurring_praise": [{"text": "칭찬 포인트1", "product": "제품명", "category": "TV"}, {"text": "칭찬 포인트2", "product": "제품명", "category": "Refrigerator"}],
   "unmatched_praise": ["코멘트1", "코멘트2"]
 }`;
 
