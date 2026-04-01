@@ -151,10 +151,38 @@ function excerpt(text: string, maxLen = 120): string {
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }
 
-/** Shorter excerpt for LG.com reviews (summary style) */
-function summaryExcerpt(text: string, source?: string): string {
+/** Extract key phrases from text for keyword-style summary */
+function extractKeyPhrases(text: string): string[] {
+  const _lower = text.replace(/\s+/g, " ").trim();
+  const patterns = [
+    /(?:love|great|excellent|amazing|perfect|best|good|nice|awesome|fantastic|beautiful|impressive|solid|quality|easy|smooth|clear|bright|fast|quiet|efficient|reliable|convenient|comfortable|worth|recommend|happy|pleased|satisfied)\s+\w+/gi,
+    /(?:poor|bad|worst|terrible|horrible|disappointing|broken|defective|loud|slow|dim|cheap|flimsy|difficult|complicated|unreliable|frustrating|annoying|regret|waste|issue|problem|fail|crack|leak|noise|error|glitch|bug|malfunction)\s*\w*/gi,
+    /(?:picture|sound|color|screen|display|design|setup|install|delivery|price|value|size|weight|remote|app|smart|wifi|bluetooth|bass|volume|brightness|contrast|hdr|dolby|4k|oled|energy|power|space|storage|ice|water|filter|wash|dry|clean|cool|heat)\s*\w*/gi,
+  ];
+  const phrases = new Set<string>();
+  for (const pat of patterns) {
+    const matches = text.match(pat);
+    if (matches) matches.slice(0, 3).forEach((m) => phrases.add(m.trim()));
+  }
+  return Array.from(phrases).slice(0, 4);
+}
+
+/** Build keyword-focused summary for LG.com reviews */
+function lgComSummary(text: string, sentimentType?: string): string {
+  const keyPhrases = extractKeyPhrases(text);
+  if (keyPhrases.length >= 2) {
+    const tag = sentimentType === "positive" ? "👍" : sentimentType === "negative" ? "👎" : "•";
+    return `${tag} ${keyPhrases.join(" · ")}`;
+  }
+  // Fallback: short excerpt
+  return excerpt(text, 50);
+}
+
+/** Display-ready excerpt: keyword summary for LG.com, short excerpt for others */
+function summaryExcerpt(text: string, source?: string, sentimentType?: string): string {
   const isLgCom = source?.startsWith("lge_com");
-  return excerpt(text, isLgCom ? 60 : 120);
+  if (isLgCom) return lgComSummary(text, sentimentType);
+  return excerpt(text, 120);
 }
 
 /** Evidence & Signals section in expanded view */
@@ -323,7 +351,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source)}"
+                        "{summaryExcerpt(r.text, r.source, "positive")}"
                       </span>
                     </div>
                   </div>
@@ -365,7 +393,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source)}"
+                        "{summaryExcerpt(r.text, r.source, "negative")}"
                       </span>
                     </div>
                   </div>
