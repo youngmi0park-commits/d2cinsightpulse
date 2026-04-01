@@ -159,7 +159,7 @@ function PostItem({
     <div className="rounded-md bg-background/50 border border-border/50 p-2.5">
       <div className="flex items-start justify-between gap-2 mb-1">
         <span className="text-[11px] font-medium text-foreground line-clamp-1">
-          {post.title || post.content.slice(0, 60) + "…"}
+          {maskCompetitorNames(post.title || post.content.slice(0, 60) + "…")}
         </span>
         <Badge variant="outline" className={`text-[9px] shrink-0 ${style.text} ${style.border}`}>
           {(post.bucketConfidence * 100).toFixed(0)}%
