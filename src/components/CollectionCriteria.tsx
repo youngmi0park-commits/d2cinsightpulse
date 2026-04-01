@@ -39,7 +39,7 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "LG.com (lg.com/us, lg.com/uk) — Official LG product pages & customer reviews (US & UK: Bazaarvoice Conversations API Production 연동)",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
-      "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR)",
+      "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR, JP, SG)",
       "Best Buy — Retailer product reviews and ratings (US)",
       "Costco — Member product reviews (US)",
       "Walmart — Retailer product reviews (US)",
