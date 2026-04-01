@@ -1,9 +1,11 @@
-import { Store, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Store } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
+import { CountryFilterBar } from "@/components/CountryFilterBar";
 
 /* Compact inline summary — just total + country split */
 function CompactDataBar() {
@@ -40,6 +42,8 @@ function CompactDataBar() {
 }
 
 const LgComPage = () => {
+  const [selectedCountry, setSelectedCountry] = useState("all");
+
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       <PageHeader
@@ -47,6 +51,7 @@ const LgComPage = () => {
         title="🏬 LG.com Insights"
         description="LG.com 리뷰에서 어떤 제품이 긍정/부정 언급되고 있는지, 핵심 키워드는 무엇인지 확인하고 마케팅 콘텐츠로 활용하세요."
       />
+      <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
       <CompactDataBar />
       {/* 1. AI 주간 인사이트 리포트 (최상단) */}
       <LgComWeeklyReport />

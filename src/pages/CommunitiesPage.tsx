@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Globe, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
 
 /* ── helpers ── */
 const STOP_WORDS = new Set([
@@ -42,6 +44,8 @@ function sourceLabel(source: string): string {
   if (source.startsWith("walmart")) return "Walmart";
   if (source.startsWith("twitter") || source.startsWith("x_")) return "X (Twitter)";
   if (source.startsWith("forum")) return "Forums";
+  if (source.startsWith("shopee")) return "Shopee";
+  if (source.startsWith("lazada")) return "Lazada";
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -56,16 +60,24 @@ interface CommunityData {
   topNegativeProducts: { name: string; count: number; keywords: string[] }[];
 }
 
-function useCommunityData() {
+function useCommunityData(country: string) {
+  const sourcesFilter = countryToSourceFilter(country);
+
   return useQuery({
-    queryKey: ["community-reviews"],
+    queryKey: ["community-reviews", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("source, sentiment, content, product_id, products!inner(display_name, category)")
         .not("source", "like", "lge_com%")
         .not("source", "like", "reddit%")
         .limit(1000);
+
+      if (sourcesFilter && sourcesFilter.length > 0) {
+        query = query.in("source", sourcesFilter);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Group by source
@@ -79,9 +91,7 @@ function useCommunityData() {
       const communities: CommunityData[] = Object.entries(bySource).map(([src, rows]) => {
         const positive = rows.filter((r) => r.sentiment === "positive");
         const negative = rows.filter((r) => r.sentiment === "negative");
-        const neutral = rows.filter((r) => r.sentiment !== "positive" && r.sentiment !== "negative");
 
-        // Top products by positive
         const posProd: Record<string, { name: string; count: number; contents: string[] }> = {};
         for (const r of positive) {
           const p = r.products as any;
@@ -91,7 +101,6 @@ function useCommunityData() {
           posProd[name].contents.push(r.content);
         }
 
-        // Top products by negative
         const negProd: Record<string, { name: string; count: number; contents: string[] }> = {};
         for (const r of negative) {
           const p = r.products as any;
@@ -117,7 +126,7 @@ function useCommunityData() {
           total: rows.length,
           positive: positive.length,
           negative: negative.length,
-          neutral: neutral.length,
+          neutral: rows.length - positive.length - negative.length,
           topPositiveProducts: topPos,
           topNegativeProducts: topNeg,
         };
@@ -139,7 +148,6 @@ function CommunityCard({ community }: { community: CommunityData }) {
         <h4 className="text-sm font-semibold font-heading">{community.label}</h4>
         <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
       </div>
-      {/* Sentiment bar */}
       <div className="h-2 rounded-full overflow-hidden flex bg-secondary">
         <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
         <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
@@ -151,7 +159,6 @@ function CommunityCard({ community }: { community: CommunityData }) {
       </div>
 
       <div className="space-y-4">
-        {/* Positive products */}
         {community.topPositiveProducts.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-2">
@@ -178,7 +185,6 @@ function CommunityCard({ community }: { community: CommunityData }) {
           </div>
         )}
 
-        {/* Negative products */}
         {community.topNegativeProducts.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-2">
@@ -214,7 +220,8 @@ function CommunityCard({ community }: { community: CommunityData }) {
 }
 
 const CommunitiesPage = () => {
-  const { data: communities, isLoading } = useCommunityData();
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const { data: communities, isLoading } = useCommunityData(selectedCountry);
   const total = communities?.reduce((s, c) => s + c.total, 0) || 0;
 
   return (
@@ -225,17 +232,18 @@ const CommunitiesPage = () => {
         description="LG.com과 Reddit을 제외한 Amazon, YouTube, Best Buy 등 외부 커뮤니티에서 수집된 리뷰를 채널별로 분석합니다. 긍정·부정 리뷰가 많은 제품과 주요 키워드를 확인하세요."
       />
 
+      <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
+
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : !communities || communities.length === 0 ? (
         <div className="gradient-card rounded-xl border border-border p-6 text-center text-sm text-muted-foreground">
-            LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다.
+            {selectedCountry !== "all" ? `${selectedCountry} 지역의 수집 데이터가 아직 없습니다.` : "LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다."}
         </div>
       ) : (
         <>
-          {/* Source count buttons */}
           <div className="gradient-card rounded-xl border border-border p-5">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="h-4 w-4 text-primary" />
@@ -254,7 +262,6 @@ const CommunitiesPage = () => {
             </div>
           </div>
 
-          {/* Community cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {communities.map((c) => (
               <CommunityCard key={c.source} community={c} />
