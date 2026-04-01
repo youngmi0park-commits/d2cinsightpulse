@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
-import { Copy, Check, Eye, Code, Loader2, Sparkles, Rocket } from "lucide-react";
+import { Copy, Check, Eye, Code, Loader2, Rocket, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
