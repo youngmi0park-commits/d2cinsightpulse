@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
-import { Copy, Check, Eye, Code, Loader2, Sparkles, Rocket } from "lucide-react";
+import { Copy, Check, Eye, Code, Loader2, Rocket, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -300,26 +300,11 @@ export function WeeklyNewsletterHTML() {
   const { data, isLoading } = useNewsletterData();
   const [viewMode, setViewMode] = useState<"preview" | "html">("preview");
   const [copied, setCopied] = useState(false);
-  const [lgcomOverview, setLgcomOverview] = useState<ChannelOverview | null>(null);
-  const [redditOverview, setRedditOverview] = useState<ChannelOverview | null>(null);
-  const [lgcomLoading, setLgcomLoading] = useState(false);
-  const [redditLoading, setRedditLoading] = useState(false);
   const [fullGenLoading, setFullGenLoading] = useState(false);
   const [fullGenHtml, setFullGenHtml] = useState<string | null>(null);
+  const [sendingTest, setSendingTest] = useState(false);
 
-  const generateOverview = async (channel: "lgcom" | "reddit") => {
-    const setLoading = channel === "lgcom" ? setLgcomLoading : setRedditLoading;
-    const setData = channel === "lgcom" ? setLgcomOverview : setRedditOverview;
-    setLoading(true);
-    try {
-      const { data: result, error } = await supabase.functions.invoke("generate-overview-summary", { body: { channel } });
-      if (error) throw error;
-      if (result?.overview) { setData(result.overview); toast.success(`${channel === "lgcom" ? "LG.com" : "Reddit"} 오버뷰 생성 완료!`); }
-    } catch (err: any) { toast.error("생성 실패: " + (err.message || "Unknown")); }
-    finally { setLoading(false); }
-  };
-
-  /** 원클릭: AI 오버뷰 포함된 전체 뉴스레터 HTML 서버 생성 → 복사 */
+  /** 원클릭: AI 오버뷰 포함된 전체 뉴스레터 HTML 서버 생성 */
   const generateFullNewsletter = async () => {
     setFullGenLoading(true);
     try {
@@ -327,16 +312,43 @@ export function WeeklyNewsletterHTML() {
         body: { format: "json", baseUrl: window.location.origin },
       });
       if (error) throw error;
-      const htmlContent = result?.html;
-      if (htmlContent) {
-        setFullGenHtml(htmlContent);
-        await navigator.clipboard.writeText(htmlContent);
-        toast.success("✅ AI 오버뷰 포함 뉴스레터 HTML이 클립보드에 복사되었습니다!\nyoungmi0.park@lge.com 으로 Outlook에서 발송하세요.");
+      if (result?.html) {
+        setFullGenHtml(result.html);
+        toast.success("✅ AI 오버뷰 포함 뉴스레터가 생성되었습니다!");
       }
     } catch (err: any) {
       toast.error("뉴스레터 생성 실패: " + (err.message || "Unknown"));
     } finally {
       setFullGenLoading(false);
+    }
+  };
+
+  /** 클립보드 복사 */
+  const handleCopy = () => {
+    const target = fullGenHtml || (data ? generateNewsletterHTML(data, null, null) : "");
+    navigator.clipboard.writeText(target);
+    setCopied(true);
+    toast.success("📋 뉴스레터 HTML이 클립보드에 복사되었습니다!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  /** 테스트 메일 발송 */
+  const handleTestSend = async () => {
+    setSendingTest(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+        body: { format: "json", baseUrl: window.location.origin, sendTo: "youngmi0.park@lge.com" },
+      });
+      if (error) throw error;
+      if (result?.emailSent) {
+        toast.success("📧 youngmi0.park@lge.com 으로 테스트 메일이 발송되었습니다!");
+      } else {
+        toast.error("발송 실패: " + (result?.emailError || "Unknown"));
+      }
+    } catch (err: any) {
+      toast.error("메일 발송 실패: " + (err.message || "Unknown"));
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -350,26 +362,19 @@ export function WeeklyNewsletterHTML() {
     );
   }
 
-  const html = generateNewsletterHTML(data, lgcomOverview, redditOverview);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(html);
-    setCopied(true);
-    toast.success("뉴스레터 HTML이 클립보드에 복사되었습니다!");
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const html = generateNewsletterHTML(data, null, null);
 
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-heading">📬 금주의 뉴스레터</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{data.dateRange}</Badge>
             <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">매주 화요일 10:00 발행</Badge>
           </div>
           <div className="flex items-center gap-2">
-            {/* 원클릭 AI 뉴스레터 생성 */}
+            {/* 원클릭 생성 */}
             <Button
               onClick={generateFullNewsletter}
               disabled={fullGenLoading}
@@ -377,8 +382,29 @@ export function WeeklyNewsletterHTML() {
               className="gap-1.5 bg-gradient-to-r from-primary to-primary/80"
             >
               {fullGenLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Rocket className="h-3.5 w-3.5" />}
-              {fullGenLoading ? "AI 분석 + HTML 생성 중..." : fullGenHtml ? "✅ AI 뉴스레터 복사 완료" : "🚀 AI 뉴스레터 원클릭 생성 & 복사"}
+              {fullGenLoading ? "AI 생성 중..." : fullGenHtml ? "✅ 생성 완료" : "🚀 원클릭 생성"}
             </Button>
+
+            {/* 생성 후 표시: 복사 + 테스트 발송 */}
+            {fullGenHtml && (
+              <>
+                <Button onClick={handleCopy} size="sm" variant="outline" className="gap-1.5">
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "복사 완료!" : "📋 HTML 복사"}
+                </Button>
+                <Button
+                  onClick={handleTestSend}
+                  disabled={sendingTest}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+                >
+                  {sendingTest ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  {sendingTest ? "발송 중..." : "📧 메일링 테스트"}
+                </Button>
+              </>
+            )}
+
             <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
               <button onClick={() => setViewMode("preview")} className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${viewMode === "preview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                 <Eye className="h-3 w-3" /> 미리보기
@@ -387,27 +413,10 @@ export function WeeklyNewsletterHTML() {
                 <Code className="h-3 w-3" /> HTML
               </button>
             </div>
-            <Button onClick={handleCopy} size="sm" className="gap-1.5">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "복사 완료!" : "HTML 복사"}
-            </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 space-y-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => generateOverview("lgcom")} disabled={lgcomLoading}
-            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5">
-            {lgcomLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            {lgcomLoading ? "LG.com 분석 중..." : lgcomOverview ? "✅ LG.com 오버뷰 포함됨" : "🏪 LG.com 오버뷰 생성"}
-          </button>
-          <button onClick={() => generateOverview("reddit")} disabled={redditLoading}
-            className="px-3 py-1.5 rounded-lg bg-orange-500 text-white text-xs font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center gap-1.5">
-            {redditLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            {redditLoading ? "Reddit 분석 중..." : redditOverview ? "✅ Reddit 오버뷰 포함됨" : "💬 Reddit 오버뷰 생성"}
-          </button>
-        </div>
-
+      <CardContent className="pt-0">
         {viewMode === "preview" ? (
           <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
             <iframe srcDoc={fullGenHtml || html} title="Newsletter Preview" className="w-full border-0" style={{ height: "900px" }} />

@@ -286,6 +286,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const format = body.format || "html"; // "html" | "json"
     const baseUrl = body.baseUrl || "https://d2cinsightpulse.lovable.app";
+    const sendTo = body.sendTo || null; // email address for test send
 
     // ── Gather newsletter data ──
     const now = new Date();
@@ -349,8 +350,41 @@ Deno.serve(async (req) => {
     // ── Build HTML ──
     const html = buildNewsletterHTML(newsletterData, lgcomOverview, redditOverview, baseUrl);
 
+    // ── Send test email via Resend if requested ──
+    let emailSent = false;
+    let emailError: string | null = null;
+    if (sendTo) {
+      const resendKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendKey) {
+        emailError = "RESEND_API_KEY가 설정되지 않았습니다.";
+      } else {
+        try {
+          const emailRes = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: "D2C Insight Pulse <onboarding@resend.dev>",
+              to: [sendTo],
+              subject: `📮 D2C Insight Pulse Weekly — ${newsletterData.dateRange}`,
+              html,
+            }),
+          });
+          const emailResult = await emailRes.json();
+          if (emailRes.ok) {
+            emailSent = true;
+            console.log("Test email sent:", emailResult);
+          } else {
+            emailError = emailResult?.message || "이메일 발송 실패";
+            console.error("Resend error:", emailResult);
+          }
+        } catch (e) {
+          emailError = (e as Error).message;
+        }
+      }
+    }
+
     if (format === "json") {
-      return new Response(JSON.stringify({ html, data: newsletterData, lgcomOverview, redditOverview }), {
+      return new Response(JSON.stringify({ html, data: newsletterData, lgcomOverview, redditOverview, emailSent, emailError }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
