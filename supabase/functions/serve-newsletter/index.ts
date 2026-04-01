@@ -108,6 +108,8 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
 function buildNewsletterHTML(d: {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
+  totalReviews: number; productCount: number;
+  channels: { name: string; count: number; color: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string): string {
   const wowColor = d.wow >= 0 ? "#006600" : "#A50034";
   const wowSign = d.wow >= 0 ? "+" : "";
