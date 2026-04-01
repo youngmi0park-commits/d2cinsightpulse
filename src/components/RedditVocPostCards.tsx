@@ -152,7 +152,7 @@ export function RedditVocPostCards() {
 
                 {/* Content */}
                 <p className="text-[11px] text-foreground/80 line-clamp-3 leading-relaxed">
-                  {post.content}
+                  {maskCompetitorNames(post.content)}
                 </p>
 
                 {/* Keywords */}

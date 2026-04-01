@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import type { Review } from "@/data/dummyData";
 import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";

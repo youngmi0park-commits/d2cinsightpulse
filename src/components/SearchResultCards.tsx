@@ -147,7 +147,7 @@ function getChannelLabels(reviews: { source?: string }[]): string[] {
 
 /** Extract short excerpt from review text */
 function excerpt(text: string, maxLen = 120): string {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = maskCompetitorNames(text.replace(/\s+/g, " ").trim());
   if (clean.length <= maxLen) return clean;
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }
