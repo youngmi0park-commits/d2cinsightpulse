@@ -4,6 +4,7 @@ import { DataStatusBar } from "@/components/DataStatusBar";
 import { PageHeader } from "@/components/PageHeader";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
+import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
 import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
@@ -23,6 +24,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState("all");
   const { t, lang } = useLang();
   const { data: stats } = useProductStats();
 
@@ -51,14 +53,23 @@ const Index = () => {
         return;
       }
 
+      const sourcesFilter = countryToSourceFilter(selectedCountry);
+
       const analyzed: AnalyzedProduct[] = [];
       for (const product of dbProducts) {
-        const { data: reviews } = await supabase
+        let reviewQuery = supabase
           .from("reviews")
           .select("*")
           .eq("product_id", product.id)
           .order("collected_at", { ascending: false })
           .limit(50);
+
+        // Apply country source filter
+        if (sourcesFilter && sourcesFilter.length > 0) {
+          reviewQuery = reviewQuery.in("source", sourcesFilter);
+        }
+
+        const { data: reviews } = await reviewQuery;
 
         const formattedReviews = (reviews || []).map(toReviewFormat);
         if (formattedReviews.length === 0) continue;
@@ -91,8 +102,8 @@ const Index = () => {
 
       if (analyzed.length === 0) {
         setError(t(
-          `Products found for "${query}" but no reviews collected yet.`,
-          `"${query}" 관련 제품은 있지만 리뷰가 아직 수집되지 않았습니다.`
+          `Products found for "${query}" but no reviews collected yet${selectedCountry !== "all" ? ` for ${selectedCountry}` : ""}.`,
+          `"${query}" 관련 제품은 있지만 ${selectedCountry !== "all" ? `${selectedCountry} 지역의 ` : ""}리뷰가 아직 수집되지 않았습니다.`
         ));
         setResults([]);
       } else {
@@ -149,6 +160,20 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Country Filter Bar */}
+      <div className="max-w-[1400px] mx-auto px-6 pt-5">
+        <CountryFilterBar
+          selected={selectedCountry}
+          onChange={(c) => {
+            setSelectedCountry(c);
+            // Re-trigger search if there are existing results
+            if (searchQuery) {
+              setTimeout(() => handleSearch(searchQuery), 0);
+            }
+          }}
+        />
+      </div>
+
       {/* Dashboard Widgets (visible when no search results) */}
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
@@ -183,6 +208,11 @@ const Index = () => {
             <Badge variant="secondary" className="text-xs">
               {results.length}{t(" products", "개 제품")}
             </Badge>
+            {selectedCountry !== "all" && (
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                🌐 {selectedCountry}
+              </Badge>
+            )}
             <Badge variant="outline" className="text-[10px] gap-1 border-primary/30 text-primary">
               <Database className="h-3 w-3" />
               {t("Live Data", "실제 데이터")}
