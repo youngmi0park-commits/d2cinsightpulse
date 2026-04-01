@@ -44,7 +44,7 @@ const criteria: CriteriaItem[] = [
       "Costco — Member product reviews (US)",
       "Walmart — Retailer product reviews (US)",
       "Target — Retailer product reviews (US)",
-      "YouTube — Official LG channel comments (US, UK, Global, India, AU — Korea excluded) + review/unboxing video comments via Firecrawl",
+      "YouTube — Official LG channel comments (US, UK, Global, India, AU, JP, SG, TH, PH, ID, VN, TW, HK — Korea excluded) + review/unboxing video comments via Firecrawl",
       "RTINGS — Professional TV/Monitor/Projector reviews with lab measurements and test results",
       "Trusted Reviews — Professional editor reviews for TV/Monitor/Laptop (UK-based)",
       "Consumer Reports — Consumer evaluation and reliability reports (US-based, public areas only)",
