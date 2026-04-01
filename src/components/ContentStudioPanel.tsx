@@ -250,7 +250,7 @@ ${evidence}
 ${specInfo}${bannerStyleSection}
 ${channelGuidance}
 ${forbiddenPhrases}
-${mustInclude}${linkedSection}${reviewHighlightNote}`;
+${mustInclude}${linkedSection}${reviewHighlightNote}${tvGuideSection}`;
 
     // Generate visual guidance based on content type + banner style
     let visualGuidance = "";
