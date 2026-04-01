@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSourceCounts, useProductStats } from "@/hooks/useProductData";
-import { Database, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
+import { useSourceCounts, useProductStats, useCountryCounts } from "@/hooks/useProductData";
+import { Database, BarChart3, ChevronDown, ChevronUp, Globe } from "lucide-react";
 
 interface ChannelBadge {
   key: string;
@@ -15,6 +15,10 @@ const CHANNEL_MAP: ChannelBadge[] = [
   { key: "trustpilot", label: "Trustpilot", dotColor: "bg-yellow-400", bgColor: "bg-yellow-400/10" },
   { key: "youtube", label: "YouTube", dotColor: "bg-blue-500", bgColor: "bg-blue-500/10" },
   { key: "amazon", label: "Amazon", dotColor: "bg-amber-600", bgColor: "bg-amber-600/10" },
+  { key: "shopee", label: "Shopee", dotColor: "bg-orange-500", bgColor: "bg-orange-500/10" },
+  { key: "lazada", label: "Lazada", dotColor: "bg-blue-600", bgColor: "bg-blue-600/10" },
+  { key: "reviews_io", label: "Reviews.io", dotColor: "bg-cyan-500", bgColor: "bg-cyan-500/10" },
+  { key: "complaintsboard", label: "ComplaintsBoard", dotColor: "bg-rose-500", bgColor: "bg-rose-500/10" },
   { key: "bestreviews", label: "BestReviews", dotColor: "bg-emerald-500", bgColor: "bg-emerald-500/10" },
   { key: "houzz", label: "Houzz", dotColor: "bg-green-600", bgColor: "bg-green-600/10" },
   { key: "consumeraffairs", label: "ConsumerAffairs", dotColor: "bg-sky-500", bgColor: "bg-sky-500/10" },
@@ -23,7 +27,15 @@ const CHANNEL_MAP: ChannelBadge[] = [
   { key: "pcmag", label: "PCMag", dotColor: "bg-indigo-500", bgColor: "bg-indigo-500/10" },
   { key: "soundguys", label: "SoundGuys", dotColor: "bg-pink-500", bgColor: "bg-pink-500/10" },
   { key: "consumer_reports", label: "Consumer Reports", dotColor: "bg-teal-500", bgColor: "bg-teal-500/10" },
+  { key: "web_review", label: "Web Review", dotColor: "bg-gray-500", bgColor: "bg-gray-500/10" },
 ];
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩",
+  TH: "🇹🇭", PH: "🇵🇭", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
+  Global: "🌐", Other: "🔹",
+};
 
 export function DataStatusBar() {
   const [expanded, setExpanded] = useState(false);
