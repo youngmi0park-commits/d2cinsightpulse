@@ -154,12 +154,12 @@ export function RedditCategoryAnalysis() {
       const cat = classifyToCategory(combined);
       if (!cat) return;
       result[cat].total++;
-      if (r.sentiment === "positive") {
-        result[cat].positive++;
-        if (result[cat].posSnippets.length < 5) result[cat].posSnippets.push(r.content.slice(0, 150));
-      } else if (r.sentiment === "negative") {
-        result[cat].negative++;
-        if (result[cat].negSnippets.length < 5) result[cat].negSnippets.push(r.content.slice(0, 150));
+        if (r.sentiment === "positive") {
+          result[cat].positive++;
+          if (result[cat].posSnippets.length < 5) result[cat].posSnippets.push(maskCompetitorNames(r.content.slice(0, 150)));
+        } else if (r.sentiment === "negative") {
+          result[cat].negative++;
+          if (result[cat].negSnippets.length < 5) result[cat].negSnippets.push(maskCompetitorNames(r.content.slice(0, 150)));
       }
     });
 
