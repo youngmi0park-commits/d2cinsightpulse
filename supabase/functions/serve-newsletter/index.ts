@@ -84,7 +84,8 @@ ${productSummary}
 - rank, issue (한국어), mention_pct (%), pattern (패턴 한국어), cause (원인 추정 한국어), related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 한국어 문장 배열
+- 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
+- category는 TV, Refrigerator, Washer, Dishwasher 등 제품 카테고리
 
 JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...] }`;
 
