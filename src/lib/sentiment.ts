@@ -94,6 +94,19 @@ const COMPETITORS = [
   "jbl", "klipsch",
 ];
 
+/** Mask competitor brand names in user-facing text */
+export function maskCompetitorNames(text: string): string {
+  return text
+    .replace(/\bsamsung\b/gi, "SS")
+    .replace(/\bgalaxy\b/gi, "SS")
+    .replace(/\bsony\b/gi, "SN")
+    .replace(/\bbravia\b/gi, "SN")
+    .replace(/\b(tcl|hisense|vizio)\b/gi, "C브랜드")
+    .replace(/\b(whirlpool|bosch|electrolux|maytag|kenmore|frigidaire|kitchenaid|dyson|haier|siemens)\b/gi, "기타")
+    .replace(/\b(panasonic|philips|bose|sonos|jbl|klipsch)\b/gi, "기타")
+    .replace(/\b(dell|hp|lenovo|asus|acer|apple)\b/gi, "기타");
+}
+
 // Issue categories and their indicator words
 const ISSUE_CATEGORIES: Record<string, string[]> = {
   "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention"],

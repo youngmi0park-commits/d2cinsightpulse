@@ -6,6 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { SentimentResult } from "@/lib/sentiment";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { ProductData } from "@/data/dummyData";
@@ -146,7 +147,7 @@ function getChannelLabels(reviews: { source?: string }[]): string[] {
 
 /** Extract short excerpt from review text */
 function excerpt(text: string, maxLen = 120): string {
-  const clean = text.replace(/\s+/g, " ").trim();
+  const clean = maskCompetitorNames(text.replace(/\s+/g, " ").trim());
   if (clean.length <= maxLen) return clean;
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }

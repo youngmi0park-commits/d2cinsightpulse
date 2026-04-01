@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { classifyRedditPost, type ClassifiedPost } from "@/lib/redditBucketClassifier";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -146,12 +147,12 @@ export function RedditVocPostCards() {
 
                 {/* Title */}
                 {post.title && (
-                  <p className="text-xs font-semibold text-foreground line-clamp-1">{post.title}</p>
+                  <p className="text-xs font-semibold text-foreground line-clamp-1">{maskCompetitorNames(post.title)}</p>
                 )}
 
                 {/* Content */}
                 <p className="text-[11px] text-foreground/80 line-clamp-3 leading-relaxed">
-                  {post.content}
+                  {maskCompetitorNames(post.content)}
                 </p>
 
                 {/* Keywords */}

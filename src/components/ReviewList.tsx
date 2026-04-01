@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import type { Review } from "@/data/dummyData";
 import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
@@ -107,7 +108,7 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
         </div>
       </div>
 
-      <p className={`text-sm leading-relaxed ${review.source === "lge_com" ? "italic text-muted-foreground" : ""}`}>{review.text}</p>
+      <p className={`text-sm leading-relaxed ${review.source === "lge_com" ? "italic text-muted-foreground" : ""}`}>{maskCompetitorNames(review.text)}</p>
 
       {showTranslation && translated && (
         <div className="mt-2 p-3 rounded-md bg-primary/5 border border-primary/20">

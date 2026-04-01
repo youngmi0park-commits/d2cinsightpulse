@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import { classifyRedditPost, generateBucketSummaries, type RedditBucket, type ClassifiedPost, type BucketSummary } from "@/lib/redditBucketClassifier";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -158,14 +159,14 @@ function PostItem({
     <div className="rounded-md bg-background/50 border border-border/50 p-2.5">
       <div className="flex items-start justify-between gap-2 mb-1">
         <span className="text-[11px] font-medium text-foreground line-clamp-1">
-          {post.title || post.content.slice(0, 60) + "…"}
+          {maskCompetitorNames(post.title || post.content.slice(0, 60) + "…")}
         </span>
         <Badge variant="outline" className={`text-[9px] shrink-0 ${style.text} ${style.border}`}>
           {(post.bucketConfidence * 100).toFixed(0)}%
         </Badge>
       </div>
       <p className="text-[10px] text-muted-foreground line-clamp-2 mb-1.5">
-        {post.content.slice(0, 150)}
+        {maskCompetitorNames(post.content.slice(0, 150))}
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <Badge variant="secondary" className="text-[9px] px-1 py-0">
