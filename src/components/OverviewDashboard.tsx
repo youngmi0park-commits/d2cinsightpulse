@@ -67,7 +67,7 @@ interface OverviewData {
 /* ───── Component ───── */
 export function OverviewDashboard() {
   useLang();
-  const navigate = useNavigate();
+  
   const { data: kpis } = useOverviewKPIs();
 
   // AI overview states
