@@ -56,10 +56,15 @@ interface UrgentIssue {
   rank: number; issue: string; mention_pct: number;
   pattern: string; cause: string; related_products: string[];
 }
+interface RecurringPraise {
+  text: string;
+  product?: string;
+  category?: string;
+}
 interface OverviewData {
   top_topics: TopTopic[];
   urgent_issues: UrgentIssue[];
-  recurring_praise: string[];
+  recurring_praise: (string | RecurringPraise)[];
   unmatched_praise: string[];
 }
 
