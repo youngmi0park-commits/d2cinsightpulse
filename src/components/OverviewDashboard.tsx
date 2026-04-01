@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 /* ───── KPI hook ───── */
 function useOverviewKPIs() {
