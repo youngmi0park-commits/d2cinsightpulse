@@ -124,28 +124,6 @@ export function OverviewDashboard() {
         onGenerate={() => generateOverview("reddit")}
       />
 
-      {/* Quick Actions */}
-      <div>
-        <SectionTitle title="MARKETING QUICK ACTIONS" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { icon: Store, label: "LG.com 인사이트", desc: "주간 리포트 · 리뷰 분석", path: "/lgcom", color: "text-primary" },
-            { icon: MessageSquare, label: "Reddit Intelligence", desc: "커뮤니티 VOC · 제품군 분석", path: "/reddit", color: "text-orange-400" },
-            { icon: Wrench, label: "Marketing Asset Studio", desc: "캠페인 카피 · 배너 소재 생성", path: "/toolkit", color: "text-accent-foreground" },
-            { icon: HelpCircle, label: "AI FAQ 생성", desc: "리뷰 기반 FAQ 자동 생성", path: "/faq-gen", color: "text-muted-foreground" },
-          ].map((item) => (
-            <button key={item.path} onClick={() => navigate(item.path)}
-              className="group border border-border rounded-xl bg-card p-4 text-left hover:border-primary/50 hover:shadow-md transition-all">
-              <item.icon className={`h-5 w-5 ${item.color} mb-2`} />
-              <p className="text-xs font-bold text-foreground mb-0.5">{item.label}</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">{item.desc}</p>
-              <div className="flex items-center gap-1 mt-2 text-[9px] text-primary font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                <ArrowRight className="h-3 w-3" /> 바로가기
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
