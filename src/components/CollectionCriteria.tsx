@@ -65,6 +65,7 @@ const criteria: CriteriaItem[] = [
       "🆕 Lazada — Southeast Asia e-commerce platform reviews (SG, MY, PH, TH, ID, VN)",
       "🆕 Reviews.io — Consumer reviews platform (Global, JP, TW, HK)",
       "🆕 ComplaintsBoard — Consumer complaints platform (Global, including Middle East)",
+    ],
     itemsKo: [
       "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지 및 고객 리뷰 (US & UK: Bazaarvoice Conversations API Production 연동)",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
