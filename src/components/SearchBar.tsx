@@ -41,6 +41,10 @@ const quickSearchButtons = [
   { label: "🔊 Audio", query: "Audio" },
   { label: "💻 Laptop", query: "Laptop" },
   { label: "🧺 Dryer", query: "Dryer" },
+  { label: "🍽️ Dishwasher", query: "Dishwasher" },
+  { label: "🧹 Vacuum", query: "Vacuum" },
+  { label: "🌬️ Air Purifier", query: "Air Purifier" },
+  { label: "🍳 Oven & Range", query: "Oven" },
 ];
 
 export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
