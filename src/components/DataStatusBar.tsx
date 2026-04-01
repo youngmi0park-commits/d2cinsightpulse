@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useSourceCounts, useProductStats } from "@/hooks/useProductData";
-import { Database, BarChart3 } from "lucide-react";
+import { Database, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ChannelBadge {
   key: string;
@@ -25,6 +26,7 @@ const CHANNEL_MAP: ChannelBadge[] = [
 ];
 
 export function DataStatusBar() {
+  const [expanded, setExpanded] = useState(false);
   const { data: counts } = useSourceCounts();
   const { data: stats } = useProductStats();
 
@@ -93,58 +95,68 @@ export function DataStatusBar() {
         )}
       </div>
 
-      {/* Detailed breakdown */}
-      <div className="border-t border-border pt-4">
-        <div className="flex items-center gap-2 mb-3">
+      {/* Collapsible detailed breakdown */}
+      <div className="border-t border-border pt-3">
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center gap-2 w-full text-left hover:opacity-80 transition-opacity"
+        >
           <BarChart3 className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs font-semibold text-foreground">채널별 누적 리뷰 수</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {sortedChannels.map((channel) => {
-            const pct = Math.round((channel.count / totalReviews) * 100);
-            const barWidth = Math.max(4, Math.round((channel.count / maxCount) * 100));
-            return (
-              <div key={channel.key} className="flex items-center gap-2 group">
-                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${channel.dotColor}`} />
-                <span className="text-[11px] font-medium text-foreground w-[110px] truncate">
-                  {channel.label}
-                </span>
-                <div className="flex-1 h-4 bg-muted/50 rounded-full overflow-hidden relative">
-                  <div
-                    className={`h-full rounded-full ${channel.dotColor} opacity-70 transition-all`}
-                    style={{ width: `${barWidth}%` }}
-                  />
-                  <span className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-foreground/70">
-                    {channel.count.toLocaleString()}건
+          {expanded ? (
+            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+          )}
+        </button>
+        {expanded && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            {sortedChannels.map((channel) => {
+              const pct = Math.round((channel.count / totalReviews) * 100);
+              const barWidth = Math.max(4, Math.round((channel.count / maxCount) * 100));
+              return (
+                <div key={channel.key} className="flex items-center gap-2 group">
+                  <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${channel.dotColor}`} />
+                  <span className="text-[11px] font-medium text-foreground w-[110px] truncate">
+                    {channel.label}
                   </span>
+                  <div className="flex-1 h-4 bg-muted/50 rounded-full overflow-hidden relative">
+                    <div
+                      className={`h-full rounded-full ${channel.dotColor} opacity-70 transition-all`}
+                      style={{ width: `${barWidth}%` }}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-foreground/70">
+                      {channel.count.toLocaleString()}건
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground w-[32px] text-right">{pct}%</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground w-[32px] text-right">{pct}%</span>
-              </div>
-            );
-          })}
-          {otherEntries.map(([key, count]) => {
-            const pct = Math.round((count / totalReviews) * 100);
-            const barWidth = Math.max(4, Math.round((count / maxCount) * 100));
-            return (
-              <div key={key} className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted-foreground/40" />
-                <span className="text-[11px] font-medium text-foreground w-[110px] truncate">
-                  {key}
-                </span>
-                <div className="flex-1 h-4 bg-muted/50 rounded-full overflow-hidden relative">
-                  <div
-                    className="h-full rounded-full bg-muted-foreground/40 opacity-70"
-                    style={{ width: `${barWidth}%` }}
-                  />
-                  <span className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-foreground/70">
-                    {count.toLocaleString()}건
+              );
+            })}
+            {otherEntries.map(([key, count]) => {
+              const pct = Math.round((count / totalReviews) * 100);
+              const barWidth = Math.max(4, Math.round((count / maxCount) * 100));
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted-foreground/40" />
+                  <span className="text-[11px] font-medium text-foreground w-[110px] truncate">
+                    {key}
                   </span>
+                  <div className="flex-1 h-4 bg-muted/50 rounded-full overflow-hidden relative">
+                    <div
+                      className="h-full rounded-full bg-muted-foreground/40 opacity-70"
+                      style={{ width: `${barWidth}%` }}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-foreground/70">
+                      {count.toLocaleString()}건
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground w-[32px] text-right">{pct}%</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground w-[32px] text-right">{pct}%</span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
