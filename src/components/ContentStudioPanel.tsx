@@ -3,6 +3,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { findTvGuides } from "@/data/tvMarketingGuide";
 import { toast } from "sonner";
 import {
   Copy, Check, Wand2, ShieldCheck, AlertTriangle, CheckCircle2,
