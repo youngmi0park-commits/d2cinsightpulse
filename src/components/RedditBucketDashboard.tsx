@@ -166,7 +166,7 @@ function PostItem({
         </Badge>
       </div>
       <p className="text-[10px] text-muted-foreground line-clamp-2 mb-1.5">
-        {post.content.slice(0, 150)}
+        {maskCompetitorNames(post.content.slice(0, 150))}
       </p>
       <div className="flex items-center gap-1.5 flex-wrap">
         <Badge variant="secondary" className="text-[9px] px-1 py-0">
