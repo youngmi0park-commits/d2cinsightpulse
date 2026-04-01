@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy, AlertTriangle, Swords, DollarSign } from "lucide-react";
+import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy, AlertTriangle, Swords, DollarSign, Languages } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { SentimentResult } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
@@ -143,21 +144,29 @@ function getChannelLabels(reviews: { source?: string }[]): string[] {
   return Array.from(set).sort();
 }
 
-/** Extract short excerpt from review text (15-120 chars) */
+/** Extract short excerpt from review text */
 function excerpt(text: string, maxLen = 120): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= maxLen) return clean;
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }
 
+/** Shorter excerpt for LG.com reviews (summary style) */
+function summaryExcerpt(text: string, source?: string): string {
+  const isLgCom = source?.startsWith("lge_com");
+  return excerpt(text, isLgCom ? 60 : 120);
+}
+
 /** Evidence & Signals section in expanded view */
 function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string }[] }) {
   const { t } = useLang();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [signalTranslations, setSignalTranslations] = useState<Record<number, string>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const channels = getChannelLabels(reviews);
 
-  // Filter reviews by selected channel
   const filteredReviews = selectedChannel
     ? reviews.filter((r) => r.source && sourceLabel(r.source) === selectedChannel)
     : reviews;
@@ -165,7 +174,6 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
   const positiveReviews = filteredReviews.filter((r) => r.sentiment === "positive");
   const negativeReviews = filteredReviews.filter((r) => r.sentiment === "negative");
 
-  // Get channel-specific counts
   const channelCounts = channels.map((ch) => {
     const chReviews = reviews.filter((r) => r.source && sourceLabel(r.source) === ch);
     return {
@@ -176,11 +184,83 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
     };
   });
 
+  /** Batch translate all visible excerpts + signals */
+  const handleTranslateAll = useCallback(async () => {
+    setIsTranslating(true);
+    try {
+      // Collect texts to translate
+      const excerptTexts: { key: string; text: string }[] = [];
+      [...positiveReviews.slice(0, 8), ...negativeReviews.slice(0, 8)].forEach((r, i) => {
+        const key = `${r.sentiment}-${i}`;
+        if (!translations[key]) {
+          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source) });
+        }
+      });
+
+      const signalTexts: { idx: number; text: string }[] = [];
+      sentiment.signals.slice(0, 10).forEach((sig, i) => {
+        if (!signalTranslations[i]) {
+          signalTexts.push({ idx: i, text: sig.evidencePhrase });
+        }
+      });
+
+      // Translate in parallel (batch of up to 5 at a time)
+      const allItems = [
+        ...excerptTexts.map((e) => ({ type: "excerpt" as const, ...e })),
+        ...signalTexts.map((s) => ({ type: "signal" as const, ...s })),
+      ];
+
+      const batchSize = 5;
+      for (let i = 0; i < allItems.length; i += batchSize) {
+        const batch = allItems.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const { data } = await supabase.functions.invoke("translate-review", {
+                body: { text: item.text },
+              });
+              return { ...item, translated: data?.translated || item.text };
+            } catch {
+              return { ...item, translated: item.text };
+            }
+          })
+        );
+
+        const newExcerptTrans: Record<string, string> = {};
+        const newSignalTrans: Record<number, string> = {};
+        for (const r of results) {
+          if (r.type === "excerpt") newExcerptTrans[r.key] = r.translated;
+          else newSignalTrans[r.idx] = r.translated;
+        }
+        setTranslations((prev) => ({ ...prev, ...newExcerptTrans }));
+        setSignalTranslations((prev) => ({ ...prev, ...newSignalTrans }));
+      }
+
+      toast.success(t("Translation complete!", "번역 완료!"));
+    } catch {
+      toast.error(t("Translation failed", "번역 실패"));
+    } finally {
+      setIsTranslating(false);
+    }
+  }, [positiveReviews, negativeReviews, sentiment.signals, translations, signalTranslations, t]);
+
+  const hasTranslations = Object.keys(translations).length > 0 || Object.keys(signalTranslations).length > 0;
+
   return (
     <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
-      <h4 className="text-sm font-bold flex items-center gap-1.5">
-        🔍 {t("Key Evidence & Signals", "핵심 근거 & 시그널")}
-      </h4>
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-bold flex items-center gap-1.5">
+          🔍 {t("Key Evidence & Signals", "핵심 근거 & 시그널")}
+        </h4>
+        <button
+          onClick={handleTranslateAll}
+          disabled={isTranslating}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border border-primary/30 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+        >
+          <Languages className="h-3.5 w-3.5" />
+          {isTranslating ? t("Translating…", "번역 중…") : hasTranslations ? t("Re-translate", "재번역") : t("Translate to Korean", "국문 번역")}
+        </button>
+      </div>
 
       {/* Channel Filter Tabs */}
       {channels.length > 1 && (
@@ -230,16 +310,25 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
           )}
           {positiveReviews.length > 0 ? (
             <div className="space-y-1.5 max-h-40 overflow-y-auto">
-              {positiveReviews.slice(0, 8).map((r, i) => (
-                <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-[#006600]/5 border border-[#006600]/10">
-                  {r.source && (
-                    <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-[#006600]/20">
-                      {sourceLabel(r.source)}
-                    </Badge>
-                  )}
-                  <span className="text-foreground flex-1 leading-relaxed">"{excerpt(r.text)}"</span>
-                </div>
-              ))}
+              {positiveReviews.slice(0, 8).map((r, i) => {
+                const key = `positive-${i}`;
+                const ko = translations[key];
+                return (
+                  <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-[#006600]/5 border border-[#006600]/10">
+                    {r.source && (
+                      <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-[#006600]/20">
+                        {sourceLabel(r.source)}
+                      </Badge>
+                    )}
+                    <div className="flex-1 leading-relaxed space-y-0.5">
+                      {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
+                      <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
+                        "{summaryExcerpt(r.text, r.source)}"
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-[10px] text-muted-foreground italic">{t("No positive reviews in this channel.", "해당 채널에 긍정 리뷰가 없습니다.")}</p>
@@ -263,16 +352,25 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
           )}
           {negativeReviews.length > 0 ? (
             <div className="space-y-1.5 max-h-40 overflow-y-auto">
-              {negativeReviews.slice(0, 8).map((r, i) => (
-                <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-destructive/5 border border-destructive/10">
-                  {r.source && (
-                    <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-destructive/20">
-                      {sourceLabel(r.source)}
-                    </Badge>
-                  )}
-                  <span className="text-foreground flex-1 leading-relaxed">"{excerpt(r.text)}"</span>
-                </div>
-              ))}
+              {negativeReviews.slice(0, 8).map((r, i) => {
+                const key = `negative-${i}`;
+                const ko = translations[key];
+                return (
+                  <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-destructive/5 border border-destructive/10">
+                    {r.source && (
+                      <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-destructive/20">
+                        {sourceLabel(r.source)}
+                      </Badge>
+                    )}
+                    <div className="flex-1 leading-relaxed space-y-0.5">
+                      {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
+                      <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
+                        "{summaryExcerpt(r.text, r.source)}"
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-[10px] text-muted-foreground italic">{t("No negative reviews in this channel.", "해당 채널에 부정 리뷰가 없습니다.")}</p>
@@ -299,17 +397,24 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
         )}
       </div>
 
-      {/* Top signals list */}
+      {/* Top signals list — Korean first, then English original */}
       {sentiment.signals.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[10px] font-semibold text-muted-foreground">{t("Top Sentiment Signals", "주요 감성 시그널")} ({sentiment.signals.length})</p>
           <div className="max-h-48 overflow-y-auto space-y-1">
             {sentiment.signals.slice(0, 10).map((sig, i) => (
               <div key={i} className="flex items-start gap-2 text-[11px] p-1.5 rounded bg-muted/30">
-                <span className={sig.sentiment === "positive" ? "text-[#006600]" : sig.sentiment === "negative" ? "text-destructive" : "text-amber-600"}>
+                <span className={`shrink-0 ${sig.sentiment === "positive" ? "text-[#006600]" : sig.sentiment === "negative" ? "text-destructive" : "text-amber-600"}`}>
                   {sig.sentiment === "positive" ? "👍" : sig.sentiment === "negative" ? "👎" : "➖"}
                 </span>
-                <span className="text-foreground flex-1 italic">"{sig.evidencePhrase}"</span>
+                <div className="flex-1 space-y-0.5">
+                  {signalTranslations[i] && (
+                    <span className="text-foreground font-medium block">"{signalTranslations[i]}"</span>
+                  )}
+                  <span className={`italic block ${signalTranslations[i] ? "text-[10px] text-muted-foreground" : "text-foreground"}`}>
+                    "{sig.evidencePhrase}"
+                  </span>
+                </div>
                 {sig.category && sig.category !== "General" && (
                   <Badge variant="secondary" className="text-[8px] shrink-0">{sig.category}</Badge>
                 )}
@@ -467,8 +572,8 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <SentimentChart sentiment={item.sentiment} />
                 <KeywordCloud keywords={item.sentiment.keywords} />
+                <SentimentChart sentiment={item.sentiment} />
               </div>
 
               {/* 고객 실제 Using Scene */}
