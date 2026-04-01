@@ -126,7 +126,7 @@ const criteria: CriteriaItem[] = [
       "A. Intent + Quantitative: [Brand/Model] + review|ratings|\"verified purchase\" + [feature/issue] + [metric: hours|nits|dB|W|Hz|ms]",
       "B. Pain Point Tracking — TV: burn-in, uniformity, green tint, brightness SDR/HDR | AC: cooling speed, noise dB, Dual Inverter | Monitor: backlight bleed, response time, overshoot, VRR",
       "C. Trust Signals — Amazon/BestBuy: 'Verified Purchase' or helpful votes | Reddit: upvotes | RTINGS: 'test results' or lab measurements",
-      "D. Competitor Comparison — Samsung vs LG, Sony vs LG, switched from, upgrade from, alternative to",
+      "D. Competitor Comparison — SS vs LG, SN vs LG, switched from, upgrade from, alternative to (competitor names shown as initials only)",
       "E. Time Filter — Past 24 hours (default, KST) or since last collection timestamp (dedup)",
       "F. Fallback — If model name is ambiguous, use category + core issue keywords as backup query",
     ],
