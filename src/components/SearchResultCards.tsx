@@ -351,7 +351,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source)}"
+                        "{summaryExcerpt(r.text, r.source, "positive")}"
                       </span>
                     </div>
                   </div>
