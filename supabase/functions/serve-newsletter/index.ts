@@ -108,6 +108,8 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
 function buildNewsletterHTML(d: {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
+  totalReviews: number; productCount: number;
+  channels: { name: string; count: number; color: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string): string {
   const wowColor = d.wow >= 0 ? "#006600" : "#A50034";
   const wowSign = d.wow >= 0 ? "+" : "";
@@ -203,22 +205,40 @@ function buildNewsletterHTML(d: {
 <table cellpadding="0" cellspacing="0" border="0" width="680" style="background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
 <!-- Header -->
-<tr><td style="background:#A50034;padding:28px 28px 24px;text-align:center;">
+<tr><td style="background:#A50034;padding:28px 28px 20px;text-align:center;">
   <div style="font-family:Inter,'Apple SD Gothic Neo',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">D2C Insight Pulse</div>
   <div style="font-family:Inter,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);font-style:italic;margin-top:2px;">Weekly Insight Report</div>
-  <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.2);">
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);">
+    <div style="font-size:11px;color:rgba(255,255,255,0.9);line-height:1.7;max-width:520px;margin:0 auto;">
+      <strong style="color:#fff;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong><br/>
+      D2C Insight Pulse는 LG.com과 Reddit 등 주요 채널의 실사용자 리뷰를 깊이 있게 분석합니다.<br/>
+      방대한 데이터 속 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 최적의 마케팅 메시지를 제공하는 데이터 플랫폼입니다.
+    </div>
+  </div>
+  <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
     <div style="font-size:12px;color:rgba(255,255,255,0.85);">${d.dateRange}</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Generated: ${d.generatedAt}</div>
   </div>
 </td></tr>
 
-<!-- Weekly KPI (minimized) -->
-<tr><td style="padding:20px 28px 0;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:16px 20px;text-align:center;">
-      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">이번 주 수집 리뷰</div>
-      <div style="font-size:32px;font-weight:800;color:#1a1a1a;margin:4px 0;font-family:Inter,sans-serif;">${d.weeklyReviews.toLocaleString()}<span style="font-size:14px;color:#888;font-weight:400;">건</span></div>
-      <div style="font-size:12px;color:${wowColor};font-weight:700;">${wowSign}${d.wow}% vs 전주</div>
+<!-- Data Status Bar -->
+<tr><td style="padding:16px 28px 0;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
+    <tr><td style="padding:12px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:700;color:#333;">📊 데이터 수집 통합 현황</td>
+        <td style="text-align:right;font-size:11px;color:#666;">
+          총 <strong style="color:#1a1a1a;font-size:13px;">${d.totalReviews.toLocaleString()}</strong>건 · <span style="color:#888;">${d.productCount.toLocaleString()}개 제품</span>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:0 16px 12px;">
+      <table cellpadding="0" cellspacing="0" border="0"><tr>${d.channels.map(ch => {
+        if (ch.name === "LG.com") {
+          return `<td style="padding:0 4px;"><div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+        }
+        return `<td style="padding:0 4px;"><div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+      }).join("")}</tr></table>
     </td></tr>
   </table>
 </td></tr>
@@ -307,18 +327,43 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} ~ ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-    const [weeklyRes, lastWeekRes] = await Promise.all([
+    const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }),
+      sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
     ]);
 
     const wow = (lastWeekRes.count || 0) > 0
       ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100)
       : 0;
 
+    // Source counts for channel bar
+    const { data: sourceCounts } = await sb.rpc("get_source_counts");
+    const CHANNEL_COLORS: Record<string, { label: string; color: string }> = {
+      lge_com: { label: "LG.com", color: "#A50034" },
+      reddit: { label: "Reddit", color: "#FF4500" },
+      trustpilot: { label: "Trustpilot", color: "#00B67A" },
+      youtube: { label: "YouTube", color: "#FF0000" },
+      consumer_reports: { label: "Consumer Reports", color: "#0066CC" },
+      amazon: { label: "Amazon", color: "#FF9900" },
+    };
+    const sortedSources = (sourceCounts || []).sort((a: any, b: any) => b.count - a.count);
+    const topChannels = sortedSources.slice(0, 6).map((s: any) => {
+      const cfg = CHANNEL_COLORS[s.source] || { label: s.source, color: "#888" };
+      return { name: cfg.label, count: s.count, color: cfg.color };
+    });
+    const otherCount = sortedSources.slice(6).reduce((sum: number, s: any) => sum + s.count, 0);
+    if (otherCount > 0) {
+      topChannels.push({ name: `+${sortedSources.length - 6}개 채널`, count: otherCount, color: "#999" });
+    }
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
+      totalReviews: totalRes.count || 0,
+      productCount: productRes.count || 0,
+      channels: topChannels,
     };
 
     // ── Generate AI insights (parallel) ──
