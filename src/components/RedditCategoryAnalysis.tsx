@@ -1,13 +1,14 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Tv, Refrigerator, WashingMachine, Smartphone, Speaker,
-  ChevronDown, ChevronUp, Monitor,
+  Tv, Refrigerator, WashingMachine, Speaker,
+  ChevronDown, ChevronUp, Monitor, Wind, CookingPot, Sparkles, Fan,
   ThumbsUp, ThumbsDown, LayoutGrid
 } from "lucide-react";
 
@@ -17,6 +18,9 @@ type CategoryKey =
   | "washer"
   | "dryer"
   | "dishwasher"
+  | "vacuum"
+  | "air_purifier"
+  | "oven"
   | "audio"
   | "monitor";
 
@@ -62,8 +66,29 @@ const CATEGORIES: CategoryDef[] = [
     key: "dishwasher",
     label: "식기세척기",
     subLabel: "QuadWash · TrueSteam",
-    icon: Monitor,
-    keywords: ["dishwasher", "dish", "quadwash"],
+    icon: Sparkles,
+    keywords: ["dishwasher", "dish", "quadwash", "truesteam"],
+  },
+  {
+    key: "vacuum",
+    label: "청소기",
+    subLabel: "CordZero · All-in-One Tower",
+    icon: Wind,
+    keywords: ["vacuum", "cordzero", "cord zero", "cordless", "robot vacuum", "stick vacuum", "all-in-one tower", "a9", "r9"],
+  },
+  {
+    key: "air_purifier",
+    label: "공기청정기",
+    subLabel: "PuriCare · 에어로타워",
+    icon: Fan,
+    keywords: ["air purifier", "puricare", "purifier", "aerotower", "aero tower", "air quality", "hepa", "dehumidifier"],
+  },
+  {
+    key: "oven",
+    label: "오븐 · 레인지",
+    subLabel: "InstaView · ProBake · 전자레인지",
+    icon: CookingPot,
+    keywords: ["oven", "range", "microwave", "probake", "convection", "stove", "cooktop", "induction"],
   },
   {
     key: "audio",
@@ -76,7 +101,7 @@ const CATEGORIES: CategoryDef[] = [
     key: "monitor",
     label: "모니터",
     subLabel: "UltraGear · UltraWide",
-    icon: Smartphone,
+    icon: Monitor,
     keywords: ["monitor", "ultragear", "ultrawide", "gaming monitor"],
   },
 ];
@@ -129,12 +154,12 @@ export function RedditCategoryAnalysis() {
       const cat = classifyToCategory(combined);
       if (!cat) return;
       result[cat].total++;
-      if (r.sentiment === "positive") {
-        result[cat].positive++;
-        if (result[cat].posSnippets.length < 5) result[cat].posSnippets.push(r.content.slice(0, 150));
-      } else if (r.sentiment === "negative") {
-        result[cat].negative++;
-        if (result[cat].negSnippets.length < 5) result[cat].negSnippets.push(r.content.slice(0, 150));
+        if (r.sentiment === "positive") {
+          result[cat].positive++;
+          if (result[cat].posSnippets.length < 5) result[cat].posSnippets.push(maskCompetitorNames(r.content.slice(0, 150)));
+        } else if (r.sentiment === "negative") {
+          result[cat].negative++;
+          if (result[cat].negSnippets.length < 5) result[cat].negSnippets.push(maskCompetitorNames(r.content.slice(0, 150)));
       }
     });
 
