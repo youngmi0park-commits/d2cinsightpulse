@@ -134,7 +134,7 @@ const criteria: CriteriaItem[] = [
       "A. 의도형 + 정량형 결합: [브랜드/모델] + review|ratings|\"verified purchase\" + [기능/이슈] + [정량 키워드: hours|nits|dB|W|Hz|ms]",
       "B. Pain Point 추적 — TV: burn-in, uniformity, green tint, brightness SDR/HDR | AC: cooling speed, noise dB, Dual Inverter | 모니터: backlight bleed, response time, overshoot, VRR",
       "C. 신뢰도 시그널 — Amazon/BestBuy: 'Verified Purchase' 또는 helpful votes | Reddit: upvotes | RTINGS: 'test results' 또는 lab measurements",
-      "D. 경쟁사 비교 — Samsung vs LG, Sony vs LG, switched from, upgrade from, alternative to",
+      "D. 경쟁사 비교 — SS vs LG, SN vs LG, switched from, upgrade from, alternative to (경쟁사명은 이니셜로만 표기)",
       "E. 기간 필터 — 최근 24시간 (기본, KST) 또는 마지막 수집 시각 이후만 (중복 방지)",
       "F. 폴백 — 모델명이 모호할 때 카테고리 + 핵심 이슈 키워드만으로 백오프 쿼리",
     ],
