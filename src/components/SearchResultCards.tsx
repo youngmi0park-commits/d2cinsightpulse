@@ -153,7 +153,7 @@ function excerpt(text: string, maxLen = 120): string {
 
 /** Extract key phrases from text for keyword-style summary */
 function extractKeyPhrases(text: string): string[] {
-  const clean = text.replace(/\s+/g, " ").trim().toLowerCase();
+  const lower = text.replace(/\s+/g, " ").trim().toLowerCase();
   const patterns = [
     /(?:love|great|excellent|amazing|perfect|best|good|nice|awesome|fantastic|beautiful|impressive|solid|quality|easy|smooth|clear|bright|fast|quiet|efficient|reliable|convenient|comfortable|worth|recommend|happy|pleased|satisfied)\s+\w+/gi,
     /(?:poor|bad|worst|terrible|horrible|disappointing|broken|defective|loud|slow|dim|cheap|flimsy|difficult|complicated|unreliable|frustrating|annoying|regret|waste|issue|problem|fail|crack|leak|noise|error|glitch|bug|malfunction)\s*\w*/gi,
