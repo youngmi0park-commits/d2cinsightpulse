@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSourceCounts } from "@/hooks/useProductData";
 import { Copy, Check, Eye, Code, Loader2, Rocket, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,25 +10,28 @@ import { toast } from "sonner";
 import { format, subDays } from "date-fns";
 
 /* ───── Types ───── */
-interface TopTopic { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[]; }
-interface UrgentIssue { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[]; }
-interface ProductMention { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[]; }
-interface ChannelInsight {
-  top_products: ProductMention[];
-  top_topics: TopTopic[];
-  urgent_issues: UrgentIssue[];
-  recurring_praise: string[];
-}
-
 interface NewsletterData {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
+  totalReviews: number; productCount: number;
+  channels: { name: string; count: number; color: string }[];
 }
+
+/* ───── Channel color map ───── */
+const CHANNEL_COLORS: Record<string, { label: string; color: string; dot: string }> = {
+  lge_com: { label: "LG.com", color: "#A50034", dot: "#A50034" },
+  reddit: { label: "Reddit", color: "#FF4500", dot: "#FF4500" },
+  trustpilot: { label: "Trustpilot", color: "#00B67A", dot: "#00B67A" },
+  youtube: { label: "YouTube", color: "#FF0000", dot: "#FF0000" },
+  consumer_reports: { label: "Consumer Reports", color: "#0066CC", dot: "#0066CC" },
+  amazon: { label: "Amazon", color: "#FF9900", dot: "#FF9900" },
+};
 
 /* ───── Data hook ───── */
 function useNewsletterData() {
+  const { data: sourceCounts } = useSourceCounts();
   return useQuery({
-    queryKey: ["newsletter-v5"],
+    queryKey: ["newsletter-v6", sourceCounts],
     queryFn: async () => {
       const now = new Date();
       const weekAgo = subDays(now, 7);
@@ -35,24 +39,76 @@ function useNewsletterData() {
       const dateRange = `${format(weekAgo, "yyyy.MM.dd")} ~ ${format(now, "yyyy.MM.dd")}`;
       const generatedAt = format(now, "yyyy.MM.dd HH:mm");
 
-      const [weeklyRes, lastWeekRes] = await Promise.all([
+      const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }),
+        supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
       ]);
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
 
-      return { dateRange, generatedAt, weeklyReviews: weeklyRes.count || 0, wow } as NewsletterData;
+      // Build channel list from source counts
+      const entries = Object.entries(sourceCounts || {}).sort((a, b) => b[1] - a[1]);
+      const topChannels = entries.slice(0, 6).map(([src, cnt]) => {
+        const cfg = CHANNEL_COLORS[src] || { label: src, color: "#888", dot: "#888" };
+        return { name: cfg.label, count: cnt, color: cfg.dot };
+      });
+      const otherCount = entries.slice(6).reduce((sum, [, cnt]) => sum + cnt, 0);
+      const otherChannelCount = entries.length - 6;
+      if (otherCount > 0) {
+        topChannels.push({ name: `+${otherChannelCount}개 채널`, count: otherCount, color: "#999" });
+      }
+
+      return {
+        dateRange, generatedAt,
+        weeklyReviews: weeklyRes.count || 0, wow,
+        totalReviews: totalRes.count || 0,
+        productCount: productRes.count || 0,
+        channels: topChannels,
+      } as NewsletterData;
     },
     staleTime: 60_000,
   });
 }
 
+/* ───── Data bar HTML helper ───── */
+function dataBarHTML(d: NewsletterData): string {
+  const channelBadges = d.channels.map(ch => {
+    const isLgcom = ch.name === "LG.com";
+    if (isLgcom) {
+      return `<td style="padding:0 4px;">
+        <div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div>
+      </td>`;
+    }
+    return `<td style="padding:0 4px;">
+      <div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}
+      </div>
+    </td>`;
+  }).join("");
+
+  return `
+  <tr><td style="padding:16px 28px 0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
+      <tr><td style="padding:12px 16px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td style="font-size:12px;font-weight:700;color:#333;">📊 데이터 수집 통합 현황</td>
+          <td style="text-align:right;font-size:11px;color:#666;">
+            총 <strong style="color:#1a1a1a;font-size:13px;">${d.totalReviews.toLocaleString()}</strong>건 · <span style="color:#888;">${d.productCount.toLocaleString()}개 제품</span>
+          </td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:0 16px 12px;">
+        <table cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
+      </td></tr>
+    </table>
+  </td></tr>`;
+}
+
 /* ───── HTML Generator (preview fallback — no AI) ───── */
 function generatePreviewHTML(d: NewsletterData): string {
   const BASE_URL = window.location.origin;
-  const wowColor = d.wow >= 0 ? "#006600" : "#A50034";
-  const wowSign = d.wow >= 0 ? "+" : "";
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -65,28 +121,27 @@ function generatePreviewHTML(d: NewsletterData): string {
 <table cellpadding="0" cellspacing="0" border="0" width="680" style="background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
 <!-- Header -->
-<tr><td style="background:#A50034;padding:28px 28px 24px;text-align:center;">
+<tr><td style="background:#A50034;padding:28px 28px 20px;text-align:center;">
   <div style="font-family:Inter,'Apple SD Gothic Neo',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">D2C Insight Pulse</div>
   <div style="font-family:Inter,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);font-style:italic;margin-top:2px;">Weekly Insight Report</div>
-  <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.2);">
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);">
+    <div style="font-size:11px;color:rgba(255,255,255,0.9);line-height:1.7;max-width:520px;margin:0 auto;">
+      <strong style="color:#fff;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong><br/>
+      D2C Insight Pulse는 LG.com과 Reddit 등 주요 채널의 실사용자 리뷰를 깊이 있게 분석합니다.<br/>
+      방대한 데이터 속 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 최적의 마케팅 메시지를 제공하는 데이터 플랫폼입니다.
+    </div>
+  </div>
+  <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
     <div style="font-size:12px;color:rgba(255,255,255,0.85);">${d.dateRange}</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Generated: ${d.generatedAt}</div>
   </div>
 </td></tr>
 
-<!-- Weekly KPI -->
-<tr><td style="padding:20px 28px 0;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:16px 20px;text-align:center;">
-      <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">이번 주 수집 리뷰</div>
-      <div style="font-size:32px;font-weight:800;color:#1a1a1a;margin:4px 0;font-family:Inter,sans-serif;">${d.weeklyReviews.toLocaleString()}<span style="font-size:14px;color:#888;font-weight:400;">건</span></div>
-      <div style="font-size:12px;color:${wowColor};font-weight:700;">${wowSign}${d.wow}% vs 전주</div>
-    </td></tr>
-  </table>
-</td></tr>
+<!-- Data Status Bar -->
+${dataBarHTML(d)}
 
 <!-- Placeholder for AI insights -->
-<tr><td style="padding:24px 28px;">
+<tr><td style="padding:20px 28px;">
   <div style="text-align:center;padding:40px 20px;color:#999;font-size:13px;border:1.5px dashed #E0DBD3;border-radius:10px;background:#F7F4EF;">
     🚀 <strong>원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
   </div>
