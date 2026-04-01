@@ -124,29 +124,160 @@ function UsageSceneSection({ scenes }: { scenes: string[] }) {
   );
 }
 
+/** Normalize source string to display label */
+function sourceLabel(source: string): string {
+  if (source.startsWith("reddit")) return "Reddit";
+  if (source.startsWith("youtube")) return "YouTube";
+  if (source.startsWith("lge_com")) return "LG.com";
+  if (source.startsWith("amazon")) return "Amazon";
+  if (source.startsWith("bestbuy")) return "BestBuy";
+  return source;
+}
+
+/** Get unique channel labels from reviews */
+function getChannelLabels(reviews: { source?: string }[]): string[] {
+  const set = new Set<string>();
+  for (const r of reviews) {
+    if (r.source) set.add(sourceLabel(r.source));
+  }
+  return Array.from(set).sort();
+}
+
+/** Extract short excerpt from review text (15-120 chars) */
+function excerpt(text: string, maxLen = 120): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
+}
+
 /** Evidence & Signals section in expanded view */
-function EvidenceSignalsSection({ sentiment }: { sentiment: SentimentResult }) {
+function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string }[] }) {
   const { t } = useLang();
+  const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
+
+  const channels = getChannelLabels(reviews);
+
+  // Filter reviews by selected channel
+  const filteredReviews = selectedChannel
+    ? reviews.filter((r) => r.source && sourceLabel(r.source) === selectedChannel)
+    : reviews;
+
+  const positiveReviews = filteredReviews.filter((r) => r.sentiment === "positive");
+  const negativeReviews = filteredReviews.filter((r) => r.sentiment === "negative");
+
+  // Get channel-specific counts
+  const channelCounts = channels.map((ch) => {
+    const chReviews = reviews.filter((r) => r.source && sourceLabel(r.source) === ch);
+    return {
+      label: ch,
+      total: chReviews.length,
+      positive: chReviews.filter((r) => r.sentiment === "positive").length,
+      negative: chReviews.filter((r) => r.sentiment === "negative").length,
+    };
+  });
+
   return (
     <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
       <h4 className="text-sm font-bold flex items-center gap-1.5">
         🔍 {t("Key Evidence & Signals", "핵심 근거 & 시그널")}
       </h4>
 
-      {/* Top evidence phrases */}
+      {/* Channel Filter Tabs */}
+      {channels.length > 1 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => setSelectedChannel(null)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+              selectedChannel === null
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-muted/50 text-muted-foreground border-border hover:border-primary/40"
+            }`}
+          >
+            {t("All Channels", "전체 채널")} ({reviews.length})
+          </button>
+          {channelCounts.map((ch) => (
+            <button
+              key={ch.label}
+              onClick={() => setSelectedChannel(ch.label === selectedChannel ? null : ch.label)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+                selectedChannel === ch.label
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted/50 text-muted-foreground border-border hover:border-primary/40"
+              }`}
+            >
+              {ch.label} ({ch.total})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Positive / Negative Comment Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {sentiment.topPositivePhrase && (
-          <div className="p-3 rounded-lg border border-[#006600]/20 bg-[#006600]/5">
-            <p className="text-[10px] font-semibold text-[#006600] mb-1">👍 {t("Top Positive Evidence", "핵심 긍정 근거")}</p>
-            <p className="text-xs text-foreground italic">"{sentiment.topPositivePhrase}"</p>
+        {/* Positive Summary */}
+        <div className="p-4 rounded-lg border border-[#006600]/20 bg-[#006600]/5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-bold text-[#006600] flex items-center gap-1">
+              👍 {t("Positive Summary", "긍정 코멘트 요약")}
+            </p>
+            <Badge variant="secondary" className="text-[9px] h-4">
+              {positiveReviews.length}{t(" reviews", "건")}
+            </Badge>
           </div>
-        )}
-        {sentiment.topNegativePhrase && (
-          <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5">
-            <p className="text-[10px] font-semibold text-destructive mb-1">👎 {t("Top Negative Evidence", "핵심 부정 근거")}</p>
-            <p className="text-xs text-foreground italic">"{sentiment.topNegativePhrase}"</p>
+          {sentiment.topPositivePhrase && (
+            <p className="text-xs text-foreground font-medium border-l-2 border-[#006600]/30 pl-2 italic">
+              "{sentiment.topPositivePhrase}"
+            </p>
+          )}
+          {positiveReviews.length > 0 ? (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {positiveReviews.slice(0, 8).map((r, i) => (
+                <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-[#006600]/5 border border-[#006600]/10">
+                  {r.source && (
+                    <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-[#006600]/20">
+                      {sourceLabel(r.source)}
+                    </Badge>
+                  )}
+                  <span className="text-foreground flex-1 leading-relaxed">"{excerpt(r.text)}"</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic">{t("No positive reviews in this channel.", "해당 채널에 긍정 리뷰가 없습니다.")}</p>
+          )}
+        </div>
+
+        {/* Negative Summary */}
+        <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-bold text-destructive flex items-center gap-1">
+              👎 {t("Negative Summary", "부정 코멘트 요약")}
+            </p>
+            <Badge variant="secondary" className="text-[9px] h-4">
+              {negativeReviews.length}{t(" reviews", "건")}
+            </Badge>
           </div>
-        )}
+          {sentiment.topNegativePhrase && (
+            <p className="text-xs text-foreground font-medium border-l-2 border-destructive/30 pl-2 italic">
+              "{sentiment.topNegativePhrase}"
+            </p>
+          )}
+          {negativeReviews.length > 0 ? (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {negativeReviews.slice(0, 8).map((r, i) => (
+                <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-destructive/5 border border-destructive/10">
+                  {r.source && (
+                    <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-destructive/20">
+                      {sourceLabel(r.source)}
+                    </Badge>
+                  )}
+                  <span className="text-foreground flex-1 leading-relaxed">"{excerpt(r.text)}"</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic">{t("No negative reviews in this channel.", "해당 채널에 부정 리뷰가 없습니다.")}</p>
+          )}
+        </div>
       </div>
 
       {/* Flags row */}
