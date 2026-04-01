@@ -6,6 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { SentimentResult } from "@/lib/sentiment";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { ProductData } from "@/data/dummyData";
