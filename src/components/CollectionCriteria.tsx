@@ -516,8 +516,8 @@ export const CollectionCriteria = () => {
         </div>
         <p className="text-sm text-muted-foreground mb-6">
           {t(
-            "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. Top 10 countries were selected by combining Reddit user counts (WorldPopulationReview), English usage proportion, and lg.com traffic (SimilarWeb).",
-            "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수(WorldPopulationReview), 영어 사용 비중, lg.com 트래픽(SimilarWeb)을 종합하여 상위 10개국을 선정하였습니다."
+            "This dashboard provides sentiment analysis and marketing insights based on data collected according to the criteria below. 20+ countries selected by combining Reddit user counts, e-commerce platform activity (Shopee/Lazada/Amazon), and lg.com traffic. Asia expansion includes JP, SG, MY, ID, TH, PH, VN, TW, HK, IN, and Middle East.",
+            "본 대시보드는 아래 기준에 따라 수집된 데이터를 기반으로 감성 분석 및 마케팅 인사이트를 제공합니다. Reddit 국가별 사용자 수, 이커머스 플랫폼 활동량(Shopee/Lazada/Amazon), lg.com 트래픽을 종합하여 20개국 이상을 선정하였습니다. 아시아 확장: 일본, 싱가포르, 말레이시아, 인도네시아, 태국, 필리핀, 베트남, 대만, 홍콩, 인도, 중동."
           )}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
