@@ -147,7 +147,7 @@ export function RedditVocPostCards() {
 
                 {/* Title */}
                 {post.title && (
-                  <p className="text-xs font-semibold text-foreground line-clamp-1">{post.title}</p>
+                  <p className="text-xs font-semibold text-foreground line-clamp-1">{maskCompetitorNames(post.title)}</p>
                 )}
 
                 {/* Content */}
