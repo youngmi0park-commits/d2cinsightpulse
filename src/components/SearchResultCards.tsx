@@ -143,11 +143,17 @@ function getChannelLabels(reviews: { source?: string }[]): string[] {
   return Array.from(set).sort();
 }
 
-/** Extract short excerpt from review text (15-120 chars) */
+/** Extract short excerpt from review text */
 function excerpt(text: string, maxLen = 120): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= maxLen) return clean;
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
+}
+
+/** Shorter excerpt for LG.com reviews (summary style) */
+function summaryExcerpt(text: string, source?: string): string {
+  const isLgCom = source?.startsWith("lge_com");
+  return excerpt(text, isLgCom ? 60 : 120);
 }
 
 /** Evidence & Signals section in expanded view */
