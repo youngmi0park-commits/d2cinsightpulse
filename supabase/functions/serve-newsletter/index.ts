@@ -286,6 +286,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const format = body.format || "html"; // "html" | "json"
     const baseUrl = body.baseUrl || "https://d2cinsightpulse.lovable.app";
+    const sendTo = body.sendTo || null; // email address for test send
 
     // ── Gather newsletter data ──
     const now = new Date();
