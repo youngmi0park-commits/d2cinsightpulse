@@ -220,14 +220,18 @@ const criteria: CriteriaItem[] = [
     titleEn: "Selection Logic",
     titleKo: "선정 로직",
     itemsEn: [
-      "Primary metric: Reddit annual users by country (WorldPopulationReview)",
-      "Weighting: English-speaking proportion (English-speaking countries ↑, non-English English activity included)",
+      "Primary metric: Reddit annual users by country (WorldPopulationReview) + e-commerce platform activity",
+      "Weighting: English-speaking proportion + Asia e-commerce penetration (Shopee/Lazada market share)",
       "Verification: lg.com traffic distribution for CE interest validation (SimilarWeb)",
+      "🆕 Asia expansion: Shopee/Lazada GMV rankings, Amazon JP market share, YouTube regional channel engagement",
+      "🆕 Middle East: ComplaintsBoard activity for Iraq/GCC region coverage",
     ],
     itemsKo: [
-      "1차 지표: Reddit 국가별 연간 사용자 수 (WorldPopulationReview)",
-      "가중치: 영어권/영문 사용 비중 (영어권 국가 ↑, 비영어권 영문 활동 포함)",
+      "1차 지표: Reddit 국가별 연간 사용자 수 (WorldPopulationReview) + 이커머스 플랫폼 활동량",
+      "가중치: 영어권/영문 사용 비중 + 아시아 이커머스 침투율 (Shopee/Lazada 시장점유율)",
       "보조 확인: lg.com 트래픽 분포로 CE 관심도 검증 (SimilarWeb)",
+      "🆕 아시아 확장: Shopee/Lazada GMV 순위, Amazon JP 점유율, YouTube 지역 채널 참여도",
+      "🆕 중동: 이라크/GCC 지역 ComplaintsBoard 활동 기반",
     ],
   },
   {
@@ -237,6 +241,8 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "⏰ Automated daily collection at 07:00 AM KST (22:00 UTC) via pg_cron scheduled job",
       "📦 collect-reviews runs at 07:00 KST → collect-youtube-comments follows at 07:05 KST",
+      "🆕 collect-asian-reviews runs at 07:10 KST → Firecrawl-based scraping for Shopee/Lazada/Reviews.io/ComplaintsBoard",
+      "🆕 LG.com review collection: Bazaarvoice API (US & UK) — No date restriction, all categories, daily incremental",
       "Trending dashboard updates automatically after each collection cycle (same timing)",
       "Weekly aggregation period: Last 7 days rolling window for trend snapshots & keywords",
       "Based on last 12 months data for long-term analysis (rolling update)",
@@ -245,6 +251,8 @@ const criteria: CriteriaItem[] = [
     itemsKo: [
       "⏰ 매일 오전 7:00 KST (UTC 22:00)에 pg_cron 스케줄링으로 자동 일괄 수집",
       "📦 collect-reviews 07:00 KST 실행 → collect-youtube-comments 07:05 KST 후속 실행",
+      "🆕 collect-asian-reviews 07:10 KST 실행 → Shopee/Lazada/Reviews.io/ComplaintsBoard Firecrawl 기반 스크래핑",
+      "🆕 LG.com 리뷰 수집: Bazaarvoice API (US & UK) — 작성시점 제한 없음, 전 카테고리, 매일 증분 수집",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
       "주간 집계 기간: 최근 7일 롤링 윈도우 기준 트렌드 스냅샷 및 키워드 추출",
       "장기 분석을 위한 최근 12개월 데이터 기준 (롤링 업데이트)",
