@@ -105,7 +105,7 @@ const criteria: CriteriaItem[] = [
       "1️⃣ Product Name · Model: Official names + abbreviations + shorthand (e.g., LG Gram, Gram16, G16, OLED C4, UltraGear, WashTower, StanbyME)",
       "2️⃣ Feature · Spec: battery, heat, performance, picture quality, brightness, weight, firmware, bug, stuttering, noise, energy efficiency, HDR, refresh rate, burn-in",
       "3️⃣ Sentiment · Attitude: Positive (recommend, satisfied, impressive, must-have) / Negative (disappointed, refund, defective, avoid) / Mixed (expensive but good, great except for)",
-      "4️⃣ Comparison · Alternative: better than, switched from, alternative to, Samsung vs LG, upgrade from, do not recommend",
+      "4️⃣ Comparison · Alternative: better than, switched from, alternative to, SS vs LG, upgrade from, do not recommend",
       "5️⃣ Problem · Desire: wish it had, needs improvement, fix this, missing feature, deal breaker, frustrating",
       "All keywords are standardized in English regardless of source language",
     ],
