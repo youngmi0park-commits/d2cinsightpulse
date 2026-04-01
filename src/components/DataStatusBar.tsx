@@ -26,6 +26,7 @@ const CHANNEL_MAP: ChannelBadge[] = [
 ];
 
 export function DataStatusBar() {
+  const [expanded, setExpanded] = useState(false);
   const { data: counts } = useSourceCounts();
   const { data: stats } = useProductStats();
 
