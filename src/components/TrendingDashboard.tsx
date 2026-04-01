@@ -232,13 +232,15 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
       `🏆 주간 언급량 TOP 3: ${top3.map((p, i) => `${i + 1}위 ${p.displayName} (${p.mentions.toLocaleString()}건)`).join(", ")}`
     ) : "",
     posKeywords.length > 0 ? t(
-      `👍 Positive Keywords TOP 3: ${formatKwList(posKeywords)}`,
-      `👍 긍정 키워드 TOP 3: ${formatKwList(posKeywords)}`
+      `👍 Positive Keywords TOP 3: ${posKeywords.map(kw => `"${kw.keyword}"`).join(", ")}`,
+      `👍 긍정 키워드 TOP 3: ${posKeywords.map(kw => `"${kw.keyword}"`).join(", ")}`
     ) : "",
+    posKeywords.length > 0 ? `   └ ${posKeywords.map(kw => `${kw.keyword}: ${kw.count}건 언급`).join(" · ")}` : "",
     negKeywords.length > 0 ? t(
-      `⚠️ Negative Keywords TOP 3: ${formatKwList(negKeywords)}`,
-      `⚠️ 부정 키워드 TOP 3: ${formatKwList(negKeywords)}`
+      `⚠️ Negative Keywords TOP 3: ${negKeywords.map(kw => `"${kw.keyword}"`).join(", ")}`,
+      `⚠️ 부정 키워드 TOP 3: ${negKeywords.map(kw => `"${kw.keyword}"`).join(", ")}`
     ) : "",
+    negKeywords.length > 0 ? `   └ ${negKeywords.map(kw => `${kw.keyword}: ${kw.count}건 언급`).join(" · ")}` : "",
   ].filter(Boolean) : [
     collectionStatusLine,
     t(
