@@ -361,6 +361,13 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_country_counts: {
+        Args: never
+        Returns: {
+          count: number
+          country: string
+        }[]
+      }
       get_lgcom_country_counts: {
         Args: never
         Returns: {

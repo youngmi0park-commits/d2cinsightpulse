@@ -165,6 +165,24 @@ export function useSourceCounts() {
   });
 }
 
+// Fetch review counts grouped by country
+export function useCountryCounts() {
+  return useQuery({
+    queryKey: ["country-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_country_counts" as any);
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      for (const row of (data || []) as { country: string; count: number }[]) {
+        counts[row.country] = row.count;
+      }
+      return counts;
+    },
+    staleTime: 60_000,
+  });
+}
+
 // Fetch all products summary (for landing page stats)
 export function useProductStats() {
   return useQuery({

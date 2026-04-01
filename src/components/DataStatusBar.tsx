@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSourceCounts, useProductStats } from "@/hooks/useProductData";
-import { Database, BarChart3, ChevronDown, ChevronUp } from "lucide-react";
+import { useSourceCounts, useProductStats, useCountryCounts } from "@/hooks/useProductData";
+import { Database, BarChart3, ChevronDown, ChevronUp, Globe } from "lucide-react";
 
 interface ChannelBadge {
   key: string;
@@ -15,6 +15,10 @@ const CHANNEL_MAP: ChannelBadge[] = [
   { key: "trustpilot", label: "Trustpilot", dotColor: "bg-yellow-400", bgColor: "bg-yellow-400/10" },
   { key: "youtube", label: "YouTube", dotColor: "bg-blue-500", bgColor: "bg-blue-500/10" },
   { key: "amazon", label: "Amazon", dotColor: "bg-amber-600", bgColor: "bg-amber-600/10" },
+  { key: "shopee", label: "Shopee", dotColor: "bg-orange-500", bgColor: "bg-orange-500/10" },
+  { key: "lazada", label: "Lazada", dotColor: "bg-blue-600", bgColor: "bg-blue-600/10" },
+  { key: "reviews_io", label: "Reviews.io", dotColor: "bg-cyan-500", bgColor: "bg-cyan-500/10" },
+  { key: "complaintsboard", label: "ComplaintsBoard", dotColor: "bg-rose-500", bgColor: "bg-rose-500/10" },
   { key: "bestreviews", label: "BestReviews", dotColor: "bg-emerald-500", bgColor: "bg-emerald-500/10" },
   { key: "houzz", label: "Houzz", dotColor: "bg-green-600", bgColor: "bg-green-600/10" },
   { key: "consumeraffairs", label: "ConsumerAffairs", dotColor: "bg-sky-500", bgColor: "bg-sky-500/10" },
@@ -23,12 +27,22 @@ const CHANNEL_MAP: ChannelBadge[] = [
   { key: "pcmag", label: "PCMag", dotColor: "bg-indigo-500", bgColor: "bg-indigo-500/10" },
   { key: "soundguys", label: "SoundGuys", dotColor: "bg-pink-500", bgColor: "bg-pink-500/10" },
   { key: "consumer_reports", label: "Consumer Reports", dotColor: "bg-teal-500", bgColor: "bg-teal-500/10" },
+  { key: "web_review", label: "Web Review", dotColor: "bg-gray-500", bgColor: "bg-gray-500/10" },
 ];
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩",
+  TH: "🇹🇭", PH: "🇵🇭", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
+  Global: "🌐", Other: "🔹",
+};
 
 export function DataStatusBar() {
   const [expanded, setExpanded] = useState(false);
+  const [countryExpanded, setCountryExpanded] = useState(false);
   const { data: counts } = useSourceCounts();
   const { data: stats } = useProductStats();
+  const { data: countryCounts } = useCountryCounts();
 
   if (!counts) return null;
 
@@ -158,6 +172,67 @@ export function DataStatusBar() {
           </div>
         )}
       </div>
+
+      {/* Country breakdown */}
+      {countryCounts && Object.keys(countryCounts).length > 0 && (
+        <div className="border-t border-border pt-3">
+          <button
+            onClick={() => setCountryExpanded((v) => !v)}
+            className="flex items-center gap-2 w-full text-left hover:opacity-80 transition-opacity"
+          >
+            <Globe className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-semibold text-foreground">국가별 리뷰 수</span>
+            {countryExpanded ? (
+              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+            )}
+          </button>
+          {/* Country quick badges */}
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            {Object.entries(countryCounts)
+              .sort(([, a], [, b]) => b - a)
+              .map(([country, count]) => (
+                <span
+                  key={country}
+                  className="shrink-0 flex items-center gap-1 text-[10px] font-medium rounded-full px-2.5 py-0.5 text-muted-foreground bg-card border border-border"
+                >
+                  {COUNTRY_FLAGS[country] || "🔹"} {country} {count.toLocaleString()}
+                </span>
+              ))}
+          </div>
+          {countryExpanded && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              {Object.entries(countryCounts)
+                .sort(([, a], [, b]) => b - a)
+                .map(([country, count]) => {
+                  const totalCtry = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+                  const pct = Math.round((count / totalCtry) * 100);
+                  const maxCtry = Math.max(...Object.values(countryCounts));
+                  const barWidth = Math.max(4, Math.round((count / maxCtry) * 100));
+                  return (
+                    <div key={country} className="flex items-center gap-2">
+                      <span className="text-sm">{COUNTRY_FLAGS[country] || "🔹"}</span>
+                      <span className="text-[11px] font-medium text-foreground w-[40px]">
+                        {country}
+                      </span>
+                      <div className="flex-1 h-4 bg-muted/50 rounded-full overflow-hidden relative">
+                        <div
+                          className="h-full rounded-full bg-primary/60 transition-all"
+                          style={{ width: `${barWidth}%` }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-end pr-2 text-[9px] font-semibold text-foreground/70">
+                          {count.toLocaleString()}건
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground w-[32px] text-right">{pct}%</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
