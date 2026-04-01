@@ -198,6 +198,16 @@ export function ContentStudioPanel({
       ? `\n\n⭐ Review Highlight Tone:\n- Lead with real customer quotes and expressions\n- Use "Users say..." / "Customers love..." framing\n- Prioritize authentic voice over polished marketing language\n- Include star ratings or sentiment stats where appropriate`
       : "";
 
+    // TV & webOS Sales-Com guide injection
+    const tvGuides = findTvGuides(displayName || productName);
+    const tvGuideSection = tvGuides.length > 0
+      ? `\n\n📺 TV Sales-Com Marketing Guide (lg.com PDP 영어 표현 적용):\n${tvGuides.map(g => {
+          const points = g.pdpPhrases.map((p, i) => `  ${i + 1}. ${p}`).join("\n");
+          const voc = g.vocPatterns.map(v => `  - "${v}"`).join("\n");
+          return `\n▸ ${g.label}:\n  [VOC Patterns]\n${voc}\n  [PDP Selling Points — use these English expressions]\n${points}`;
+        }).join("\n")}\n\n📌 Instruction: Incorporate the above lg.com PDP English expressions into headlines and body copy. Address VOC pain points directly with the corresponding selling points.`
+      : "";
+
     // Banner image style section for PDP banners
     const selectedBannerStyle = BANNER_IMAGE_STYLES.find((s) => s.key === bannerStyle);
     const bannerStyleSection = contentType === "pdp_banner" && selectedBannerStyle
