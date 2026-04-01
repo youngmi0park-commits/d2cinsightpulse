@@ -38,7 +38,14 @@ Deno.serve(async (req) => {
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
-    // 1. Get top products from ALL collected reviews (not just weekly)
+    // Build source filter based on region
+    const sourceFilter = region === "all"
+      ? ["lge_com_us", "lge_com_uk"]
+      : region === "US" ? ["lge_com_us"]
+      : region === "UK" ? ["lge_com_uk"]
+      : [`lge_com_${region.toLowerCase()}`];
+
+    // 1. Find top products by total review count (paginated to get ALL)
     const allProductIds = new Set<string>();
     let topProductsList: any[] = [];
 
@@ -46,41 +53,44 @@ Deno.serve(async (req) => {
       allProductIds.add(productId);
       const { data: prodInfo } = await sb.from("products").select("*").eq("id", productId).single();
       if (prodInfo) {
-        topProductsList = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region }];
+        topProductsList = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region }];
       }
     } else {
-      // Fetch top products by total review count (all time, not weekly)
-      let reviewQuery = sb
-        .from("reviews")
-        .select("product_id, products!inner(model_number, display_name, category)")
-        .in("source", ["lge_com_us", "lge_com_uk"]);
-
-      if (region !== "all") {
-        const sourceMap: Record<string, string> = { US: "lge_com_us", UK: "lge_com_uk" };
-        if (sourceMap[region]) reviewQuery = reviewQuery.eq("source", sourceMap[region]);
-      }
-
-      const { data: allReviews } = await reviewQuery.limit(1000);
-
+      // Paginated fetch to overcome 1000-row limit
       const matchesCategory = (catText: string) => {
         if (category === "all") return true;
         const patterns = categoryPatterns[category] || [category];
         return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
       };
 
-      // Group by product and count
       const productCounts: Record<string, { count: number; product: any }> = {};
-      for (const r of (allReviews || []) as any[]) {
-        const catText = `${r.products?.category || ""} ${r.products?.display_name || ""}`;
-        if (!matchesCategory(catText)) continue;
-        const pid = r.product_id;
-        if (!productCounts[pid]) {
-          productCounts[pid] = {
-            count: 0,
-            product: { product_id: pid, model_number: r.products.model_number, display_name: r.products.display_name, category: r.products.category, region },
-          };
+      let offset = 0;
+      const pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: batch } = await sb
+          .from("reviews")
+          .select("product_id, products!inner(model_number, display_name, category)")
+          .in("source", sourceFilter)
+          .range(offset, offset + pageSize - 1);
+
+        if (!batch || batch.length === 0) { hasMore = false; break; }
+
+        for (const r of batch as any[]) {
+          const catText = `${r.products?.category || ""} ${r.products?.display_name || ""}`;
+          if (!matchesCategory(catText)) continue;
+          const pid = r.product_id;
+          if (!productCounts[pid]) {
+            productCounts[pid] = {
+              count: 0,
+              product: { product_id: pid, model_number: r.products.model_number, display_name: r.products.display_name, category: r.products.category, region },
+            };
+          }
+          productCounts[pid].count++;
         }
-        productCounts[pid].count++;
+
+        if (batch.length < pageSize) { hasMore = false; } else { offset += pageSize; }
       }
 
       topProductsList = Object.values(productCounts)
@@ -95,29 +105,37 @@ Deno.serve(async (req) => {
 
     if (allProductIds.size === 0) {
       return new Response(
-        JSON.stringify({ insights: null, message: `No weekly review data for ${category}` }),
+        JSON.stringify({ insights: null, message: `No review data for ${category}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // 2. Fetch actual reviews for these products (non-lge_com content is fine for analysis, but we use lge_com)
-    const productReviews: Record<string, { product: any; positive: any[]; negative: any[] }> = {};
+    // 2. Fetch ALL reviews (title + content) for these products — paginated
+    const productReviews: Record<string, { product: any; positive: any[]; negative: any[]; neutral: any[]; totalCount: number }> = {};
 
     for (const pid of allProductIds) {
-      const prodInfo = topProductsList.find(
-        (p: any) => p.product_id === pid
-      );
+      const prodInfo = topProductsList.find((p: any) => p.product_id === pid);
+      const allRevs: any[] = [];
+      let off = 0;
+      let more = true;
 
-      const { data: reviews } = await sb
-        .from("reviews")
-        .select("title, rating, sentiment, sentiment_score, published_at")
-        .eq("product_id", pid)
-        .in("source", ["lge_com_us", "lge_com_uk"])
-        .order("published_at", { ascending: false })
-        .limit(100);
+      while (more) {
+        const { data: batch } = await sb
+          .from("reviews")
+          .select("title, content, rating, sentiment, sentiment_score, published_at, source, review_type, emotion_category")
+          .eq("product_id", pid)
+          .in("source", sourceFilter)
+          .order("published_at", { ascending: false })
+          .range(off, off + 999);
 
-      const pos = (reviews || []).filter((r: any) => r.sentiment === "positive");
-      const neg = (reviews || []).filter((r: any) => r.sentiment === "negative");
+        if (!batch || batch.length === 0) { more = false; break; }
+        allRevs.push(...batch);
+        if (batch.length < 1000) { more = false; } else { off += 1000; }
+      }
+
+      const pos = allRevs.filter((r: any) => r.sentiment === "positive");
+      const neg = allRevs.filter((r: any) => r.sentiment === "negative");
+      const neu = allRevs.filter((r: any) => r.sentiment !== "positive" && r.sentiment !== "negative");
 
       productReviews[pid] = {
         product: {
@@ -126,53 +144,109 @@ Deno.serve(async (req) => {
           category: prodInfo?.category || "General",
           region: prodInfo?.region || region,
         },
-        positive: pos.slice(0, 50),
-        negative: neg.slice(0, 50),
+        positive: pos,
+        negative: neg,
+        neutral: neu,
+        totalCount: allRevs.length,
       };
     }
 
-    // 3. Build prompt for AI analysis
+    // 3. Build comprehensive review data for AI — include content excerpts
     const reviewSummary = Object.values(productReviews)
       .map((pr) => {
+        // Extract meaningful content snippets (not just titles)
+        const posContentSamples = pr.positive
+          .filter((r: any) => r.content && r.content.length > 20)
+          .slice(0, 30)
+          .map((r: any) => {
+            const text = r.content.replace(/\s+/g, " ").trim();
+            return text.length > 150 ? text.slice(0, 150) + "…" : text;
+          });
+
+        const negContentSamples = pr.negative
+          .filter((r: any) => r.content && r.content.length > 20)
+          .slice(0, 30)
+          .map((r: any) => {
+            const text = r.content.replace(/\s+/g, " ").trim();
+            return text.length > 150 ? text.slice(0, 150) + "…" : text;
+          });
+
         const posKeywords = pr.positive
           .map((r: any) => r.title)
           .filter(Boolean)
-          .slice(0, 20);
+          .slice(0, 25);
         const negKeywords = pr.negative
           .map((r: any) => r.title)
           .filter(Boolean)
-          .slice(0, 20);
+          .slice(0, 25);
+
+        // Rating distribution
+        const ratings = [...pr.positive, ...pr.negative, ...pr.neutral]
+          .map((r: any) => r.rating)
+          .filter(Boolean);
+        const ratingDist: Record<number, number> = {};
+        for (const r of ratings) { ratingDist[r] = (ratingDist[r] || 0) + 1; }
+
+        // Emotion categories
+        const emotions: Record<string, number> = {};
+        for (const r of [...pr.positive, ...pr.negative]) {
+          if (r.emotion_category && r.emotion_category !== "neutral") {
+            emotions[r.emotion_category] = (emotions[r.emotion_category] || 0) + 1;
+          }
+        }
+
+        // Source breakdown
+        const sourceCounts: Record<string, number> = {};
+        for (const r of [...pr.positive, ...pr.negative, ...pr.neutral]) {
+          const s = r.source === "lge_com_us" ? "US" : r.source === "lge_com_uk" ? "UK" : r.source;
+          sourceCounts[s] = (sourceCounts[s] || 0) + 1;
+        }
+
         return `## ${pr.product.display_name} (${pr.product.model_number}) - ${pr.product.category}
-Region: ${pr.product.region}
-Positive reviews: ${pr.positive.length}건, Keywords: ${posKeywords.join(", ") || "N/A"}
-Negative reviews: ${pr.negative.length}건, Keywords: ${negKeywords.join(", ") || "N/A"}
-Rating distribution: ${pr.positive.concat(pr.negative).map((r: any) => r.rating).filter(Boolean).join(", ")}`;
+Total Reviews: ${pr.totalCount}건 (긍정 ${pr.positive.length} / 부정 ${pr.negative.length} / 기타 ${pr.neutral.length})
+Region: ${Object.entries(sourceCounts).map(([k, v]) => `${k}: ${v}건`).join(", ")}
+Rating Distribution: ${Object.entries(ratingDist).sort(([a], [b]) => Number(b) - Number(a)).map(([r, c]) => `${r}★: ${c}건`).join(", ")}
+Emotion Categories: ${Object.entries(emotions).sort(([, a], [, b]) => b - a).slice(0, 5).map(([e, c]) => `${e}(${c})`).join(", ") || "N/A"}
+
+### Positive Review Keywords (${pr.positive.length}건):
+${posKeywords.join(" | ") || "N/A"}
+
+### Positive Review Content Samples:
+${posContentSamples.map((s, i) => `${i + 1}. ${s}`).join("\n") || "N/A"}
+
+### Negative Review Keywords (${pr.negative.length}건):
+${negKeywords.join(" | ") || "N/A"}
+
+### Negative Review Content Samples:
+${negContentSamples.map((s, i) => `${i + 1}. ${s}`).join("\n") || "N/A"}`;
       })
-      .join("\n\n");
+      .join("\n\n---\n\n");
 
     const systemPrompt = `You are a global brand strategist and consumer insight analyst for LG Electronics. 
 Analyze LG.com review data and provide actionable marketing insights in Korean.
 Focus on "Why LG?" - what makes customers choose and love LG products.
 Be specific with examples from the data. Use marketing-ready language.
-IMPORTANT: Do NOT expose any original review text. Only use extracted keywords and patterns for analysis.`;
+You are analyzing ALL collected reviews (not just weekly), so your insights should reflect long-term patterns and deep consumer understanding.
+IMPORTANT: Do NOT expose any original review text verbatim. Synthesize and paraphrase insights from the patterns you observe.`;
 
-    const userPrompt = `다음은 LG.com에서 수집된 전체 리뷰 기반 상위 제품들의 리뷰 데이터 요약입니다:
+    const userPrompt = `다음은 LG.com에서 수집된 **전체** 리뷰 데이터(수집 시점 제한 없음) 기반 상위 제품들의 분석 자료입니다:
 
 ${reviewSummary}
 
-위 데이터를 기반으로 다음 3가지 프레임워크로 분석해주세요. 각 프레임워크별로 제품별 구체적 인사이트를 제공하세요.
+위 전체 데이터를 기반으로 다음 3가지 프레임워크로 **심층 분석**해주세요. 
+단순 키워드 나열이 아닌, 리뷰 내용(content)에서 드러나는 실질적 패턴과 맥락을 반영한 구체적 인사이트를 제공하세요.
 
 ## 1. 리뷰 기반 사용자군 정의 (User Group Profiling)
 
 ### 1-1. 주 사용층 (Core User Group)
-리뷰 데이터에서 파악되는 핵심 사용자군을 제품별로 분석:
-- 주 사용 목적
-- 자주 언급되는 사용 장면(Use Scene)
-- 관심사/중요 평가 기준
-- 암묵적 라이프스타일 특징
-- 구매 동기
-- 만족 포인트
-- 불만 포인트
+전체 리뷰 데이터에서 파악되는 핵심 사용자군을 제품별로 분석:
+- 주 사용 목적 (리뷰에서 반복적으로 언급되는 실제 활용 방식)
+- 자주 언급되는 사용 장면(Use Scene) — 구체적인 생활 맥락 포함
+- 관심사/중요 평가 기준 — 실제 고객이 중시하는 포인트
+- 암묵적 라이프스타일 특징 — 리뷰에서 유추되는 생활 패턴
+- 구매 동기 — 왜 LG를 선택했는지
+- 만족 포인트 — 기대 이상이었던 부분
+- 불만 포인트 — 아쉬움/개선 요구 사항
 
 ### 1-2. 사용자 확장층 (Potential User Group)
 현재 주 사용층 외에 확장 가능한 잠재 타깃을 제품별로 제안:
@@ -183,9 +257,9 @@ ${reviewSummary}
 - 이 타깃을 잡기 위한 메시지/크리에이티브 방향
 
 ## 2. JTBD(Jobs to be Done) 프레임워크 분석
-- **구매 전 불안 요소(Anxiety)**: 고객이 구매 버튼 전 가장 걱정한 부분
-- **사용 후 안도감(Delight)**: 불안이 해소된 방식과 추천 시 가장 많이 언급하는 단어
-- **경쟁사 이탈 포인트(Switching Point)**: 타사에서 LG로 넘어온 결정적 이유
+- **구매 전 불안 요소(Anxiety)**: 고객이 구매 전 가장 걱정한 부분 (리뷰 내용에서 "worried", "concerned", "hesitant" 등의 맥락)
+- **사용 후 안도감(Delight)**: 불안이 해소된 방식과 추천 시 가장 많이 언급하는 표현
+- **경쟁사 이탈 포인트(Switching Point)**: 타사에서 LG로 넘어온 결정적 이유 (경쟁 브랜드명과 비교 맥락)
 
 ## 3. 부정 리뷰 기반 CRM 및 신제품 기획 인사이트
 - **기대치와 현실의 괴리(Expectation Gap)**: 광고/설명과 실제 성능 간 배신감 포인트
@@ -228,7 +302,7 @@ ${reviewSummary}
     "paid_service_opportunities": [{"product": "제품명", "pain_point": "페인포인트", "service_idea": "서비스 기회"}],
     "crm_strategy": [{"product": "제품명", "issue": "이슈", "response": "대응 전략", "compensation": "보상 방안"}]
   },
-  "summary": "전체 요약 (2-3줄)"
+  "summary": "전체 요약 (2-3줄, 분석된 전체 리뷰 건수 포함)"
 }`;
 
     // 4. Call AI
@@ -252,6 +326,16 @@ ${reviewSummary}
     );
 
     if (!aiResponse.ok) {
+      if (aiResponse.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (aiResponse.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const errText = await aiResponse.text();
       throw new Error(`AI API error: ${aiResponse.status} - ${errText}`);
     }
@@ -265,7 +349,7 @@ ${reviewSummary}
       insights = { raw: content };
     }
 
-    // Add metadata
+    // Add metadata with total counts
     const result = {
       insights,
       metadata: {
@@ -275,7 +359,9 @@ ${reviewSummary}
           category: pr.product.category,
           positive_count: pr.positive.length,
           negative_count: pr.negative.length,
+          total_count: pr.totalCount,
         })),
+        total_reviews_analyzed: Object.values(productReviews).reduce((s, pr) => s + pr.totalCount, 0),
         region,
         generated_at: new Date().toISOString(),
       },

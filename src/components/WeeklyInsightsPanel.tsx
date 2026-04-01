@@ -293,12 +293,17 @@ export function WeeklyInsightsPanel() {
           <div className="space-y-4">
             {/* Analyzed products summary */}
             {result?.metadata?.analyzed_products && (
-              <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border">
+              <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border items-center">
                 <span className="text-[10px] text-muted-foreground mr-1">{t("Analyzed:", "분석 대상:")}</span>
+                {(result.metadata as any).total_reviews_analyzed && (
+                  <Badge variant="secondary" className="text-[10px] gap-1 bg-primary/10 text-primary border-primary/20 mr-1">
+                    {t("Total", "총")} {(result.metadata as any).total_reviews_analyzed.toLocaleString()}{t(" reviews", "건")}
+                  </Badge>
+                )}
                 {result.metadata.analyzed_products.map((p, i) => (
                   <Badge key={i} variant="outline" className="text-[10px] gap-1">
                     {p.display_name || p.model_number}
-                    <span className="text-muted-foreground">({p.positive_count + p.negative_count}건)</span>
+                    <span className="text-muted-foreground">({((p as any).total_count || p.positive_count + p.negative_count)}건)</span>
                   </Badge>
                 ))}
               </div>
