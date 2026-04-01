@@ -464,7 +464,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
               {/* Evidence & Signals */}
-              <EvidenceSignalsSection sentiment={item.sentiment} />
+              <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <SentimentChart sentiment={item.sentiment} />
