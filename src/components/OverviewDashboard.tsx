@@ -5,8 +5,8 @@ import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowRight, ArrowUpRight, ArrowDownRight, Copy, Check,
-  Store, MessageSquare, Wrench, HelpCircle, ThumbsUp,
+  ArrowUpRight, ArrowDownRight, Copy, Check,
+  ThumbsUp,
   Loader2, Sparkles, AlertTriangle, Star, ChevronDown, ChevronUp, TrendingUp
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
