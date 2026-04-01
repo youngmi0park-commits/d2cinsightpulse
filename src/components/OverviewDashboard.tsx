@@ -260,13 +260,21 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
             bgClass="bg-success/3 border-success/15"
           >
             <div className="space-y-2">
-              {(overview.recurring_praise || []).map((praise, i) => (
-                <div key={i} className="flex items-start gap-2 px-3 py-2">
-                  <span className="text-success mt-0.5">✅</span>
-                  <p className="text-xs text-foreground flex-1 leading-relaxed">{praise}</p>
-                  <CopyBtn text={praise} />
-                </div>
-              ))}
+              {(overview.recurring_praise || []).map((praise, i) => {
+                const item = typeof praise === "string" ? { text: praise } : praise;
+                return (
+                  <div key={i} className="flex items-start gap-2 px-3 py-2">
+                    <span className="text-success mt-0.5">✅</span>
+                    <div className="flex-1">
+                      {item.category && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 mb-1 mr-1 border-success/30 text-success">{item.category}{item.product ? ` · ${item.product}` : ""}</Badge>
+                      )}
+                      <p className="text-xs text-foreground leading-relaxed">{item.text}</p>
+                    </div>
+                    <CopyBtn text={item.text} />
+                  </div>
+                );
+              })}
             </div>
           </CollapsibleSection>
 

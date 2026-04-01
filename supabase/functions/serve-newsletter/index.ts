@@ -167,7 +167,11 @@ function buildNewsletterHTML(d: {
       </td></tr>`).join("");
 
     // Recurring praise
-    const praiseHTML = (insight.recurring_praise || []).map(p => `<div style="padding:3px 0;font-size:11px;color:#006600;line-height:1.5;">✅ ${p}</div>`).join("");
+    const praiseHTML = (insight.recurring_praise || []).map(p => {
+      const item = typeof p === "string" ? { text: p } : p;
+      const catLabel = item.category ? `<span style="display:inline-block;background:#E6F4EA;border:1px solid #BBF7D0;border-radius:3px;padding:1px 6px;font-size:9px;color:#006600;font-weight:600;margin-right:6px;">${item.category}${item.product ? ` · ${item.product}` : ""}</span>` : "";
+      return `<div style="padding:4px 0;font-size:11px;color:#006600;line-height:1.6;">✅ ${catLabel}${item.text}</div>`;
+    }).join("");
 
     return `
     <tr><td style="padding:24px 28px 0;">

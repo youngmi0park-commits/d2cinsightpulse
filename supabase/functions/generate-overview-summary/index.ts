@@ -132,7 +132,7 @@ JSON 형태로 응답:
       "related_products": ["모델명1"]
     }
   ],
-  "recurring_praise": ["칭찬 포인트1", "칭찬 포인트2"],
+  "recurring_praise": [{"text": "칭찬 포인트1", "product": "제품명", "category": "TV"}, {"text": "칭찬 포인트2", "product": "제품명", "category": "Refrigerator"}],
   "unmatched_praise": ["코멘트1", "코멘트2"]
 }`;
 
