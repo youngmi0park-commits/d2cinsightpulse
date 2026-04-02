@@ -247,7 +247,7 @@ const CommunitiesPage = () => {
 
           {/* Generate Insights Button */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">📊 AI 주간 인사이트</h3>
+            <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 주간 인사이트</h3>
             <Button
               size="sm"
               variant={insights ? "outline" : "default"}
