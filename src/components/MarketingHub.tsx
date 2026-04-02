@@ -106,7 +106,7 @@ function generateChannelCopy(
   const s2 = sentiment.keywords.positive?.[1] || "performance";
   const pain = sentiment.keywords.negative?.[0] || "";
   const scene = sentiment.usageScenes?.[0] || "living room";
-  const posCount = sentiment.positive;
+  const _posCount = sentiment.positive;
   const limits = CHANNEL_LIMITS[channel] || { headline: 50, body: 150, cta: 20 };
 
   const templates: Record<string, Record<string, { headline: string; body: string; cta: string }>> = {
