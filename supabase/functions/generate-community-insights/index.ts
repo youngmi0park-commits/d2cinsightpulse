@@ -117,29 +117,28 @@ Deno.serve(async (req) => {
     const prompt = "You are a marketing insight AI for LG Electronics products generating weekly community intelligence.\n" +
       "ALL OUTPUT MUST BE IN KOREAN (한국어).\n\n" +
       "CRITICAL RULES:\n" +
-      "1. Generate a \"executiveSummary\" — exactly 5 concise sentences IN KOREAN summarizing the ENTIRE week across ALL channels:\n" +
-      "   Line 1: 전체 모멘텀 요약\n" +
-      "   Line 2: 가장 주목받는 제품\n" +
-      "   Line 3: 이번 주 핵심 긍정 경험 테마\n" +
-      "   Line 4: 반복되는 마찰/리스크 시그널\n" +
-      "   Line 5: 명확한 마케팅/메시징 기회\n" +
-      "2. For each channel, identify the Top 3 most-mentioned products\n" +
-      "3. For each product: ONE positive insight sentence + ONE negative insight sentence (ALL IN KOREAN)\n" +
-      "4. Insights must reference product function (화질, 게이밍, 사운드, 스마트/AI, 디자인, 설치, 신뢰성, 가성비), usage context, and outcome\n" +
-      "5. Add a \"This Week's Takeaway\" per channel in KOREAN (momentum + friction)\n" +
-      "6. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS\n" +
-      "7. No keyword-only output, no raw quotes, no generic praise\n\n" +
-      "GOOD insight example: \"PS5 연결 시 깊은 블랙과 안정적인 성능으로 장시간 게이밍에 대한 만족도가 높았습니다.\"\n" +
-      "BAD insight example: \"화질 좋음, 게이밍 좋음.\"\n\n" +
+      "1. Generate \"executiveSummary\" — exactly 4 objects, each with \"category\" (제품 카테고리 e.g. TV, 세탁기, 냉장고, 가전 전체) and \"insight\" (한국어 문장):\n" +
+      "   Item 1: 전체 모멘텀 요약 (category: '전체')\n" +
+      "   Item 2: 가장 주목받는 제품/카테고리 (category: 해당 카테고리명)\n" +
+      "   Item 3: 이번 주 핵심 긍정 경험 테마 (category: 해당 카테고리명)\n" +
+      "   Item 4: 반복되는 마찰/리스크 시그널 (category: 해당 카테고리명)\n" +
+      "2. Generate \"keyTakeaway\" — ONE actionable Korean sentence: 마케터가 이번 주 바로 활용할 수 있는 핵심 인사이트/액션 포인트\n" +
+      "3. For each channel, identify the Top 3 most-mentioned products\n" +
+      "4. For each product: ONE positive insight sentence + ONE negative insight sentence (ALL IN KOREAN)\n" +
+      "5. Insights must reference product function (화질, 게이밍, 사운드, 스마트/AI, 디자인, 설치, 신뢰성, 가성비), usage context, and outcome\n" +
+      "6. Add a \"This Week's Takeaway\" per channel in KOREAN (momentum + friction)\n" +
+      "7. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS\n" +
+      "8. No keyword-only output, no raw quotes, no generic praise\n\n" +
       channelDataStr + "\n\n" +
-      "Output MUST be valid JSON in this exact format:\n" +
+      "Output MUST be valid JSON:\n" +
       "{\n" +
-      "  \"executiveSummary\": [\"한국어 문장 1\",\"한국어 문장 2\",\"한국어 문장 3\",\"한국어 문장 4\",\"한국어 문장 5\"],\n" +
+      "  \"executiveSummary\": [{\"category\":\"전체\",\"insight\":\"...\"},{\"category\":\"TV\",\"insight\":\"...\"},{\"category\":\"세탁기\",\"insight\":\"...\"},{\"category\":\"TV\",\"insight\":\"...\"}],\n" +
+      "  \"keyTakeaway\": \"마케터를 위한 핵심 액션 포인트 한 문장\",\n" +
       "  \"channels\": [\n" +
       "    {\n" +
       "      \"channel\": \"Channel Name\",\n" +
       "      \"reviewCount\": 123,\n" +
-      "      \"products\": [{\"rank\":1,\"name\":\"Product Name\",\"category\":\"TV\",\"mentions\":45,\"positiveInsight\":\"한국어 긍정 인사이트 문장...\",\"negativeInsight\":\"한국어 부정 인사이트 문장...\"}],\n" +
+      "      \"products\": [{\"rank\":1,\"name\":\"Product Name\",\"category\":\"TV\",\"mentions\":45,\"positiveInsight\":\"한국어 긍정 인사이트\",\"negativeInsight\":\"한국어 부정 인사이트\"}],\n" +
       "      \"takeaway\": {\"momentum\":\"한국어 모멘텀 문장\",\"friction\":\"한국어 마찰점 문장\"}\n" +
       "    }\n" +
       "  ]\n" +
