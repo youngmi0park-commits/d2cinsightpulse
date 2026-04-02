@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* Page background: Warm Gray #F0ECE4 */
-    --background: 36 20% 92%;
+    /* Page background: #EFECE5 */
+    --background: 38 16% 91%;
     --foreground: 0 0% 10%;
 
     /* Card background: slightly lighter warm tone instead of pure white */
