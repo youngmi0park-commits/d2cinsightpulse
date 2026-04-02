@@ -277,15 +277,37 @@ const CommunitiesPage = () => {
             <div className="gradient-card rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-bold font-heading text-primary">Weekly Executive Summary</h3>
+                <h3 className="text-sm font-bold font-heading text-primary">주간 Executive Summary</h3>
               </div>
               <div className="space-y-2">
-                {insights.executiveSummary.map((line, i) => (
-                  <p key={i} className="text-xs leading-relaxed text-foreground">
-                    {line}
-                  </p>
-                ))}
+                {insights.executiveSummary.map((line, i) => {
+                  const item: SummaryLine = typeof line === "string"
+                    ? { category: "", insight: line }
+                    : line;
+                  return (
+                    <div key={i} className="flex items-start gap-2">
+                      {item.category && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 shrink-0 mt-0.5 min-w-[52px] justify-center">
+                          {item.category}
+                        </Badge>
+                      )}
+                      <p className="text-xs leading-relaxed text-foreground">{item.insight}</p>
+                    </div>
+                  );
+                })}
               </div>
+              {/* Key Takeaway */}
+              {insights.keyTakeaway && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 mt-2">
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <div>
+                      <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Key Takeaway</span>
+                      <p className="text-xs leading-relaxed text-foreground mt-0.5">{insights.keyTakeaway}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
