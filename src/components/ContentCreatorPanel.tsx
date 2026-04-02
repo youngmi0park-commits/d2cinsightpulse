@@ -475,18 +475,18 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
         outsideVersion = `[Ad] ${messageType === "using_scene" ? `From ${usingScenes[0] || "bedroom"} to ${usingScenes[1] || "kitchen"} — ${prName}` : removeSuperlatves(msg.headline)}\n3-second hook → lifestyle scene → product reveal`;
     }
 
-    // Version B: social-proof-led
+    // Version B: experience-proof-led (no review counts)
     const versionB = {
       headline: t(
-        `${socialProof} ${removeSuperlatves(strengths[0] || "quality")} on ${prName}`,
-        `${sentiment.positive}명의 실사용자가 ${prName}의 ${removeSuperlatves(strengths[0] || "품질")}을 인정했습니다`
+        `Users love ${removeSuperlatves(strengths[0] || "quality")} on ${prName}`,
+        `${prName}의 ${removeSuperlatves(strengths[0] || "품질")}, 실사용자들이 극찬한 포인트`
       ),
       subMessage: t(
         `Real users highlight ${removeSuperlatves(strengths.slice(0, 2).join(" and "))}. ${evidence}`,
         `실사용자들이 ${removeSuperlatves(strengths.slice(0, 2).join(", "))}을(를) 강조합니다. ${evidence}`
       ),
-      insideVersion: `${prName} — ${socialProof} ${removeSuperlatves(strengths[0] || "quality")}.\n"${removeSuperlatves(strengths[1] || "Performance")}" is the most mentioned keyword.\n${evidence}`,
-      outsideVersion: `[Ad] ${socialProof} ${removeSuperlatves(strengths[0] || "quality")} — Discover ${prName}\n${evidence}`,
+      insideVersion: `${prName} — Users love ${removeSuperlatves(strengths[0] || "quality")}.\n"${removeSuperlatves(strengths[1] || "Performance")}" stands out as a key strength.\n${evidence}`,
+      outsideVersion: `[Ad] Experience ${removeSuperlatves(strengths[0] || "quality")} — Discover ${prName}\n${evidence}`,
     };
 
     // Amazon A+ structured assets
