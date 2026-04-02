@@ -61,11 +61,19 @@ interface RecurringPraise {
   product?: string;
   category?: string;
 }
+interface KeyTakeawayItem {
+  product: string;
+  category: string;
+  positive_msg: string;
+  negative_msg: string;
+  marketer_action: string;
+}
 interface OverviewData {
   top_topics: TopTopic[];
   urgent_issues: UrgentIssue[];
   recurring_praise: (string | RecurringPraise)[];
   unmatched_praise: string[];
+  key_takeaway?: KeyTakeawayItem[];
 }
 
 /* ───── Component ───── */
