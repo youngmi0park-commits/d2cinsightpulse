@@ -113,41 +113,41 @@ function generateChannelCopy(
     awareness: {
       "YouTube Bumper": {
         headline: `${productName} — ${s1} Redefined`,
-        body: `Chosen by ${posCount} verified users. ${s2} that speaks for itself.`,
+        body: `Experience ${s2} that speaks for itself. A new standard in ${s1}.`,
         cta: "Discover Now",
       },
       "Meta Stories": {
         headline: `Meet ${productName} in Your ${scene}`,
-        body: `"${s1}" — the keyword customers keep mentioning. Experience it yourself.`,
+        body: `"${s1}" — the feature customers keep praising. Experience it yourself.`,
         cta: "Learn More",
       },
       Display: {
         headline: `${productName} | ${s1} · ${s2}`,
-        body: `${posCount} real reviews prove the quality.`,
+        body: `Praised for outstanding ${s1} and ${s2}. See why.`,
         cta: "See Details",
       },
     },
     consideration: {
       PMAX: {
         headline: `${productName} — Real ${s1} Reviews`,
-        body: `${posCount} verified reviews. See how ${s2} performs in real life.`,
+        body: `Praised for ${s2} in everyday use. See how it performs in real life.`,
         cta: "View Details",
       },
       "Meta Carousel": {
         headline: `Why ${productName}?`,
-        body: `① ${s1} ② ${s2} — Top strengths extracted from real user reviews.`,
+        body: `① ${s1} ② ${s2} — Top strengths highlighted by real users.`,
         cta: "Compare Now",
       },
       Affiliate: {
         headline: `${productName} Review Summary`,
-        body: `${posCount} reviews analyzed: "${s1}" is the most mentioned strength.`,
+        body: `"${s1}" stands out as the most praised strength. See the full picture.`,
         cta: "Shop Now",
       },
     },
     conversion: {
       "Search RSA": {
         headline: `${productName} — ${s1} | Buy Now`,
-        body: `${posCount} users chose ${s2}. ${pain ? `Worried about "${pain}"? Reviews tell a different story.` : "Limited-time offer available."}`,
+        body: `${pain ? `Worried about "${pain}"? Real experience tells a different story.` : `Outstanding ${s1} and ${s2}.`} Limited-time offer available.`,
         cta: "Buy Now",
       },
       Criteo: {
@@ -157,7 +157,7 @@ function generateChannelCopy(
       },
       "LG.com": {
         headline: `${productName} — Exclusive LG.com Offer`,
-        body: `${posCount} real users love the ${s1}. Get an exclusive deal only on LG.com.`,
+        body: `The ${s1} – praised as a standout feature. Get an exclusive deal only on LG.com.`,
         cta: "Order Now",
       },
     },
@@ -182,7 +182,7 @@ function generateChannelCopy(
 
   const raw = templates[funnelKey]?.[channel] || {
     headline: `${productName} — ${s1}`,
-    body: `Chosen by ${posCount} real users.`,
+    body: `Praised for ${s1} and ${s2}. Discover the difference.`,
     cta: "Learn More",
   };
 
