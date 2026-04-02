@@ -108,20 +108,30 @@ export function maskCompetitorNames(text: string): string {
 }
 
 // Issue categories and their indicator words
-const ISSUE_CATEGORIES: Record<string, string[]> = {
-  "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention"],
-  "Sound": ["sound", "audio", "bass", "speaker", "dialogue", "volume", "surround", "dolby atmos", "subwoofer", "treble", "soundbar"],
-  "Build Quality": ["build", "design", "finish", "stand", "slim", "weight", "aesthetic", "bezel", "mount", "material", "plastic", "metal", "premium feel"],
-  "App/Software": ["app", "software", "webos", "thinq", "interface", "remote", "update", "smart", "voice control", "alexa", "google", "airplay", "cast", "streaming", "netflix", "youtube app", "ui", "menu", "navigation"],
-  "Value for Money": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced"],
-  "Reliability": ["reliability", "reliable", "break", "broke", "broken", "last", "lifespan", "warranty", "replace", "defect", "fail", "malfunction", "dead", "stop working", "issue", "problem"],
+// ═══════════════════════════════════════════════════════════════════
+// FUNCTION-CONTEXT-OUTCOME (FCO) FRAMEWORK
+// ═══════════════════════════════════════════════════════════════════
+// Sentiment is determined by: Function (what feature) + Context (usage situation) + Outcome (satisfied/disappointed)
+// NOT by surface-level word polarity alone.
+
+/** Product Function categories — every sentence maps to at least one */
+export const FUNCTION_CATEGORIES: Record<string, string[]> = {
+  "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention", "upscaling", "dolby vision", "motion", "blur", "judder", "black", "vivid", "dim", "bright"],
+  "Gaming": ["input lag", "response time", "vrr", "g-sync", "gsync", "freesync", "refresh rate", "cloud gaming", "gaming", "fps", "latency", "120hz", "144hz", "165hz", "game mode", "game optimizer"],
+  "Sound": ["sound", "audio", "bass", "speaker", "dialogue", "volume", "surround", "dolby atmos", "subwoofer", "treble", "soundbar", "clarity", "immersive"],
+  "Smart / AI / OS": ["app", "software", "webos", "thinq", "interface", "remote", "update", "smart", "voice control", "alexa", "google", "airplay", "cast", "streaming", "netflix", "youtube app", "ui", "menu", "navigation", "ai", "recommendation", "stability", "loading", "speed"],
+  "Design & Build": ["build", "design", "finish", "stand", "slim", "weight", "aesthetic", "bezel", "mount", "material", "plastic", "metal", "premium", "thin", "frame", "heavy", "cheap-looking", "sleek"],
+  "Installation & Setup": ["install", "setup", "delivery", "mount", "wall mount", "cable management", "assemble", "instruction", "manual", "connection", "plug", "difficulty"],
+  "Reliability & Quality": ["reliability", "reliable", "break", "broke", "broken", "last", "lifespan", "warranty", "replace", "defect", "fail", "malfunction", "dead", "stop working", "dead pixel", "reboot", "heat", "noise", "durability"],
+  "Value & Price": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced", "expectation"],
   "Customer Service": ["service", "support", "customer", "repair", "technician", "return", "refund", "exchange", "response", "call center", "chat support", "warranty claim"],
-  "Performance": ["performance", "speed", "input lag", "gaming", "refresh rate", "response time", "processing", "upscaling", "motion", "fps", "latency", "smooth", "fast"],
-  "Installation": ["install", "setup", "delivery", "mount", "assemble", "instruction", "manual", "connection", "plug"],
-  "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
   "Wash/Clean Quality": ["wash", "clean", "stain", "rinse", "spin", "cycle", "drum", "detergent", "fabric", "gentle", "heavy duty"],
   "Cooling/Temperature": ["cool", "cold", "temperature", "freeze", "ice", "fresh", "chill", "thermostat", "compressor"],
+  "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
 };
+
+// Keep backward compat alias
+const ISSUE_CATEGORIES = FUNCTION_CATEGORIES;
 
 // Price-value expressions
 const PRICE_POSITIVE = ["worth every penny", "great value", "worth the price", "budget-friendly", "good deal", "great deal", "fair price", "bang for the buck", "bang for your buck", "affordable", "reasonably priced"];
