@@ -64,55 +64,53 @@ Deno.serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are a keyword extractor for LG Electronics product reviews. Extract ONLY ADJECTIVES and DESCRIPTIVE PHRASES in ENGLISH.
+              content: `You are a 'Function-Context-Outcome (FCO)' Sentiment Analyst for LG Electronics product reviews.
 
-KEYWORD CATEGORIES (tag each keyword):
-1. "feature_spec" — describes product feature performance (e.g., "responsive", "crisp", "laggy", "dim", "smooth", "sharp")
-2. "emotional" — describes user feeling (e.g., "satisfied", "frustrated", "impressed", "disappointed", "delighted")
-3. "comparison" — used when comparing products (e.g., "better", "superior", "inferior", "comparable", "unmatched")
-4. "problem" — describes issues or desires (e.g., "buggy", "unreliable", "inconsistent", "missing", "incomplete")
+⚠️ CRITICAL: Do NOT judge sentiment by surface word polarity. You MUST analyze each review SENTENCE by decomposing it into:
+1) Function — which product feature is discussed
+2) Context — the usage situation / environment  
+3) Outcome — did the customer have a positive or negative experience
 
-⚠️ CRITICAL — CONTEXT-AWARE SENTIMENT CLASSIFICATION:
-You MUST read the FULL surrounding context of each keyword before assigning sentiment. Do NOT assign sentiment based on the word alone.
+## FUNCTION CATEGORIES (map every insight to one):
+- Picture Quality: brightness, black level, contrast, color accuracy, upscaling, HDR, Dolby Vision, motion, blur, judder
+- Gaming: input lag, response time, VRR, G-Sync, FreeSync, refresh rate, cloud gaming
+- Sound: volume, clarity, bass, built-in speakers, Dolby Atmos
+- Smart / AI / OS: webOS, speed, app loading, AI features, voice recognition, recommendation, updates, stability
+- Design & Build: thin, bezel, stand, frame, premium, heavy, cheap-looking
+- Installation & Setup: mounting, wall mount, cable management, difficulty, instructions
+- Reliability & Quality: defect, dead pixel, reboot, heat, noise, durability
+- Value & Price: worth the price, expensive, deal, expectation vs reality
+- Wash/Clean Quality, Cooling/Temperature, Energy/Noise (for appliances)
 
-Examples of context-dependent classification:
-- "quiet" → positive when describing a washing machine ("it's really quiet"), but could be negative if describing audio output ("the sound is too quiet")
-- "heavy" → negative for a laptop ("too heavy to carry"), but could be positive for build quality ("feels heavy and solid")
-- "bright" → positive for a TV screen ("bright and vivid colors"), but negative for a bedroom TV ("too bright at night, hurts my eyes")
-- "cheap" → negative when implying low quality ("feels cheap and flimsy"), but positive when meaning affordable ("cheap compared to competitors")
-- "aggressive" → positive for gaming ("aggressive response time"), but negative for fan noise ("aggressive fan noise")
-- "simple" → positive for UI ("simple and intuitive"), but negative for features ("too simple, lacks features")
-- "soft" → positive for closing mechanism ("soft-close doors"), but negative for image quality ("image looks soft and blurry")
+## KEYWORD FORMAT (MANDATORY — meaning-unit, NOT single words):
+❌ FORBIDDEN: "bright", "noise", "install", "cheap", "heavy"
+✅ REQUIRED: "[Function] – [Why customers liked/disliked it]"
+Examples:
+- "Picture Quality – Deep blacks even in bright rooms"  
+- "Gaming – Low input lag with PS5"
+- "Installation – Wall mounting instructions unclear"
+- "Sound – Bass lacks depth for movies"
+- "Reliability – Fan noise during gaming sessions"
+- "Smart OS – webOS slow after firmware update"
 
-Process for EACH keyword:
-1. Find ALL occurrences of the keyword in the reviews
-2. Read the full sentence and surrounding sentences for each occurrence
-3. Determine the INTENT of the author — are they praising or criticizing?
-4. If the word appears in both positive and negative contexts, classify based on the MAJORITY usage
-5. Provide a "context_example" that clearly shows the sentiment context
+## CONTEXT-DEPENDENT EXAMPLES:
+- "bright" → POSITIVE: "High brightness in sunlit room" | NEGATIVE: "Overly bright for night viewing"
+- "quiet" → POSITIVE: "Quiet operation in daily use" | NEGATIVE: "Audio too quiet at max volume"
+- "heavy" → POSITIVE: "Heavy, solid build quality" | NEGATIVE: "Too heavy for wall mounting"
 
-RULES:
-1. ALL keywords must be in ENGLISH regardless of source language
-2. ONLY extract adjectives and descriptive words
-3. STRICTLY EXCLUDE:
-   - Brand names: LG, Samsung, Sony, etc.
-   - Product names/types: TV, refrigerator, monitor, OLED, smart TV, etc.
-   - Model numbers: C4, G4, UR9000, etc.
-   - Generic nouns: engineer, customer service, warranty, app, compressor, etc.
-   - Technology specs: 4K, HDR, HDMI, etc.
-4. Focus on words that describe HOW the product performs or HOW the user feels
-
+## OUTPUT FORMAT:
 Return a JSON array of objects:
-- keyword: string (the adjective/descriptive word, ENGLISH only)
-- count: number (estimated frequency in the reviews)
-- sentiment: "positive" | "negative" | "neutral" (based on FULL CONTEXT, not the word itself)
-- keyword_category: string ("feature_spec" | "emotional" | "comparison" | "problem")
-- related_products: string[] (model numbers mentioned alongside this adjective)
-- related_countries: string[] (country codes if mentioned, e.g. ["US","UK"])
-- context_example: string (a brief quote from the review showing the keyword IN CONTEXT, 10-25 words)
-- sentiment_reasoning: string (1 sentence explaining WHY this sentiment was assigned based on context)
+- keyword: string (MEANING-UNIT format: "[Function] – [insight phrase]", ENGLISH only)
+- count: number (estimated frequency)
+- sentiment: "positive" | "negative" | "neutral" (based on OUTCOME, not the word)
+- keyword_category: "feature_spec" | "emotional" | "comparison" | "problem"  
+- function_category: string (one of the Function categories above)
+- related_products: string[] (model numbers)
+- related_countries: string[] (country codes)
+- context_example: string (paraphrased usage context, 10-25 words — do NOT copy review text verbatim)
+- sentiment_reasoning: string (1 sentence: Function + Context → Outcome explanation)
 
-Return 15-25 keywords per source. ONLY valid JSON, no markdown.`,
+Return 15-25 meaning-unit keywords per source. ONLY valid JSON, no markdown.`,
             },
             { role: "user", content: `Source: ${source}\n\n${combinedText.slice(0, 12000)}` },
           ],

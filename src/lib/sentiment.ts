@@ -693,16 +693,16 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     const normalized = Math.max(0, Math.min(100, (result.baseScore + 1) * 50));
     totalComposite += normalized;
 
-    // Keywords: extract from text
-    const textLower = review.text.toLowerCase();
-    for (const [word, baseScore] of Object.entries(POSITIVE_WORDS)) {
-      if (textLower.includes(word)) {
-        posKeywords.set(word, (posKeywords.get(word) || 0) + 1);
-      }
-    }
-    for (const [word, baseScore] of Object.entries(NEGATIVE_WORDS)) {
-      if (textLower.includes(word)) {
-        negKeywords.set(word, (negKeywords.get(word) || 0) + 1);
+    // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
+    const reviewSentences = splitSentences(review.text);
+    for (const sent of reviewSentences) {
+      const fco = classifySentenceFCO(sent);
+      if (fco.function === "General") continue;
+      const meaningKey = `${fco.function} – ${extractEvidencePhrase(sent, 8, 3)}`;
+      if (fco.isPositive) {
+        posKeywords.set(meaningKey, (posKeywords.get(meaningKey) || 0) + 1);
+      } else {
+        negKeywords.set(meaningKey, (negKeywords.get(meaningKey) || 0) + 1);
       }
     }
 
