@@ -102,23 +102,39 @@ ${p.negative.map((s) => `- ${s}`).join("\n")}`;
     }
 
     // Call AI for insight generation
-    const prompt = `You are a marketing insight AI for LG Electronics products. Analyze the following community review data and generate actionable weekly insights.
+    const prompt = `You are a marketing insight AI for LG Electronics products generating weekly community intelligence.
 
-RULES:
-- For each channel, identify the Top 3 most-mentioned products
-- For each product: generate ONE concise positive insight sentence and ONE concise negative insight sentence
-- Insights must be context-aware (mention the function, usage context, and outcome)
-- Add a "This Week's Takeaway" for each channel (momentum + friction point)
-- Competitor names must be abbreviated: Samsung → SS, Sony → SN, TCL → TC
-- Output MUST be valid JSON
+CRITICAL RULES:
+1. Generate a "executiveSummary" — exactly 5 concise sentences (no bullets, no emojis) summarizing the ENTIRE week across ALL channels:
+   Line 1: Overall momentum summary
+   Line 2: Product(s) gaining the most attention
+   Line 3: Key positive experience theme this week
+   Line 4: Repeated friction or risk signal
+   Line 5: Clear marketing or messaging opportunity
+2. For each channel, identify the Top 3 most-mentioned products
+3. For each product: ONE positive insight sentence + ONE negative insight sentence
+4. Insights must reference product function (Picture Quality, Gaming, Sound, Smart/AI, Design, Installation, Reliability, Value), usage context, and outcome
+5. Add a "This Week's Takeaway" per channel (momentum + friction)
+6. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS
+7. No keyword-only output, no raw quotes, no generic praise
+
+GOOD insight example: "Users consistently praised the TV's deep blacks and stable performance during long gaming sessions on PS5."
+BAD insight example: "Great picture quality and gaming."
 
 ${channelSummaries.map((cs) => `
 === Channel: ${cs.channel} (${cs.reviewCount} reviews) ===
 ${cs.productSummary}
 `).join("\n")}
 
-Output JSON format:
+Output MUST be valid JSON in this exact format:
 {
+  "executiveSummary": [
+    "Line 1 sentence",
+    "Line 2 sentence",
+    "Line 3 sentence",
+    "Line 4 sentence",
+    "Line 5 sentence"
+  ],
   "channels": [
     {
       "channel": "Channel Name",
@@ -129,8 +145,8 @@ Output JSON format:
           "name": "Product Name",
           "category": "TV",
           "mentions": 45,
-          "positiveInsight": "One sentence...",
-          "negativeInsight": "One sentence..."
+          "positiveInsight": "One context-aware sentence...",
+          "negativeInsight": "One context-aware sentence..."
         }
       ],
       "takeaway": {
