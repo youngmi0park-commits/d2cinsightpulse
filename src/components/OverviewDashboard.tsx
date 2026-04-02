@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowUpRight, ArrowDownRight, Copy, Check,
-  ThumbsUp,
+  ThumbsUp, Lightbulb,
   Loader2, Sparkles, AlertTriangle, Star, ChevronDown, ChevronUp, TrendingUp
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
