@@ -1,11 +1,35 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
-import { TrendingUp, BarChart3, Loader2, Database, Layers, Store, MessageCircle, ThumbsUp, ThumbsDown } from "lucide-react";
+import { TrendingUp, BarChart3, Loader2, Database, Layers, Store, MessageCircle, ThumbsUp, ThumbsDown, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
+
+interface KeyTakeawayItem {
+  product: string;
+  category: string;
+  positive_msg: string;
+  negative_msg: string;
+  marketer_action: string;
+}
+
+function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
+  return useQuery({
+    queryKey: ["channel-key-takeaway", channel],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("generate-overview-summary", {
+        body: { channel },
+      });
+      if (error) throw error;
+      return (data?.overview?.key_takeaway as KeyTakeawayItem[]) || [];
+    },
+    staleTime: 1000 * 60 * 30, // 30 min cache
+    gcTime: 1000 * 60 * 60,
+    retry: 1,
+  });
+}
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
