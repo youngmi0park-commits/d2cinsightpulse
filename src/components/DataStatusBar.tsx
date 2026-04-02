@@ -40,9 +40,9 @@ const COUNTRY_FLAGS: Record<string, string> = {
 export function DataStatusBar() {
   const [expanded, setExpanded] = useState(false);
   const [countryExpanded, setCountryExpanded] = useState(false);
-  const { data: counts } = useSourceCounts();
+  const { data: counts } = useSourceCounts() as { data: Record<string, number> | undefined };
   const { data: stats } = useProductStats();
-  const { data: countryCounts } = useCountryCounts();
+  const { data: countryCounts } = useCountryCounts() as { data: Record<string, number> | undefined };
 
   if (!counts) return null;
 
