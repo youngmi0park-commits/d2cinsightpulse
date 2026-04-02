@@ -30,6 +30,7 @@ interface ChannelInsight {
 }
 
 interface InsightsResponse {
+  executiveSummary?: string[];
   channels: ChannelInsight[];
   totalReviews: number;
 }
