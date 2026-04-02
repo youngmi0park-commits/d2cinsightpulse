@@ -28,8 +28,8 @@ Deno.serve(async (req) => {
 
     // Apply country filter if specified
     if (country && country !== "all") {
-      const suffix = `_${country.toLowerCase()}`;
-      query = query.like("source", `%${suffix}`);
+      const suffix = "_" + country.toLowerCase();
+      query = query.like("source", "%" + suffix);
     }
 
     const { data: reviews, error } = await query;
@@ -66,7 +66,6 @@ Deno.serve(async (req) => {
     const channelSummaries: { channel: string; reviewCount: number; productSummary: string }[] = [];
 
     for (const [channel, rows] of Object.entries(byChannel)) {
-      // Group by product
       const byProduct: Record<string, { name: string; category: string; positive: string[]; negative: string[]; total: number }> = {};
       for (const r of rows) {
         const p = r.products as any;
@@ -82,22 +81,25 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Top 3 by total mentions
       const top3 = Object.values(byProduct)
         .sort((a, b) => b.total - a.total)
         .slice(0, 3);
 
       if (top3.length === 0) continue;
 
-      const summary = top3.map((p, i) => {
-        return `Product ${i + 1}: ${p.name} (${p.category}) — ${p.total} mentions
-Positive samples (${p.positive.length}):
-${p.positive.map((s) => `- ${s}`).join("\n")}
-Negative samples (${p.negative.length}):
-${p.negative.map((s) => `- ${s}`).join("\n")}`;
-      }).join("\n\n");
+      const parts: string[] = [];
+      for (let i = 0; i < top3.length; i++) {
+        const p = top3[i];
+        parts.push(
+          "Product " + (i + 1) + ": " + p.name + " (" + p.category + ") — " + p.total + " mentions\n" +
+          "Positive samples (" + p.positive.length + "):\n" +
+          p.positive.map((s) => "- " + s).join("\n") + "\n" +
+          "Negative samples (" + p.negative.length + "):\n" +
+          p.negative.map((s) => "- " + s).join("\n")
+        );
+      }
 
-      channelSummaries.push({ channel, reviewCount: rows.length, productSummary: summary });
+      channelSummaries.push({ channel, reviewCount: rows.length, productSummary: parts.join("\n\n") });
     }
 
     if (channelSummaries.length === 0) {
@@ -106,73 +108,53 @@ ${p.negative.map((s) => `- ${s}`).join("\n")}`;
       });
     }
 
+    // Build channel data string (avoid nested template literals)
+    const channelDataStr = channelSummaries.map((cs) =>
+      "\n=== Channel: " + cs.channel + " (" + cs.reviewCount + " reviews) ===\n" + cs.productSummary
+    ).join("\n");
+
     // Call AI for insight generation (Korean output)
-    const prompt = `You are a marketing insight AI for LG Electronics products generating weekly community intelligence.
-ALL OUTPUT MUST BE IN KOREAN (한국어).
-
-CRITICAL RULES:
-1. Generate a "executiveSummary" — exactly 5 concise sentences IN KOREAN summarizing the ENTIRE week across ALL channels:
-   Line 1: 전체 모멘텀 요약
-   Line 2: 가장 주목받는 제품
-   Line 3: 이번 주 핵심 긍정 경험 테마
-   Line 4: 반복되는 마찰/리스크 시그널
-   Line 5: 명확한 마케팅/메시징 기회
-2. For each channel, identify the Top 3 most-mentioned products
-3. For each product: ONE positive insight sentence + ONE negative insight sentence (ALL IN KOREAN)
-4. Insights must reference product function (화질, 게이밍, 사운드, 스마트/AI, 디자인, 설치, 신뢰성, 가성비), usage context, and outcome
-5. Add a "This Week's Takeaway" per channel in KOREAN (momentum + friction)
-6. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS
-7. No keyword-only output, no raw quotes, no generic praise
-
-GOOD insight example: "PS5 연결 시 깊은 블랙과 안정적인 성능으로 장시간 게이밍에 대한 만족도가 높았습니다."
-BAD insight example: "화질 좋음, 게이밍 좋음."
-
-${channelSummaries.map((cs) => \`
-=== Channel: \${cs.channel} (\${cs.reviewCount} reviews) ===
-\${cs.productSummary}
-\`).join("\\n")}
-
-Output MUST be valid JSON in this exact format:
-{
-  "executiveSummary": [
-    "한국어 문장 1",
-    "한국어 문장 2",
-    "한국어 문장 3",
-    "한국어 문장 4",
-    "한국어 문장 5"
-  ],
-  "channels": [
-    {
-      "channel": "Channel Name",
-      "reviewCount": 123,
-      "products": [
-        {
-          "rank": 1,
-          "name": "Product Name",
-          "category": "TV",
-          "mentions": 45,
-          "positiveInsight": "한국어 긍정 인사이트 문장...",
-          "negativeInsight": "한국어 부정 인사이트 문장..."
-        }
-      ],
-      "takeaway": {
-        "momentum": "한국어 모멘텀 문장",
-        "friction": "한국어 마찰점 문장"
-      }
-    }
-  ]
-}`;
+    const prompt = "You are a marketing insight AI for LG Electronics products generating weekly community intelligence.\n" +
+      "ALL OUTPUT MUST BE IN KOREAN (한국어).\n\n" +
+      "CRITICAL RULES:\n" +
+      "1. Generate a \"executiveSummary\" — exactly 5 concise sentences IN KOREAN summarizing the ENTIRE week across ALL channels:\n" +
+      "   Line 1: 전체 모멘텀 요약\n" +
+      "   Line 2: 가장 주목받는 제품\n" +
+      "   Line 3: 이번 주 핵심 긍정 경험 테마\n" +
+      "   Line 4: 반복되는 마찰/리스크 시그널\n" +
+      "   Line 5: 명확한 마케팅/메시징 기회\n" +
+      "2. For each channel, identify the Top 3 most-mentioned products\n" +
+      "3. For each product: ONE positive insight sentence + ONE negative insight sentence (ALL IN KOREAN)\n" +
+      "4. Insights must reference product function (화질, 게이밍, 사운드, 스마트/AI, 디자인, 설치, 신뢰성, 가성비), usage context, and outcome\n" +
+      "5. Add a \"This Week's Takeaway\" per channel in KOREAN (momentum + friction)\n" +
+      "6. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS\n" +
+      "7. No keyword-only output, no raw quotes, no generic praise\n\n" +
+      "GOOD insight example: \"PS5 연결 시 깊은 블랙과 안정적인 성능으로 장시간 게이밍에 대한 만족도가 높았습니다.\"\n" +
+      "BAD insight example: \"화질 좋음, 게이밍 좋음.\"\n\n" +
+      channelDataStr + "\n\n" +
+      "Output MUST be valid JSON in this exact format:\n" +
+      "{\n" +
+      "  \"executiveSummary\": [\"한국어 문장 1\",\"한국어 문장 2\",\"한국어 문장 3\",\"한국어 문장 4\",\"한국어 문장 5\"],\n" +
+      "  \"channels\": [\n" +
+      "    {\n" +
+      "      \"channel\": \"Channel Name\",\n" +
+      "      \"reviewCount\": 123,\n" +
+      "      \"products\": [{\"rank\":1,\"name\":\"Product Name\",\"category\":\"TV\",\"mentions\":45,\"positiveInsight\":\"한국어 긍정 인사이트 문장...\",\"negativeInsight\":\"한국어 부정 인사이트 문장...\"}],\n" +
+      "      \"takeaway\": {\"momentum\":\"한국어 모멘텀 문장\",\"friction\":\"한국어 마찰점 문장\"}\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}";
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: "Bearer " + LOVABLE_API_KEY,
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are a marketing insight generator. Output valid JSON only." },
+          { role: "system", content: "You are a marketing insight generator. Output valid JSON only. ALL text must be in Korean." },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -181,7 +163,7 @@ Output MUST be valid JSON in this exact format:
 
     if (!aiResp.ok) {
       const errText = await aiResp.text();
-      throw new Error(`AI API error: ${aiResp.status} — ${errText}`);
+      throw new Error("AI API error: " + aiResp.status + " — " + errText);
     }
 
     const aiData = await aiResp.json();
