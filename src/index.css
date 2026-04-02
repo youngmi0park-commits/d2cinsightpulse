@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    /* Page background: Warm Gray #F0ECE4 */
-    --background: 36 20% 92%;
+    /* Page background: #EFECE5 */
+    --background: 38 16% 91%;
     --foreground: 0 0% 10%;
 
     /* Card background: slightly lighter warm tone instead of pure white */
@@ -17,8 +17,8 @@
     --popover: 36 18% 95%;
     --popover-foreground: 0 0% 10%;
 
-    /* Heritage Red #A50034 */
-    --primary: 346 100% 32%;
+    /* Accent Red #EA1917 */
+    --primary: 0 85% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 36 14% 88%;
@@ -27,8 +27,8 @@
     --muted: 36 14% 85%;
     --muted-foreground: 0 0% 42%;
 
-    /* Active Red #FD312E */
-    --accent: 1 98% 59%;
+    /* Active Red #EA1917 */
+    --accent: 0 85% 50%;
     --accent-foreground: 0 0% 100%;
 
     /* Destructive uses Heritage Red */
