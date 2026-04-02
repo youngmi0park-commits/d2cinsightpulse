@@ -252,6 +252,23 @@ const CommunitiesPage = () => {
             </div>
           )}
 
+          {/* Executive Summary */}
+          {insights && insights.executiveSummary && insights.executiveSummary.length > 0 && !insightsLoading && (
+            <div className="gradient-card rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-bold font-heading text-primary">Weekly Executive Summary</h3>
+              </div>
+              <div className="space-y-2">
+                {insights.executiveSummary.map((line, i) => (
+                  <p key={i} className="text-xs leading-relaxed text-foreground">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* AI Insights Grid */}
           {insights && insights.channels && insights.channels.length > 0 && !insightsLoading && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
