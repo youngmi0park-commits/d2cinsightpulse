@@ -108,20 +108,30 @@ export function maskCompetitorNames(text: string): string {
 }
 
 // Issue categories and their indicator words
-const ISSUE_CATEGORIES: Record<string, string[]> = {
-  "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention"],
-  "Sound": ["sound", "audio", "bass", "speaker", "dialogue", "volume", "surround", "dolby atmos", "subwoofer", "treble", "soundbar"],
-  "Build Quality": ["build", "design", "finish", "stand", "slim", "weight", "aesthetic", "bezel", "mount", "material", "plastic", "metal", "premium feel"],
-  "App/Software": ["app", "software", "webos", "thinq", "interface", "remote", "update", "smart", "voice control", "alexa", "google", "airplay", "cast", "streaming", "netflix", "youtube app", "ui", "menu", "navigation"],
-  "Value for Money": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced"],
-  "Reliability": ["reliability", "reliable", "break", "broke", "broken", "last", "lifespan", "warranty", "replace", "defect", "fail", "malfunction", "dead", "stop working", "issue", "problem"],
+// ═══════════════════════════════════════════════════════════════════
+// FUNCTION-CONTEXT-OUTCOME (FCO) FRAMEWORK
+// ═══════════════════════════════════════════════════════════════════
+// Sentiment is determined by: Function (what feature) + Context (usage situation) + Outcome (satisfied/disappointed)
+// NOT by surface-level word polarity alone.
+
+/** Product Function categories — every sentence maps to at least one */
+export const FUNCTION_CATEGORIES: Record<string, string[]> = {
+  "Picture Quality": ["picture", "image", "color", "contrast", "brightness", "hdr", "black level", "viewing angle", "screen", "display", "oled", "resolution", "4k", "8k", "pixel", "burn-in", "burn in", "retention", "upscaling", "dolby vision", "motion", "blur", "judder", "black", "vivid", "dim", "bright"],
+  "Gaming": ["input lag", "response time", "vrr", "g-sync", "gsync", "freesync", "refresh rate", "cloud gaming", "gaming", "fps", "latency", "120hz", "144hz", "165hz", "game mode", "game optimizer"],
+  "Sound": ["sound", "audio", "bass", "speaker", "dialogue", "volume", "surround", "dolby atmos", "subwoofer", "treble", "soundbar", "clarity", "immersive"],
+  "Smart / AI / OS": ["app", "software", "webos", "thinq", "interface", "remote", "update", "smart", "voice control", "alexa", "google", "airplay", "cast", "streaming", "netflix", "youtube app", "ui", "menu", "navigation", "ai", "recommendation", "stability", "loading", "speed"],
+  "Design & Build": ["build", "design", "finish", "stand", "slim", "weight", "aesthetic", "bezel", "mount", "material", "plastic", "metal", "premium", "thin", "frame", "heavy", "cheap-looking", "sleek"],
+  "Installation & Setup": ["install", "setup", "delivery", "mount", "wall mount", "cable management", "assemble", "instruction", "manual", "connection", "plug", "difficulty"],
+  "Reliability & Quality": ["reliability", "reliable", "break", "broke", "broken", "last", "lifespan", "warranty", "replace", "defect", "fail", "malfunction", "dead", "stop working", "dead pixel", "reboot", "heat", "noise", "durability"],
+  "Value & Price": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced", "expectation"],
   "Customer Service": ["service", "support", "customer", "repair", "technician", "return", "refund", "exchange", "response", "call center", "chat support", "warranty claim"],
-  "Performance": ["performance", "speed", "input lag", "gaming", "refresh rate", "response time", "processing", "upscaling", "motion", "fps", "latency", "smooth", "fast"],
-  "Installation": ["install", "setup", "delivery", "mount", "assemble", "instruction", "manual", "connection", "plug"],
-  "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
   "Wash/Clean Quality": ["wash", "clean", "stain", "rinse", "spin", "cycle", "drum", "detergent", "fabric", "gentle", "heavy duty"],
   "Cooling/Temperature": ["cool", "cold", "temperature", "freeze", "ice", "fresh", "chill", "thermostat", "compressor"],
+  "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
 };
+
+// Keep backward compat alias
+const ISSUE_CATEGORIES = FUNCTION_CATEGORIES;
 
 // Price-value expressions
 const PRICE_POSITIVE = ["worth every penny", "great value", "worth the price", "budget-friendly", "good deal", "great deal", "fair price", "bang for the buck", "bang for your buck", "affordable", "reasonably priced"];
@@ -280,6 +290,56 @@ function classifyIssueCategory(text: string): string {
     }
   }
   return bestCategory;
+}
+
+/**
+ * FCO: Classify a sentence into Function category, Context, and Outcome direction.
+ * Returns a meaning-unit keyword string like "Picture Quality – Deep blacks even in bright rooms"
+ */
+function classifySentenceFCO(sentence: string): { function: string; context: string; isPositive: boolean } {
+  const lower = sentence.toLowerCase();
+  let bestFunc = "General";
+  let bestScore = 0;
+  for (const [func, indicators] of Object.entries(FUNCTION_CATEGORIES)) {
+    let score = 0;
+    for (const ind of indicators) {
+      if (lower.includes(ind)) score++;
+    }
+    if (score > bestScore) { bestScore = score; bestFunc = func; }
+  }
+
+  // Derive context clues
+  const contextClues: string[] = [];
+  const contextPatterns = [
+    /\b(?:in|at|during|for|while|when)\s+(?:the\s+)?([^,.!?]{3,30})/gi,
+    /\b(?:with|using|on)\s+(?:my|the|a)?\s*([^,.!?]{3,20})/gi,
+  ];
+  for (const pat of contextPatterns) {
+    pat.lastIndex = 0;
+    const m = pat.exec(sentence);
+    if (m?.[1]) contextClues.push(m[1].trim());
+  }
+
+  // Outcome: check if positive or negative
+  let posSignals = 0, negSignals = 0;
+  for (const w of Object.keys(POSITIVE_WORDS)) { if (lower.includes(w)) posSignals++; }
+  for (const w of Object.keys(NEGATIVE_WORDS)) { if (lower.includes(w)) negSignals++; }
+  // Check negation flipping
+  const hasNeg = NEGATION_TOKENS.some(n => lower.includes(n));
+  if (hasNeg) { [posSignals, negSignals] = [negSignals, posSignals]; }
+
+  return {
+    function: bestFunc,
+    context: contextClues[0] || "",
+    isPositive: posSignals >= negSignals,
+  };
+}
+
+/** Build a meaning-unit keyword from FCO analysis */
+export function buildMeaningKeyword(sentence: string): string {
+  const fco = classifySentenceFCO(sentence);
+  const evidence = extractEvidencePhrase(sentence, 10, 3);
+  return `${fco.function} – ${evidence}`;
 }
 
 /** Extract best evidence phrase (5-12 words) from a sentence */
@@ -633,16 +693,16 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     const normalized = Math.max(0, Math.min(100, (result.baseScore + 1) * 50));
     totalComposite += normalized;
 
-    // Keywords: extract from text
-    const textLower = review.text.toLowerCase();
-    for (const [word, baseScore] of Object.entries(POSITIVE_WORDS)) {
-      if (textLower.includes(word)) {
-        posKeywords.set(word, (posKeywords.get(word) || 0) + 1);
-      }
-    }
-    for (const [word, baseScore] of Object.entries(NEGATIVE_WORDS)) {
-      if (textLower.includes(word)) {
-        negKeywords.set(word, (negKeywords.get(word) || 0) + 1);
+    // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
+    const reviewSentences = splitSentences(review.text);
+    for (const sent of reviewSentences) {
+      const fco = classifySentenceFCO(sent);
+      if (fco.function === "General") continue;
+      const meaningKey = `${fco.function} – ${extractEvidencePhrase(sent, 8, 3)}`;
+      if (fco.isPositive) {
+        posKeywords.set(meaningKey, (posKeywords.get(meaningKey) || 0) + 1);
+      } else {
+        negKeywords.set(meaningKey, (negKeywords.get(meaningKey) || 0) + 1);
       }
     }
 
