@@ -1,11 +1,35 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
-import { TrendingUp, BarChart3, Loader2, Database, Layers, Store, MessageCircle, ThumbsUp, ThumbsDown } from "lucide-react";
+import { TrendingUp, BarChart3, Loader2, Database, Layers, Store, MessageCircle, ThumbsUp, ThumbsDown, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
+
+interface KeyTakeawayItem {
+  product: string;
+  category: string;
+  positive_msg: string;
+  negative_msg: string;
+  marketer_action: string;
+}
+
+function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
+  return useQuery({
+    queryKey: ["channel-key-takeaway", channel],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("generate-overview-summary", {
+        body: { channel },
+      });
+      if (error) throw error;
+      return (data?.overview?.key_takeaway as KeyTakeawayItem[]) || [];
+    },
+    staleTime: 1000 * 60 * 30, // 30 min cache
+    gcTime: 1000 * 60 * 60,
+    retry: 1,
+  });
+}
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
@@ -161,6 +185,10 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
   const { data: lgcomNeg = [], isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
   const { data: redditPos = [], isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
   const { data: redditNeg = [], isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+
+  // Auto-fetch KEY TAKEAWAY per channel
+  const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
+  const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at
@@ -319,7 +347,105 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
             />
           </div>
         )}
+
+        {/* KEY TAKEAWAY — 채널별 마케터 인사이트 */}
+        {totalReviews > 0 && (
+          <div className="pt-3 border-t border-primary/10 space-y-3">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-amber-500" />
+              <h4 className="text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                💡 KEY TAKEAWAY — {t("Marketer Insights", "마케터 인사이트")}
+              </h4>
+              {(lgcomTakeawayL || redditTakeawayL) && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+              )}
+            </div>
+
+            {(lgcomTakeawayL && redditTakeawayL) ? (
+              <div className="flex items-center gap-2 py-4 justify-center">
+                <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                <span className="text-xs text-muted-foreground">{t("Generating AI insights...", "AI 인사이트 생성 중... (최초 1회 약 30~60초 소요)")}</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {/* LG.com Key Takeaway */}
+                <KeyTakeawayBlock
+                  label="🏪 LG.COM"
+                  color="text-primary"
+                  borderColor="border-primary/20"
+                  items={lgcomTakeaway}
+                  loading={lgcomTakeawayL}
+                  t={t}
+                />
+                {/* Reddit Key Takeaway */}
+                <KeyTakeawayBlock
+                  label="💬 REDDIT"
+                  color="text-orange-500"
+                  borderColor="border-orange-500/20"
+                  items={redditTakeaway}
+                  loading={redditTakeawayL}
+                  t={t}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ───── Key Takeaway Block ───── */
+function KeyTakeawayBlock({ label, color, borderColor, items, loading, t }: {
+  label: string; color: string; borderColor: string;
+  items: KeyTakeawayItem[]; loading: boolean;
+  t: (en: string, ko: string) => string;
+}) {
+  if (loading) {
+    return (
+      <div className={`rounded-lg border ${borderColor} bg-amber-50/30 dark:bg-amber-500/5 p-4`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`text-xs font-bold ${color}`}>{label}</span>
+        </div>
+        <div className="flex items-center gap-2 py-3 justify-center">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+          <span className="text-[10px] text-muted-foreground">{t("Loading...", "로딩 중...")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <div className={`rounded-lg border ${borderColor} bg-amber-50/30 dark:bg-amber-500/5 p-4`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`text-xs font-bold ${color}`}>{label}</span>
+        </div>
+        <p className="text-[10px] text-muted-foreground text-center py-2">{t("No data", "데이터 없음")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`rounded-lg border ${borderColor} bg-amber-50/30 dark:bg-amber-500/5 p-4 space-y-2.5`}>
+      <div className="flex items-center gap-2">
+        <span className={`text-xs font-bold ${color}`}>{label}</span>
+      </div>
+      {items.map((item, i) => (
+        <div key={i} className="bg-background/60 rounded-lg px-3 py-2.5 space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold">
+              {item.category}
+            </Badge>
+            <span className="text-[11px] font-bold text-foreground">{item.product}</span>
+          </div>
+          <div className="text-[11px] text-success leading-relaxed">👍 {item.positive_msg}</div>
+          <div className="text-[11px] text-destructive leading-relaxed">👎 {item.negative_msg}</div>
+          <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-500/10 rounded px-2.5 py-1.5 leading-relaxed">
+            🎯 {item.marketer_action}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
