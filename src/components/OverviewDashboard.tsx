@@ -150,6 +150,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
   const [issuesOpen, setIssuesOpen] = useState(true);
   const [praiseOpen, setPraiseOpen] = useState(true);
   const [unmatchedOpen, setUnmatchedOpen] = useState(true);
+  const [takeawayOpen, setTakeawayOpen] = useState(true);
 
   return (
     <div>
