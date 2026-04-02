@@ -436,8 +436,8 @@ ${selectedPurpose.channel === "outside" ? '✅ Must include "Ad" / "광고" labe
         break;
     }
 
-    // Social proof phrase
-    const socialProof = `${sentiment.positive} verified buyers praised`;
+    // Experience-proof phrase (no review counts)
+    const socialProof = `Real users consistently praised`;
 
     // Inside vs Outside channel versions (Version A: benefit-led)
     const insideVersion = `${removeSuperlatves(prName)} — ${removeSuperlatves(strengths[0] || "Quality")}. ${removeSuperlatves(strengths[1] || "Performance")}. ${removeSuperlatves(strengths[2] || "Design")}.\n${socialProof} this product. ${evidence}`;
