@@ -201,6 +201,7 @@ const CommunitiesPage = () => {
             <div className="flex items-center gap-2 mb-3">
               <Globe className="h-4 w-4 text-primary" />
               <h4 className="text-sm font-semibold font-heading">채널별 리뷰 현황</h4>
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">누적 기준</Badge>
               <Badge variant="secondary" className="text-[10px] ml-auto">
                 Total {stats.total.toLocaleString()}
               </Badge>
@@ -211,10 +212,23 @@ const CommunitiesPage = () => {
                 return (
                   <div
                     key={ch.name}
-                    className="rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[140px]"
+                    className="rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[160px]"
                   >
                     <div className="text-xs font-semibold text-foreground">{ch.name}</div>
                     <div className="text-lg font-bold text-primary">{ch.total.toLocaleString()}</div>
+                    <div className="flex items-center gap-2 mt-1 text-[10px]">
+                      <span className="flex items-center gap-0.5 text-success">
+                        <ThumbsUp className="h-2.5 w-2.5" />
+                        {ch.positive.toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-0.5 text-destructive">
+                        <ThumbsDown className="h-2.5 w-2.5" />
+                        {ch.negative.toLocaleString()}
+                      </span>
+                      <span className="text-muted-foreground ml-auto">
+                        긍정 {posP}%
+                      </span>
+                    </div>
                     <div className="h-1.5 rounded-full overflow-hidden flex bg-secondary mt-1">
                       <div className="bg-success h-full" style={{ width: `${posP}%` }} />
                       <div className="bg-destructive h-full" style={{ width: `${100 - posP}%` }} />
