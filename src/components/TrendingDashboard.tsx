@@ -186,6 +186,10 @@ export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingD
   const { data: redditPos = [], isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
   const { data: redditNeg = [], isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
 
+  // Auto-fetch KEY TAKEAWAY per channel
+  const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
+  const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
+
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at
     ? new Date(lastCollection.completed_at)
