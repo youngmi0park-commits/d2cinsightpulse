@@ -1,272 +1,277 @@
 import { useState } from "react";
-import { Globe, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Globe, Loader2, ThumbsUp, ThumbsDown, TrendingUp, AlertTriangle, Sparkles, RefreshCw, BarChart3 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
 
-/* ── helpers ── */
-const STOP_WORDS = new Set([
-  "the","a","an","and","or","but","in","on","at","to","for","of","with","by",
-  "is","it","was","are","were","be","been","have","has","had","this","that",
-  "from","as","not","so","very","just","i","my","me","we","our","you","your",
-  "they","them","their","its","no","do","does","did","will","would","can","could",
-  "should","about","all","one","two","if","up","out","more","also","than","then",
-  "into","over","after","only","any","each","which","what","when","how","where",
-  "some","other","new","like","get","got","much","really","product","lg","good",
-  "great","review","use","used","using","bought","buy","still","back","well","work",
-  "works","working","make","made","even","time","first","way","thing","things",
-]);
-
-function extractKeywords(texts: string[], limit = 8): { word: string; count: number }[] {
-  const freq: Record<string, number> = {};
-  for (const t of texts) {
-    const words = t.toLowerCase().replace(/[^a-z0-9\s'-]/g, "").split(/\s+/);
-    const seen = new Set<string>();
-    for (const w of words) {
-      if (w.length < 3 || STOP_WORDS.has(w) || seen.has(w)) continue;
-      seen.add(w);
-      freq[w] = (freq[w] || 0) + 1;
-    }
-  }
-  return Object.entries(freq)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([word, count]) => ({ word, count }));
+/* ── types ── */
+interface ProductInsight {
+  rank: number;
+  name: string;
+  category: string;
+  mentions: number;
+  positiveInsight: string;
+  negativeInsight: string;
 }
 
-/* ── source label map ── */
+interface ChannelTakeaway {
+  momentum: string;
+  friction: string;
+}
+
+interface ChannelInsight {
+  channel: string;
+  reviewCount: number;
+  products: ProductInsight[];
+  takeaway: ChannelTakeaway;
+}
+
+interface InsightsResponse {
+  channels: ChannelInsight[];
+  totalReviews: number;
+}
+
+/* ── source label map (for basic stats) ── */
 function sourceLabel(source: string): string {
   if (source.startsWith("amazon")) return "Amazon";
   if (source.startsWith("youtube")) return "YouTube";
   if (source.startsWith("bestbuy")) return "Best Buy";
   if (source.startsWith("walmart")) return "Walmart";
-  if (source.startsWith("twitter") || source.startsWith("x_")) return "X (Twitter)";
-  if (source.startsWith("forum")) return "Forums";
   if (source.startsWith("shopee")) return "Shopee";
   if (source.startsWith("lazada")) return "Lazada";
+  if (source.startsWith("trustpilot")) return "Trustpilot";
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-interface CommunityData {
-  source: string;
-  label: string;
-  total: number;
-  positive: number;
-  negative: number;
-  neutral: number;
-  topPositiveProducts: { name: string; count: number; keywords: string[] }[];
-  topNegativeProducts: { name: string; count: number; keywords: string[] }[];
-}
-
-function useCommunityData(country: string) {
+/* ── basic stats hook (fast, no AI) ── */
+function useBasicStats(country: string) {
   const sourcesFilter = countryToSourceFilter(country);
-
   return useQuery({
-    queryKey: ["community-reviews", country],
+    queryKey: ["community-basic-stats", country],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("source, sentiment, content, product_id, products!inner(display_name, category)")
+        .select("source, sentiment", { count: "exact" })
         .not("source", "like", "lge_com%")
         .not("source", "like", "reddit%")
         .limit(1000);
-
       if (sourcesFilter && sourcesFilter.length > 0) {
         query = query.in("source", sourcesFilter);
       }
-
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
-
-      // Group by source
-      const bySource: Record<string, typeof data> = {};
+      const byChannel: Record<string, { total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
-        const src = r.source;
-        if (!bySource[src]) bySource[src] = [];
-        bySource[src].push(r);
+        const ch = sourceLabel(r.source);
+        if (!byChannel[ch]) byChannel[ch] = { total: 0, positive: 0, negative: 0 };
+        byChannel[ch].total++;
+        if (r.sentiment === "positive") byChannel[ch].positive++;
+        if (r.sentiment === "negative") byChannel[ch].negative++;
       }
-
-      const communities: CommunityData[] = Object.entries(bySource).map(([src, rows]) => {
-        const positive = rows.filter((r) => r.sentiment === "positive");
-        const negative = rows.filter((r) => r.sentiment === "negative");
-
-        const posProd: Record<string, { name: string; count: number; contents: string[] }> = {};
-        for (const r of positive) {
-          const p = r.products as any;
-          const name = p?.display_name || "Unknown";
-          if (!posProd[name]) posProd[name] = { name, count: 0, contents: [] };
-          posProd[name].count++;
-          posProd[name].contents.push(r.content);
-        }
-
-        const negProd: Record<string, { name: string; count: number; contents: string[] }> = {};
-        for (const r of negative) {
-          const p = r.products as any;
-          const name = p?.display_name || "Unknown";
-          if (!negProd[name]) negProd[name] = { name, count: 0, contents: [] };
-          negProd[name].count++;
-          negProd[name].contents.push(r.content);
-        }
-
-        const topPos = Object.values(posProd)
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5)
-          .map((p) => ({ name: p.name, count: p.count, keywords: extractKeywords(p.contents, 5).map((k) => k.word) }));
-
-        const topNeg = Object.values(negProd)
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5)
-          .map((p) => ({ name: p.name, count: p.count, keywords: extractKeywords(p.contents, 5).map((k) => k.word) }));
-
-        return {
-          source: src,
-          label: sourceLabel(src),
-          total: rows.length,
-          positive: positive.length,
-          negative: negative.length,
-          neutral: rows.length - positive.length - negative.length,
-          topPositiveProducts: topPos,
-          topNegativeProducts: topNeg,
-        };
-      });
-
-      return communities.sort((a, b) => b.total - a.total);
+      return {
+        channels: Object.entries(byChannel)
+          .map(([name, s]) => ({ name, ...s }))
+          .sort((a, b) => b.total - a.total),
+        total: count || (data?.length ?? 0),
+      };
     },
     staleTime: 60_000,
   });
 }
 
-function CommunityCard({ community }: { community: CommunityData }) {
-  const posPercent = community.total ? Math.round((community.positive / community.total) * 100) : 0;
-  const negPercent = community.total ? Math.round((community.negative / community.total) * 100) : 0;
+/* ── AI insights mutation ── */
+function useGenerateInsights() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (country: string): Promise<InsightsResponse> => {
+      const { data, error } = await supabase.functions.invoke("generate-community-insights", {
+        body: { country },
+      });
+      if (error) throw error;
+      return data as InsightsResponse;
+    },
+    onSuccess: (data, country) => {
+      queryClient.setQueryData(["community-insights", country], data);
+    },
+  });
+}
 
+/* ── Channel Insight Card ── */
+function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
   return (
-    <div className="gradient-card rounded-xl border border-border p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-semibold font-heading">{community.label}</h4>
-        <Badge variant="secondary" className="text-[10px]">{community.total}건</Badge>
-      </div>
-      <div className="h-2 rounded-full overflow-hidden flex bg-secondary">
-        <div className="bg-success h-full" style={{ width: `${posPercent}%` }} />
-        <div className="bg-muted h-full" style={{ width: `${100 - posPercent - negPercent}%` }} />
-        <div className="bg-destructive h-full" style={{ width: `${negPercent}%` }} />
-      </div>
-      <div className="flex justify-between text-[10px] text-muted-foreground mt-1 mb-3">
-        <span className="text-success font-medium">{posPercent}% 긍정</span>
-        <span className="text-destructive font-medium">{negPercent}% 부정</span>
+    <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-bold font-heading">{insight.channel}</h3>
+        </div>
+        <Badge variant="secondary" className="text-[10px]">
+          {insight.reviewCount.toLocaleString()}건 분석
+        </Badge>
       </div>
 
-      <div className="space-y-4">
-        {community.topPositiveProducts.length > 0 && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <ThumbsUp className="h-3.5 w-3.5 text-success" />
-              <span className="text-[11px] font-semibold text-success">긍정 리뷰 TOP 제품</span>
+      {/* Products */}
+      <div className="space-y-3">
+        {insight.products.map((product) => (
+          <div key={product.rank} className="rounded-lg border border-border bg-background/50 p-3.5">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                {product.rank}
+              </span>
+              <span className="text-xs font-semibold text-foreground">{product.name}</span>
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0">{product.category}</Badge>
+              <span className="text-[10px] text-muted-foreground ml-auto">{product.mentions}건</span>
             </div>
+
             <div className="space-y-1.5">
-              {community.topPositiveProducts.map((p, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <span className="text-success font-bold shrink-0">{i + 1}</span>
-                  <div className="min-w-0">
-                    <div className="font-medium text-foreground truncate">{p.name} <span className="text-muted-foreground">({p.count}건)</span></div>
-                    {p.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {p.keywords.map((kw) => (
-                          <Badge key={kw} variant="outline" className="text-[9px] px-1 py-0 border-success/30 text-success">{kw}</Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+              <div className="flex items-start gap-2">
+                <ThumbsUp className="h-3.5 w-3.5 text-success mt-0.5 shrink-0" />
+                <p className="text-xs text-foreground leading-relaxed">{product.positiveInsight}</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <ThumbsDown className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
+                <p className="text-xs text-foreground leading-relaxed">{product.negativeInsight}</p>
+              </div>
             </div>
           </div>
-        )}
+        ))}
+      </div>
 
-        {community.topNegativeProducts.length > 0 && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <ThumbsDown className="h-3.5 w-3.5 text-destructive" />
-              <span className="text-[11px] font-semibold text-destructive">부정 리뷰 TOP 제품</span>
+      {/* Takeaway */}
+      {insight.takeaway && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold text-primary">This Week's Takeaway</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2">
+              <TrendingUp className="h-3 w-3 text-success mt-0.5 shrink-0" />
+              <p className="text-[11px] text-foreground leading-relaxed">{insight.takeaway.momentum}</p>
             </div>
-            <div className="space-y-1.5">
-              {community.topNegativeProducts.map((p, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <span className="text-destructive font-bold shrink-0">{i + 1}</span>
-                  <div className="min-w-0">
-                    <div className="font-medium text-foreground truncate">{p.name} <span className="text-muted-foreground">({p.count}건)</span></div>
-                    {p.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {p.keywords.map((kw) => (
-                          <Badge key={kw} variant="outline" className="text-[9px] px-1 py-0 border-destructive/30 text-destructive">{kw}</Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-[11px] text-foreground leading-relaxed">{insight.takeaway.friction}</p>
             </div>
           </div>
-        )}
-
-        {community.topPositiveProducts.length === 0 && community.topNegativeProducts.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-2">제품별 데이터 없음</p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
+/* ── Main Page ── */
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const { data: communities, isLoading } = useCommunityData(selectedCountry);
-  const total = communities?.reduce((s, c) => s + c.total, 0) || 0;
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry);
+  const { mutate: generateInsights, isPending: insightsLoading } = useGenerateInsights();
+  const queryClient = useQueryClient();
+  const insights = queryClient.getQueryData<InsightsResponse>(["community-insights", selectedCountry]);
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
       <PageHeader
         icon={Globe}
-        title="🌐 Other Communities"
-        description="LG.com과 Reddit을 제외한 Amazon, YouTube, Best Buy 등 외부 커뮤니티에서 수집된 리뷰를 채널별로 분석합니다. 긍정·부정 리뷰가 많은 제품과 주요 키워드를 확인하세요."
+        title="🌐 Community Weekly Insights"
+        description="Amazon, YouTube, Best Buy, Shopee, Lazada 등 외부 커뮤니티 리뷰를 AI가 분석하여 채널별 Top 3 제품의 긍정·부정 인사이트 문장과 마케터용 주간 테이크어웨이를 생성합니다."
       />
 
       <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-16">
+      {/* Quick Stats Bar */}
+      {statsLoading ? (
+        <div className="flex items-center justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      ) : !communities || communities.length === 0 ? (
+      ) : !stats || stats.channels.length === 0 ? (
         <div className="gradient-card rounded-xl border border-border p-6 text-center text-sm text-muted-foreground">
-            {selectedCountry !== "all" ? `${selectedCountry} 지역의 수집 데이터가 아직 없습니다.` : "LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다."}
+          {selectedCountry !== "all"
+            ? `${selectedCountry} 지역의 수집 데이터가 아직 없습니다.`
+            : "LG.com, Reddit 이외 채널의 수집 데이터가 아직 없습니다."}
         </div>
       ) : (
         <>
+          {/* Overview bar */}
           <div className="gradient-card rounded-xl border border-border p-5">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-semibold font-heading">커뮤니티별 리뷰 수</h4>
-              <Badge variant="secondary" className="text-[10px] ml-auto">Total {total.toLocaleString()}</Badge>
+              <h4 className="text-sm font-semibold font-heading">채널별 리뷰 현황</h4>
+              <Badge variant="secondary" className="text-[10px] ml-auto">
+                Total {stats.total.toLocaleString()}
+              </Badge>
             </div>
             <div className="flex flex-wrap gap-2">
-              {communities.map((c) => (
-                <div key={c.source} className="flex items-center gap-2 rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[120px]">
-                  <div>
-                    <div className="text-xs font-semibold text-foreground">{c.label}</div>
-                    <div className="text-lg font-bold text-primary">{c.total.toLocaleString()}</div>
+              {stats.channels.map((ch) => {
+                const posP = ch.total ? Math.round((ch.positive / ch.total) * 100) : 0;
+                return (
+                  <div
+                    key={ch.name}
+                    className="rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[140px]"
+                  >
+                    <div className="text-xs font-semibold text-foreground">{ch.name}</div>
+                    <div className="text-lg font-bold text-primary">{ch.total.toLocaleString()}</div>
+                    <div className="h-1.5 rounded-full overflow-hidden flex bg-secondary mt-1">
+                      <div className="bg-success h-full" style={{ width: `${posP}%` }} />
+                      <div className="bg-destructive h-full" style={{ width: `${100 - posP}%` }} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {communities.map((c) => (
-              <CommunityCard key={c.source} community={c} />
-            ))}
+          {/* Generate Insights Button */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">📊 AI 주간 인사이트</h3>
+            <Button
+              size="sm"
+              variant={insights ? "outline" : "default"}
+              onClick={() => generateInsights(selectedCountry)}
+              disabled={insightsLoading}
+              className="gap-1.5"
+            >
+              {insightsLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+              {insights ? "인사이트 새로고침" : "AI 인사이트 생성"}
+            </Button>
           </div>
+
+          {/* Loading state */}
+          {insightsLoading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-xs text-muted-foreground">AI가 리뷰를 분석하고 있습니다... (30초~1분 소요)</p>
+            </div>
+          )}
+
+          {/* AI Insights Grid */}
+          {insights && insights.channels && insights.channels.length > 0 && !insightsLoading && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {insights.channels.map((ch) => (
+                <ChannelInsightCard key={ch.channel} insight={ch} />
+              ))}
+            </div>
+          )}
+
+          {/* No insights yet prompt */}
+          {!insights && !insightsLoading && (
+            <div className="gradient-card rounded-xl border border-border border-dashed p-8 text-center">
+              <Sparkles className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-1">
+                "AI 인사이트 생성" 버튼을 클릭하면 채널별 Top 3 제품 인사이트가 생성됩니다.
+              </p>
+              <p className="text-[11px] text-muted-foreground/60">
+                최근 7일 리뷰를 기반으로 분석합니다
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>
