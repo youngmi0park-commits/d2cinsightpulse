@@ -106,39 +106,40 @@ ${p.negative.map((s) => `- ${s}`).join("\n")}`;
       });
     }
 
-    // Call AI for insight generation
+    // Call AI for insight generation (Korean output)
     const prompt = `You are a marketing insight AI for LG Electronics products generating weekly community intelligence.
+ALL OUTPUT MUST BE IN KOREAN (한국어).
 
 CRITICAL RULES:
-1. Generate a "executiveSummary" — exactly 5 concise sentences (no bullets, no emojis) summarizing the ENTIRE week across ALL channels:
-   Line 1: Overall momentum summary
-   Line 2: Product(s) gaining the most attention
-   Line 3: Key positive experience theme this week
-   Line 4: Repeated friction or risk signal
-   Line 5: Clear marketing or messaging opportunity
+1. Generate a "executiveSummary" — exactly 5 concise sentences IN KOREAN summarizing the ENTIRE week across ALL channels:
+   Line 1: 전체 모멘텀 요약
+   Line 2: 가장 주목받는 제품
+   Line 3: 이번 주 핵심 긍정 경험 테마
+   Line 4: 반복되는 마찰/리스크 시그널
+   Line 5: 명확한 마케팅/메시징 기회
 2. For each channel, identify the Top 3 most-mentioned products
-3. For each product: ONE positive insight sentence + ONE negative insight sentence
-4. Insights must reference product function (Picture Quality, Gaming, Sound, Smart/AI, Design, Installation, Reliability, Value), usage context, and outcome
-5. Add a "This Week's Takeaway" per channel (momentum + friction)
+3. For each product: ONE positive insight sentence + ONE negative insight sentence (ALL IN KOREAN)
+4. Insights must reference product function (화질, 게이밍, 사운드, 스마트/AI, 디자인, 설치, 신뢰성, 가성비), usage context, and outcome
+5. Add a "This Week's Takeaway" per channel in KOREAN (momentum + friction)
 6. Competitor names: Samsung → SS, Sony → SN, TCL → TC, Hisense → HS
 7. No keyword-only output, no raw quotes, no generic praise
 
-GOOD insight example: "Users consistently praised the TV's deep blacks and stable performance during long gaming sessions on PS5."
-BAD insight example: "Great picture quality and gaming."
+GOOD insight example: "PS5 연결 시 깊은 블랙과 안정적인 성능으로 장시간 게이밍에 대한 만족도가 높았습니다."
+BAD insight example: "화질 좋음, 게이밍 좋음."
 
-${channelSummaries.map((cs) => `
-=== Channel: ${cs.channel} (${cs.reviewCount} reviews) ===
-${cs.productSummary}
-`).join("\n")}
+${channelSummaries.map((cs) => \`
+=== Channel: \${cs.channel} (\${cs.reviewCount} reviews) ===
+\${cs.productSummary}
+\`).join("\\n")}
 
 Output MUST be valid JSON in this exact format:
 {
   "executiveSummary": [
-    "Line 1 sentence",
-    "Line 2 sentence",
-    "Line 3 sentence",
-    "Line 4 sentence",
-    "Line 5 sentence"
+    "한국어 문장 1",
+    "한국어 문장 2",
+    "한국어 문장 3",
+    "한국어 문장 4",
+    "한국어 문장 5"
   ],
   "channels": [
     {
@@ -150,13 +151,13 @@ Output MUST be valid JSON in this exact format:
           "name": "Product Name",
           "category": "TV",
           "mentions": 45,
-          "positiveInsight": "One context-aware sentence...",
-          "negativeInsight": "One context-aware sentence..."
+          "positiveInsight": "한국어 긍정 인사이트 문장...",
+          "negativeInsight": "한국어 부정 인사이트 문장..."
         }
       ],
       "takeaway": {
-        "momentum": "One sentence about products gaining momentum",
-        "friction": "One sentence about friction points needing attention"
+        "momentum": "한국어 모멘텀 문장",
+        "friction": "한국어 마찰점 문장"
       }
     }
   ]
