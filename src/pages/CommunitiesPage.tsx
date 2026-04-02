@@ -30,6 +30,7 @@ interface ChannelInsight {
 }
 
 interface InsightsResponse {
+  executiveSummary?: string[];
   channels: ChannelInsight[];
   totalReviews: number;
 }
@@ -248,6 +249,23 @@ const CommunitiesPage = () => {
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <p className="text-xs text-muted-foreground">AI가 리뷰를 분석하고 있습니다... (30초~1분 소요)</p>
+            </div>
+          )}
+
+          {/* Executive Summary */}
+          {insights && insights.executiveSummary && insights.executiveSummary.length > 0 && !insightsLoading && (
+            <div className="gradient-card rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-bold font-heading text-primary">Weekly Executive Summary</h3>
+              </div>
+              <div className="space-y-2">
+                {insights.executiveSummary.map((line, i) => (
+                  <p key={i} className="text-xs leading-relaxed text-foreground">
+                    {line}
+                  </p>
+                ))}
+              </div>
             </div>
           )}
 
