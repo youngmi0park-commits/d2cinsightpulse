@@ -11,6 +11,13 @@ interface ChannelInsight {
   top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[] }[];
   urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[] }[];
   recurring_praise: { text: string; product?: string; category?: string }[];
+  key_takeaway?: { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
+}
+
+interface AllChannelSummary {
+  top_products: { name: string; category: string; positive_msg: string; negative_msg: string }[];
+  key_takeaway: string;
+  community_weekly: string;
 }
 
 /* ── AI insight generation per channel ── */
@@ -105,13 +112,58 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
   try { return JSON.parse(content); } catch { return null; }
 }
 
+/* ── All-channel summary for newsletter top ── */
+async function generateAllChannelSummary(sb: any, lovableApiKey: string): Promise<AllChannelSummary | null> {
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data: reviews, error } = await sb
+    .from("reviews")
+    .select("source, sentiment, content, products!inner(display_name, category)")
+    .gte("collected_at", weekAgo)
+    .limit(600);
+  if (error || !reviews?.length) return null;
+
+  const byProduct: Record<string, { name: string; cat: string; pos: string[]; neg: string[]; total: number }> = {};
+  for (const r of reviews as any[]) {
+    const name = r.products?.display_name || "Unknown";
+    const cat = r.products?.category || "";
+    if (!byProduct[name]) byProduct[name] = { name, cat, pos: [], neg: [], total: 0 };
+    byProduct[name].total++;
+    if (r.sentiment === "positive" && byProduct[name].pos.length < 5) byProduct[name].pos.push(r.content.slice(0, 120));
+    if (r.sentiment === "negative" && byProduct[name].neg.length < 5) byProduct[name].neg.push(r.content.slice(0, 120));
+  }
+  const top5 = Object.values(byProduct).sort((a, b) => b.total - a.total).slice(0, 5);
+  const dataSummary = top5.map(p => p.name + " (" + p.cat + "): " + p.total + "건, 긍정: " + p.pos.slice(0, 2).join(" | ") + ", 부정: " + p.neg.slice(0, 2).join(" | ")).join("\n");
+
+  const prompt = "다음은 LG전자 전채널(LG.com, Reddit, Amazon, YouTube 등) 최근 1주 리뷰 데이터입니다:\n\n" + dataSummary +
+    "\n\n아래 JSON 형식으로 응답:\n" +
+    '{"top_products":[{"name":"제품명","category":"TV","positive_msg":"긍정 핵심 한 줄","negative_msg":"부정 핵심 한 줄"}],' +
+    '"key_takeaway":"마케터가 이번 주 바로 활용할 수 있는 핵심 액션 포인트 2~3문장",' +
+    '"community_weekly":"Amazon, YouTube 등 외부 커뮤니티 리뷰 주간 동향 요약 2~3문장"}';
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + lovableApiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: "You are a Korean marketing insight generator for LG Electronics. Output valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!resp.ok) return null;
+  const aiData = await resp.json();
+  try { return JSON.parse(aiData.choices?.[0]?.message?.content || "{}"); } catch { return null; }
+}
+
 /* ── Newsletter HTML builder ── */
 function buildNewsletterHTML(d: {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
   channels: { name: string; count: number; color: string }[];
-}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string): string {
+}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
   const wowColor = d.wow >= 0 ? "#006600" : "#A50034";
   const wowSign = d.wow >= 0 ? "+" : "";
 
@@ -247,6 +299,26 @@ function buildNewsletterHTML(d: {
     </td></tr>
   </table>
 </td></tr>
+
+<!-- All-Channel Weekly Insights (TOP) -->
+${allChannel ? `
+<tr><td style="padding:20px 28px 0;">
+  <div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#A50034;text-transform:uppercase;margin-bottom:12px;border-left:4px solid #A50034;padding-left:10px;">📊 전채널 주간 인사이트 리포트</div>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+    ${(allChannel.top_products || []).map(p => `
+    <tr><td style="padding:10px 14px;border-bottom:1px solid #F0ECE4;">
+      <div style="font-weight:700;font-size:12px;color:#1a1a1a;margin-bottom:4px;">${p.name} <span style="font-size:10px;color:#888;font-weight:400;">${p.category}</span></div>
+      <div style="font-size:11px;color:#006600;margin-bottom:2px;">👍 ${p.positive_msg}</div>
+      <div style="font-size:11px;color:#A50034;">👎 ${p.negative_msg}</div>
+    </td></tr>`).join("")}
+  </table>
+  <div style="border:2px solid #D97706;border-radius:8px;padding:12px 14px;background:#FFFBEB;margin-bottom:8px;">
+    <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;margin-bottom:6px;">💡 KEY TAKEAWAY</div>
+    <div style="font-size:12px;color:#1a1a1a;line-height:1.7;">${allChannel.key_takeaway}</div>
+  </div>
+</td></tr>
+<tr><td style="padding:12px 28px 0;"><div style="border-top:2px solid #E0DBD3;"></div></td></tr>
+` : ""}
 
 <!-- Channel 1: LG.com -->
 ${channelSectionHTML("LG.COM 주간 오버뷰", "🏪", lgcom)}

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowUpRight, ArrowDownRight, Copy, Check,
-  ThumbsUp,
+  ThumbsUp, Lightbulb,
   Loader2, Sparkles, AlertTriangle, Star, ChevronDown, ChevronUp, TrendingUp
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
@@ -61,11 +61,19 @@ interface RecurringPraise {
   product?: string;
   category?: string;
 }
+interface KeyTakeawayItem {
+  product: string;
+  category: string;
+  positive_msg: string;
+  negative_msg: string;
+  marketer_action: string;
+}
 interface OverviewData {
   top_topics: TopTopic[];
   urgent_issues: UrgentIssue[];
   recurring_praise: (string | RecurringPraise)[];
   unmatched_praise: string[];
+  key_takeaway?: KeyTakeawayItem[];
 }
 
 /* ───── Component ───── */
@@ -142,6 +150,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
   const [issuesOpen, setIssuesOpen] = useState(true);
   const [praiseOpen, setPraiseOpen] = useState(true);
   const [unmatchedOpen, setUnmatchedOpen] = useState(true);
+  const [takeawayOpen, setTakeawayOpen] = useState(true);
 
   return (
     <div>
@@ -296,6 +305,45 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
               ))}
             </div>
           </CollapsibleSection>
+
+          {/* 5. Key Takeaway */}
+          {overview.key_takeaway && overview.key_takeaway.length > 0 && (
+            <CollapsibleSection
+              icon={<Lightbulb className="h-4 w-4 text-amber-500" />}
+              title="KEY TAKEAWAY — 마케터 인사이트"
+              open={takeawayOpen}
+              onToggle={() => setTakeawayOpen(!takeawayOpen)}
+              bgClass="bg-amber-50/50 border-amber-500/20 dark:bg-amber-500/5"
+            >
+              <div className="space-y-3">
+                {overview.key_takeaway.map((item, i) => (
+                  <div key={i} className="border border-amber-500/15 bg-amber-50/30 dark:bg-amber-500/5 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold">
+                        {item.category}
+                      </Badge>
+                      <span className="text-sm font-bold text-foreground">{item.product}</span>
+                      <CopyBtn text={`[${item.product}]\n👍 ${item.positive_msg}\n👎 ${item.negative_msg}\n🎯 ${item.marketer_action}`} />
+                    </div>
+                    <div className="text-xs space-y-1.5">
+                      <div className="flex items-start gap-2">
+                        <span className="text-success shrink-0">👍</span>
+                        <p className="text-foreground leading-relaxed">{item.positive_msg}</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-destructive shrink-0">👎</span>
+                        <p className="text-foreground leading-relaxed">{item.negative_msg}</p>
+                      </div>
+                      <div className="flex items-start gap-2 bg-amber-100/50 dark:bg-amber-500/10 rounded-md px-3 py-2">
+                        <span className="shrink-0">🎯</span>
+                        <p className="text-foreground font-medium leading-relaxed">{item.marketer_action}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleSection>
+          )}
         </div>
       )}
     </div>

@@ -83,7 +83,7 @@ ${productSummary}
 긍정 키워드 TOP: ${posTitles.slice(0, 500)}
 부정 키워드 TOP: ${negTitles.slice(0, 500)}
 
-위 데이터를 기반으로 아래 4가지 섹션을 분석해주세요:
+위 데이터를 기반으로 아래 5가지 섹션을 분석해주세요:
 
 ## 1. 고객이 가장 많이 말하는 5가지 주제 (TOP 5 Topics)
 각 주제별로:
@@ -109,6 +109,11 @@ ${productSummary}
 - 고객이 경쟁사 대비가 아닌 절대적으로 칭찬하는 포인트 4~5개
 - 각각 고객 말투를 살린 한 줄 코멘트 (큰따옴표)
 
+## 5. Key Takeaway (마케터용 핵심 인사이트)
+- key_takeaway: 객체 배열 (3개)
+- 각 항목은 주로 언급된 제품명, 긍/부정 핵심 메시지, 마케터가 바로 활용할 수 있는 액션 제안을 포함
+- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄", "negative_msg": "부정 핵심 한 줄", "marketer_action": "마케터 액션 제안 한 줄" }
+
 JSON 형태로 응답:
 {
   "top_topics": [
@@ -132,8 +137,11 @@ JSON 형태로 응답:
       "related_products": ["모델명1"]
     }
   ],
-  "recurring_praise": [{"text": "칭찬 포인트1", "product": "제품명", "category": "TV"}, {"text": "칭찬 포인트2", "product": "제품명", "category": "Refrigerator"}],
-  "unmatched_praise": ["코멘트1", "코멘트2"]
+  "recurring_praise": [{"text": "칭찬 포인트1", "product": "제품명", "category": "TV"}],
+  "unmatched_praise": ["코멘트1", "코멘트2"],
+  "key_takeaway": [
+    {"product": "제품명", "category": "TV", "positive_msg": "긍정 핵심", "negative_msg": "부정 핵심", "marketer_action": "액션 제안"}
+  ]
 }`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
