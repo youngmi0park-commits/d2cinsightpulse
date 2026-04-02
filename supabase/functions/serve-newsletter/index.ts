@@ -449,14 +449,15 @@ Deno.serve(async (req) => {
 
     // ── Generate AI insights (parallel) ──
     console.log("Generating AI channel insights...");
-    const [lgcomInsight, redditInsight] = await Promise.all([
+    const [lgcomInsight, redditInsight, allChannelSummary] = await Promise.all([
       generateChannelInsight(sb, lovableApiKey, "lgcom"),
       generateChannelInsight(sb, lovableApiKey, "reddit"),
+      generateAllChannelSummary(sb, lovableApiKey),
     ]);
-    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight });
+    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, allChannel: !!allChannelSummary });
 
     // ── Build HTML ──
-    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl);
+    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl, allChannelSummary);
 
     // ── Send test email via Resend if requested ──
     let emailSent = false;
