@@ -175,8 +175,8 @@ function generateRuleBasedCopy(type: string, data: { topPositiveSnippets: string
   if (type === "offense") {
     return `⚡ Offense Marketing Copy (Reddit VOC 기반)
 
-1. "실사용자가 인정한 화질 — Reddit 커뮤니티에서 가장 많은 호평을 받은 LG OLED"
-   Verified by real users — the LG OLED most praised in the Reddit community.
+1. "압도적인 화질과 색재현력 — Reddit 커뮤니티가 극찬한 LG OLED의 핵심 강점"
+   Stunning picture quality and color accuracy — the key strengths praised by the Reddit community for LG OLED.
 
 2. "설치하고 나면 후회 없는 선택이라는 게 Reddit의 공통 의견입니다."
    "Zero regret after setup" — that's the Reddit consensus.
