@@ -94,7 +94,11 @@ ${productSummary}
 - 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
 - category는 TV, Refrigerator, Washer, Dishwasher 등 제품 카테고리
 
-JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [{"text": "...", "product": "...", "category": "..."}] }`;
+## 5. KEY TAKEAWAY — 마케터 인사이트 (key_takeaway)
+- 3개 항목, 각 항목은 주로 언급된 제품명, 긍/부정 핵심 메시지, 마케터 액션 제안 포함
+- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄", "negative_msg": "부정 핵심 한 줄", "marketer_action": "마케터 액션 제안 한 줄" }
+
+JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...], "key_takeaway": [...] }`;
 
   const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
