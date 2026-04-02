@@ -112,13 +112,58 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
   try { return JSON.parse(content); } catch { return null; }
 }
 
+/* ── All-channel summary for newsletter top ── */
+async function generateAllChannelSummary(sb: any, lovableApiKey: string): Promise<AllChannelSummary | null> {
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data: reviews, error } = await sb
+    .from("reviews")
+    .select("source, sentiment, content, products!inner(display_name, category)")
+    .gte("collected_at", weekAgo)
+    .limit(600);
+  if (error || !reviews?.length) return null;
+
+  const byProduct: Record<string, { name: string; cat: string; pos: string[]; neg: string[]; total: number }> = {};
+  for (const r of reviews as any[]) {
+    const name = r.products?.display_name || "Unknown";
+    const cat = r.products?.category || "";
+    if (!byProduct[name]) byProduct[name] = { name, cat, pos: [], neg: [], total: 0 };
+    byProduct[name].total++;
+    if (r.sentiment === "positive" && byProduct[name].pos.length < 5) byProduct[name].pos.push(r.content.slice(0, 120));
+    if (r.sentiment === "negative" && byProduct[name].neg.length < 5) byProduct[name].neg.push(r.content.slice(0, 120));
+  }
+  const top5 = Object.values(byProduct).sort((a, b) => b.total - a.total).slice(0, 5);
+  const dataSummary = top5.map(p => p.name + " (" + p.cat + "): " + p.total + "건, 긍정: " + p.pos.slice(0, 2).join(" | ") + ", 부정: " + p.neg.slice(0, 2).join(" | ")).join("\n");
+
+  const prompt = "다음은 LG전자 전채널(LG.com, Reddit, Amazon, YouTube 등) 최근 1주 리뷰 데이터입니다:\n\n" + dataSummary +
+    "\n\n아래 JSON 형식으로 응답:\n" +
+    '{"top_products":[{"name":"제품명","category":"TV","positive_msg":"긍정 핵심 한 줄","negative_msg":"부정 핵심 한 줄"}],' +
+    '"key_takeaway":"마케터가 이번 주 바로 활용할 수 있는 핵심 액션 포인트 2~3문장",' +
+    '"community_weekly":"Amazon, YouTube 등 외부 커뮤니티 리뷰 주간 동향 요약 2~3문장"}';
+
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + lovableApiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: "You are a Korean marketing insight generator for LG Electronics. Output valid JSON only." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+  if (!resp.ok) return null;
+  const aiData = await resp.json();
+  try { return JSON.parse(aiData.choices?.[0]?.message?.content || "{}"); } catch { return null; }
+}
+
 /* ── Newsletter HTML builder ── */
 function buildNewsletterHTML(d: {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
   channels: { name: string; count: number; color: string }[];
-}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string): string {
+}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
   const wowColor = d.wow >= 0 ? "#006600" : "#A50034";
   const wowSign = d.wow >= 0 ? "+" : "";
 
