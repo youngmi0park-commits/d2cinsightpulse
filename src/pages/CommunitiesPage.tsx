@@ -29,8 +29,14 @@ interface ChannelInsight {
   takeaway: ChannelTakeaway;
 }
 
+interface SummaryLine {
+  category: string;
+  insight: string;
+}
+
 interface InsightsResponse {
-  executiveSummary?: string[];
+  executiveSummary?: (string | SummaryLine)[];
+  keyTakeaway?: string;
   channels: ChannelInsight[];
   totalReviews: number;
 }
