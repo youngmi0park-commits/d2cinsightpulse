@@ -338,9 +338,9 @@ ${formatRuleText}
 
 ── Copy Quality Rules ──
 ✅ Rewrite review keywords into emotional, compelling language (no keyword listing)
-✅ Include social proof: "Verified buyers report..." / "${sentiment.positive} users praised..."
+✅ Highlight specific praised features or improved points from real reviews (NEVER use "N users agreed" or review-count phrasing)
 🚫 Auto-remove superlatives: best, #1, unmatched, ultimate
-✅ Generate A/B versions (A: benefit-led, B: social-proof-led)
+✅ Generate A/B versions (A: benefit-led, B: experience-proof-led)
 
 ── Review-Driven Insights (Auto-Extracted) ──
 
