@@ -292,6 +292,56 @@ function classifyIssueCategory(text: string): string {
   return bestCategory;
 }
 
+/**
+ * FCO: Classify a sentence into Function category, Context, and Outcome direction.
+ * Returns a meaning-unit keyword string like "Picture Quality – Deep blacks even in bright rooms"
+ */
+function classifySentenceFCO(sentence: string): { function: string; context: string; isPositive: boolean } {
+  const lower = sentence.toLowerCase();
+  let bestFunc = "General";
+  let bestScore = 0;
+  for (const [func, indicators] of Object.entries(FUNCTION_CATEGORIES)) {
+    let score = 0;
+    for (const ind of indicators) {
+      if (lower.includes(ind)) score++;
+    }
+    if (score > bestScore) { bestScore = score; bestFunc = func; }
+  }
+
+  // Derive context clues
+  const contextClues: string[] = [];
+  const contextPatterns = [
+    /\b(?:in|at|during|for|while|when)\s+(?:the\s+)?([^,.!?]{3,30})/gi,
+    /\b(?:with|using|on)\s+(?:my|the|a)?\s*([^,.!?]{3,20})/gi,
+  ];
+  for (const pat of contextPatterns) {
+    pat.lastIndex = 0;
+    const m = pat.exec(sentence);
+    if (m?.[1]) contextClues.push(m[1].trim());
+  }
+
+  // Outcome: check if positive or negative
+  let posSignals = 0, negSignals = 0;
+  for (const w of Object.keys(POSITIVE_WORDS)) { if (lower.includes(w)) posSignals++; }
+  for (const w of Object.keys(NEGATIVE_WORDS)) { if (lower.includes(w)) negSignals++; }
+  // Check negation flipping
+  const hasNeg = NEGATION_TOKENS.some(n => lower.includes(n));
+  if (hasNeg) { [posSignals, negSignals] = [negSignals, posSignals]; }
+
+  return {
+    function: bestFunc,
+    context: contextClues[0] || "",
+    isPositive: posSignals >= negSignals,
+  };
+}
+
+/** Build a meaning-unit keyword from FCO analysis */
+export function buildMeaningKeyword(sentence: string): string {
+  const fco = classifySentenceFCO(sentence);
+  const evidence = extractEvidencePhrase(sentence, 10, 3);
+  return `${fco.function} – ${evidence}`;
+}
+
 /** Extract best evidence phrase (5-12 words) from a sentence */
 function extractEvidencePhrase(sentence: string, maxWords = 12, minWords = 4): string {
   const words = sentence.trim().split(/\s+/);
