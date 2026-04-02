@@ -300,25 +300,50 @@ function buildNewsletterHTML(d: {
   </table>
 </td></tr>
 
-<!-- All-Channel Weekly Insights (TOP) -->
-${allChannel ? `
+<!-- KEY TAKEAWAY per channel (below data bar) -->
 <tr><td style="padding:20px 28px 0;">
-  <div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#A50034;text-transform:uppercase;margin-bottom:12px;border-left:4px solid #A50034;padding-left:10px;">📊 전채널 주간 인사이트 리포트</div>
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;margin-bottom:12px;">
-    ${(allChannel.top_products || []).map(p => `
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #F0ECE4;">
-      <div style="font-weight:700;font-size:12px;color:#1a1a1a;margin-bottom:4px;">${p.name} <span style="font-size:10px;color:#888;font-weight:400;">${p.category}</span></div>
-      <div style="font-size:11px;color:#006600;margin-bottom:2px;">👍 ${p.positive_msg}</div>
-      <div style="font-size:11px;color:#A50034;">👎 ${p.negative_msg}</div>
-    </td></tr>`).join("")}
-  </table>
-  <div style="border:2px solid #D97706;border-radius:8px;padding:12px 14px;background:#FFFBEB;margin-bottom:8px;">
-    <div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;margin-bottom:6px;">💡 KEY TAKEAWAY</div>
-    <div style="font-size:12px;color:#1a1a1a;line-height:1.7;">${allChannel.key_takeaway}</div>
-  </div>
+  <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:#D97706;margin-bottom:14px;border-left:4px solid #D97706;padding-left:10px;">💡 KEY TAKEAWAY — 채널별 마케터 인사이트</div>
+
+  ${(() => {
+    // Helper to render key_takeaway items for a channel
+    function renderChannelTakeaway(label: string, icon: string, color: string, insight: ChannelInsight | null) {
+      const items = insight?.key_takeaway;
+      if (!items || items.length === 0) return "";
+      const rows = items.map(item =>
+        '<div style="padding:8px 12px;border-bottom:1px solid #F0ECE4;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">' +
+            '<span style="display:inline-block;background:#F7F4EF;border:1px solid #E0DBD3;border-radius:4px;padding:1px 7px;font-size:9px;font-weight:700;color:#888;">' + (item.category || "") + '</span>' +
+            '<span style="font-weight:700;font-size:12px;color:#1a1a1a;">' + item.product + '</span>' +
+          '</div>' +
+          '<div style="font-size:11px;color:#006600;margin-bottom:2px;">👍 ' + item.positive_msg + '</div>' +
+          '<div style="font-size:11px;color:#A50034;margin-bottom:2px;">👎 ' + item.negative_msg + '</div>' +
+          '<div style="font-size:11px;color:#D97706;background:#FFFBEB;border-radius:4px;padding:4px 8px;margin-top:3px;">🎯 ' + item.marketer_action + '</div>' +
+        '</div>'
+      ).join("");
+      return '<div style="margin-bottom:14px;">' +
+        '<div style="font-size:11px;font-weight:700;color:' + color + ';margin-bottom:6px;padding-left:2px;">' + icon + ' ' + label + '</div>' +
+        '<div style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;">' + rows + '</div>' +
+      '</div>';
+    }
+
+    let html = renderChannelTakeaway("LG.COM", "🏪", "#A50034", lgcom);
+    html += renderChannelTakeaway("REDDIT", "💬", "#FF4500", reddit);
+
+    // All-channel / community summary
+    if (allChannel) {
+      html += '<div style="margin-bottom:4px;">' +
+        '<div style="font-size:11px;font-weight:700;color:#0066CC;margin-bottom:6px;padding-left:2px;">🌐 전채널 종합</div>' +
+        '<div style="border:2px solid #D97706;border-radius:8px;padding:12px 14px;background:#FFFBEB;">' +
+          '<div style="font-size:12px;color:#1a1a1a;line-height:1.7;">' + allChannel.key_takeaway + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    return html;
+  })()}
+
 </td></tr>
 <tr><td style="padding:12px 28px 0;"><div style="border-top:2px solid #E0DBD3;"></div></td></tr>
-` : ""}
 
 <!-- Channel 1: LG.com -->
 ${channelSectionHTML("LG.COM 주간 오버뷰", "🏪", lgcom)}
