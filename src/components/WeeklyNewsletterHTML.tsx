@@ -95,19 +95,14 @@ function generatePreviewHTML(d: NewsletterData): string {
 <!-- Header -->
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td style="font-family:Inter,'Apple SD Gothic Neo',sans-serif;font-size:11px;color:#888;">
-      D2C Insight Pulse · LG Electronics<br/>
-      <span style="font-size:10px;color:#bbb;">${d.dateRange} · Generated ${d.generatedAt}</span>
-    </td>
-  </tr></table>
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;"><tr>
     <td>
       <div style="font-family:Inter,sans-serif;font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;">D2C Insight Pulse</div>
-      <div style="font-family:Inter,sans-serif;font-size:12px;color:#888;margin-top:2px;">Weekly Insight Report · <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+      <div style="font-family:Inter,sans-serif;font-size:12px;color:#888;margin-top:4px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
     </td>
-    <td style="text-align:right;vertical-align:bottom;">
-      <div style="display:inline-block;border:2px solid #EA1917;border-radius:6px;padding:4px 14px;">
+    <td style="text-align:right;vertical-align:top;">
+      <div style="display:inline-block;border:2px solid #EA1917;border-radius:6px;padding:6px 14px;text-align:center;">
         <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;">WEEKLY REPORT</div>
+        <div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:3px;">${d.dateRange}</div>
       </div>
     </td>
   </tr></table>
