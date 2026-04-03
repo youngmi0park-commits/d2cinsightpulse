@@ -74,89 +74,109 @@ function useNewsletterData() {
 /* ───── Preview HTML (fallback — no AI) ───── */
 function generatePreviewHTML(d: NewsletterData): string {
   const BASE_URL = window.location.origin;
+  const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
+  const INTER = "Inter,'Segoe UI',Arial,sans-serif";
 
   const channelBadges = d.channels.map(ch => {
     if (ch.name === "LG.com") {
-      return `<td style="padding:0 3px;"><div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+      return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};">${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
     }
-    return `<td style="padding:0 3px;"><div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+    return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
   }).join("");
 
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>D2C Insight Pulse Weekly</title></head>
-<body style="margin:0;padding:0;background-color:#EFECE5;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="ko">
+<head><meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="x-apple-disable-message-reformatting" /><meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+<title>D2C Insight Pulse Weekly</title>
+<!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<style>table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}td{border-collapse:collapse;mso-line-height-rule:exactly;}</style><![endif]-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+body,table,td,p,a,li{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
+table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
+@media only screen and (max-width:699px){.email-container{width:100%!important;max-width:100%!important;}}
+</style></head>
+<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
 <tr><td align="center" style="padding:24px 0;">
-<table cellpadding="0" cellspacing="0" border="0" width="680" style="background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FAFAF7;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
 <!-- Header -->
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td>
-      <div style="font-family:Inter,sans-serif;font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;">D2C Insight Pulse</div>
-      <div style="font-family:Inter,sans-serif;font-size:12px;color:#888;margin-top:4px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td style="font-family:${INTER};">
+      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;line-height:30px;">D2C Insight Pulse</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
     </td>
-    <td style="text-align:right;vertical-align:top;">
-      <div style="display:inline-block;border:2px solid #EA1917;border-radius:6px;padding:6px 14px;text-align:center;">
-        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;">WEEKLY REPORT</div>
-        <div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:3px;">${d.dateRange}</div>
-      </div>
+    <td width="140" style="text-align:right;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
+        <tr><td style="border:2px solid #EA1917;padding:6px 14px;text-align:center;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;line-height:14px;">WEEKLY REPORT</div>
+          <div style="font-size:9px;color:#888;margin-top:3px;line-height:13px;">${d.dateRange}</div>
+        </td></tr>
+      </table>
     </td>
   </tr></table>
 </td></tr>
 
 <!-- Intro -->
-<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;">
-  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:4px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</div>
-  <div style="font-size:11px;color:#888;line-height:1.7;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를<br/>분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</div>
+<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
+    <tr><td style="font-size:11px;color:#888;line-height:20px;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</td></tr>
+  </table>
 </td></tr>
 
 <!-- Data Bar -->
 <tr><td style="padding:16px 32px 0;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#FAFAF7;">
     <tr><td style="padding:12px 16px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:700;color:#333;">데이터 수집 현황</td>
-        <td style="text-align:right;font-size:11px;color:#666;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
+        <td style="text-align:right;font-size:11px;color:#666;font-family:${FONT};">
           <strong style="color:#EA1917;font-size:14px;">${d.totalReviews.toLocaleString()}</strong>
           <span style="color:#888;">건 · ${d.productCount.toLocaleString()}개 제품</span>
         </td>
       </tr></table>
     </td></tr>
     <tr><td style="padding:0 16px 12px;">
-      <table cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
     </td></tr>
   </table>
 </td></tr>
 
 <!-- Placeholder for AI insights -->
 <tr><td style="padding:20px 32px;">
-  <div style="text-align:center;padding:40px 20px;color:#999;font-size:13px;border:1.5px dashed #E0DBD3;border-radius:10px;background:#F7F4EF;">
-    🚀 <strong>원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
-  </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:2px dashed #E0DBD3;background:#F7F4EF;">
+    <tr><td style="text-align:center;padding:40px 20px;color:#999;font-size:13px;font-family:${FONT};">
+      🚀 <strong>원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
+    </td></tr>
+  </table>
 </td></tr>
 
 <!-- CTA Banner -->
 <tr><td style="padding:0 32px 24px;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
     <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
     <tr>
-      <td style="padding:20px 16px;vertical-align:middle;" width="130">
-        <table cellpadding="0" cellspacing="4" border="0"><tr>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+      <td width="180" style="padding:20px 16px;vertical-align:middle;">
+        <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
         </tr></table>
       </td>
-      <td style="width:1px;padding:12px 0;"><div style="width:1px;height:70px;background:#E8E4DC;"></div></td>
-      <td style="padding:20px 22px;">
-        <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:800;color:#1a1a1a;">Marketing Asset Studio</div>
-        <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:800;color:#1a1a1a;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
-        <div style="font-size:11px;color:#888;line-height:1.7;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
-        <a href="${BASE_URL}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
+      <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+      <td style="padding:20px 22px;vertical-align:middle;font-family:${FONT};">
+        <div style="font-family:${INTER};font-size:14px;font-weight:700;color:#888;line-height:20px;">Marketing Asset Studio</div>
+        <div style="font-family:${INTER};font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:26px;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
+        <div style="font-size:11px;color:#888;line-height:18px;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <a href="${BASE_URL}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
       </td>
     </tr>
   </table>
@@ -164,14 +184,16 @@ function generatePreviewHTML(d: NewsletterData): string {
 
 <!-- Footer -->
 <tr><td style="padding:0 32px 20px;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td><div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#1a1a1a;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;">Produced by LG전자 D2C마케팅전략팀</div></td>
-    <td style="text-align:right;"><div style="font-size:9px;color:#ccc;line-height:1.5;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;line-height:16px;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#ccc;line-height:14px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
   </tr></table>
 </td></tr>
 
 </table>
+<!--[if mso]></td></tr></table><![endif]-->
 </td></tr></table>
+<!--[if mso]></td></tr></table><![endif]-->
 </body></html>`;
 }
 

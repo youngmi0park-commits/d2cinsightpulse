@@ -168,213 +168,303 @@ function buildNewsletterHTML(d: {
   channels: { name: string; count: number; color: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
+  const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
+  const INTER = "Inter,'Segoe UI',Arial,sans-serif";
+
   /* ── Key Takeaway block ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const items = insight?.key_takeaway;
     if (!items || items.length === 0) return "";
     const rows = items.map(item => `
-      <div style="padding:12px 16px;border-bottom:1px solid #F0ECE4;">
-        <div style="margin-bottom:4px;">
-          <span style="display:inline-block;background:#F0ECE4;border-radius:4px;padding:1px 8px;font-size:10px;font-weight:700;color:#888;margin-right:6px;">${item.category}</span>
-          <span style="font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</span>
-        </div>
-        ${item.positive_msg ? `<div style="font-size:11px;color:#006600;margin-bottom:3px;">👍 ${item.positive_msg}</div>` : ""}
-        ${item.negative_msg ? `<div style="font-size:11px;color:#A50034;margin-bottom:3px;">👎 ${item.negative_msg}</div>` : ""}
-        <div style="background:#FFFBEB;border-radius:6px;padding:6px 10px;margin-top:4px;">
-          <div style="font-size:10px;font-weight:700;color:#D97706;margin-bottom:2px;">🎯 마케팅 액션</div>
-          <div style="font-size:11px;color:#333;line-height:1.5;">${item.marketer_action}</div>
-        </div>
-      </div>`).join("");
+      <tr><td style="padding:12px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td style="padding-bottom:4px;">
+            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#F0ECE4;padding:1px 8px;font-size:10px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:16px;">${item.category}</td><td style="padding-left:6px;font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</td></tr></table><![endif]-->
+            <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:4px;padding:1px 8px;font-size:10px;font-weight:700;color:#888;margin-right:6px;">${item.category}</span><span style="font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</span><!--<![endif]-->
+          </td>
+        </tr></table>
+        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#006600;padding-bottom:3px;font-family:${FONT};">👍 ${item.positive_msg}</td></tr></table>` : ""}
+        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#A50034;padding-bottom:3px;font-family:${FONT};">👎 ${item.negative_msg}</td></tr></table>` : ""}
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">
+          <tr><td style="background:#FFFBEB;padding:6px 10px;font-family:${FONT};">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:2px;">🎯 마케팅 액션</td></tr>
+              <tr><td style="font-size:11px;color:#333;line-height:18px;">${item.marketer_action}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>`).join("");
 
-    return `<div style="margin-bottom:16px;">
-      <div style="border-left:4px solid ${borderColor};padding-left:10px;font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">${icon} ${label}</div>
-      <div style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;">${rows}</div>
-    </div>`;
+    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+      <tr><td style="border-left:4px solid ${borderColor};padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">${icon} ${label}</td></tr>
+      <tr><td>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;mso-table-lspace:0pt;mso-table-rspace:0pt;">${rows}</table>
+      </td></tr>
+    </table>`;
   }
 
   /* ── Channel section HTML ── */
   function channelSectionHTML(label: string, icon: string, insight: ChannelInsight | null) {
     if (!insight) return `
-    <tr><td style="padding:24px 32px 0;">
-      <div style="font-size:14px;font-weight:800;color:#EA1917;margin-bottom:8px;">${icon} ${label}</div>
-      <div style="text-align:center;padding:24px;color:#999;font-size:12px;border:1.5px dashed #E0DBD3;border-radius:8px;background:#F7F4EF;">데이터 없음</div>
+    <tr><td style="padding:24px 32px 0;font-family:${FONT};">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};">${icon} ${label}</td></tr>
+        <tr><td style="text-align:center;padding:24px;color:#999;font-size:12px;border:1px solid #E0DBD3;background:#F7F4EF;">데이터 없음</td></tr>
+      </table>
     </td></tr>`;
 
     // Top products
     const productsHTML = (insight.top_products || []).slice(0, 5).map(p => `
-      <div style="padding:14px 16px;border-bottom:1px solid #F0ECE4;">
+      <tr><td style="padding:14px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
           <td width="32" valign="top" style="padding-top:2px;">
-            <div style="width:24px;height:24px;background:#EA1917;border-radius:50%;color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:24px;">${p.rank}</div>
+            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="width:24px;height:24px;background:#EA1917;color:#ffffff;font-size:11px;font-weight:800;text-align:center;mso-line-height-rule:exactly;line-height:24px;">${p.rank}</td></tr></table><![endif]-->
+            <!--[if !mso]><!--><div style="width:24px;height:24px;background:#EA1917;border-radius:50%;color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:24px;">${p.rank}</div><!--<![endif]-->
           </td>
           <td style="padding-left:12px;">
-            <div style="font-weight:700;font-size:13px;color:#1a1a1a;margin-bottom:2px;">${p.name}</div>
-            <div style="font-size:10px;color:#888;margin-bottom:8px;">${p.category} · 언급 ${p.mention_count}건</div>
-            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;padding:8px 12px;margin-bottom:6px;">
-              <div style="font-size:9px;font-weight:700;color:#006600;text-transform:uppercase;margin-bottom:3px;">👍 긍정 요약</div>
-              <div style="font-size:11px;color:#1a1a1a;line-height:1.5;">${p.pos_summary}</div>
-            </div>
-            ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
-            <div style="background:#FFF5F5;border:1px solid #FECACA;border-radius:6px;padding:8px 12px;margin-bottom:6px;">
-              <div style="font-size:9px;font-weight:700;color:#A50034;text-transform:uppercase;margin-bottom:3px;">👎 부정 요약</div>
-              <div style="font-size:11px;color:#1a1a1a;line-height:1.5;">${p.neg_summary}</div>
-            </div>` : ""}
-            ${(p.praise_points || []).length > 0 ? `
-            <div style="margin-top:4px;">${p.praise_points.map(pp => `<span style="display:inline-block;background:#F7F4EF;border:1px solid #E0DBD3;border-radius:4px;padding:2px 8px;font-size:10px;color:#555;margin:2px 3px 2px 0;">✅ ${pp}</span>`).join("")}</div>` : ""}
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr><td style="font-weight:700;font-size:13px;color:#1a1a1a;padding-bottom:2px;font-family:${FONT};">${p.name}</td></tr>
+              <tr><td style="font-size:10px;color:#888;padding-bottom:8px;font-family:${FONT};">${p.category} · 언급 ${p.mention_count}건</td></tr>
+              <tr><td>
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDF4;border:1px solid #BBF7D0;">
+                  <tr><td style="padding:8px 12px;font-family:${FONT};">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr><td style="font-size:9px;font-weight:700;color:#006600;text-transform:uppercase;padding-bottom:3px;">👍 긍정 요약</td></tr>
+                      <tr><td style="font-size:11px;color:#1a1a1a;line-height:18px;">${p.pos_summary}</td></tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </td></tr>
+              ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
+              <tr><td style="padding-top:6px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFF5F5;border:1px solid #FECACA;">
+                  <tr><td style="padding:8px 12px;font-family:${FONT};">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr><td style="font-size:9px;font-weight:700;color:#A50034;text-transform:uppercase;padding-bottom:3px;">👎 부정 요약</td></tr>
+                      <tr><td style="font-size:11px;color:#1a1a1a;line-height:18px;">${p.neg_summary}</td></tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </td></tr>` : ""}
+              ${(p.praise_points || []).length > 0 ? `
+              <tr><td style="padding-top:6px;font-family:${FONT};">
+                ${p.praise_points.map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:2px 3px 2px 0;"><tr><td style="background:#F7F4EF;border:1px solid #E0DBD3;padding:2px 8px;font-size:10px;color:#555;">✅ ${pp}</td></tr></table>`).join("")}
+              </td></tr>` : ""}
+            </table>
           </td>
         </tr></table>
-      </div>`).join("");
+      </td></tr>`).join("");
 
     // Top topics
     const topicsHTML = (insight.top_topics || []).map(t => `
-      <div style="padding:10px 16px;border-bottom:1px solid #F0ECE4;">
-        <div style="font-weight:600;font-size:12px;color:#1a1a1a;margin-bottom:3px;">${t.rank}. ${t.topic}</div>
-        <div style="font-size:10px;color:#888;margin-bottom:4px;">
-          <span style="color:#006600;font-weight:600;">긍정 ${t.positive_pct}%</span> ·
-          언급 ${t.mention_pct}%
-        </div>
-        <div style="font-size:10px;color:#555;font-style:italic;background:#F7F4EF;padding:5px 8px;border-radius:4px;">"${t.representative_comment}"</div>
-      </div>`).join("");
+      <tr><td style="padding:10px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr><td style="font-weight:600;font-size:12px;color:#1a1a1a;padding-bottom:3px;">${t.rank}. ${t.topic}</td></tr>
+          <tr><td style="font-size:10px;color:#888;padding-bottom:4px;"><span style="color:#006600;font-weight:600;">긍정 ${t.positive_pct}%</span> · 언급 ${t.mention_pct}%</td></tr>
+          <tr><td style="font-size:10px;color:#555;font-style:italic;background:#F7F4EF;padding:5px 8px;">"${t.representative_comment}"</td></tr>
+        </table>
+      </td></tr>`).join("");
 
     // Urgent issues
     const issuesHTML = (insight.urgent_issues || []).map(iss => `
-      <div style="padding:10px 16px;border-bottom:1px solid #FECACA;">
-        <div style="font-weight:600;font-size:12px;color:#A50034;margin-bottom:3px;">⚠️ ${iss.rank}. ${iss.issue} <span style="color:#888;font-weight:400;">(${iss.mention_pct}%)</span></div>
-        <div style="font-size:10px;color:#666;margin-bottom:2px;"><strong>패턴</strong> ${iss.pattern} · <strong>원인</strong> ${iss.cause}</div>
-      </div>`).join("");
+      <tr><td style="padding:10px 16px;border-bottom:1px solid #FECACA;font-family:${FONT};">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr><td style="font-weight:600;font-size:12px;color:#A50034;padding-bottom:3px;">⚠️ ${iss.rank}. ${iss.issue} <span style="color:#888;font-weight:400;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:10px;color:#666;"><strong>패턴</strong> ${iss.pattern} · <strong>원인</strong> ${iss.cause}</td></tr>
+        </table>
+      </td></tr>`).join("");
 
     // Recurring praise
-    const praiseHTML = (insight.recurring_praise || []).map(p => {
+    const praiseRows = (insight.recurring_praise || []).map(p => {
       const item = typeof p === "string" ? { text: p } : p;
-      return `<div style="padding:3px 0;font-size:11px;color:#006600;line-height:1.6;">✅ ${item.product ? `<strong>${item.product}</strong> — ` : ""}${item.text}</div>`;
+      return `<tr><td style="padding:3px 0;font-size:11px;color:#006600;line-height:18px;font-family:${FONT};">✅ ${item.product ? `<strong>${item.product}</strong> — ` : ""}${item.text}</td></tr>`;
     }).join("");
 
     return `
-    <tr><td style="padding:24px 32px 0;">
-      <div style="font-size:14px;font-weight:800;color:#EA1917;margin-bottom:16px;">${icon} ${label}</div>
+    <tr><td style="padding:24px 32px 0;font-family:${FONT};">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">${icon} ${label}</td></tr>
+      </table>
 
-      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">📦 가장 많이 언급된 제품</div>
-      <div style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;margin-bottom:20px;">${productsHTML}</div>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">📦 가장 많이 언급된 제품</td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;margin-bottom:20px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${productsHTML}</table>
 
-      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">🔥 주요 키워드 TOP 5</div>
-      <div style="border:1px solid #E0DBD3;border-radius:8px;overflow:hidden;margin-bottom:20px;">${topicsHTML}</div>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">🔥 주요 키워드 TOP 5</td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;margin-bottom:20px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${topicsHTML}</table>
 
       ${issuesHTML ? `
-      <div style="font-size:12px;font-weight:700;color:#A50034;margin-bottom:8px;">🚨 개선 시급 이슈 TOP 3</div>
-      <div style="border:1px solid #FECACA;border-radius:8px;overflow:hidden;background:#FFFBFB;margin-bottom:20px;">${issuesHTML}</div>` : ""}
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:12px;font-weight:700;color:#A50034;padding-bottom:8px;font-family:${FONT};">🚨 개선 시급 이슈 TOP 3</td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #FECACA;background:#FFFBFB;margin-bottom:20px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${issuesHTML}</table>` : ""}
 
-      ${praiseHTML ? `
-      <div style="border:1px solid #BBF7D0;border-radius:8px;padding:14px 16px;background:#F0FDF4;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:700;color:#006600;margin-bottom:6px;">🏆 반복 칭찬 포인트</div>
-        ${praiseHTML}
-      </div>` : ""}
+      ${praiseRows ? `
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDF4;border:1px solid #BBF7D0;margin-bottom:8px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+        <tr><td style="padding:14px 16px;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr><td style="font-size:11px;font-weight:700;color:#006600;padding-bottom:6px;font-family:${FONT};">🏆 반복 칭찬 포인트</td></tr>
+            ${praiseRows}
+          </table>
+        </td></tr>
+      </table>` : ""}
     </td></tr>`;
   }
 
   /* ── Channel badges ── */
   const channelBadges = d.channels.map(ch => {
     if (ch.name === "LG.com") {
-      return `<td style="padding:0 3px;"><div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+      return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;"><!--[if !mso]><!--><span style="border-radius:14px;">${ch.name} ${ch.count.toLocaleString()}</span><!--<![endif]--><!--[if mso]>${ch.name} ${ch.count.toLocaleString()}<![endif]--></td></tr></table></td>`;
     }
-    return `<td style="padding:0 3px;"><div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+    return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;"><!--[if mso]><span style="font-size:6px;color:${ch.color};">&#9679;</span><![endif]--><!--[if !mso]><!--><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span><!--<![endif]-->${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
   }).join("");
 
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>D2C Insight Pulse Weekly</title></head>
-<body style="margin:0;padding:0;background-color:#EFECE5;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="x-apple-disable-message-reformatting" />
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+<title>D2C Insight Pulse Weekly</title>
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:AllowPNG/>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<style>
+table {border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}
+td {border-collapse:collapse;mso-line-height-rule:exactly;}
+a {text-decoration:none;}
+</style>
+<![endif]-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  body, table, td, p, a, li { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+  @media only screen and (max-width:699px) {
+    .email-container { width:100% !important; max-width:100% !important; }
+    .stack-column { display:block !important; width:100% !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
 <tr><td align="center" style="padding:24px 0;">
-<table cellpadding="0" cellspacing="0" border="0" width="680" style="background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FAFAF7;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
 <!-- Header -->
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td>
-      <div style="font-family:Inter,sans-serif;font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;">D2C Insight Pulse</div>
-      <div style="font-family:Inter,sans-serif;font-size:12px;color:#888;margin-top:4px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td style="font-family:${INTER};">
+      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">D2C Insight Pulse</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;mso-line-height-rule:exactly;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
     </td>
-    <td style="text-align:right;vertical-align:top;">
-      <div style="display:inline-block;border:2px solid #EA1917;border-radius:6px;padding:6px 14px;text-align:center;">
-        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;">WEEKLY REPORT</div>
-        <div style="font-family:Inter,sans-serif;font-size:9px;color:#888;margin-top:3px;">${d.dateRange}</div>
-      </div>
+    <td width="140" style="text-align:right;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
+        <tr><td style="border:2px solid #EA1917;padding:6px 14px;text-align:center;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
+          <div style="font-size:9px;color:#888;margin-top:3px;mso-line-height-rule:exactly;line-height:13px;">${d.dateRange}</div>
+        </td></tr>
+      </table>
     </td>
   </tr></table>
 </td></tr>
 
 <!-- Intro -->
-<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;">
-  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:4px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</div>
-  <div style="font-size:11px;color:#888;line-height:1.7;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를<br/>분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</div>
+<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;mso-line-height-rule:exactly;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
+    <tr><td style="font-size:11px;color:#888;line-height:20px;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</td></tr>
+  </table>
 </td></tr>
 
 <!-- Data Bar -->
 <tr><td style="padding:16px 32px 0;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#FAFAF7;">
     <tr><td style="padding:12px 16px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:700;color:#333;">데이터 수집 현황</td>
-        <td style="text-align:right;font-size:11px;color:#666;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
+        <td style="text-align:right;font-size:11px;color:#666;font-family:${FONT};">
           <strong style="color:#EA1917;font-size:14px;">${d.totalReviews.toLocaleString()}</strong>
           <span style="color:#888;">건 · ${d.productCount.toLocaleString()}개 제품</span>
         </td>
       </tr></table>
     </td></tr>
     <tr><td style="padding:0 16px 12px;">
-      <table cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
     </td></tr>
   </table>
 </td></tr>
 
 <!-- KEY TAKEAWAY -->
-<tr><td style="padding:24px 32px 0;">
-  <div style="font-size:14px;font-weight:800;color:#EA1917;margin-bottom:16px;">💡 KEY TAKEAWAY — 채널별 마케터 인사이트</div>
+<tr><td style="padding:24px 32px 0;font-family:${FONT};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">💡 KEY TAKEAWAY — 채널별 마케터 인사이트</td></tr>
+  </table>
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
   ${renderKeyTakeaway("REDDIT", "💬", "#FF4500", reddit)}
 
   ${allChannel ? `
-  <div style="margin-bottom:4px;">
-    <div style="border-left:4px solid #0066CC;padding-left:10px;font-size:12px;font-weight:700;color:#333;margin-bottom:8px;">🌐 전채널 종합</div>
-    <div style="border:1px solid #E0DBD3;border-radius:8px;padding:14px 16px;background:#F7F7F2;">
-      <div style="font-size:12px;color:#1a1a1a;line-height:1.7;">${allChannel.key_takeaway}</div>
-    </div>
-  </div>` : ""}
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
+    <tr><td style="border-left:4px solid #0066CC;padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">🌐 전채널 종합</td></tr>
+    <tr><td>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#F7F7F2;">
+        <tr><td style="padding:14px 16px;font-size:12px;color:#1a1a1a;line-height:20px;font-family:${FONT};">${allChannel.key_takeaway}</td></tr>
+      </table>
+    </td></tr>
+  </table>` : ""}
 </td></tr>
 
 <!-- Divider -->
-<tr><td style="padding:16px 32px 0;"><div style="border-top:2px solid #E8E4DC;"></div></td></tr>
+<tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+</td></tr>
 
 <!-- LG.com Section -->
 ${channelSectionHTML("LG.COM 주간 오버뷰", "🏪", lgcom)}
 
 <!-- Divider -->
-<tr><td style="padding:16px 32px 0;"><div style="border-top:2px solid #E8E4DC;"></div></td></tr>
+<tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+</td></tr>
 
 <!-- Reddit Section -->
 ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
-    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
     <tr>
-      <td style="padding:20px 16px;vertical-align:middle;" width="130">
-        <table cellpadding="0" cellspacing="4" border="0"><tr>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">📊</div><div style="font-family:Inter,sans-serif;font-size:7px;color:#999;margin-top:1px;">리뷰 분석</div></td>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">⚡</div><div style="font-family:Inter,sans-serif;font-size:7px;color:#999;margin-top:1px;">광고 카피</div></td>
-          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">❓</div><div style="font-family:Inter,sans-serif;font-size:7px;color:#999;margin-top:1px;">FAQ</div></td>
+      <td width="180" style="padding:20px 16px;vertical-align:middle;">
+        <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
+          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
         </tr></table>
       </td>
-      <td style="width:1px;padding:12px 0;vertical-align:middle;"><div style="width:1px;height:70px;background:#E8E4DC;"></div></td>
-      <td style="padding:20px 22px;vertical-align:middle;">
-        <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:#888;">Marketing Asset Studio</div>
-        <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:1.3;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
-        <div style="font-size:11px;color:#888;line-height:1.7;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
-        <a href="${baseUrl}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
+      <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+      <td style="padding:20px 22px;vertical-align:middle;font-family:${FONT};">
+        <div style="font-family:${INTER};font-size:14px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:20px;">Marketing Asset Studio</div>
+        <div style="font-family:${INTER};font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;mso-line-height-rule:exactly;line-height:26px;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
+        <div style="font-size:11px;color:#888;line-height:18px;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;"><tr><td style="background:#A50034;padding:8px 18px;"><a href="${baseUrl}/" style="color:#ffffff;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a></td></tr></table><![endif]-->
+        <!--[if !mso]><!--><a href="${baseUrl}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
       </td>
     </tr>
   </table>
@@ -382,14 +472,18 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- Footer -->
 <tr><td style="padding:20px 32px;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td><div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#1a1a1a;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;">Produced by LG전자 D2C마케팅전략팀</div></td>
-    <td style="text-align:right;"><div style="font-size:9px;color:#ccc;line-height:1.5;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;mso-line-height-rule:exactly;line-height:16px;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;mso-line-height-rule:exactly;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#ccc;line-height:14px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
   </tr></table>
 </td></tr>
 
 </table>
+<!--[if mso]></td></tr></table><![endif]-->
+
 </td></tr></table>
+<!--[if mso]></td></tr></table><![endif]-->
+
 </body></html>`;
 }
 
