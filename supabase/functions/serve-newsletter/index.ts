@@ -388,7 +388,7 @@ a {text-decoration:none;}
 <tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;mso-line-height-rule:exactly;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:11px;color:#888;line-height:20px;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</td></tr>
+    <tr><td style="font-size:11px;color:#888;line-height:20px;">LG.com, Reddit, Best Buy, Walmart, Target, Quora, Stack Exchange 등 30개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</td></tr>
   </table>
 </td></tr>
 
