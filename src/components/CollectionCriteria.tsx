@@ -97,6 +97,8 @@ const criteria: CriteriaItem[] = [
       "🆕 Lazada — 동남아 이커머스 플랫폼 리뷰 (SG, MY, PH, TH, ID, VN)",
       "🆕 Reviews.io — 소비자 리뷰 플랫폼 (글로벌, JP, TW, HK)",
       "🆕 ComplaintsBoard — 소비자 불만 플랫폼 (글로벌, 중동 포함)",
+      "🆕 Quora — 제품 경험 Q&A 토론 (RSS·API, 기술 Q&A)",
+      "🆕 Stack Exchange / SuperUser — LG 제품 기술 Q&A (RSS·API)",
     ],
   },
   {
