@@ -36,7 +36,7 @@ function useNewsletterData() {
       const now = new Date();
       const weekAgo = subDays(now, 7);
       const twoWeeksAgo = subDays(now, 14);
-      const dateRange = `${format(weekAgo, "yyyy.MM.dd")} ~ ${format(now, "yyyy.MM.dd")}`;
+      const dateRange = `${format(weekAgo, "yyyy.MM.dd")} – ${format(now, "yyyy.MM.dd")}`;
       const generatedAt = format(now, "yyyy.MM.dd HH:mm");
 
       const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
@@ -48,14 +48,13 @@ function useNewsletterData() {
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
 
-      // Build channel list from source counts
       const entries = Object.entries(sourceCounts || {}).sort((a, b) => b[1] - a[1]);
-      const topChannels = entries.slice(0, 6).map(([src, cnt]) => {
+      const topChannels = entries.slice(0, 4).map(([src, cnt]) => {
         const cfg = CHANNEL_COLORS[src] || { label: src, color: "#888", dot: "#888" };
         return { name: cfg.label, count: cnt, color: cfg.dot };
       });
-      const otherCount = entries.slice(6).reduce((sum, [, cnt]) => sum + cnt, 0);
-      const otherChannelCount = entries.length - 6;
+      const otherCount = entries.slice(4).reduce((sum, [, cnt]) => sum + cnt, 0);
+      const otherChannelCount = entries.length - 4;
       if (otherCount > 0) {
         topChannels.push({ name: `+${otherChannelCount}개 채널`, count: otherCount, color: "#999" });
       }
@@ -72,103 +71,108 @@ function useNewsletterData() {
   });
 }
 
-/* ───── Data bar HTML helper ───── */
-function dataBarHTML(d: NewsletterData): string {
-  const channelBadges = d.channels.map(ch => {
-    const isLgcom = ch.name === "LG.com";
-    if (isLgcom) {
-      return `<td style="padding:0 4px;">
-        <div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div>
-      </td>`;
-    }
-    return `<td style="padding:0 4px;">
-      <div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;">
-        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}
-      </div>
-    </td>`;
-  }).join("");
-
-  return `
-  <tr><td style="padding:16px 28px 0;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
-      <tr><td style="padding:12px 16px;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td style="font-size:12px;font-weight:700;color:#333;">📊 데이터 수집 통합 현황</td>
-          <td style="text-align:right;font-size:11px;color:#666;">
-            총 <strong style="color:#1a1a1a;font-size:13px;">${d.totalReviews.toLocaleString()}</strong>건 · <span style="color:#888;">${d.productCount.toLocaleString()}개 제품</span>
-          </td>
-        </tr></table>
-      </td></tr>
-      <tr><td style="padding:0 16px 12px;">
-        <table cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
-      </td></tr>
-    </table>
-  </td></tr>`;
-}
-
-/* ───── HTML Generator (preview fallback — no AI) ───── */
+/* ───── Preview HTML (fallback — no AI) ───── */
 function generatePreviewHTML(d: NewsletterData): string {
   const BASE_URL = window.location.origin;
+
+  const channelBadges = d.channels.map(ch => {
+    if (ch.name === "LG.com") {
+      return `<td style="padding:0 3px;"><div style="display:inline-block;background:#A50034;color:#fff;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;white-space:nowrap;">${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+    }
+    return `<td style="padding:0 3px;"><div style="display:inline-block;border:1px solid #E0DBD3;border-radius:14px;padding:4px 10px;font-size:11px;color:#444;white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</div></td>`;
+  }).join("");
 
   return `<!DOCTYPE html>
 <html lang="ko">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>D2C Insight Pulse Weekly</title></head>
-<body style="margin:0;padding:0;background-color:#F0ECE4;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;">
+<body style="margin:0;padding:0;background-color:#EFECE5;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
 <tr><td align="center" style="padding:24px 0;">
 <table cellpadding="0" cellspacing="0" border="0" width="680" style="background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
 <!-- Header -->
-<tr><td style="background:#A50034;padding:28px 28px 20px;text-align:center;">
-  <div style="font-family:Inter,'Apple SD Gothic Neo',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;">D2C Insight Pulse</div>
-  <div style="font-family:Inter,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);font-style:italic;margin-top:2px;">Weekly Insight Report</div>
-  <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.15);">
-    <div style="font-size:11px;color:rgba(255,255,255,0.9);line-height:1.7;max-width:520px;margin:0 auto;">
-      <strong style="color:#fff;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong><br/>
-      D2C Insight Pulse는 LG.com과 Reddit 등 주요 채널의 실사용자 리뷰를 깊이 있게 분석합니다.<br/>
-      방대한 데이터 속 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 최적의 마케팅 메시지를 제공하는 데이터 플랫폼입니다.
-    </div>
-  </div>
-  <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
-    <div style="font-size:12px;color:rgba(255,255,255,0.85);">${d.dateRange}</div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Generated: ${d.generatedAt}</div>
-  </div>
+<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td style="font-family:Inter,'Apple SD Gothic Neo',sans-serif;font-size:11px;color:#888;">
+      D2C Insight Pulse · LG Electronics<br/>
+      <span style="font-size:10px;color:#bbb;">${d.dateRange} · Generated ${d.generatedAt}</span>
+    </td>
+  </tr></table>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;"><tr>
+    <td>
+      <div style="font-family:Inter,sans-serif;font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;">D2C Insight Pulse</div>
+      <div style="font-family:Inter,sans-serif;font-size:12px;color:#888;margin-top:2px;">Weekly Insight Report · <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+    </td>
+    <td style="text-align:right;vertical-align:bottom;">
+      <div style="display:inline-block;border:2px solid #EA1917;border-radius:6px;padding:4px 14px;">
+        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;">WEEKLY REPORT</div>
+      </div>
+    </td>
+  </tr></table>
 </td></tr>
 
-<!-- Data Status Bar -->
-${dataBarHTML(d)}
+<!-- Intro -->
+<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;">
+  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:4px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</div>
+  <div style="font-size:11px;color:#888;line-height:1.7;">LG.com과 Reddit 등 20개 이상의 채널에서 수집한 실사용자 리뷰를<br/>분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</div>
+</td></tr>
+
+<!-- Data Bar -->
+<tr><td style="padding:16px 32px 0;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;background:#FAFAF7;">
+    <tr><td style="padding:12px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:700;color:#333;">데이터 수집 현황</td>
+        <td style="text-align:right;font-size:11px;color:#666;">
+          <strong style="color:#EA1917;font-size:14px;">${d.totalReviews.toLocaleString()}</strong>
+          <span style="color:#888;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:0 16px 12px;">
+      <table cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
+    </td></tr>
+  </table>
+</td></tr>
 
 <!-- Placeholder for AI insights -->
-<tr><td style="padding:20px 28px;">
+<tr><td style="padding:20px 32px;">
   <div style="text-align:center;padding:40px 20px;color:#999;font-size:13px;border:1.5px dashed #E0DBD3;border-radius:10px;background:#F7F4EF;">
     🚀 <strong>원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
   </div>
 </td></tr>
 
 <!-- CTA Banner -->
-<tr><td style="padding:0 28px 24px;">
+<tr><td style="padding:0 32px 24px;">
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
-    <tr><td colspan="2" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
-    <tr><td style="padding:20px 24px;">
-      <div style="font-family:Inter,Arial,sans-serif;font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:1.3;">Review-to-Asset, <span style="color:#A50034;">Instantly.</span></div>
-      <div style="font-size:12px;color:#6B6B6B;line-height:1.8;margin-top:8px;">
-        리뷰 분석부터 광고 카피까지 — 진짜 고객의 목소리로 증명된 메시지를 만듭니다.<br/>
-        실제 사용자 리뷰에서 핵심 인사이트를 추출하고, 그 안에 담긴 감정과 언어를 그대로 마케팅 에셋으로 변환합니다.<br/>
-        지금 바로 리뷰가 증명한 메시지로 더 설득력 있는 캠페인을 만들어보세요.
-      </div>
-      <a href="${BASE_URL}/" style="display:inline-block;margin-top:14px;background:#A50034;color:#fff;border-radius:6px;padding:10px 20px;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:600;text-decoration:none;">👉 마케팅 에셋 스튜디오 바로가기</a>
-    </td></tr>
+    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
+    <tr>
+      <td style="padding:20px 16px;vertical-align:middle;" width="130">
+        <table cellpadding="0" cellspacing="4" border="0"><tr>
+          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
+          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
+          <td style="width:54px;height:48px;background:#F7F4EF;border:1px solid #E8E4DC;border-radius:8px;text-align:center;vertical-align:middle;"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+        </tr></table>
+      </td>
+      <td style="width:1px;padding:12px 0;"><div style="width:1px;height:70px;background:#E8E4DC;"></div></td>
+      <td style="padding:20px 22px;">
+        <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:800;color:#1a1a1a;">Marketing Asset Studio</div>
+        <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:800;color:#1a1a1a;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
+        <div style="font-size:11px;color:#888;line-height:1.7;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <a href="${BASE_URL}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:Inter,sans-serif;font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
+      </td>
+    </tr>
   </table>
 </td></tr>
 
 <!-- Footer -->
-<tr><td style="padding:0 28px 20px;">
-  <div style="border-top:1px solid #E0DBD3;padding-top:14px;text-align:center;">
-    <div style="font-size:10px;color:#999;">D2C Insight Pulse — Powered LG전자 D2C마케팅전략팀</div>
-    <div style="font-size:9px;color:#ccc;margin-top:4px;">본 뉴스레터는 사내 배포용으로 외부 공유를 금합니다.</div>
-  </div>
+<tr><td style="padding:0 32px 20px;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td><div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#1a1a1a;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="text-align:right;"><div style="font-size:9px;color:#ccc;line-height:1.5;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
+  </tr></table>
 </td></tr>
 
 </table>
