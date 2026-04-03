@@ -31,6 +31,11 @@ const CHANNELS = [
   { id: "consumeraffairs", label: "ConsumerAffairs", queryTemplate: (product: string) => `site:consumeraffairs.com LG ${product} review` },
   { id: "google_reviews", label: "Google Reviews", queryTemplate: (product: string) => `site:google.com/maps LG store ${product} review` },
   { id: "lg_community", label: "LG Community", queryTemplate: (product: string) => `site:lgcommunity.us.com LG ${product}` },
+  { id: "quora", label: "Quora", queryTemplate: (product: string) => `site:quora.com LG ${product} review OR recommend OR experience` },
+  { id: "stackexchange", label: "Stack Exchange", queryTemplate: (product: string) => `site:stackexchange.com OR site:superuser.com LG ${product} issue OR problem OR solution` },
+  { id: "bestbuy_api", label: "Best Buy API", queryTemplate: (product: string) => `site:bestbuy.com LG ${product} customer review rating "verified purchaser"` },
+  { id: "walmart_api", label: "Walmart API", queryTemplate: (product: string) => `site:walmart.com LG ${product} customer review "verified purchase" rating` },
+  { id: "target_api", label: "Target API", queryTemplate: (product: string) => `site:target.com LG ${product} customer review rating recommend` },
 ];
 
 const LG_CATEGORIES = ["TV", "Monitor", "Refrigerator", "Washer", "Dryer", "Air Conditioner", "Audio", "Laptop", "Projector", "Robot Vacuum", "StanbyME"];

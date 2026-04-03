@@ -43,6 +43,41 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     description: "Collect comments from LG official YouTube channels (US, UK, Global, India, AU)",
     descriptionKo: "LG 공식 YouTube 채널 댓글 수집 (US, UK, Global, India, AU — 한국 제외)",
   },
+  {
+    id: "bestbuy_api",
+    label: "Best Buy",
+    icon: Globe,
+    description: "Best Buy public API — US retail reviews & ratings",
+    descriptionKo: "Best Buy 공개 API — 미국 리테일 리뷰 및 평점",
+  },
+  {
+    id: "walmart_api",
+    label: "Walmart",
+    icon: Globe,
+    description: "Walmart public API — US retail channel VOC",
+    descriptionKo: "Walmart 공개 API — 미국 유통 채널 VOC",
+  },
+  {
+    id: "target_api",
+    label: "Target",
+    icon: Globe,
+    description: "Target public API — US retail channel VOC",
+    descriptionKo: "Target 공개 API — 미국 유통 채널 VOC",
+  },
+  {
+    id: "quora",
+    label: "Quora",
+    icon: MessageSquare,
+    description: "Quora Q&A — product experience discussions",
+    descriptionKo: "Quora Q&A — 제품 경험 토론 수집",
+  },
+  {
+    id: "stackexchange",
+    label: "Stack Exchange",
+    icon: MessageSquare,
+    description: "Stack Exchange / SuperUser — technical Q&A",
+    descriptionKo: "Stack Exchange / SuperUser — 기술 Q&A 수집",
+  },
 ];
 
 export function ReviewCollectButtons() {
