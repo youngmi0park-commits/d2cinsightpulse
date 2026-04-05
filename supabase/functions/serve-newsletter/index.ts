@@ -224,7 +224,7 @@ function buildNewsletterHTML(d: {
           <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
               <tr><td style="font-weight:700;font-size:13px;color:#1a1a1a;padding-bottom:2px;font-family:${FONT};">${p.name}</td></tr>
-              <tr><td style="font-size:10px;color:#888;padding-bottom:8px;font-family:${FONT};">${p.category} · 언급 ${p.mention_count}건</td></tr>
+              <tr><td style="font-size:10px;color:#888;padding-bottom:8px;font-family:${FONT};">${p.category} · 언급 ${String(p.mention_count).replace(/건/g, "")}건</td></tr>
               <tr><td>
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDF4;border:1px solid #BBF7D0;">
                   <tr><td style="padding:8px 12px;font-family:${FONT};">
