@@ -260,7 +260,7 @@ function buildNewsletterHTML(d: {
       <tr><td style="padding:10px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr><td style="font-weight:600;font-size:12px;color:#1a1a1a;padding-bottom:3px;">${t.rank}. ${t.topic}</td></tr>
-          <tr><td style="font-size:10px;color:#888;padding-bottom:4px;"><span style="color:#006600;font-weight:600;">긍정 ${t.positive_pct}%</span> · 언급 ${t.mention_pct}%</td></tr>
+          <tr><td style="font-size:10px;color:#888;padding-bottom:4px;"><span style="color:#006600;font-weight:600;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · 언급 ${String(t.mention_pct).replace(/%/g, "")}%</td></tr>
           <tr><td style="font-size:10px;color:#555;font-style:italic;background:#F7F4EF;padding:5px 8px;">"${t.representative_comment}"</td></tr>
         </table>
       </td></tr>`).join("");
