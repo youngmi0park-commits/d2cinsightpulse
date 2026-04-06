@@ -54,11 +54,33 @@ const Index = () => {
         return;
       }
 
+      // If query matches a category exactly, filter out products from other categories
+      const categoryKeywords: Record<string, string[]> = {
+        tv: ["TV"],
+        laptop: ["Laptop"],
+        monitor: ["Monitor"],
+        refrigerator: ["Refrigerator"],
+        washer: ["Washer"],
+        dryer: ["Dryer"],
+        dishwasher: ["Dishwasher"],
+        vacuum: ["Vacuum"],
+        soundbar: ["Soundbar", "Audio"],
+      };
+      const qLower = query.toLowerCase().trim();
+      const matchedCategories = categoryKeywords[qLower];
+      let filteredProducts = dbProducts;
+      if (matchedCategories) {
+        const catFiltered = dbProducts.filter((p) =>
+          matchedCategories.some((c) => p.category.toLowerCase() === c.toLowerCase())
+        );
+        if (catFiltered.length > 0) filteredProducts = catFiltered;
+      }
+
       const sourcesFilter = countryToSourceFilter(selectedCountry);
 
       // Group products by display_name to consolidate fragmented entries
       const productGroups = new Map<string, typeof dbProducts>();
-      for (const product of dbProducts) {
+      for (const product of filteredProducts) {
         // Normalize display name for grouping (strip size prefix like "27" / "55 inch")
         const normName = product.display_name
           .replace(/^\d+["″]?\s*/i, "")
