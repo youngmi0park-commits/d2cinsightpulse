@@ -81,6 +81,7 @@ function useBasicStats(country: string) {
       return {
         channels: Object.entries(byChannel)
           .map(([name, s]) => ({ name, ...s }))
+          .filter((ch) => ch.total >= 50)
           .sort((a, b) => b.total - a.total),
         total: count || (data?.length ?? 0),
       };
