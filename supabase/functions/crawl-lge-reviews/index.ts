@@ -237,6 +237,7 @@ Deno.serve(async (req) => {
   let bvOffset = 0;
   let dateFrom: string | undefined;
   let dateTo: string | undefined;
+  let productFilter: string | undefined; // BV ProductId for product-specific crawl
 
   try {
     const body = await req.json();
@@ -247,6 +248,7 @@ Deno.serve(async (req) => {
     if (body.bvOffset != null) bvOffset = body.bvOffset;
     if (body.dateFrom) dateFrom = body.dateFrom;
     if (body.dateTo) dateTo = body.dateTo;
+    if (body.productFilter) productFilter = body.productFilter;
   } catch {
     // defaults
   }
