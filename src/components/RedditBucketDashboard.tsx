@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import { classifyRedditPost, generateBucketSummaries, type RedditBucket, type ClassifiedPost, type BucketSummary } from "@/lib/redditBucketClassifier";
 
@@ -12,16 +13,23 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MessageSquare, ChevronDown, Copy, TrendingUp, AlertTriangle, HelpCircle, Hash, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-function useRedditClassified() {
+function useRedditClassified(country: string) {
+  const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-classified"],
+    queryKey: ["reddit-classified", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
         .limit(500);
+      if (sourcesFilter) {
+        const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
+        if (redditSources.length === 0) return [];
+        query = query.in("source", redditSources);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       const classified = (data || []).map(classifyRedditPost);
       return generateBucketSummaries(classified);
@@ -183,9 +191,9 @@ function PostItem({
   );
 }
 
-export function RedditBucketDashboard() {
+export function RedditBucketDashboard({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const { data: summaries, isLoading } = useRedditClassified();
+  const { data: summaries, isLoading } = useRedditClassified(country);
 
   const totalPosts = summaries?.reduce((s, b) => s + b.count, 0) || 0;
 
