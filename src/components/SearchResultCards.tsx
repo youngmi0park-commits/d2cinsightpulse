@@ -187,7 +187,7 @@ function summaryExcerpt(text: string, _source?: string, _sentimentType?: string,
 }
 
 /** Evidence & Signals section in expanded view */
-function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string }[] }) {
+function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string; title?: string; rating?: number }[] }) {
   const { t } = useLang();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -352,7 +352,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "positive")}"
+                        "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating)}"
                       </span>
                     </div>
                   </div>
@@ -394,7 +394,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "negative")}"
+                        "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating)}"
                       </span>
                     </div>
                   </div>
