@@ -152,8 +152,8 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
 export function ReviewList({ reviews }: ReviewListProps) {
   const { t } = useLang();
 
-  // LG.com 리뷰 원문은 노출하지 않음 — 분석 전용
-  const filteredReviews = reviews.filter((r) => !r.source.startsWith("lge_com"));
+  // 모든 리뷰 포함 (LG.com은 PII 제거된 요약형으로 표시)
+  const filteredReviews = reviews;
   const now = new Date();
   const weekAgo = subDays(now, 7);
   const weekLabel = `${format(weekAgo, "MM.dd")} ~ ${format(now, "MM.dd")}`;

@@ -212,18 +212,33 @@ export function useProductStats() {
   });
 }
 
+// Strip PII patterns from text (names, emails, phones, addresses)
+function stripPII(text: string): string {
+  return text
+    // Email addresses
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
+    // Phone numbers (various formats)
+    .replace(/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, "[phone]")
+    // Order / serial numbers that look like personal IDs
+    .replace(/\b[A-Z]{2,3}-?\d{8,}\b/g, "[id]")
+    // Names after "I'm" / "my name is" patterns
+    .replace(/(?:I'?m|my name is|name:)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/gi, "[name]");
+}
+
 // Convert DB review to the format used by existing components
 export function toReviewFormat(dbReview: DBReview) {
-  const isLgeCom = dbReview.source === "lge_com";
-  const maskedText = isLgeCom
-    ? `[LG.com 리뷰 — 감성: ${dbReview.sentiment || "neutral"}, 점수: ${((dbReview.sentiment_score ?? 0.5) * 100).toFixed(0)}점] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`
+  const isLgeCom = dbReview.source?.startsWith("lge_com");
+
+  // For LG.com reviews: strip PII but keep content for keyword extraction
+  const displayText = isLgeCom
+    ? stripPII(dbReview.content)
     : dbReview.content;
 
   return {
     id: dbReview.id,
     source: dbReview.source as any,
     author: isLgeCom ? "LG.com User" : (dbReview.author || "Anonymous"),
-    text: maskedText,
+    text: displayText,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
     rating: dbReview.rating ?? undefined,
     sentiment: (dbReview.sentiment || "neutral") as "positive" | "negative" | "neutral",
