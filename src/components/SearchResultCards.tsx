@@ -597,15 +597,16 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             <div className="space-y-4">
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
-              {/* Evidence & Signals */}
+              {/* 1) 긍정/부정 리뷰 & 데이터 비중 */}
               <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <KeywordCloud keywords={item.sentiment.keywords} />
-                <SentimentChart sentiment={item.sentiment} />
-              </div>
+              {/* 2) 감성 차트 (비중 시각화) */}
+              <SentimentChart sentiment={item.sentiment} />
 
-              {/* 고객 실제 Using Scene */}
+              {/* 3) 주요 긍/부정 키워드 */}
+              <KeywordCloud keywords={item.sentiment.keywords} />
+
+              {/* 4) 고객 실제 Using Scene (리뷰에서 언급된 경우만) */}
               {item.sentiment.usageScenes.length > 0 && (
                 <UsageSceneSection scenes={item.sentiment.usageScenes} />
               )}
