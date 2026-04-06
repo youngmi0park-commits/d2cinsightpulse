@@ -334,11 +334,11 @@ Deno.serve(async (req) => {
                 });
               }
 
-              // Bulk upsert — skip conflicts on external_id
+              // Bulk upsert — update content on conflict to refresh PII-stripped text
               if (reviewRows.length > 0) {
                 const { data: inserted, error: insertErr } = await supabase
                   .from("reviews")
-                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: true })
+                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: false })
                   .select("id");
                 const savedCount = inserted?.length || 0;
                 console.log(`[BV-${region.toUpperCase()}] Bulk saved ${savedCount}/${reviewRows.length} reviews (err: ${insertErr?.message || "none"})`);
