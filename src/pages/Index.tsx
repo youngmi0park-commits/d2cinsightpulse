@@ -72,7 +72,7 @@ const Index = () => {
 
       const analyzed: AnalyzedProduct[] = [];
 
-      for (const [groupName, products] of productGroups) {
+      for (const [, products] of productGroups) {
         // Fetch reviews for ALL products in the group
         const allProductIds = products.map((p) => p.id);
         let reviewQuery = supabase
@@ -92,12 +92,12 @@ const Index = () => {
         if (formattedReviews.length === 0) continue;
 
         // Use the product with the most recognizable name
-        const bestProduct = products.reduce((a, b) => {
-          // Prefer real model numbers over MD... internal IDs
+        const sortedProducts = [...products].sort((a, b) => {
           const aScore = a.model_number.startsWith("MD") ? 0 : 1;
           const bScore = b.model_number.startsWith("MD") ? 0 : 1;
           return bScore - aScore || b.display_name.length - a.display_name.length;
-        }, products[0]);
+        });
+        const bestProduct = sortedProducts[0];
 
         const sentiment = analyzeSentiment(formattedReviews);
         const marketing = generateMarketingMessage(bestProduct.display_name, sentiment, lang);
