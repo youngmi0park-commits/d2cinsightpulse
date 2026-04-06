@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { maskCompetitorNames } from "@/lib/sentiment";
+import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -114,17 +115,24 @@ function classifyToCategory(text: string): CategoryKey | null {
   return null;
 }
 
-export function RedditCategoryAnalysis() {
+export function RedditCategoryAnalysis({ country = "all" }: { country?: string }) {
   const [expanded, setExpanded] = useState<CategoryKey | null>(null);
+  const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: reviews } = useQuery({
-    queryKey: ["reddit-category-reviews"],
+    queryKey: ["reddit-category-reviews", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("content, sentiment, title, product_id, author")
         .like("source", "reddit%")
         .limit(800);
+      if (sourcesFilter) {
+        const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
+        if (redditSources.length === 0) return [];
+        query = query.in("source", redditSources);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },

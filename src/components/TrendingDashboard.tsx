@@ -33,6 +33,7 @@ function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
 
 interface TrendingDashboardProps {
   onProductClick?: (modelNumber: string) => void;
+  country?: string;
 }
 
 interface ChannelTopProduct {
@@ -173,7 +174,7 @@ function ChannelSection({
   );
 }
 
-export function TrendingDashboard({ onProductClick: _onProductClick }: TrendingDashboardProps) {
+export function TrendingDashboard({ onProductClick: _onProductClick, country: _country }: TrendingDashboardProps) {
   const { t } = useLang();
   const { data: allTrendingProducts = [], isLoading } = useTrendingProducts();
   const { data: allKeywords = [] } = useTrendingKeywords();

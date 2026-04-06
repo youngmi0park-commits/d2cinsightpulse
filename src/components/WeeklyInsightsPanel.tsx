@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
@@ -119,10 +119,14 @@ function ProductTag({ name }: { name: string }) {
   );
 }
 
-export function WeeklyInsightsPanel() {
+export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const [region, setRegion] = useState("all");
+  const [region, setRegion] = useState(country === "all" ? "all" : country);
   const [category, setCategory] = useState("all");
+
+  useEffect(() => {
+    setRegion(country === "all" ? "all" : country);
+  }, [country]);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<"category" | "product">("category");

@@ -77,7 +77,7 @@ interface OverviewData {
 }
 
 /* ───── Component ───── */
-export function OverviewDashboard() {
+export function OverviewDashboard({ country: _country }: { country?: string }) {
   useLang();
   
   const { data: kpis } = useOverviewKPIs();

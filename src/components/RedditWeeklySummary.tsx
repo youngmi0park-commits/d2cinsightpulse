@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,18 +11,25 @@ import {
 } from "lucide-react";
 import { classifyRedditPost, generateBucketSummaries } from "@/lib/redditBucketClassifier";
 
-export function RedditWeeklySummary() {
+export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { t } = useLang();
+  const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: classified } = useQuery({
-    queryKey: ["reddit-weekly-summary"],
+    queryKey: ["reddit-weekly-summary", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
         .limit(500);
+      if (sourcesFilter) {
+        const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
+        if (redditSources.length === 0) return [];
+        query = query.in("source", redditSources);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },

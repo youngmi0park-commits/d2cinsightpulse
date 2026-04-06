@@ -21,12 +21,12 @@ const RedditPage = () => {
         description="Reddit 커뮤니티에서 수집된 실사용자 VOC를 분석합니다. 버킷별 감성 분류, VOC 카드, AI 카피 생성, 경쟁사 언급 분석, 국가별 트렌드를 확인하세요."
       />
       <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
-      <RedditWeeklySummary />
-      <RedditBucketDashboard />
-      <RedditVocPostCards />
+      <RedditWeeklySummary country={selectedCountry} />
+      <RedditBucketDashboard country={selectedCountry} />
+      <RedditVocPostCards country={selectedCountry} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <RedditCategoryAnalysis />
-        <RedditCompetitorMentions />
+        <RedditCategoryAnalysis country={selectedCountry} />
+        <RedditCompetitorMentions country={selectedCountry} />
       </div>
       <RedditCountryInsights />
       <RedditAiCopyModal />
