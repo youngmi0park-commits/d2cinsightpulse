@@ -3,22 +3,30 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { classifyRedditPost, type ClassifiedPost } from "@/lib/redditBucketClassifier";
 import { maskCompetitorNames } from "@/lib/sentiment";
+import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ExternalLink, ChevronDown, Filter } from "lucide-react";
 import { toast } from "sonner";
 
-function useRedditPosts() {
+function useRedditPosts(country: string) {
+  const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-voc-posts"],
+    queryKey: ["reddit-voc-posts", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, published_at, author, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
         .limit(500);
+      if (sourcesFilter) {
+        const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
+        if (redditSources.length === 0) return [];
+        query = query.in("source", redditSources);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return (data || []).map((r) => ({
         ...classifyRedditPost(r),
