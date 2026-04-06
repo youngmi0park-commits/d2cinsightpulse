@@ -126,7 +126,7 @@ export const FUNCTION_CATEGORIES: Record<string, string[]> = {
   "Value & Price": ["price", "value", "cost", "expensive", "cheap", "worth", "money", "budget", "afford", "deal", "sale", "discount", "overpriced", "expectation"],
   "Customer Service": ["service", "support", "customer", "repair", "technician", "return", "refund", "exchange", "response", "call center", "chat support", "warranty claim"],
   "Wash/Clean Quality": ["wash", "clean", "stain", "rinse", "spin", "cycle", "drum", "detergent", "fabric", "gentle", "heavy duty"],
-  "Cooling/Temperature": ["cool", "cold", "temperature", "freeze", "ice", "fresh", "chill", "thermostat", "compressor"],
+  "Cooling/Temperature": ["cold", "temperature", "freeze", "ice", "fresh", "chill", "thermostat", "compressor", "cooling system", "refrigerant"],
   "Energy/Noise": ["energy", "power", "watt", "electricity", "noise", "quiet", "loud", "vibration", "efficient", "eco"],
 };
 
@@ -694,7 +694,11 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     totalComposite += normalized;
 
     // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
-    const reviewSentences = splitSentences(review.text);
+    // For placeholder LG.com reviews, use title for keyword extraction
+    const textForKeywords = (review.text && !/개인정보 보호 정책|LG 리뷰 — 감성/.test(review.text))
+      ? review.text
+      : (review.title || "");
+    const reviewSentences = splitSentences(textForKeywords);
     for (const sent of reviewSentences) {
       const fco = classifySentenceFCO(sent);
       if (fco.function === "General") continue;
