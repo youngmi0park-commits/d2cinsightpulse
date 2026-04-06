@@ -31,6 +31,16 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["lint", "vent"], tag: "Lint_Vent_Issue" },
     { keywords: ["noise", "loud", "vibrat"], tag: "Noise_Issue" },
   ],
+  TV: [
+    { keywords: ["burn-in", "burn in", "image retention"], tag: "Burn_In_Issue" },
+    { keywords: ["oled", "evo"], tag: "OLED_Feature" },
+    { keywords: ["hdr", "dolby vision", "dolby"], tag: "HDR_Feature" },
+    { keywords: ["gaming", "vrr", "120hz", "game mode"], tag: "Gaming_Feature" },
+    { keywords: ["sound", "speaker", "audio"], tag: "Sound_Quality" },
+    { keywords: ["webos", "smart tv", "thinq", "app"], tag: "SmartTV_Feature" },
+    { keywords: ["brightness", "dim", "peak"], tag: "Brightness_Issue" },
+    { keywords: ["panel", "dead pixel", "banding"], tag: "Panel_Issue" },
+  ],
 };
 
 // ── Search queries per category+region ──
