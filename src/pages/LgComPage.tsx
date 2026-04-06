@@ -54,9 +54,9 @@ const LgComPage = () => {
       <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
       <CompactDataBar />
       {/* 1. AI 주간 인사이트 리포트 (최상단) */}
-      <LgComWeeklyReport />
+      <LgComWeeklyReport country={selectedCountry} />
       {/* 2. 전략 심층분석: 사용자군/JTBD */}
-      <WeeklyInsightsPanel />
+      <WeeklyInsightsPanel country={selectedCountry} />
     </div>
   );
 };
