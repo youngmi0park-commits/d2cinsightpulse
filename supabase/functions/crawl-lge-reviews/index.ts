@@ -31,6 +31,16 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["lint", "vent"], tag: "Lint_Vent_Issue" },
     { keywords: ["noise", "loud", "vibrat"], tag: "Noise_Issue" },
   ],
+  TV: [
+    { keywords: ["burn-in", "burn in", "image retention"], tag: "Burn_In_Issue" },
+    { keywords: ["oled", "evo"], tag: "OLED_Feature" },
+    { keywords: ["hdr", "dolby vision", "dolby"], tag: "HDR_Feature" },
+    { keywords: ["gaming", "vrr", "120hz", "game mode"], tag: "Gaming_Feature" },
+    { keywords: ["sound", "speaker", "audio"], tag: "Sound_Quality" },
+    { keywords: ["webos", "smart tv", "thinq", "app"], tag: "SmartTV_Feature" },
+    { keywords: ["brightness", "dim", "peak"], tag: "Brightness_Issue" },
+    { keywords: ["panel", "dead pixel", "banding"], tag: "Panel_Issue" },
+  ],
 };
 
 // ── Search queries per category+region ──
@@ -55,6 +65,17 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
     uk: [
       '"LG washing machine" review UK owner 2024 2025',
       'LG washing machine review UK ThinQ',
+    ],
+  },
+  TV: {
+    us: [
+      '"LG OLED" TV review verified purchase 2024 2025',
+      'LG C5 OLED review owner picture quality',
+      'LG G5 OLED evo review gaming HDR',
+    ],
+    uk: [
+      '"LG OLED" TV review UK owner 2024 2025',
+      'LG OLED evo review UK picture quality',
     ],
   },
 };
@@ -108,7 +129,8 @@ async function fetchBazaarvoiceReviews(
   offset = 0,
   limit = 20,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  productFilter?: string
 ): Promise<any[]> {
   const config = BV_CONFIG[region];
   const url = new URL(`${config.baseUrl}/reviews.json`);
@@ -119,7 +141,12 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
   
-  // Date range filters - BV uses epoch seconds for SubmissionTime filter
+  // Product-specific filter (BV ProductId or OriginalProductName)
+  if (productFilter) {
+    url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
+  }
+  
+  // Date range filters
   if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${Math.floor(new Date(dateFrom).getTime() / 1000)}`);
   if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${Math.floor(new Date(dateTo).getTime() / 1000)}`);
 
@@ -155,9 +182,15 @@ function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
     reviewType = "syndication";
   }
 
-  return {
-    model_number: bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`,
-    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`,
+    // Prefer OriginalProductName (actual model number like OLED77C5PUA) over BV internal ProductId (MD...)
+    const originalName = bvReview.OriginalProductName || "";
+    const productName = bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`;
+    // Use OriginalProductName if it looks like a real model number, otherwise fall back to ProductId
+    const modelNum = originalName && !originalName.startsWith("MD") ? originalName : bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`;
+    
+    return {
+    model_number: modelNum,
+    display_name: productName,
     category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
     review_id: bvReview.Id,
     author: null,
@@ -197,13 +230,14 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["Refrigerator", "Washer", "Dryer", "Dishwasher"];
+  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
   let bvPages = 5;
   let bvOffset = 0;
   let dateFrom: string | undefined;
   let dateTo: string | undefined;
+  let productFilter: string | undefined; // BV ProductId for product-specific crawl
 
   try {
     const body = await req.json();
@@ -214,6 +248,7 @@ Deno.serve(async (req) => {
     if (body.bvOffset != null) bvOffset = body.bvOffset;
     if (body.dateFrom) dateFrom = body.dateFrom;
     if (body.dateTo) dateTo = body.dateTo;
+    if (body.productFilter) productFilter = body.productFilter;
   } catch {
     // defaults
   }
@@ -244,7 +279,7 @@ Deno.serve(async (req) => {
           try {
             let pageOffset = bvOffset;
             for (let page = 0; page < bvPages; page++) {
-              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo);
+              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo, productFilter);
               console.log(`[BV-${region.toUpperCase()}] Page ${page + 1}/${bvPages}: ${bvReviews.length} reviews for ${category} (offset=${pageOffset})`);
               
               if (bvReviews.length === 0) break;
@@ -262,8 +297,12 @@ Deno.serve(async (req) => {
                 const modelNum = review.model_number || `LG-${category}-GENERIC`;
                 const bvClient = BV_CONFIG[region].client;
                 const externalId = `bv_${region}_${bvReview.Id}`;
-                const tagStr = allTags.join(", ");
-                const maskedContent = `[LG 리뷰 — 감성: ${review.sentiment || "neutral"}, 점수: ${((review.sentiment_score ?? 0.5) * 100).toFixed(0)}점${tagStr ? `, 이슈: ${tagStr}` : ""}] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`;
+                // Strip PII from review content but keep the actual text for keyword extraction
+                const piiStrippedContent = review.content
+                  .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
+                  .replace(/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, "[phone]")
+                  .replace(/\b\d{1,5}\s+[A-Z][a-zA-Z]+\s+(?:St|Ave|Blvd|Dr|Rd|Ln|Way|Ct)\b\.?/g, "[address]")
+                  .replace(/(?:my name is|I'?m)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/gi, "[name]");
 
                 // Cache product lookup
                 if (!productCache[modelNum]) {
@@ -288,7 +327,7 @@ Deno.serve(async (req) => {
                   source_url: `bazaarvoice://${bvClient}/${bvReview.Id}`,
                   external_id: externalId,
                   title: review.marketing_point?.slice(0, 200) || review.highlight_keywords?.join(", ")?.slice(0, 200) || null,
-                  content: maskedContent,
+                  content: piiStrippedContent,
                   author: "LG Review User",
                   rating: review.rating || null,
                   sentiment: review.sentiment || "neutral",
@@ -303,11 +342,11 @@ Deno.serve(async (req) => {
                 });
               }
 
-              // Bulk upsert — skip conflicts on external_id
+              // Bulk upsert — update content on conflict to refresh PII-stripped text
               if (reviewRows.length > 0) {
                 const { data: inserted, error: insertErr } = await supabase
                   .from("reviews")
-                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: true })
+                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: false })
                   .select("id");
                 const savedCount = inserted?.length || 0;
                 console.log(`[BV-${region.toUpperCase()}] Bulk saved ${savedCount}/${reviewRows.length} reviews (err: ${insertErr?.message || "none"})`);
