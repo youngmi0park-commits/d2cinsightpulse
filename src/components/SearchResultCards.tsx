@@ -222,7 +222,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
       [...positiveReviews.slice(0, 8), ...negativeReviews.slice(0, 8)].forEach((r, i) => {
         const key = `${r.sentiment}-${i}`;
         if (!translations[key]) {
-          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source) });
+          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source, undefined, r.title, r.rating) });
         }
       });
 
