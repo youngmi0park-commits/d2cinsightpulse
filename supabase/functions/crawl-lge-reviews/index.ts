@@ -129,7 +129,8 @@ async function fetchBazaarvoiceReviews(
   offset = 0,
   limit = 20,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  productFilter?: string
 ): Promise<any[]> {
   const config = BV_CONFIG[region];
   const url = new URL(`${config.baseUrl}/reviews.json`);
@@ -140,7 +141,12 @@ async function fetchBazaarvoiceReviews(
   url.searchParams.set("Limit", String(limit));
   url.searchParams.set("Offset", String(offset));
   
-  // Date range filters - BV uses epoch seconds for SubmissionTime filter
+  // Product-specific filter (BV ProductId or OriginalProductName)
+  if (productFilter) {
+    url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
+  }
+  
+  // Date range filters
   if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${Math.floor(new Date(dateFrom).getTime() / 1000)}`);
   if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${Math.floor(new Date(dateTo).getTime() / 1000)}`);
 
