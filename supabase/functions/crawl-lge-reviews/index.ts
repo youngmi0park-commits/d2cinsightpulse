@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
           try {
             let pageOffset = bvOffset;
             for (let page = 0; page < bvPages; page++) {
-              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo);
+              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo, productFilter);
               console.log(`[BV-${region.toUpperCase()}] Page ${page + 1}/${bvPages}: ${bvReviews.length} reviews for ${category} (offset=${pageOffset})`);
               
               if (bvReviews.length === 0) break;
