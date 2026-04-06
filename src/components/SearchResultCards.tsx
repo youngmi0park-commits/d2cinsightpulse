@@ -145,46 +145,25 @@ function getChannelLabels(reviews: { source?: string }[]): string[] {
   return Array.from(set).sort();
 }
 
+/** Strip PII from text (emails, phones, names) */
+function stripPII(text: string): string {
+  return text
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "")
+    .replace(/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, "")
+    .replace(/(?:my name is|I'?m)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 /** Extract short excerpt from review text */
 function excerpt(text: string, maxLen = 120): string {
-  const clean = maskCompetitorNames(text.replace(/\s+/g, " ").trim());
+  const clean = maskCompetitorNames(stripPII(text.replace(/\s+/g, " ").trim()));
   if (clean.length <= maxLen) return clean;
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }
 
-/** Extract key phrases from text for keyword-style summary */
-function extractKeyPhrases(text: string): string[] {
-  const _lower = text.replace(/\s+/g, " ").trim();
-  const patterns = [
-    /(?:love|great|excellent|amazing|perfect|best|good|nice|awesome|fantastic|beautiful|impressive|solid|quality|easy|smooth|clear|bright|fast|quiet|efficient|reliable|convenient|comfortable|worth|recommend|happy|pleased|satisfied)\s+\w+/gi,
-    /(?:poor|bad|worst|terrible|horrible|disappointing|broken|defective|loud|slow|dim|cheap|flimsy|difficult|complicated|unreliable|frustrating|annoying|regret|waste|issue|problem|fail|crack|leak|noise|error|glitch|bug|malfunction)\s*\w*/gi,
-    /(?:picture|sound|color|screen|display|design|setup|install|delivery|price|value|size|weight|remote|app|smart|wifi|bluetooth|bass|volume|brightness|contrast|hdr|dolby|4k|oled|energy|power|space|storage|ice|water|filter|wash|dry|clean|cool|heat)\s*\w*/gi,
-  ];
-  const phrases = new Set<string>();
-  for (const pat of patterns) {
-    const matches = text.match(pat);
-    if (matches) matches.slice(0, 3).forEach((m) => phrases.add(m.trim()));
-  }
-  return Array.from(phrases).slice(0, 4);
-}
-
-/** Build summary for LG.com reviews — show meaningful excerpt with key phrases */
-function lgComSummary(text: string, sentimentType?: string): string {
-  const keyPhrases = extractKeyPhrases(text);
-  const tag = sentimentType === "positive" ? "👍" : sentimentType === "negative" ? "👎" : "•";
-  if (keyPhrases.length >= 2) {
-    // Show key phrases + short excerpt for context
-    const short = excerpt(text, 80);
-    return `${tag} ${keyPhrases.slice(0, 3).join(" · ")} — ${short}`;
-  }
-  // Fallback: show a reasonable excerpt (same length as other channels)
-  return excerpt(text, 120);
-}
-
-/** Display-ready excerpt: keyword summary for LG.com, short excerpt for others */
-function summaryExcerpt(text: string, source?: string, sentimentType?: string): string {
-  const isLgCom = source?.startsWith("lge_com");
-  if (isLgCom) return lgComSummary(text, sentimentType);
+/** Display-ready excerpt — all channels use same format, PII-safe */
+function summaryExcerpt(text: string, _source?: string, _sentimentType?: string): string {
   return excerpt(text, 120);
 }
 
