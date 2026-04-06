@@ -694,7 +694,11 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     totalComposite += normalized;
 
     // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
-    const reviewSentences = splitSentences(review.text);
+    // For placeholder LG.com reviews, use title for keyword extraction
+    const textForKeywords = (review.text && !/개인정보 보호 정책|LG 리뷰 — 감성/.test(review.text))
+      ? review.text
+      : (review.title || "");
+    const reviewSentences = splitSentences(textForKeywords);
     for (const sent of reviewSentences) {
       const fco = classifySentenceFCO(sent);
       if (fco.function === "General") continue;
