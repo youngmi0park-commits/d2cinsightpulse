@@ -176,9 +176,15 @@ function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
     reviewType = "syndication";
   }
 
-  return {
-    model_number: bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`,
-    display_name: bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`,
+    // Prefer OriginalProductName (actual model number like OLED77C5PUA) over BV internal ProductId (MD...)
+    const originalName = bvReview.OriginalProductName || "";
+    const productName = bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`;
+    // Use OriginalProductName if it looks like a real model number, otherwise fall back to ProductId
+    const modelNum = originalName && !originalName.startsWith("MD") ? originalName : bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`;
+    
+    return {
+    model_number: modelNum,
+    display_name: productName,
     category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
     review_id: bvReview.Id,
     author: null,
