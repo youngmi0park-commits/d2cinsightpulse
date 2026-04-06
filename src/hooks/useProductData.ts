@@ -239,6 +239,7 @@ export function toReviewFormat(dbReview: DBReview) {
     source: dbReview.source as any,
     author: isLgeCom ? "LG.com User" : (dbReview.author || "Anonymous"),
     text: displayText,
+    title: dbReview.title || undefined,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
     rating: dbReview.rating ?? undefined,
     sentiment: (dbReview.sentiment || "neutral") as "positive" | "negative" | "neutral",

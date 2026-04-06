@@ -162,8 +162,27 @@ function excerpt(text: string, maxLen = 120): string {
   return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "…";
 }
 
-/** Display-ready excerpt — all channels use same format, PII-safe */
-function summaryExcerpt(text: string, _source?: string, _sentimentType?: string): string {
+/** Check if text is a placeholder (no real content) */
+function isPlaceholder(text: string): boolean {
+  return /개인정보 보호 정책|LG 리뷰 — 감성/.test(text);
+}
+
+/** Display-ready excerpt — uses title fallback for placeholder reviews */
+function summaryExcerpt(text: string, _source?: string, _sentimentType?: string, title?: string, rating?: number): string {
+  if (isPlaceholder(text)) {
+    // Build meaningful summary from metadata
+    const parts: string[] = [];
+    if (title) parts.push(title);
+    if (rating !== undefined) parts.push(`⭐${rating}/5`);
+    if (parts.length > 0) return parts.join(" · ");
+    // Extract sentiment/score from placeholder text itself
+    const match = text.match(/감성:\s*(\w+),\s*점수:\s*(\d+)점/);
+    if (match) {
+      const label = match[1] === "positive" ? "👍 긍정" : match[1] === "negative" ? "👎 부정" : "➖ 중립";
+      return `${label} (${match[2]}점)`;
+    }
+    return "LG.com 리뷰";
+  }
   return excerpt(text, 120);
 }
 
