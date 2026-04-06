@@ -168,15 +168,17 @@ function extractKeyPhrases(text: string): string[] {
   return Array.from(phrases).slice(0, 4);
 }
 
-/** Build keyword-focused summary for LG.com reviews */
+/** Build summary for LG.com reviews — show meaningful excerpt with key phrases */
 function lgComSummary(text: string, sentimentType?: string): string {
   const keyPhrases = extractKeyPhrases(text);
+  const tag = sentimentType === "positive" ? "👍" : sentimentType === "negative" ? "👎" : "•";
   if (keyPhrases.length >= 2) {
-    const tag = sentimentType === "positive" ? "👍" : sentimentType === "negative" ? "👎" : "•";
-    return `${tag} ${keyPhrases.join(" · ")}`;
+    // Show key phrases + short excerpt for context
+    const short = excerpt(text, 80);
+    return `${tag} ${keyPhrases.slice(0, 3).join(" · ")} — ${short}`;
   }
-  // Fallback: short excerpt
-  return excerpt(text, 50);
+  // Fallback: show a reasonable excerpt (same length as other channels)
+  return excerpt(text, 120);
 }
 
 /** Display-ready excerpt: keyword summary for LG.com, short excerpt for others */
