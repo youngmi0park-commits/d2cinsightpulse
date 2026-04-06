@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
                   source_url: `bazaarvoice://${bvClient}/${bvReview.Id}`,
                   external_id: externalId,
                   title: review.marketing_point?.slice(0, 200) || review.highlight_keywords?.join(", ")?.slice(0, 200) || null,
-                  content: maskedContent,
+                  content: piiStrippedContent,
                   author: "LG Review User",
                   rating: review.rating || null,
                   sentiment: review.sentiment || "neutral",
