@@ -119,9 +119,10 @@ function ProductTag({ name }: { name: string }) {
   );
 }
 
-export function WeeklyInsightsPanel() {
+export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const [region, setRegion] = useState("all");
+  const mappedRegion = country === "all" ? "all" : country;
+  const [region, setRegion] = useState(mappedRegion);
   const [category, setCategory] = useState("all");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);

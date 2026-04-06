@@ -103,8 +103,8 @@ const BRAND_COLORS: Record<string, string> = {
   ETC: "border-border bg-secondary/20",
 };
 
-export function RedditCompetitorMentions() {
-  const { data: mentions, isLoading } = useCompetitorMentions();
+export function RedditCompetitorMentions({ country = "all" }: { country?: string }) {
+  const { data: mentions, isLoading } = useCompetitorMentions(country);
   const totalMentions = mentions?.reduce((s, m) => s + m.count, 0) || 0;
 
   return (

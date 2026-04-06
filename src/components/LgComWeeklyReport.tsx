@@ -95,9 +95,11 @@ function SectionCard({ icon: Icon, title, children, color = "border-border bg-ca
 }
 
 /* ── main component ── */
-export function LgComWeeklyReport() {
+export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const [region, setRegion] = useState("all");
+  // Sync external country prop to internal region
+  const mappedRegion = country === "all" ? "all" : country;
+  const [region, setRegion] = useState(mappedRegion);
   const [category, setCategory] = useState("all");
   const [report, setReport] = useState<ReportData | null>(null);
   const [meta, setMeta] = useState<any>(null);
