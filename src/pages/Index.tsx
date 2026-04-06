@@ -35,11 +35,29 @@ const Index = () => {
     setSearchQuery(query);
 
     try {
-      const { data: dbProducts, error: dbError } = await supabase
+      // Try exact model_number match first, then fuzzy search
+      let dbProducts: any[] | null = null;
+      let dbError: any = null;
+
+      // 1) Exact model_number match
+      const exactResult = await supabase
         .from("products")
         .select("*")
-        .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
+        .ilike("model_number", query)
         .eq("is_active", true);
+
+      if (exactResult.data && exactResult.data.length > 0) {
+        dbProducts = exactResult.data;
+      } else {
+        // 2) Fuzzy search across model_number, display_name, category
+        const fuzzyResult = await supabase
+          .from("products")
+          .select("*")
+          .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
+          .eq("is_active", true);
+        dbProducts = fuzzyResult.data;
+        dbError = fuzzyResult.error;
+      }
 
       if (dbError) throw dbError;
 
