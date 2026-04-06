@@ -283,8 +283,12 @@ Deno.serve(async (req) => {
                 const modelNum = review.model_number || `LG-${category}-GENERIC`;
                 const bvClient = BV_CONFIG[region].client;
                 const externalId = `bv_${region}_${bvReview.Id}`;
-                const tagStr = allTags.join(", ");
-                const maskedContent = `[LG 리뷰 — 감성: ${review.sentiment || "neutral"}, 점수: ${((review.sentiment_score ?? 0.5) * 100).toFixed(0)}점${tagStr ? `, 이슈: ${tagStr}` : ""}] 개인정보 보호 정책에 따라 원문 텍스트는 표시되지 않습니다.`;
+                // Strip PII from review content but keep the actual text for keyword extraction
+                const piiStrippedContent = review.content
+                  .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
+                  .replace(/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, "[phone]")
+                  .replace(/\b\d{1,5}\s+[A-Z][a-zA-Z]+\s+(?:St|Ave|Blvd|Dr|Rd|Ln|Way|Ct)\b\.?/g, "[address]")
+                  .replace(/(?:my name is|I'?m)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/gi, "[name]");
 
                 // Cache product lookup
                 if (!productCache[modelNum]) {
