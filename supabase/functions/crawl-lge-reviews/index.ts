@@ -57,6 +57,17 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
       'LG washing machine review UK ThinQ',
     ],
   },
+  TV: {
+    us: [
+      '"LG OLED" TV review verified purchase 2024 2025',
+      'LG C5 OLED review owner picture quality',
+      'LG G5 OLED evo review gaming HDR',
+    ],
+    uk: [
+      '"LG OLED" TV review UK owner 2024 2025',
+      'LG OLED evo review UK picture quality',
+    ],
+  },
 };
 
 // ── AI Prompt ──
