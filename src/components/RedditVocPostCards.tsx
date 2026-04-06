@@ -54,8 +54,8 @@ const SENTIMENT_ICON: Record<string, React.ReactNode> = {
   neutral: <MessageCircle className="h-3 w-3 text-muted-foreground" />,
 };
 
-export function RedditVocPostCards() {
-  const { data: posts, isLoading } = useRedditPosts();
+export function RedditVocPostCards({ country = "all" }: { country?: string }) {
+  const { data: posts, isLoading } = useRedditPosts(country);
   const [filter, setFilter] = useState<BucketFilter>("ALL");
   const [showCount, setShowCount] = useState(12);
 

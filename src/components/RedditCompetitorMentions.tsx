@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -31,15 +32,22 @@ interface CompetitorMention {
   sampleContexts: string[];
 }
 
-function useCompetitorMentions() {
+function useCompetitorMentions(country: string) {
+  const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-competitor-mentions"],
+    queryKey: ["reddit-competitor-mentions", country],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select("content, sentiment")
         .like("source", "reddit%")
         .limit(500);
+      if (sourcesFilter) {
+        const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
+        if (redditSources.length === 0) return [];
+        query = query.in("source", redditSources);
+      }
+      const { data, error } = await query;
       if (error) throw error;
 
       const mentions: Record<string, CompetitorMention> = {};
