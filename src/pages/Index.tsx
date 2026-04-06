@@ -35,29 +35,12 @@ const Index = () => {
     setSearchQuery(query);
 
     try {
-      // Try exact model_number match first, then fuzzy search
-      let dbProducts: any[] | null = null;
-      let dbError: any = null;
-
-      // 1) Exact model_number match
-      const exactResult = await supabase
+      // Search across model_number, display_name, category, sub_category
+      const { data: dbProducts, error: dbError } = await supabase
         .from("products")
         .select("*")
-        .ilike("model_number", query)
+        .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%,sub_category.ilike.%${query}%`)
         .eq("is_active", true);
-
-      if (exactResult.data && exactResult.data.length > 0) {
-        dbProducts = exactResult.data;
-      } else {
-        // 2) Fuzzy search across model_number, display_name, category
-        const fuzzyResult = await supabase
-          .from("products")
-          .select("*")
-          .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%`)
-          .eq("is_active", true);
-        dbProducts = fuzzyResult.data;
-        dbError = fuzzyResult.error;
-      }
 
       if (dbError) throw dbError;
 
@@ -73,16 +56,32 @@ const Index = () => {
 
       const sourcesFilter = countryToSourceFilter(selectedCountry);
 
-      const analyzed: AnalyzedProduct[] = [];
+      // Group products by display_name to consolidate fragmented entries
+      const productGroups = new Map<string, typeof dbProducts>();
       for (const product of dbProducts) {
+        // Normalize display name for grouping (strip size prefix like "27" / "55 inch")
+        const normName = product.display_name
+          .replace(/^\d+["″]?\s*/i, "")
+          .replace(/^\d+\s*inch\s*/i, "")
+          .replace(/\s*\(.*?\)\s*$/, "")
+          .trim();
+        const key = normName || product.display_name;
+        if (!productGroups.has(key)) productGroups.set(key, []);
+        productGroups.get(key)!.push(product);
+      }
+
+      const analyzed: AnalyzedProduct[] = [];
+
+      for (const [groupName, products] of productGroups) {
+        // Fetch reviews for ALL products in the group
+        const allProductIds = products.map((p) => p.id);
         let reviewQuery = supabase
           .from("reviews")
           .select("*")
-          .eq("product_id", product.id)
+          .in("product_id", allProductIds)
           .order("collected_at", { ascending: false })
-          .limit(50);
+          .limit(200);
 
-        // Apply country source filter
         if (sourcesFilter && sourcesFilter.length > 0) {
           reviewQuery = reviewQuery.in("source", sourcesFilter);
         }
@@ -92,16 +91,24 @@ const Index = () => {
         const formattedReviews = (reviews || []).map(toReviewFormat);
         if (formattedReviews.length === 0) continue;
 
+        // Use the product with the most recognizable name
+        const bestProduct = products.reduce((a, b) => {
+          // Prefer real model numbers over MD... internal IDs
+          const aScore = a.model_number.startsWith("MD") ? 0 : 1;
+          const bScore = b.model_number.startsWith("MD") ? 0 : 1;
+          return bScore - aScore || b.display_name.length - a.display_name.length;
+        }, products[0]);
+
         const sentiment = analyzeSentiment(formattedReviews);
-        const marketing = generateMarketingMessage(product.display_name, sentiment, lang);
-        const geoMessages = generateGeoMarketingMessages(product.display_name, sentiment);
+        const marketing = generateMarketingMessage(bestProduct.display_name, sentiment, lang);
+        const geoMessages = generateGeoMarketingMessages(bestProduct.display_name, sentiment);
 
         analyzed.push({
           product: {
-            name: product.model_number,
-            displayName: product.display_name,
-            category: product.category as any,
-            subCategory: (product as any).sub_category || undefined,
+            name: bestProduct.model_number,
+            displayName: bestProduct.display_name,
+            category: bestProduct.category as any,
+            subCategory: (bestProduct as any).sub_category || undefined,
             reviews: formattedReviews,
           },
           sentiment,
@@ -110,13 +117,7 @@ const Index = () => {
         });
       }
 
-      analyzed.sort((a, b) => {
-        const qLower = query.toLowerCase();
-        const aExact = a.product.name.toLowerCase() === qLower ? 1 : 0;
-        const bExact = b.product.name.toLowerCase() === qLower ? 1 : 0;
-        if (aExact !== bExact) return bExact - aExact;
-        return b.product.reviews.length - a.product.reviews.length;
-      });
+      analyzed.sort((a, b) => b.product.reviews.length - a.product.reviews.length);
 
       if (analyzed.length === 0) {
         setError(t(
