@@ -80,7 +80,7 @@ const Index = () => {
 
       // Group products by display_name to consolidate fragmented entries
       const productGroups = new Map<string, typeof dbProducts>();
-      for (const product of dbProducts) {
+      for (const product of filteredProducts) {
         // Normalize display name for grouping (strip size prefix like "27" / "55 inch")
         const normName = product.display_name
           .replace(/^\d+["″]?\s*/i, "")
