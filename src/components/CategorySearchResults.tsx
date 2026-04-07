@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp, MessageSquare, ArrowUpDown } from "lucide-react
 import { useLang } from "@/contexts/LanguageContext";
 import type { AnalyzedProduct } from "@/components/SearchResultCards";
 import { CategoryHubCard } from "@/components/CategoryHubCard";
-import { MarketingAssetStudio } from "@/components/MarketingAssetStudio";
 import { resolveCategoryMeta, getCategoryLabel, GROUP_ORDER } from "@/data/categoryMap";
 import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
@@ -266,7 +265,6 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
 
       {/* Two-column layout */}
       {effectiveCategory && activeGroup && (
-        <>
         <div className="flex flex-col lg:flex-row gap-5">
           {/* LEFT: Category Hub Card */}
           <CategoryHubCard
@@ -382,58 +380,6 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
             )}
           </div>
         </div>
-
-        {/* Marketing Asset Studio — below the hub */}
-        {(() => {
-          // Compute aggregated stats for studio
-          let totalR = 0, totalP = 0, totalN = 0, totalNeu = 0, scoreSum = 0;
-          const posThemes: Record<string, number> = {};
-          const negThemes: Record<string, number> = {};
-          let bestQuote = "";
-          const srcCounts: Record<string, number> = {};
-
-          for (const p of activeProducts) {
-            totalR += p.product.reviews.length;
-            totalP += p.sentiment.positive;
-            totalN += p.sentiment.negative;
-            totalNeu += p.sentiment.neutral;
-            scoreSum += p.sentiment.compositeScore;
-            if (!bestQuote && p.sentiment.topPositivePhrase) bestQuote = p.sentiment.topPositivePhrase;
-            for (const w of p.sentiment.keywords.positive || []) posThemes[w] = (posThemes[w] || 0) + 1;
-            for (const w of p.sentiment.keywords.negative || []) negThemes[w] = (negThemes[w] || 0) + 1;
-            for (const r of p.product.reviews) {
-              const key = r.source?.startsWith("reddit") ? "Reddit"
-                : r.source?.startsWith("youtube") ? "YouTube"
-                : r.source?.startsWith("lge_com") ? "LG.com"
-                : r.source?.startsWith("amazon") ? "Amazon"
-                : r.source?.startsWith("bestbuy") ? "BestBuy"
-                : r.source || "Other";
-              srcCounts[key] = (srcCounts[key] || 0) + 1;
-            }
-          }
-
-          const total = totalP + totalN + totalNeu;
-          const posPct = total > 0 ? Math.round((totalP / total) * 100) : 0;
-          const negPct = total > 0 ? Math.round((totalN / total) * 100) : 0;
-          const avgScore = activeProducts.length > 0 ? Math.round(scoreSum / activeProducts.length) : 0;
-          const topPos = Object.entries(posThemes).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([w]) => w);
-          const topNeg = Object.entries(negThemes).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([w]) => w);
-
-          return (
-            <MarketingAssetStudio
-              categoryName={effectiveCategory}
-              sentimentScore={avgScore}
-              positivePct={posPct}
-              negativePct={negPct}
-              totalReviews={totalR}
-              topPositivePoints={topPos}
-              topNegativePoints={topNeg}
-              bestReviewQuote={bestQuote}
-              sources={srcCounts}
-            />
-          );
-        })()}
-        </>
       )}
     </div>
   );
