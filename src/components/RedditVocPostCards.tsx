@@ -181,6 +181,13 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   {maskCompetitorNames(post.content)}
                 </p>
 
+                {/* Translation */}
+                {translations[post.id] && (
+                  <p className="text-[11px] text-primary/80 leading-relaxed bg-primary/5 rounded px-2 py-1">
+                    🇰🇷 {translations[post.id]}
+                  </p>
+                )}
+
                 {/* Keywords */}
                 {post.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
@@ -206,9 +213,21 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   <span className="text-[9px] text-muted-foreground">
                     {(post as any).author || "anonymous"} · {post.source}
                   </span>
-                  <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[9px]" onClick={() => handleCopy(post.content)}>
-                    <Copy className="h-2.5 w-2.5 mr-0.5" />복사
-                  </Button>
+                  <div className="flex items-center gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-[9px]"
+                      disabled={translating[post.id]}
+                      onClick={() => handleTranslate(post.id, post.content)}
+                    >
+                      <Languages className="h-2.5 w-2.5 mr-0.5" />
+                      {translating[post.id] ? "..." : translations[post.id] ? "번역됨" : "번역"}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[9px]" onClick={() => handleCopy(post.content)}>
+                      <Copy className="h-2.5 w-2.5 mr-0.5" />복사
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
