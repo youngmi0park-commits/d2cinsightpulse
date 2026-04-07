@@ -85,7 +85,7 @@ export function ContentCreationActions({ productName, displayName }: ContentCrea
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <h4 className="text-sm font-bold text-foreground">🎨 LG CreW Anita — AI Creative Studio</h4>
+              <h4 className="text-sm font-bold text-foreground">🎨 LG Crew Anita — AI Creative Studio</h4>
               <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-[10px] text-muted-foreground">

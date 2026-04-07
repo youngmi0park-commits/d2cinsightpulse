@@ -14,7 +14,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
-import { ContentCreationActions } from "./ContentCreationActions";
+
 
 export interface AnalyzedProduct {
   product: ProductData;
@@ -622,18 +622,6 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   reviews={item.product.reviews}
                 />
               )}
-            </div>
-
-            {/* ── 마케팅 에셋 스튜디오 블록 ── */}
-            <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 border border-primary/15 p-5 space-y-4 mt-2">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="inline-block w-1 h-5 rounded-full bg-primary" />
-                <h3 className="text-sm font-bold text-primary">🎨 마케팅 에셋 스튜디오</h3>
-              </div>
-              <ContentCreationActions
-                productName={item.product.name}
-                displayName={item.product.displayName}
-              />
             </div>
 
             {/* ── 실고객 리뷰 블록 ── */}
