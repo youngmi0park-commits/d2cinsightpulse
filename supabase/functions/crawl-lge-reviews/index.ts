@@ -182,6 +182,12 @@ async function fetchBazaarvoiceReviews(
   // Product-specific filter (BV ProductId or OriginalProductName)
   if (productFilter) {
     url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
+  } else {
+    // Category filter — use BV CategoryAncestorId to scope to specific product category
+    const bvCatId = BV_CATEGORY_IDS[region]?.[category];
+    if (bvCatId) {
+      url.searchParams.append("Filter", `CategoryAncestorId:eq:${bvCatId}`);
+    }
   }
   
   // Date range filters
