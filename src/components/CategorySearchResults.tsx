@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, MessageSquare, ArrowUpDown } from "lucide-react
 import { useLang } from "@/contexts/LanguageContext";
 import type { AnalyzedProduct } from "@/components/SearchResultCards";
 import { CategoryHubCard } from "@/components/CategoryHubCard";
-import { resolveCategoryMeta, getCategoryLabel, GROUP_ORDER, GROUP_ICONS } from "@/data/categoryMap";
+import { resolveCategoryMeta, getCategoryLabel, GROUP_ORDER } from "@/data/categoryMap";
 import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { ReviewList } from "./ReviewList";
@@ -98,17 +98,17 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="p-3 rounded-lg border border-[#15803D]/20 bg-[#15803D]/5 space-y-2">
           <p className="text-[11px] font-bold text-[#15803D]">✓ 긍정 포인트</p>
-          {positivePoints.length > 0 ? positivePoints.map(kw => (
-            <div key={kw.word} className="text-[11px] text-foreground flex items-center gap-1.5">
-              <span className="text-[#15803D]">✓</span> {kw.word} ({kw.count}건)
+          {positivePoints.length > 0 ? positivePoints.map(word => (
+            <div key={word} className="text-[11px] text-foreground flex items-center gap-1.5">
+              <span className="text-[#15803D]">✓</span> {word}
             </div>
           )) : <p className="text-[10px] text-muted-foreground">데이터 부족</p>}
         </div>
         <div className="p-3 rounded-lg border border-red-500/20 bg-red-500/5 space-y-2">
           <p className="text-[11px] font-bold text-red-600">✕ 부정 이슈</p>
-          {negativePoints.length > 0 ? negativePoints.map(kw => (
-            <div key={kw.word} className="text-[11px] text-foreground flex items-center gap-1.5">
-              <span className="text-red-500">✕</span> {kw.word} ({kw.count}건)
+          {negativePoints.length > 0 ? negativePoints.map(word => (
+            <div key={word} className="text-[11px] text-foreground flex items-center gap-1.5">
+              <span className="text-red-500">✕</span> {word}
             </div>
           )) : <p className="text-[10px] text-muted-foreground">데이터 부족</p>}
         </div>
@@ -178,7 +178,7 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
     }
 
     // Sort groups by GROUP_ORDER
-    const sorted = Array.from(groups.entries()).sort(([aLabel, aData], [bLabel, bData]) => {
+    const sorted = Array.from(groups.entries()).sort(([_aLabel, aData], [_bLabel, bData]) => {
       const aIdx = GROUP_ORDER.indexOf(aData.meta.group);
       const bIdx = GROUP_ORDER.indexOf(bData.meta.group);
       return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
