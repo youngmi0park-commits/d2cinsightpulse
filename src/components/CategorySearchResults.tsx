@@ -175,8 +175,8 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
     const groups = new Map<string, { meta: ReturnType<typeof resolveCategoryMeta>; products: AnalyzedProduct[] }>();
 
     for (const item of results) {
-      const label = getCategoryLabel(item.product.category, item.product.subCategory);
-      const meta = resolveCategoryMeta(item.product.category, item.product.subCategory);
+      const label = getCategoryLabel(item.product.category, item.product.subCategory, item.product.displayName, item.product.name);
+      const meta = resolveCategoryMeta(item.product.category, item.product.subCategory, item.product.displayName, item.product.name);
 
       if (!groups.has(label)) {
         groups.set(label, { meta, products: [] });
