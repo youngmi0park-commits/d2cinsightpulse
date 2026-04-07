@@ -112,8 +112,44 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
       'LG PuriCare review UK air quality',
     ],
   },
+  Dishwasher: {
+    us: [
+      '"LG dishwasher" review verified purchase 2024 2025 2026',
+      'LG QuadWash dishwasher review owner experience',
+      'LG LDFC2423V LDFN4542W dishwasher review',
+      'LG FlushFit dishwasher LDNPM545S review',
+    ],
+    uk: [
+      '"LG dishwasher" review UK owner 2024 2025',
+    ],
+  },
+  Vacuum: {
+    us: [
+      '"LG CordZero" vacuum review verified purchase 2024 2025 2026',
+      'LG cordless stick vacuum review owner experience suction',
+      'LG A937KGMS A949KTMS CordZero review',
+      'LG CordZero Kompressor vacuum review battery',
+    ],
+    uk: [
+      '"LG CordZero" vacuum review UK owner 2024 2025',
+    ],
+  },
+  Range: {
+    us: [
+      '"LG range" review verified purchase 2024 2025 2026',
+      'LG InstaView range review owner experience air fry',
+      'LG LRGL5825F gas range review ProBake',
+    ],
+    uk: [],
+  },
+  Microwave: {
+    us: [
+      '"LG microwave" review verified purchase 2024 2025 2026',
+      'LG over the range microwave MVEL2033F review',
+    ],
+    uk: [],
+  },
 };
-
 // ── AI Prompt ──
 const REVIEW_EXTRACT_PROMPT = `You are an expert data scientist extracting LG Electronics product reviews.
 
