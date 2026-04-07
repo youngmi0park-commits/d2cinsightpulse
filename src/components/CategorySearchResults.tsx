@@ -71,8 +71,8 @@ function MiniSentimentBar({ positive, negative, neutral }: { positive: number; n
 /** Expanded product detail */
 function ProductDetail({ item }: { item: AnalyzedProduct }) {
   const sources = getSourceDist(item.product.reviews);
-  const positivePoints = item.sentiment.keywords.filter(k => k.sentiment === "positive").slice(0, 5);
-  const negativePoints = item.sentiment.keywords.filter(k => k.sentiment === "negative").slice(0, 5);
+  const positivePoints = (item.sentiment.keywords.positive || []).slice(0, 5);
+  const negativePoints = (item.sentiment.keywords.negative || []).slice(0, 5);
 
   // Best review quote
   const bestQuote = item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase;

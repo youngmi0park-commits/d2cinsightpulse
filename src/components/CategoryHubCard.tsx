@@ -50,12 +50,11 @@ export function CategoryHubCard({ categoryLabel, meta, products }: CategoryHubCa
       scoreSum += p.sentiment.compositeScore;
 
       // Aggregate keyword themes
-      for (const kw of p.sentiment.keywords) {
-        if (kw.sentiment === "positive") {
-          positiveThemes[kw.word] = (positiveThemes[kw.word] || 0) + kw.count;
-        } else if (kw.sentiment === "negative") {
-          negativeThemes[kw.word] = (negativeThemes[kw.word] || 0) + kw.count;
-        }
+      for (const word of p.sentiment.keywords.positive || []) {
+        positiveThemes[word] = (positiveThemes[word] || 0) + 1;
+      }
+      for (const word of p.sentiment.keywords.negative || []) {
+        negativeThemes[word] = (negativeThemes[word] || 0) + 1;
       }
     }
 
