@@ -59,18 +59,74 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
 /** Infer TV sub-type from model number or display name */
 function inferTvSubType(text: string): string | null {
   const t = text.toLowerCase();
-  // OLED checks (must come before generic checks)
   if (t.includes("oled")) return "OLED TV";
-  // QNED checks
   if (t.includes("qned")) return "QNED TV";
-  // NanoCell checks
   if (t.includes("nanocell") || t.includes("nano cell") || /\bnano\s?\d/i.test(text)) return "NanoCell TV";
-  // 8K check (before 4K to avoid false match)
   if (t.includes("8k") || t.includes("z-series 8k")) return "8K TV";
-  // 4K UHD checks
   if (t.includes("4k") || t.includes("uhd") || /\bu[rq]\d/i.test(text) || t.includes("ur-series") || t.includes("uq-series") || t.includes("ultra hd")) return "4K UHD TV";
-  // StanbyME
   if (t.includes("stanbyme") || t.includes("stanby me")) return "StanbyME";
+  return null;
+}
+
+/** Infer any product category from display name and model number */
+function inferCategoryFromName(displayName?: string, modelNumber?: string): string | null {
+  if (!displayName && !modelNumber) return null;
+  const combined = `${displayName || ""} ${modelNumber || ""}`.toLowerCase();
+
+  // TV types
+  const tvType = inferTvSubType(combined);
+  if (tvType) return tvType;
+
+  // Soundbar / Audio
+  if (combined.includes("soundbar") || combined.includes("s95") || combined.includes("sp7") || combined.includes("sp9") || /\bsj\d/i.test(combined) || /\bsn\d/i.test(combined) || /\bsc9/i.test(combined)) return "Soundbar";
+  if (combined.includes("xboom")) return "Soundbar";
+
+  // Monitor patterns
+  if (/\b\d{2}(gn|gp|gq|gs|gk|gl|bn|bp|bq|un|up|uq|md|mp|mb|mk|wk|wl|wn|wp|wq)\d/i.test(combined) || combined.includes("ultragear") || combined.includes("ultrawide") || combined.includes("ultrafine")) return "Monitor";
+
+  // Laptop (gram)
+  if (combined.includes("gram") || /\b\d{2}z\d{2,}/i.test(combined)) return "Laptop";
+
+  // Refrigerator patterns
+  if (/\blr[a-z]{2,}/i.test(combined) || /\blfc/i.test(combined) || /\blmx/i.test(combined) || combined.includes("refrigerator") || combined.includes("fridge") || combined.includes("instaview")) {
+    if (combined.includes("french door") || combined.includes("4-door") || combined.includes("instaview")) return "French Door Refrigerator";
+    if (combined.includes("side-by-side") || combined.includes("side by side")) return "Side-by-Side Refrigerator";
+    if (combined.includes("top freezer")) return "Top Freezer Refrigerator";
+    if (combined.includes("bottom freezer")) return "Bottom Freezer Refrigerator";
+    return "Refrigerator";
+  }
+
+  // Washer patterns
+  if (/\bw[mt]\d{3,}/i.test(combined) || combined.includes("washer") || combined.includes("washing machine") || combined.includes("washcombo") || combined.includes("washtower")) {
+    if (combined.includes("washtower")) return "WashTower";
+    return "Washer";
+  }
+
+  // Dryer patterns
+  if (/\bdl[eg]\d/i.test(combined) || combined.includes("dryer")) return "Dryer";
+
+  // Dishwasher
+  if (/\bld[a-z]\d/i.test(combined) || combined.includes("dishwasher") || combined.includes("quadwash")) return "Dishwasher";
+
+  // Range / Oven
+  if (/\blsg/i.test(combined) || /\blre/i.test(combined) || combined.includes("range") || combined.includes("oven")) return "Range";
+  if (combined.includes("cooktop")) return "Cooktop";
+  if (combined.includes("microwave") || /\blmc/i.test(combined) || /\blmv/i.test(combined)) return "Microwave";
+
+  // Air solutions
+  if (combined.includes("air conditioner") || combined.includes("artcool") || combined.includes("art cool") || /\blw\d{2}/i.test(combined)) return "Air Conditioner";
+  if (combined.includes("puricare") || combined.includes("aerotower") || combined.includes("aero") || combined.includes("air purifier")) return "Air Purifier";
+
+  // Vacuum
+  if (combined.includes("cordzero") || combined.includes("vacuum") || combined.includes("kompressor")) return "Vacuum";
+  if (combined.includes("robot vacuum") || combined.includes("robot cleaner")) return "Robot Vacuum";
+
+  // Styler
+  if (combined.includes("styler") || /\bs3\w{3,}/i.test(combined)) return "Styler";
+
+  // Projector → group as Other for now
+  if (combined.includes("projector") || combined.includes("cinebeam")) return "Projector";
+
   return null;
 }
 
@@ -94,16 +150,21 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
       if (tvType) return CATEGORY_MAP[tvType];
     }
     // Refrigerators
-    if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth")) return CATEGORY_MAP["French Door Refrigerator"];
+    if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth") || subLower.includes("4-door")) return CATEGORY_MAP["French Door Refrigerator"];
     if (subLower.includes("side-by-side") || subLower.includes("side by side")) return CATEGORY_MAP["Side-by-Side Refrigerator"];
     if (subLower.includes("column")) return CATEGORY_MAP["Column Refrigerator"];
     if (subLower.includes("top freezer")) return CATEGORY_MAP["Top Freezer Refrigerator"];
     if (subLower.includes("bottom freezer")) return CATEGORY_MAP["Bottom Freezer Refrigerator"];
+    if (subLower.includes("kimchi") || subLower.includes("specialty")) return CATEGORY_MAP["Refrigerator"];
     // Laundry
-    if (subLower.includes("washtower")) return CATEGORY_MAP["WashTower"];
+    if (subLower.includes("washtower") || subLower.includes("washcombo") || subLower.includes("wash combo")) return CATEGORY_MAP["WashTower"];
     if (subLower.includes("turbowash") || subLower.includes("front load")) return CATEGORY_MAP["Washer"];
-    if (subLower.includes("heat pump") || subLower.includes("electric dryer") || subLower.includes("gas dryer")) return CATEGORY_MAP["Dryer"];
+    if (subLower.includes("top load")) return CATEGORY_MAP["Washer"];
+    if (subLower.includes("heat pump") || subLower.includes("electric dryer") || subLower.includes("gas dryer") || subLower.includes("electric") || subLower.includes("gas")) {
+      if (category.toLowerCase().includes("dryer")) return CATEGORY_MAP["Dryer"];
+    }
     if (subLower.includes("styler")) return CATEGORY_MAP["Styler"];
+    if (subLower.includes("low profile")) return CATEGORY_MAP["Microwave"];
     // Kitchen
     if (subLower.includes("quadwash")) return CATEGORY_MAP["Dishwasher"];
     if (subLower.includes("wall oven")) return CATEGORY_MAP["Wall Oven"];
@@ -133,14 +194,34 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
     if (subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return CATEGORY_MAP["Soundbar"];
   }
 
-  // For TV category without specific sub_category, infer from displayName / modelNumber
   const catLower = category.toLowerCase();
+
+  // For TV category without specific sub_category, infer from displayName / modelNumber
   if (catLower === "tv" || catLower === "television") {
     const combined = `${displayName || ""} ${modelNumber || ""}`;
     const tvType = inferTvSubType(combined);
     if (tvType) return CATEGORY_MAP[tvType];
-    return CATEGORY_MAP["TV"]; // fallback generic TV
+    return CATEGORY_MAP["TV"];
   }
+
+  // "General" category — infer everything from name/model
+  if (catLower === "general" || catLower === "g4" || catLower === "app" || catLower === "remote" || catLower === "accessories" || catLower === "ai core tech" || catLower === "phone" || catLower === "mobile") {
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred && CATEGORY_MAP[inferred]) return CATEGORY_MAP[inferred];
+    return { group: "Other", icon: "📦", color: "#6B7280", bgColor: "#F9FAFB" };
+  }
+
+  // "Audio" → Soundbar
+  if (catLower === "audio") return CATEGORY_MAP["Soundbar"];
+
+  // "Cooking" → Range
+  if (catLower === "cooking") return CATEGORY_MAP["Range"];
+
+  // "LG art cool" → Air Conditioner
+  if (catLower.includes("art cool") || catLower.includes("artcool")) return CATEGORY_MAP["Air Conditioner"];
+
+  // "Projector" → Other (not in main map)
+  if (catLower === "projector") return { group: "Other", icon: "📽", color: "#6B7280", bgColor: "#F9FAFB" };
 
   // Direct match on category
   if (CATEGORY_MAP[category]) return CATEGORY_MAP[category];
@@ -171,7 +252,7 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
   if (catLower.includes("cooktop")) return CATEGORY_MAP["Cooktop"];
   if (catLower.includes("microwave")) return CATEGORY_MAP["Microwave"];
 
-  // Last resort: check displayName
+  // Last resort: infer from displayName
   if (displayName) {
     const tvType = inferTvSubType(displayName);
     if (tvType) return CATEGORY_MAP[tvType];
@@ -226,14 +307,27 @@ export function getCategoryLabel(category: string, subCategory?: string, display
     if (subLower.includes("soundbar") || subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return "Soundbar";
   }
 
-  // For TV category, infer from displayName / modelNumber
   const catLower = category.toLowerCase();
+
+  // For TV category, infer from displayName / modelNumber
   if (catLower === "tv" || catLower === "television") {
     const combined = `${displayName || ""} ${modelNumber || ""}`;
     const tvType = inferTvSubType(combined);
     if (tvType) return tvType;
     return "TV";
   }
+
+  // "General" / misc categories — infer from name
+  if (catLower === "general" || catLower === "g4" || catLower === "app" || catLower === "remote" || catLower === "accessories" || catLower === "ai core tech" || catLower === "phone" || catLower === "mobile") {
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred) return inferred;
+    return category;
+  }
+
+  if (catLower === "audio") return "Soundbar";
+  if (catLower === "cooking") return "Range";
+  if (catLower.includes("art cool") || catLower.includes("artcool")) return "Air Conditioner";
+  if (catLower === "projector") return "Projector";
 
   // Fuzzy match on category itself
   if (catLower.includes("oled")) return "OLED TV";
@@ -249,14 +343,13 @@ export function getCategoryLabel(category: string, subCategory?: string, display
   if (catLower.includes("dehumidifier")) return "Dehumidifier";
   if (catLower.includes("air purifier") || catLower.includes("puricare")) return "Air Purifier";
   if (catLower.includes("air conditioner") || catLower.includes("artcool") || catLower.includes("art cool")) return "Air Conditioner";
-  if (catLower.includes("cooking")) return "Range";
 
   if (CATEGORY_MAP[category]) return category;
 
-  // Last resort: check displayName
+  // Last resort: infer from displayName
   if (displayName) {
-    const tvType = inferTvSubType(displayName);
-    if (tvType) return tvType;
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred) return inferred;
   }
 
   return category;
