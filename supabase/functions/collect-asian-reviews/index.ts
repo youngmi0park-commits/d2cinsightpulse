@@ -182,7 +182,12 @@ Return ONLY valid JSON array, no markdown.`,
                 else if (sourceUrl.includes("reviews.io")) source = "reviews_io";
 
                 // Dedup
-                const externalId = `${source}_${btoa(review.content.slice(0, 80)).slice(0, 40)}`;
+                // Create hash-based external ID (handles non-ASCII)
+                const encoder = new TextEncoder();
+                const data = encoder.encode(`${source}:${review.content.slice(0, 100)}`);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+                const hashArr = Array.from(new Uint8Array(hashBuffer));
+                const externalId = `${source}_${hashArr.map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32)}`;
 
                 const dupCheck = await fetch(
                   `${supabaseUrl}/rest/v1/reviews?external_id=eq.${encodeURIComponent(externalId)}&limit=1`,
