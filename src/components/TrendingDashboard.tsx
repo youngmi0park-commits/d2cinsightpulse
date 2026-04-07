@@ -500,33 +500,28 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       )}
 
       {/* ═══ [C] KPI PULSE ROW ═══ */}
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {/* Card 1 — 총 리뷰 수집 */}
         <KPICard accentColor="bg-primary" label="총 리뷰 수집" value={totalReviews.toLocaleString()}
           sub={weeklyDelta >= 0 ? `▲ +${weeklyDelta.toLocaleString()} vs 전주` : `▼ ${weeklyDelta.toLocaleString()} vs 전주`}
           subColor={weeklyDelta >= 0 ? "text-green-700" : "text-destructive"}
           sparkline
         />
-        {/* Card 2 — 평균 감성 점수 */}
-        <KPICard accentColor="bg-amber-500" label="평균 감성 점수" value={String(avgSentiment)}
-          sub={`${sentimentDelta >= 0 ? "▲" : "▼"} ${Math.abs(sentimentDelta)} pts · ${avgSentiment < 70 ? "주의 필요" : "전주"}`}
-          subColor={avgSentiment >= 80 ? "text-green-700" : avgSentiment >= 60 ? "text-amber-600" : "text-destructive"}
-        />
-        {/* Card 3 — 긍정 Top 키워드 */}
+        {/* Card 2 — 긍정 Top 키워드 */}
         <KPICard accentColor="bg-green-600" label="긍정 TOP 키워드"
           value={topPosKw ? `"${topPosKw.keyword}"` : "—"}
           sub={topPosKw ? `${topPosKw.count}건 언급 1위` : "데이터 없음"}
           subColor="text-green-700"
           valueSize="text-sm"
         />
-        {/* Card 4 — 부정 Top 키워드 */}
+        {/* Card 3 — 부정 Top 키워드 */}
         <KPICard accentColor="bg-destructive" label="부정 TOP 키워드"
           value={topNegKw ? `"${topNegKw.keyword}"` : "—"}
           sub={topNegKw ? `${topNegKw.count}건 · FAQ 대응 권고` : "데이터 없음"}
           subColor="text-destructive"
           valueSize="text-sm"
         />
-        {/* Card 5 — 주간 언급 TOP */}
+        {/* Card 4 — 주간 언급 TOP */}
         <KPICard accentColor="bg-teal-600" label="주간 언급 TOP"
           value={topProduct?.displayName || "—"}
           sub={topProduct ? `${topProduct.mentions}건 · 1위` : "데이터 없음"}
