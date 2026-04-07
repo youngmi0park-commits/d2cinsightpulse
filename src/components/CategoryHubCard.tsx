@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { AnalyzedProduct } from "@/components/SearchResultCards";
 import type { CategoryMeta } from "@/data/categoryMap";
+import { isAllPrivacyRestricted } from "@/lib/reviewUtils";
 
 interface CategoryHubCardProps {
   categoryLabel: string;
@@ -69,6 +70,9 @@ export function CategoryHubCard({ categoryLabel, meta, products }: CategoryHubCa
 
     return { totalReviews, avgScore, posPct, negPct, neuPct, topPositive, topNegative };
   }, [products]);
+
+  const allReviews = useMemo(() => products.flatMap((p) => p.product.reviews), [products]);
+  const allLgComOnly = useMemo(() => isAllPrivacyRestricted(allReviews), [allReviews]);
 
   const sources = useMemo(() => getSourceDistribution(products), [products]);
   const sc = sentimentColor(stats.avgScore);
@@ -184,10 +188,21 @@ export function CategoryHubCard({ categoryLabel, meta, products }: CategoryHubCa
         <div className="flex flex-wrap gap-1.5">
           {Object.entries(sources).sort(([,a],[,b]) => b - a).map(([src, cnt]) => (
             <Badge key={src} variant="secondary" className="text-[10px] font-normal">
-              {src} {cnt}건
+              {src} {cnt}건{src === "LG.com" && <span className="ml-0.5 opacity-60">(요약)</span>}
             </Badge>
           ))}
         </div>
+
+        {/* LG.com Privacy Notice */}
+        {allLgComOnly && (
+          <div className="flex items-start gap-2 p-2.5 rounded-lg border border-primary/20 bg-primary/5">
+            <span className="text-sm">🔒</span>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              LG.com 리뷰는 개인정보 보호 정책에 따라 원문이 비공개됩니다.
+              평점 기반 감성 집계 인사이트를 표시합니다.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
