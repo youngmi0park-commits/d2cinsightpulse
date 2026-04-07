@@ -65,13 +65,29 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   },
   Washer: {
     us: [
-      '"LG washer" review verified purchase 2024 2025',
+      '"LG washer" review verified purchase 2024 2025 2026',
       'LG WashTower review owner experience noise',
-      'LG front load washer ThinQ review AI wash',
+      'LG front load washer ThinQ review AI wash TurboWash',
+      'LG WashCombo WM6998HBA review owner experience',
+      'LG top load washer WT8400CW WT7150CW review',
+      'LG WM5800HVA WM4000HWA front load washer review',
     ],
     uk: [
       '"LG washing machine" review UK owner 2024 2025',
       'LG washing machine review UK ThinQ',
+    ],
+  },
+  Dryer: {
+    us: [
+      '"LG dryer" review verified purchase 2024 2025 2026',
+      'LG heat pump dryer review owner experience DLHC5502',
+      'LG electric dryer DLEX4000B DLEX6700B review',
+      'LG gas dryer DLGX5801V DLGX4001W review',
+      'LG dryer DLE7400WE EasyLoad review owner',
+    ],
+    uk: [
+      '"LG tumble dryer" review UK owner 2024 2025',
+      'LG heat pump dryer review UK experience',
     ],
   },
   TV: {
