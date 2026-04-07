@@ -98,10 +98,10 @@ export function CountryFilterBar({ selected, onChange }: CountryFilterBarProps) 
   const { t } = useLang();
   const { data: countryCounts } = useCountryCounts();
 
-  // Determine which countries actually have data
-  const activeCountries = ALL_COUNTRIES.filter(
-    (c) => countryCounts && Number(countryCounts[c.value] || 0) > 0
-  );
+  // Determine which countries actually have data, sorted by count descending
+  const activeCountries = ALL_COUNTRIES
+    .filter((c) => countryCounts && Number(countryCounts[c.value] || 0) > 0)
+    .sort((a, b) => Number(countryCounts?.[b.value] || 0) - Number(countryCounts?.[a.value] || 0));
   const hasGlobal = countryCounts && Number(countryCounts["Global"] || 0) > 0;
 
   const activeAmericas = activeCountries.filter((c) => c.group === "americas");
