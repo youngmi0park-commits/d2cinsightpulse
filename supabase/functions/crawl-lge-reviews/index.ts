@@ -41,9 +41,16 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["brightness", "dim", "peak"], tag: "Brightness_Issue" },
     { keywords: ["panel", "dead pixel", "banding"], tag: "Panel_Issue" },
   ],
+  "Air Purifier": [
+    { keywords: ["hepa", "filter", "filtration"], tag: "HEPA_Filter" },
+    { keywords: ["air quality", "pm2.5", "dust", "pollen", "allergen"], tag: "Air_Quality" },
+    { keywords: ["noise", "quiet", "whisper", "silent"], tag: "Noise_Level" },
+    { keywords: ["puricare", "aerotower", "aerohit", "aero furniture"], tag: "PuriCare_Feature" },
+    { keywords: ["smart", "thinq", "app", "wifi"], tag: "Smart_Feature" },
+    { keywords: ["smell", "odor", "pet"], tag: "Odor_Control" },
+    { keywords: ["coverage", "room size", "sq ft"], tag: "Coverage_Area" },
+  ],
 };
-
-// ── Search queries per category+region ──
 const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   Refrigerator: {
     us: [
@@ -76,6 +83,17 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
     uk: [
       '"LG OLED" TV review UK owner 2024 2025',
       'LG OLED evo review UK picture quality',
+    ],
+  },
+  "Air Purifier": {
+    us: [
+      '"LG air purifier" review verified purchase 2024 2025',
+      'LG PuriCare air purifier review owner experience',
+      'LG AeroTower review air purifier HEPA',
+    ],
+    uk: [
+      '"LG air purifier" review UK owner 2024 2025',
+      'LG PuriCare review UK air quality',
     ],
   },
 };
@@ -230,7 +248,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher"];
+  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
   let bvPages = 5;
