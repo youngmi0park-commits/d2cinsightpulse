@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
-import { Copy, Check, Eye, Code, Loader2, Rocket, Send } from "lucide-react";
+import { Copy, Check, Eye, Code, Loader2, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -197,14 +197,42 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 </body></html>`;
 }
 
+/**
+ * Copy HTML to clipboard so it can be pasted directly into Outlook
+ * as a rich-text email body (preserving layout).
+ * Uses Clipboard API with text/html MIME type for Outlook compatibility.
+ */
+async function copyHtmlForOutlook(html: string): Promise<boolean> {
+  try {
+    // Method 1: Clipboard API with HTML blob (best for Outlook paste)
+    const blob = new Blob([html], { type: "text/html" });
+    const textBlob = new Blob([html], { type: "text/plain" });
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": blob,
+        "text/plain": textBlob,
+      }),
+    ]);
+    return true;
+  } catch {
+    // Fallback: plain text copy
+    try {
+      await navigator.clipboard.writeText(html);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
 /* ───── Component ───── */
 export function WeeklyNewsletterHTML() {
   const { data, isLoading } = useNewsletterData();
   const [viewMode, setViewMode] = useState<"preview" | "html">("preview");
   const [copied, setCopied] = useState(false);
+  const [copiedRich, setCopiedRich] = useState(false);
   const [fullGenLoading, setFullGenLoading] = useState(false);
   const [fullGenHtml, setFullGenHtml] = useState<string | null>(null);
-  const [sendingTest, setSendingTest] = useState(false);
 
   const generateFullNewsletter = async () => {
     setFullGenLoading(true);
@@ -224,30 +252,25 @@ export function WeeklyNewsletterHTML() {
     }
   };
 
-  const handleCopy = () => {
+  /* Copy raw HTML source code */
+  const handleCopySource = () => {
     const target = fullGenHtml || (data ? generatePreviewHTML(data) : "");
     navigator.clipboard.writeText(target);
     setCopied(true);
-    toast.success("📋 뉴스레터 HTML이 클립보드에 복사되었습니다!");
+    toast.success("📋 HTML 소스코드가 클립보드에 복사되었습니다!");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleTestSend = async () => {
-    setSendingTest(true);
-    try {
-      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
-        body: { format: "json", baseUrl: window.location.origin, sendTo: "youngmi0.park@lge.com" },
-      });
-      if (error) throw error;
-      if (result?.emailSent) {
-        toast.success("📧 youngmi0.park@lge.com 으로 테스트 메일이 발송되었습니다!");
-      } else {
-        toast.error("발송 실패: " + (result?.emailError || "Unknown"));
-      }
-    } catch (err: any) {
-      toast.error("메일 발송 실패: " + (err.message || "Unknown"));
-    } finally {
-      setSendingTest(false);
+  /* Copy as rich HTML for Outlook paste (Ctrl+V directly into email body) */
+  const handleCopyForOutlook = async () => {
+    const target = fullGenHtml || (data ? generatePreviewHTML(data) : "");
+    const ok = await copyHtmlForOutlook(target);
+    if (ok) {
+      setCopiedRich(true);
+      toast.success("📧 Outlook 붙여넣기용 HTML이 복사되었습니다!\nOutlook 새 메일 → 본문 클릭 → Ctrl+V로 붙여넣으세요.");
+      setTimeout(() => setCopiedRich(false), 3000);
+    } else {
+      toast.error("복사 실패 — 브라우저 권한을 확인해 주세요.");
     }
   };
 
@@ -271,7 +294,7 @@ export function WeeklyNewsletterHTML() {
             <CardTitle className="text-lg font-heading">📬 금주의 뉴스레터</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{data.dateRange}</Badge>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               onClick={generateFullNewsletter}
               disabled={fullGenLoading}
@@ -284,19 +307,18 @@ export function WeeklyNewsletterHTML() {
 
             {fullGenHtml && (
               <>
-                <Button onClick={handleCopy} size="sm" variant="outline" className="gap-1.5">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "복사 완료!" : "📋 HTML 복사"}
-                </Button>
                 <Button
-                  onClick={handleTestSend}
-                  disabled={sendingTest}
+                  onClick={handleCopyForOutlook}
                   size="sm"
-                  variant="outline"
-                  className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+                  variant="default"
+                  className="gap-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white"
                 >
-                  {sendingTest ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                  {sendingTest ? "발송 중..." : "📧 메일링 테스트"}
+                  {copiedRich ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedRich ? "복사 완료!" : "📧 Outlook 붙여넣기용 복사"}
+                </Button>
+                <Button onClick={handleCopySource} size="sm" variant="outline" className="gap-1.5">
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Code className="h-3.5 w-3.5" />}
+                  {copied ? "복사 완료!" : "HTML 소스 복사"}
                 </Button>
               </>
             )}
@@ -311,6 +333,18 @@ export function WeeklyNewsletterHTML() {
             </div>
           </div>
         </div>
+
+        {/* Outlook paste guide */}
+        {fullGenHtml && (
+          <div className="mt-3 p-3 bg-[#0078D4]/5 border border-[#0078D4]/20 rounded-lg">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-[#0078D4]">📧 Outlook 발송 방법:</strong>{" "}
+              <span className="text-foreground font-medium">「Outlook 붙여넣기용 복사」</span> 클릭 →
+              Outlook 새 메일 작성 → 본문 영역 클릭 → <kbd className="px-1.5 py-0.5 bg-muted border border-border rounded text-[10px] font-mono">Ctrl+V</kbd> →
+              레이아웃이 그대로 유지된 채 붙여넣어집니다.
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         {viewMode === "preview" ? (
