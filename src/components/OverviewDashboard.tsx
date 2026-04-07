@@ -5,7 +5,7 @@ import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowUpRight, ArrowDownRight, Copy, Check,
+  Copy, Check,
   ThumbsUp, Lightbulb,
   Loader2, Sparkles, AlertTriangle, Star, ChevronDown, ChevronUp, TrendingUp
 } from "lucide-react";
