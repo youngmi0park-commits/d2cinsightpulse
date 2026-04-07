@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, MessageSquare, ArrowUpDown } from "lucide-react
 import { useLang } from "@/contexts/LanguageContext";
 import type { AnalyzedProduct } from "@/components/SearchResultCards";
 import { CategoryHubCard } from "@/components/CategoryHubCard";
+import { MarketingAssetStudio } from "@/components/MarketingAssetStudio";
 import { resolveCategoryMeta, getCategoryLabel, GROUP_ORDER } from "@/data/categoryMap";
 import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
