@@ -6,50 +6,54 @@ export interface CategoryMeta {
   subSeries?: string[];
 }
 
+// LG 브랜드 그레이 톤 통일 컬러
+const LG_GRAY = "#4B5563";       // text color (gray-600)
+const LG_GRAY_BG = "#F3F4F6";   // bg color (gray-100)
+
 export const CATEGORY_MAP: Record<string, CategoryMeta> = {
   // TV & Entertainment
-  "OLED TV":        { group: "TV & Entertainment", icon: "🖥", color: "#15803D", bgColor: "#F0FDF4", subSeries: ["OLED evo AI (C/G/Z-series)", "OLED Gallery", "OLED Flex", "OLED evo"] },
-  "QNED TV":        { group: "TV & Entertainment", icon: "📺", color: "#C2410C", bgColor: "#FFF7ED", subSeries: ["QNED90", "QNED85", "QNED80", "QNED75", "QNED70"] },
-  "4K UHD TV":      { group: "TV & Entertainment", icon: "🔲", color: "#92400E", bgColor: "#FEF3C7", subSeries: ["UQ-series", "UR-series"] },
-  "NanoCell TV":    { group: "TV & Entertainment", icon: "💠", color: "#9F1239", bgColor: "#FFF1F2", subSeries: ["NANO75", "NANO80", "NANO90"] },
-  "8K TV":          { group: "TV & Entertainment", icon: "✨", color: "#7C3AED", bgColor: "#F5F3FF", subSeries: ["Z-series 8K"] },
-  "StanbyME":       { group: "TV & Entertainment", icon: "🖱", color: "#B45309", bgColor: "#FFF7ED", subSeries: ["StanbyME Go", "StanbyME Closet"] },
-  "Soundbar":       { group: "TV & Entertainment", icon: "🔊", color: "#6D28D9", bgColor: "#F5F3FF", subSeries: ["S-series", "SP-series"] },
-  "Smart Monitor":  { group: "TV & Entertainment", icon: "🖥", color: "#0D9488", bgColor: "#F0FDFA", subSeries: ["MyView", "DualUp"] },
+  "OLED TV":        { group: "TV & Entertainment", icon: "🖥", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["OLED evo AI (C/G/Z-series)", "OLED Gallery", "OLED Flex", "OLED evo"] },
+  "QNED TV":        { group: "TV & Entertainment", icon: "📺", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["QNED90", "QNED85", "QNED80", "QNED75", "QNED70"] },
+  "4K UHD TV":      { group: "TV & Entertainment", icon: "🔲", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["UQ-series", "UR-series"] },
+  "NanoCell TV":    { group: "TV & Entertainment", icon: "💠", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["NANO75", "NANO80", "NANO90"] },
+  "8K TV":          { group: "TV & Entertainment", icon: "✨", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Z-series 8K"] },
+  "StanbyME":       { group: "TV & Entertainment", icon: "🖱", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["StanbyME Go", "StanbyME Closet"] },
+  "Soundbar":       { group: "TV & Entertainment", icon: "🔊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["S-series", "SP-series"] },
+  "Smart Monitor":  { group: "TV & Entertainment", icon: "🖥", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["MyView", "DualUp"] },
   // Refrigerators
-  "French Door Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["InstaView Door-in-Door", "Craft Ice", "Counter-depth"] },
-  "Side-by-Side Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Side-by-Side"] },
-  "Top Freezer Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Top Freezer"] },
-  "Bottom Freezer Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Bottom Freezer"] },
-  "Column Refrigerator":      { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Column Refrigerator", "Column Freezer"] },
-  "Refrigerator":             { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA" },
+  "French Door Refrigerator": { group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["InstaView Door-in-Door", "Craft Ice", "Counter-depth"] },
+  "Side-by-Side Refrigerator":{ group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Side-by-Side"] },
+  "Top Freezer Refrigerator": { group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Top Freezer"] },
+  "Bottom Freezer Refrigerator":{ group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Bottom Freezer"] },
+  "Column Refrigerator":      { group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Column Refrigerator", "Column Freezer"] },
+  "Refrigerator":             { group: "Refrigerators", icon: "🧊", color: LG_GRAY, bgColor: LG_GRAY_BG },
   // Laundry
-  "Washer":    { group: "Laundry", icon: "👕", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Front Load (TurboWash)", "Top Load", "Combo"] },
-  "Dryer":     { group: "Laundry", icon: "🌀", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Electric Dryer", "Gas Dryer", "Heat Pump Dryer"] },
-  "WashTower": { group: "Laundry", icon: "🗼", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["WashTower (all-in-one)"] },
-  "Styler":    { group: "Laundry", icon: "👔", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["LG Styler (clothing care)"] },
+  "Washer":    { group: "Laundry", icon: "👕", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Front Load (TurboWash)", "Top Load", "Combo"] },
+  "Dryer":     { group: "Laundry", icon: "🌀", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Electric Dryer", "Gas Dryer", "Heat Pump Dryer"] },
+  "WashTower": { group: "Laundry", icon: "🗼", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["WashTower (all-in-one)"] },
+  "Styler":    { group: "Laundry", icon: "👔", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["LG Styler (clothing care)"] },
   // Kitchen
-  "Range":      { group: "Kitchen", icon: "🍳", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Gas Range", "Electric Range", "Induction Range", "Wall Oven"] },
-  "Cooktop":    { group: "Kitchen", icon: "🔥", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Gas Cooktop", "Electric Cooktop", "Induction Cooktop"] },
-  "Dishwasher": { group: "Kitchen", icon: "🍽", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["QuadWash", "Front Control", "Top Control"] },
-  "Microwave":  { group: "Kitchen", icon: "📡", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Over-the-Range", "Countertop", "Built-in"] },
-  "Wall Oven":  { group: "Kitchen", icon: "🫙", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Single Wall Oven", "Double Wall Oven"] },
+  "Range":      { group: "Kitchen", icon: "🍳", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Gas Range", "Electric Range", "Induction Range", "Wall Oven"] },
+  "Cooktop":    { group: "Kitchen", icon: "🔥", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Gas Cooktop", "Electric Cooktop", "Induction Cooktop"] },
+  "Dishwasher": { group: "Kitchen", icon: "🍽", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["QuadWash", "Front Control", "Top Control"] },
+  "Microwave":  { group: "Kitchen", icon: "📡", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Over-the-Range", "Countertop", "Built-in"] },
+  "Wall Oven":  { group: "Kitchen", icon: "🫙", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Single Wall Oven", "Double Wall Oven"] },
   // Air Solutions
-  "Air Conditioner":{ group: "Air Solutions", icon: "❄️", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Window AC (Dual Inverter)", "Portable AC", "Mini Split"] },
-  "Air Purifier":   { group: "Air Solutions", icon: "🌿", color: "#059669", bgColor: "#ECFDF5", subSeries: ["PuriCare AeroTower", "PuriCare 360", "HEPA"] },
-  "Dehumidifier":   { group: "Air Solutions", icon: "💧", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["PuriCare Dehumidifier"] },
+  "Air Conditioner":{ group: "Air Solutions", icon: "❄️", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Window AC (Dual Inverter)", "Portable AC", "Mini Split"] },
+  "Air Purifier":   { group: "Air Solutions", icon: "🌿", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["PuriCare AeroTower", "PuriCare 360", "HEPA"] },
+  "Dehumidifier":   { group: "Air Solutions", icon: "💧", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["PuriCare Dehumidifier"] },
   // Computers
-  "Laptop":  { group: "Computers", icon: "💻", color: "#374151", bgColor: "#F9FAFB", subSeries: ["gram14", "gram16", "gram17", "gram+", "gram Style", "gram Ultra"] },
-  "Monitor": { group: "Computers", icon: "🖥", color: "#374151", bgColor: "#F9FAFB", subSeries: ["UltraWide", "UltraGear (Gaming)", "UltraFine", "DualUp", "StanbyME (Monitor)"] },
-  "Desktop": { group: "Computers", icon: "🖥", color: "#374151", bgColor: "#F9FAFB", subSeries: ["Desktop PC"] },
+  "Laptop":  { group: "Computers", icon: "💻", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["gram14", "gram16", "gram17", "gram+", "gram Style", "gram Ultra"] },
+  "Monitor": { group: "Computers", icon: "🖥", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["UltraWide", "UltraGear (Gaming)", "UltraFine", "DualUp", "StanbyME (Monitor)"] },
+  "Desktop": { group: "Computers", icon: "🖥", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["Desktop PC"] },
   // Home Care
-  "Vacuum":       { group: "Home Care", icon: "🧹", color: "#6B21A8", bgColor: "#FAF5FF", subSeries: ["CordZero A9", "CordZero ThinQ", "Kompressor"] },
-  "Robot Vacuum": { group: "Home Care", icon: "🤖", color: "#6B21A8", bgColor: "#FAF5FF", subSeries: ["CordZero R9", "ThinQ Robot"] },
+  "Vacuum":       { group: "Home Care", icon: "🧹", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["CordZero A9", "CordZero ThinQ", "Kompressor"] },
+  "Robot Vacuum": { group: "Home Care", icon: "🤖", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["CordZero R9", "ThinQ Robot"] },
   // Smart Home & Other
-  "Smart Home Hub": { group: "Smart Home & Other", icon: "📱", color: "#6B7280", bgColor: "#F9FAFB", subSeries: ["LG ThinQ App"] },
-  "Phone / Tablet": { group: "Smart Home & Other", icon: "📱", color: "#6B7280", bgColor: "#F9FAFB", subSeries: ["(legacy)"] },
+  "Smart Home Hub": { group: "Smart Home & Other", icon: "📱", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["LG ThinQ App"] },
+  "Phone / Tablet": { group: "Smart Home & Other", icon: "📱", color: LG_GRAY, bgColor: LG_GRAY_BG, subSeries: ["(legacy)"] },
   // TV fallback
-  "TV": { group: "TV & Entertainment", icon: "📺", color: "#92400E", bgColor: "#FEF3C7" },
+  "TV": { group: "TV & Entertainment", icon: "📺", color: LG_GRAY, bgColor: LG_GRAY_BG },
 };
 
 /** Resolve category from product category + subCategory fields */
