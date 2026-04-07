@@ -85,10 +85,7 @@ function generatePreviewHTML(d: NewsletterData): string {
   const WARM_BG = "#F5F1EA";
 
   const channelBadges = d.channels.map(ch => {
-    if (ch.name === "LG.com") {
-      return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${DARK_RED};color:#ffffff;padding:5px 14px;font-size:12px;font-weight:700;font-family:${FONT};">${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
-    }
-    return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};padding:5px 12px;font-size:12px;color:#444;font-family:${FONT};background:#fff;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
+    return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};background:${WARM_BG};padding:5px 14px;font-size:12px;color:#555;font-weight:600;font-family:${FONT};border-radius:20px;mso-border-alt:solid ${BORDER} 1px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} <strong style="color:#333;">${ch.count.toLocaleString()}</strong></td></tr></table></td>`;
   }).join("");
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
