@@ -168,15 +168,6 @@ const Index = () => {
 
   const hasResults = results.length > 0;
 
-  const filteredResults = selectedFilter
-    ? results.filter((item) => {
-        if (groupMode === "subcategory") return extractSubCategory(item.product.displayName) === selectedFilter;
-        if (groupMode === "inch") return (extractInch(item.product.displayName) || t("Unknown", "미분류")) === selectedFilter;
-        return item.product.name === selectedFilter;
-      })
-    : results;
-
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section — warm cream */}
@@ -214,7 +205,6 @@ const Index = () => {
           selected={selectedCountry}
           onChange={(c) => {
             setSelectedCountry(c);
-            // Re-trigger search if there are existing results
             if (searchQuery) {
               setTimeout(() => handleSearch(searchQuery), 0);
             }
@@ -246,46 +236,14 @@ const Index = () => {
         </div>
       )}
 
-      {/* Search Results */}
+      {/* Search Results — Category Hub Layout */}
       {hasResults && (
-        <div className="p-6 space-y-5 max-w-[1400px] mx-auto animate-slide-up">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-lg font-bold">
-              📊 <span className="text-primary">"{searchQuery}"</span> {t("Search Results", "검색 결과")}
-            </h2>
-            <Badge variant="secondary" className="text-xs">
-              {results.length}{t(" products", "개 제품")}
-            </Badge>
-            {selectedCountry !== "all" && (
-              <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
-                🌐 {selectedCountry}
-              </Badge>
-            )}
-            <Badge variant="outline" className="text-[10px] gap-1 border-primary/30 text-primary">
-              <Database className="h-3 w-3" />
-              {t("Live Data", "실제 데이터")}
-            </Badge>
-          </div>
-
-          <ResultsGroupFilter
-            products={results.map((r) => ({
-              name: r.product.name,
-              displayName: r.product.displayName,
-              category: r.product.category,
-            }))}
-            groupMode={groupMode}
-            onGroupModeChange={setGroupMode}
-            selectedFilter={selectedFilter}
-            onFilterChange={setSelectedFilter}
+        <div className="p-6 max-w-[1400px] mx-auto animate-slide-up">
+          <CategorySearchResults
+            results={results}
+            searchQuery={searchQuery}
+            selectedCountry={selectedCountry}
           />
-
-          {filteredResults.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              {t("No products match the selected filter.", "선택한 필터에 해당하는 제품이 없습니다.")}
-            </p>
-          ) : (
-            <SearchResultCards results={filteredResults} />
-          )}
         </div>
       )}
 
