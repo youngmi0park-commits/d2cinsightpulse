@@ -212,15 +212,22 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
               <span className="text-[11px] font-semibold text-destructive">{t("Negative Mentions TOP 3", "부정 언급 TOP 3")}</span>
             </div>
             {stats.topNeg.map((p, i) => (
-              <div key={p.name} className="flex items-center gap-2 bg-background/60 rounded px-2.5 py-1.5">
-                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
-                  i === 0 ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
-                }`}>{i + 1}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium text-foreground truncate">{p.name}</div>
-                  <div className="text-[9px] text-muted-foreground">{p.category}</div>
+              <div key={p.name} className="bg-background/60 rounded px-2.5 py-1.5 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+                    i === 0 ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground"
+                  }`}>{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-medium text-foreground truncate">{p.name}</div>
+                    <div className="text-[9px] text-muted-foreground">{p.category}</div>
+                  </div>
+                  <span className="text-[11px] font-mono font-semibold text-destructive shrink-0">{p.neg}</span>
                 </div>
-                <span className="text-[11px] font-mono font-semibold text-destructive shrink-0">{p.neg}</span>
+                {summaryTranslations[`neg_${i}`] && (
+                  <p className="text-[9px] text-muted-foreground leading-snug pl-7 italic">
+                    💬 {summaryTranslations[`neg_${i}`]}
+                  </p>
+                )}
               </div>
             ))}
           </div>
