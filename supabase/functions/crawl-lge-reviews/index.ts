@@ -261,8 +261,8 @@ async function fetchBazaarvoiceReviews(
   // Product-specific filter (BV ProductId or OriginalProductName)
   if (productFilter) {
     url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
-  } else {
-    // Category filter — use BV CategoryAncestorId to scope to specific product category
+  } else if (region === "uk") {
+    // Category filter only for UK — US passkey doesn't support CategoryAncestorId
     const bvCatId = BV_CATEGORY_IDS[region]?.[category];
     if (bvCatId) {
       url.searchParams.append("Filter", `CategoryAncestorId:eq:${bvCatId}`);
