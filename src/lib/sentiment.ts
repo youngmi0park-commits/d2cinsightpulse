@@ -34,6 +34,9 @@ export interface SentimentResult {
   priceSensitivityFlag: boolean;
   competitiveMentions: CompetitiveMention[];
   signals: SentimentSignal[];
+  // Privacy-aware flags
+  hasTextData: boolean;
+  ratingOnlyMode: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -664,6 +667,7 @@ function extractUsageScenes(reviews: Review[]): string[] {
 
 export function analyzeSentiment(reviews: Review[]): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
+  let hasRealText = false;
   let totalComposite = 0;
   const posKeywords = new Map<string, number>();
   const negKeywords = new Map<string, number>();
@@ -677,6 +681,10 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
   let bestNegEvidence = { phrase: "", score: Infinity };
 
   for (const review of reviews) {
+    // Check if this review has real (non-placeholder) text
+    const isRealText = review.text && !/개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(review.text) && review.text.length > 20;
+    if (isRealText) hasRealText = true;
+
     const result = analyzeReviewText(
       review.text,
       review.source,
@@ -788,6 +796,8 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     dominantIssueCategory: dominantIssue,
     priceSensitivityFlag,
     competitiveMentions: allCompetitive,
-    signals: signals.slice(0, 20), // Top 20 signals
+    signals: signals.slice(0, 20),
+    hasTextData: hasRealText,
+    ratingOnlyMode: !hasRealText,
   };
 }
