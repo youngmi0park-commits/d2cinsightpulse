@@ -87,6 +87,20 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
     return <span className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">{t("Neutral", "중립")}</span>;
   };
 
+  const isLgCom = review.source.startsWith("lge_com");
+
+  /** 2차 가공 요약 — 원문 대신 긍부정 코멘트 요약만 표시 */
+  const lgComSummary = () => {
+    const title = (review as any).title as string | undefined;
+    if (review.sentiment === "positive") {
+      return title ? `긍정 반응 — ${title}` : "긍정적 사용 경험이 확인된 리뷰입니다.";
+    }
+    if (review.sentiment === "negative") {
+      return title ? `부정 반응 — ${title}` : "불만 또는 개선 요청이 확인된 리뷰입니다.";
+    }
+    return title ? `중립 반응 — ${title}` : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+  };
+
   return (
     <div className={`p-4 rounded-lg border transition-all hover:scale-[1.01] ${sentimentStyle(review.sentiment)}`}>
       <div className="flex items-center justify-between mb-2">
@@ -94,10 +108,16 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
           <span className={`text-xs px-2 py-0.5 rounded font-mono ${sourceStyle(review.source)}`}>
             {sourceLabel(review.source)}
           </span>
-          <span className="text-sm text-muted-foreground">{review.author}</span>
+          {isLgCom && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
+              2차 가공 요약
+            </Badge>
+          )}
+          {!isLgCom && <span className="text-sm text-muted-foreground">{review.author}</span>}
         </div>
         <div className="flex items-center gap-2">
-          {review.rating && (
+          {/* LG.com: 별점 제외, 다른 소스만 별점 표시 */}
+          {!isLgCom && review.rating && (
             <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star key={i} className={`h-3 w-3 ${i < review.rating! ? "text-warning fill-warning" : "text-muted"}`} />
@@ -108,7 +128,11 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
         </div>
       </div>
 
-      <p className={`text-sm leading-relaxed ${review.source === "lge_com" ? "italic text-muted-foreground" : ""}`}>{maskCompetitorNames(review.text)}</p>
+      {isLgCom ? (
+        <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+      ) : (
+        <p className="text-sm leading-relaxed">{maskCompetitorNames(review.text)}</p>
+      )}
 
       {showTranslation && translated && (
         <div className="mt-2 p-3 rounded-md bg-primary/5 border border-primary/20">
@@ -122,24 +146,27 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
       <div className="flex items-center justify-between mt-2">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{review.date}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleTranslate}
-            disabled={isTranslating}
-            className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
-          >
-            {isTranslating ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Languages className="h-3 w-3" />
-            )}
-            {showTranslation
-              ? t("Hide translation", "번역 숨기기")
-              : translated
-                ? t("Show translation", "번역 보기")
-                : t("Translate to Korean", "국문 번역")}
-          </Button>
+          {/* LG.com은 원문 번역 불필요 — 이미 국문 요약 */}
+          {!isLgCom && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTranslate}
+              disabled={isTranslating}
+              className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+            >
+              {isTranslating ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Languages className="h-3 w-3" />
+              )}
+              {showTranslation
+                ? t("Hide translation", "번역 숨기기")
+                : translated
+                  ? t("Show translation", "번역 보기")
+                  : t("Translate to Korean", "국문 번역")}
+            </Button>
+          )}
         </div>
         {review.score !== undefined && (
           <span className="text-xs font-mono text-muted-foreground">{t("Score", "점수")}: {(review.score * 100).toFixed(0)}</span>
