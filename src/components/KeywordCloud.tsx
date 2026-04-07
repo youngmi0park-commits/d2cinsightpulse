@@ -195,27 +195,33 @@ export function KeywordCloud({ keywords, signals = [] }: KeywordCloudProps) {
         </div>
       )}
 
-      {/* 2) Top 3 keyword pills — compact */}
+      {/* 2) Top 3 keyword pills — Korean top, English bottom */}
       <div className="flex items-center gap-3 flex-wrap border-t border-border pt-3">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] font-medium text-muted-foreground">👍</span>
-          {keywords.positive.length > 0 ? keywords.positive.slice(0, 3).map((kw) => (
+          {keywords.positive.length > 0 ? keywords.positive.slice(0, 3).map((kw, i) => (
             <span
               key={kw}
-              className="px-2 py-0.5 rounded-full text-[10px] border bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]"
+              className="px-2 py-0.5 rounded-full text-[10px] border bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)] flex flex-col items-center leading-tight"
             >
-              {kw}
+              <span>{kwTranslations.positive[i] || kw}</span>
+              {kwTranslations.positive[i] && (
+                <span className="text-[8px] text-muted-foreground/60">{kw}</span>
+              )}
             </span>
           )) : <span className="text-[10px] text-muted-foreground">{t("No data", "없음")}</span>}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] font-medium text-muted-foreground">👎</span>
-          {keywords.negative.length > 0 ? keywords.negative.slice(0, 3).map((kw) => (
+          {keywords.negative.length > 0 ? keywords.negative.slice(0, 3).map((kw, i) => (
             <span
               key={kw}
-              className="px-2 py-0.5 rounded-full text-[10px] border bg-destructive/10 text-destructive border-destructive/20"
+              className="px-2 py-0.5 rounded-full text-[10px] border bg-destructive/10 text-destructive border-destructive/20 flex flex-col items-center leading-tight"
             >
-              {kw}
+              <span>{kwTranslations.negative[i] || kw}</span>
+              {kwTranslations.negative[i] && (
+                <span className="text-[8px] text-muted-foreground/60">{kw}</span>
+              )}
             </span>
           )) : <span className="text-[10px] text-muted-foreground">{t("No data", "없음")}</span>}
         </div>
