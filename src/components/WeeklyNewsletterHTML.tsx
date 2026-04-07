@@ -36,7 +36,7 @@ const CHANNEL_COLORS: Record<string, { label: string; color: string; dot: string
 function useNewsletterData() {
   const { data: sourceCounts } = useSourceCounts();
   return useQuery({
-    queryKey: ["newsletter-v6", sourceCounts],
+    queryKey: ["newsletter-v7", sourceCounts],
     queryFn: async () => {
       const now = new Date();
       const weekAgo = subDays(now, 7);
@@ -44,11 +44,13 @@ function useNewsletterData() {
       const dateRange = `${format(weekAgo, "yyyy.MM.dd")} – ${format(now, "yyyy.MM.dd")}`;
       const generatedAt = format(now, "yyyy.MM.dd HH:mm");
 
-      const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
+      const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
+        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
+        supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
       ]);
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
@@ -64,12 +66,56 @@ function useNewsletterData() {
         topChannels.push({ name: `+${otherChannelCount}개 채널`, count: otherCount, color: "#999" });
       }
 
+      // Keywords
+      const kws = keywordsRes.data || [];
+      const posKws = kws.filter(k => k.sentiment === "positive").sort((a, b) => b.count - a.count);
+      const negKws = kws.filter(k => k.sentiment === "negative").sort((a, b) => b.count - a.count);
+      const topPositiveKeyword = posKws[0]?.keyword || "—";
+      const topPositiveCount = posKws[0]?.count || 0;
+      const topNegativeKeyword = negKws[0]?.keyword || "—";
+      const topNegativeCount = negKws[0]?.count || 0;
+
+      // Top product
+      const trendProds = trendingRes.data || [];
+      const topProd = trendProds[0];
+      const topProduct = (topProd?.products as any)?.display_name || "—";
+      const topProductCount = topProd?.mention_count || 0;
+
+      // Opportunities (derived from trending)
+      const opportunities: NewsletterData["opportunities"] = [];
+      for (const tp of trendProds.slice(0, 3)) {
+        const prod = tp.products as any;
+        const chg = Number(tp.change_percent) || 0;
+        const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+        opportunities.push({
+          tag,
+          title: prod?.display_name || "Unknown",
+          desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
+          count: tp.mention_count,
+          delta: `${chg > 0 ? "+" : ""}${chg}%`,
+        });
+      }
+
+      // Trending signals
+      const trendingSignals: NewsletterData["trendingSignals"] = kws.slice(0, 6).map(k => ({
+        keyword: k.keyword,
+        count: k.count,
+        delta: Number(k.change_percent) || 0,
+        type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
+        sentiment: k.sentiment,
+      }));
+
       return {
         dateRange, generatedAt,
         weeklyReviews: weeklyRes.count || 0, wow,
         totalReviews: totalRes.count || 0,
         productCount: productRes.count || 0,
         channels: topChannels,
+        topPositiveKeyword, topPositiveCount,
+        topNegativeKeyword, topNegativeCount,
+        topProduct, topProductCount,
+        opportunities,
+        trendingSignals,
       } as NewsletterData;
     },
     staleTime: 60_000,
