@@ -76,12 +76,19 @@ function generatePreviewHTML(d: NewsletterData): string {
   const BASE_URL = window.location.origin;
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "Inter,'Segoe UI',Arial,sans-serif";
+  const WIDTH = 780;
+  const BG = "#EFECE5";
+  const CARD_BG = "#FAFAF7";
+  const RED = "#EA1917";
+  const DARK_RED = "#A50034";
+  const BORDER = "#E0DBD3";
+  const WARM_BG = "#F5F1EA";
 
   const channelBadges = d.channels.map(ch => {
     if (ch.name === "LG.com") {
-      return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};">${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
+      return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:${DARK_RED};color:#ffffff;padding:5px 14px;font-size:12px;font-weight:700;font-family:${FONT};">${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
     }
-    return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
+    return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};padding:5px 12px;font-size:12px;color:#444;font-family:${FONT};background:#fff;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
   }).join("");
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -95,99 +102,115 @@ function generatePreviewHTML(d: NewsletterData): string {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 body,table,td,p,a,li{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
 table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
-@media only screen and (max-width:699px){.email-container{width:100%!important;max-width:100%!important;}}
+@media only screen and (max-width:799px){.email-container{width:100%!important;max-width:100%!important;}}
 </style></head>
-<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
+<body style="margin:0;padding:0;background-color:${BG};font-family:${FONT};word-spacing:normal;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
-<tr><td align="center" style="padding:24px 0;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${BG};"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${BG};">
+<tr><td align="center" style="padding:28px 0;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FAFAF7;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background:#FAFAF7;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+<!-- Red top accent bar -->
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" align="center"><tr><td style="background:${RED};height:5px;font-size:0;line-height:0;">&nbsp;</td></tr></table><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;">
+<tr><td style="background:${RED};height:5px;font-size:0;line-height:0;border-radius:12px 12px 0 0;">&nbsp;</td></tr>
+</table>
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" align="center" style="width:${WIDTH}px;background-color:${CARD_BG};"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;background:${CARD_BG};overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.07);">
 
 <!-- Header -->
-<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
+<tr><td style="padding:30px 40px 20px;border-bottom:2px solid ${BORDER};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
-      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;line-height:30px;">D2C Insight Pulse</div>
-      <div style="font-size:12px;color:#888;margin-top:4px;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+      <div style="font-size:26px;font-weight:800;color:${RED};letter-spacing:-0.5px;line-height:32px;">D2C Insight Pulse</div>
+      <div style="font-size:12px;color:#888;margin-top:5px;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
     </td>
-    <td width="140" style="text-align:right;vertical-align:top;">
+    <td width="160" style="text-align:right;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
-        <tr><td style="border:2px solid #EA1917;padding:6px 14px;text-align:center;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;line-height:14px;">WEEKLY REPORT</div>
-          <div style="font-size:9px;color:#888;margin-top:3px;line-height:13px;">${d.dateRange}</div>
+        <tr><td style="border:2px solid ${RED};padding:8px 16px;text-align:center;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:800;color:${RED};letter-spacing:1.5px;line-height:14px;">WEEKLY REPORT</div>
+          <div style="font-size:10px;color:#888;margin-top:4px;line-height:14px;">${d.dateRange}</div>
         </td></tr>
       </table>
     </td>
   </tr></table>
 </td></tr>
 
-<!-- Intro -->
-<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:11px;color:#888;line-height:20px;">LG.com, Reddit, Best Buy, Walmart, Target, Quora, Stack Exchange 등 30개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공하는 데이터 플랫폼입니다.</td></tr>
+<!-- Intro with warm beige background -->
+<tr><td style="padding:0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${WARM_BG};">
+    <tr><td style="padding:20px 40px;font-family:${FONT};">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="font-size:13px;font-weight:700;color:#333;padding-bottom:6px;line-height:20px;">🎯 고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
+        <tr><td style="font-size:12px;color:#666;line-height:22px;">LG.com, Reddit, Best Buy, Walmart, Target, Quora, Stack Exchange 등 30개 이상의 채널에서 수집한 실사용자 리뷰를 분석하여 즉시 활용 가능한 마케팅 인사이트를 제공합니다.</td></tr>
+      </table>
+    </td></tr>
   </table>
 </td></tr>
 
 <!-- Data Bar -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#FAFAF7;">
-    <tr><td style="padding:12px 16px;">
+<tr><td style="padding:20px 40px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BORDER};background:#FFFFFF;">
+    <tr><td style="padding:14px 20px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
-        <td style="text-align:right;font-size:11px;color:#666;font-family:${FONT};">
-          <strong style="color:#EA1917;font-size:14px;">${d.totalReviews.toLocaleString()}</strong>
-          <span style="color:#888;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+        <td style="font-size:13px;font-weight:700;color:#333;font-family:${FONT};">📊 데이터 수집 현황</td>
+        <td style="text-align:right;font-size:12px;color:#666;font-family:${FONT};">
+          <strong style="color:${RED};font-size:18px;">${d.totalReviews.toLocaleString()}</strong>
+          <span style="color:#888;font-size:12px;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+          ${d.wow !== 0 ? `<span style="color:${d.wow > 0 ? '#16a34a' : '#dc2626'};font-size:11px;margin-left:6px;">${d.wow > 0 ? '▲' : '▼'}${Math.abs(d.wow)}% WoW</span>` : ''}
         </td>
       </tr></table>
     </td></tr>
-    <tr><td style="padding:0 16px 12px;">
+    <tr><td style="padding:0 20px 14px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
     </td></tr>
   </table>
 </td></tr>
 
 <!-- Placeholder for AI insights -->
-<tr><td style="padding:20px 32px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:2px dashed #E0DBD3;background:#F7F4EF;">
-    <tr><td style="text-align:center;padding:40px 20px;color:#999;font-size:13px;font-family:${FONT};">
-      🚀 <strong>원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
+<tr><td style="padding:24px 40px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:2px dashed ${BORDER};background:${WARM_BG};">
+    <tr><td style="text-align:center;padding:48px 24px;color:#999;font-size:14px;font-family:${FONT};">
+      🚀 <strong style="color:#555;">원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
     </td></tr>
   </table>
 </td></tr>
 
 <!-- CTA Banner -->
-<tr><td style="padding:0 32px 24px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
-    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;">&nbsp;</td></tr>
+<tr><td style="padding:0 40px 28px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+    <tr><td colspan="3" style="height:4px;background:${RED};font-size:0;line-height:0;">&nbsp;</td></tr>
     <tr>
-      <td width="180" style="padding:20px 16px;vertical-align:middle;">
-        <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+      <td width="200" style="padding:24px 20px;vertical-align:middle;">
+        <table role="presentation" cellpadding="0" cellspacing="5" border="0"><tr>
+          <td width="58" height="52" style="background:${WARM_BG};border:1px solid ${BORDER};text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:18px;">📊</div><div style="font-size:8px;color:#999;">리뷰 분석</div></td>
+          <td width="58" height="52" style="background:${WARM_BG};border:1px solid ${BORDER};text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:18px;">⚡</div><div style="font-size:8px;color:#999;">광고 카피</div></td>
+          <td width="58" height="52" style="background:${WARM_BG};border:1px solid ${BORDER};text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:18px;">❓</div><div style="font-size:8px;color:#999;">FAQ</div></td>
         </tr></table>
       </td>
-      <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
-      <td style="padding:20px 22px;vertical-align:middle;font-family:${FONT};">
+      <td width="1" style="padding:14px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:74px;background:${BORDER};font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+      <td style="padding:24px 28px;vertical-align:middle;font-family:${FONT};">
         <div style="font-family:${INTER};font-size:14px;font-weight:700;color:#888;line-height:20px;">Marketing Asset Studio</div>
-        <div style="font-family:${INTER};font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:26px;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
-        <div style="font-size:11px;color:#888;line-height:18px;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
-        <a href="${BASE_URL}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a>
+        <div style="font-family:${INTER};font-size:22px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;line-height:28px;margin-top:3px;">Review-to-Asset,<br/><span style="color:${RED};">Instantly.</span></div>
+        <div style="font-size:12px;color:#888;line-height:20px;margin-top:8px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${BASE_URL}/" style="height:36px;v-text-anchor:middle;width:200px;" arcsize="15%" fillcolor="${RED}" stroke="f"><center style="color:#ffffff;font-family:${INTER};font-size:12px;font-weight:600;">마케팅 에셋 스튜디오 바로가기 →</center></v:roundrect><![endif]-->
+        <!--[if !mso]><!--><a href="${BASE_URL}/" style="display:inline-block;margin-top:12px;background:${RED};color:#fff;border-radius:20px;padding:10px 24px;font-family:${INTER};font-size:12px;font-weight:700;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
       </td>
     </tr>
   </table>
 </td></tr>
 
 <!-- Footer -->
-<tr><td style="padding:0 32px 20px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;line-height:16px;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
-    <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#ccc;line-height:14px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
-  </tr></table>
+<tr><td style="background:${WARM_BG};padding:0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td style="padding:20px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-family:${INTER};"><div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:18px;">D2C Insight Pulse</div><div style="font-size:10px;color:#999;margin-top:3px;line-height:15px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+        <td style="text-align:right;font-family:${FONT};"><div style="font-size:10px;color:#bbb;line-height:15px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
+      </tr></table>
+    </td></tr>
+  </table>
 </td></tr>
 
 </table>
