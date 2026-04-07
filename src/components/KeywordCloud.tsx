@@ -35,74 +35,61 @@ export function KeywordCloud({ keywords, signals = [] }: KeywordCloudProps) {
   const hasTopicView = grouped.length > 0;
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-4">
-      <h3 className="text-xs font-bold mb-3 font-heading">
-        🔑 {t("Key Topics & Keywords", "주제별 키워드")}
+    <div className="gradient-card rounded-xl border border-border p-4 space-y-3">
+      <h3 className="text-xs font-bold font-heading">
+        🔑 {t("Review Insight Summary", "리뷰 인사이트 요약")}
       </h3>
 
-      {/* Keyword pills — compact */}
-      <div className="space-y-2 mb-3">
-        <div>
-          <p className="text-[10px] text-muted-foreground font-medium mb-1">
-            👍 {t("Positive", "긍정")} ({keywords.positive.length})
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {keywords.positive.length > 0 ? keywords.positive.slice(0, 12).map((kw) => (
-              <span
-                key={kw}
-                className="px-2 py-0.5 rounded-full text-[10px] border bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]"
-              >
-                {kw}
-              </span>
-            )) : <span className="text-[10px] text-muted-foreground">{t("No data", "데이터 없음")}</span>}
-          </div>
-        </div>
-        <div>
-          <p className="text-[10px] text-muted-foreground font-medium mb-1">
-            👎 {t("Negative", "부정")} ({keywords.negative.length})
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {keywords.negative.length > 0 ? keywords.negative.slice(0, 12).map((kw) => (
-              <span
-                key={kw}
-                className="px-2 py-0.5 rounded-full text-[10px] border bg-destructive/10 text-destructive border-destructive/20"
-              >
-                {kw}
-              </span>
-            )) : <span className="text-[10px] text-muted-foreground">{t("No data", "데이터 없음")}</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Topic-grouped prose summary (Korean) */}
+      {/* 1) Topic prose summary — TOP */}
       {hasTopicView && (
-        <div className="space-y-2 border-t border-border pt-3">
-          <p className="text-[10px] font-semibold text-muted-foreground">
-            📋 {t("Topic Summary", "주제별 인사이트 요약")}
-          </p>
-          <div className="space-y-2">
-            {grouped.map(([category, { positive, negative }]) => {
-              const posText = positive.map((s) => maskCompetitorNames(s.evidencePhrase)).join(", ");
-              const negText = negative.map((s) => maskCompetitorNames(s.evidencePhrase)).join(", ");
-              return (
-                <div key={category} className="rounded-lg border border-border/60 bg-muted/20 p-3">
-                  <p className="text-[11px] font-bold text-foreground mb-1">🏷️ {category}</p>
-                  {positive.length > 0 && (
-                    <p className="text-[11px] text-foreground/80 leading-relaxed mb-0.5">
-                      <span className="font-medium text-[#006600]">👍 긍정:</span> {posText}
-                    </p>
-                  )}
-                  {negative.length > 0 && (
-                    <p className="text-[11px] text-foreground/80 leading-relaxed">
-                      <span className="font-medium text-destructive">👎 부정:</span> {negText}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+        <div className="space-y-2">
+          {grouped.map(([category, { positive, negative }]) => {
+            const posText = positive.map((s) => maskCompetitorNames(s.evidencePhrase)).join(" / ");
+            const negText = negative.map((s) => maskCompetitorNames(s.evidencePhrase)).join(" / ");
+            return (
+              <div key={category} className="rounded-lg border border-border/60 bg-muted/20 p-3">
+                <p className="text-[11px] font-bold text-foreground mb-1">🏷️ {category}</p>
+                {positive.length > 0 && (
+                  <p className="text-[11px] text-foreground/80 leading-relaxed mb-0.5">
+                    <span className="font-medium text-[#006600]">👍 긍정:</span> {posText}
+                  </p>
+                )}
+                {negative.length > 0 && (
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">
+                    <span className="font-medium text-destructive">👎 부정:</span> {negText}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
+
+      {/* 2) Top 3 keyword pills — compact */}
+      <div className="flex items-center gap-3 flex-wrap border-t border-border pt-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-medium text-muted-foreground">👍</span>
+          {keywords.positive.length > 0 ? keywords.positive.slice(0, 3).map((kw) => (
+            <span
+              key={kw}
+              className="px-2 py-0.5 rounded-full text-[10px] border bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]"
+            >
+              {kw}
+            </span>
+          )) : <span className="text-[10px] text-muted-foreground">{t("No data", "없음")}</span>}
+        </div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-medium text-muted-foreground">👎</span>
+          {keywords.negative.length > 0 ? keywords.negative.slice(0, 3).map((kw) => (
+            <span
+              key={kw}
+              className="px-2 py-0.5 rounded-full text-[10px] border bg-destructive/10 text-destructive border-destructive/20"
+            >
+              {kw}
+            </span>
+          )) : <span className="text-[10px] text-muted-foreground">{t("No data", "없음")}</span>}
+        </div>
+      </div>
     </div>
   );
 }
