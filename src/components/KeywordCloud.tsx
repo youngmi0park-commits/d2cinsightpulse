@@ -84,27 +84,38 @@ function parseTranslatedBlock(text: string, categories: string[]): Record<string
 export function KeywordCloud({ keywords, signals = [] }: KeywordCloudProps) {
   const { t } = useLang();
   const [translations, setTranslations] = useState<Record<string, { pos?: string; neg?: string }>>({});
+  const [kwTranslations, setKwTranslations] = useState<{ positive: string[]; negative: string[] }>({ positive: [], negative: [] });
   const [isTranslating, setIsTranslating] = useState(false);
   const translatedRef = useRef(false);
 
   const grouped = groupByCategory(signals);
   const hasTopicView = grouped.length > 0;
   const categories = grouped.map(([cat]) => cat);
+  const hasKeywords = keywords.positive.length > 0 || keywords.negative.length > 0;
 
   // Auto-translate on mount
   useEffect(() => {
-    if (!hasTopicView || translatedRef.current || isTranslating) return;
+    if ((!hasTopicView && !hasKeywords) || translatedRef.current || isTranslating) return;
     translatedRef.current = true;
 
     const doTranslate = async () => {
       setIsTranslating(true);
       try {
-        const block = buildTranslationBlock(grouped);
+        const block = buildTranslationBlock(grouped, keywords);
         const { data } = await supabase.functions.invoke("translate-review", {
           body: { text: block },
         });
         if (data?.translated) {
-          const parsed = parseTranslatedBlock(data.translated, categories);
+          const parsed = parseTranslatedBlock(data.translated, [...categories, "Keywords"]);
+          // Extract keyword translations
+          const kwTr = parsed["Keywords"];
+          if (kwTr) {
+            setKwTranslations({
+              positive: kwTr.pos ? kwTr.pos.split(/\s*\/\s*/).filter(Boolean) : [],
+              negative: kwTr.neg ? kwTr.neg.split(/\s*\/\s*/).filter(Boolean) : [],
+            });
+            delete parsed["Keywords"];
+          }
           setTranslations(parsed);
         }
       } catch (e) {
@@ -115,7 +126,7 @@ export function KeywordCloud({ keywords, signals = [] }: KeywordCloudProps) {
     };
     doTranslate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasTopicView]);
+  }, [hasTopicView, hasKeywords]);
 
   return (
     <div className="gradient-card rounded-xl border border-border p-4 space-y-3">
