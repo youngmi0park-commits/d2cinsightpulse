@@ -110,13 +110,7 @@ export function OverviewDashboard({ country: _country }: { country?: string }) {
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard label="TOTAL REVIEWS" weekly={kpis?.total.weekly} cumulative={kpis?.total.cumulative} wow={kpis?.total.wow} />
-        <KPICard label="LG.COM REVIEWS" weekly={kpis?.lgcom.weekly} cumulative={kpis?.lgcom.cumulative} wow={kpis?.lgcom.wow} />
-        <KPICard label="REDDIT SIGNALS" weekly={kpis?.reddit.weekly} cumulative={kpis?.reddit.cumulative} wow={kpis?.reddit.wow} />
-        <KPICard label="COMMUNITY" weekly={kpis?.community.weekly} cumulative={kpis?.community.cumulative} wow={kpis?.community.wow} sub="닷컴·레딧 제외 타채널" />
-      </div>
+      {/* KPIs removed */}
 
       {/* LG.com Weekly Overview */}
       <ChannelOverviewSection
