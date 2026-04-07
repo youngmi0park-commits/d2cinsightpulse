@@ -9,6 +9,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { ReviewList } from "./ReviewList";
 import { MarketingHub } from "./MarketingHub";
+import { isPrivacyRestricted } from "@/lib/reviewUtils";
 
 interface CategorySearchResultsProps {
   results: AnalyzedProduct[];
