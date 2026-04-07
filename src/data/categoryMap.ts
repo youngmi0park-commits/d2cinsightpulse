@@ -130,36 +130,61 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
   if (catLower.includes("range") || catLower.includes("oven")) return CATEGORY_MAP["Range"];
   if (catLower.includes("cooktop")) return CATEGORY_MAP["Cooktop"];
   if (catLower.includes("microwave")) return CATEGORY_MAP["Microwave"];
-  if (catLower.includes("microwave")) return CATEGORY_MAP["Microwave"];
 
   return { group: "Other", icon: "📦", color: "#6B7280", bgColor: "#F9FAFB" };
 }
 
-/** Get marketing-friendly category label */
+/** Get marketing-friendly category label — must mirror resolveCategoryMeta */
 export function getCategoryLabel(category: string, subCategory?: string): string {
   if (subCategory) {
     const subLower = subCategory.toLowerCase();
     if (subLower.includes("oled")) return "OLED TV";
     if (subLower.includes("qned")) return "QNED TV";
-    if (subLower.includes("nanocell") || subLower.includes("nano")) return "NanoCell TV";
-    if (subLower.includes("8k")) return "8K TV";
+    if (subLower.includes("nanocell") || subLower.includes("nano7") || subLower.includes("nano8") || subLower.includes("nano9")) return "NanoCell TV";
+    if (subLower.includes("uhd") || subLower.includes("4k") || subLower.includes("uq") || subLower.includes("ur-") || subLower.includes("ur series") || subLower.includes("ur7") || subLower.includes("ur8") || subLower.includes("ur9")) return "4K UHD TV";
+    if (subLower.includes("8k") || subLower.includes("z-series")) return "8K TV";
     if (subLower.includes("stanbyme") || subLower.includes("stanby")) return "StanbyME";
-    if (subLower.includes("washtower")) return "WashTower";
-    if (subLower.includes("soundbar")) return "Soundbar";
-    if (subLower.includes("smart monitor")) return "Smart Monitor";
-    if (subLower.includes("instaview") || subLower.includes("french door")) return "French Door Refrigerator";
-    if (subLower.includes("side-by-side")) return "Side-by-Side Refrigerator";
+    if (subLower.includes("soundbar") || subLower.includes("s-series") || subLower.includes("sp-series") || subLower.includes("sp7") || subLower.includes("sp9") || subLower.includes("s95") || subLower.includes("s80")) return "Soundbar";
+    if (subLower.includes("smart monitor") || subLower.includes("myview") || subLower.includes("dualup")) return "Smart Monitor";
+    if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth")) return "French Door Refrigerator";
+    if (subLower.includes("side-by-side") || subLower.includes("side by side")) return "Side-by-Side Refrigerator";
+    if (subLower.includes("column")) return "Column Refrigerator";
+    if (subLower.includes("top freezer")) return "Top Freezer Refrigerator";
     if (subLower.includes("bottom freezer")) return "Bottom Freezer Refrigerator";
-    if (subLower.includes("gram")) return "Laptop";
-    if (subLower.includes("ultragear") || subLower.includes("ultrawide")) return "Monitor";
-    if (subLower.includes("cordzero")) return "Vacuum";
-    if (subLower.includes("robot")) return "Robot Vacuum";
-    if (subLower.includes("puricare") || subLower.includes("aerotower")) return "Air Purifier";
-    if (subLower.includes("quadwash")) return "Dishwasher";
+    if (subLower.includes("washtower")) return "WashTower";
+    if (subLower.includes("turbowash") || subLower.includes("front load")) return "Washer";
+    if (subLower.includes("heat pump") || subLower.includes("electric dryer") || subLower.includes("gas dryer")) return "Dryer";
     if (subLower.includes("styler")) return "Styler";
+    if (subLower.includes("quadwash")) return "Dishwasher";
+    if (subLower.includes("wall oven")) return "Wall Oven";
+    if (subLower.includes("induction cooktop") || subLower.includes("gas cooktop") || subLower.includes("electric cooktop")) return "Cooktop";
+    if (subLower.includes("puricare") || subLower.includes("aerotower") || subLower.includes("aero furniture") || subLower.includes("hepa")) return "Air Purifier";
+    if (subLower.includes("dehumidifier")) return "Dehumidifier";
+    if (subLower.includes("dual inverter") || subLower.includes("mini split") || subLower.includes("portable ac") || subLower.includes("artcool")) return "Air Conditioner";
+    if (subLower.includes("gram")) return "Laptop";
+    if (subLower.includes("ultragear") || subLower.includes("ultrawide") || subLower.includes("ultrafine")) return "Monitor";
     if (subLower.includes("desktop")) return "Desktop";
+    if (subLower.includes("cordzero") || subLower.includes("kompressor")) return "Vacuum";
+    if (subLower.includes("robot")) return "Robot Vacuum";
     if (subLower.includes("thinq")) return "Smart Home Hub";
   }
+
+  // Fuzzy match on category itself
+  const catLower = category.toLowerCase();
+  if (catLower.includes("oled")) return "OLED TV";
+  if (catLower.includes("qned")) return "QNED TV";
+  if (catLower.includes("nanocell") || catLower.includes("nano cell")) return "NanoCell TV";
+  if (catLower.includes("4k") || catLower.includes("uhd")) return "4K UHD TV";
+  if (catLower.includes("8k")) return "8K TV";
+  if (catLower.includes("stanbyme") || catLower.includes("stanby")) return "StanbyME";
+  if (catLower.includes("soundbar") || catLower.includes("audio")) return "Soundbar";
+  if (catLower.includes("french door")) return "French Door Refrigerator";
+  if (catLower.includes("side-by-side") || catLower.includes("side by side")) return "Side-by-Side Refrigerator";
+  if (catLower.includes("washtower")) return "WashTower";
+  if (catLower.includes("dehumidifier")) return "Dehumidifier";
+  if (catLower.includes("air purifier") || catLower.includes("puricare")) return "Air Purifier";
+  if (catLower.includes("air conditioner") || catLower.includes("artcool")) return "Air Conditioner";
+
   if (CATEGORY_MAP[category]) return category;
   return category;
 }
