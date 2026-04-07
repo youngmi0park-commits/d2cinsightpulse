@@ -135,6 +135,26 @@ RULES:
 - Return ONLY valid JSON array, no markdown`;
 
 // ── Bazaarvoice Conversations API ──
+// ── BV CategoryId mapping (used to filter reviews by category) ──
+const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
+  us: {
+    TV: "TVs",
+    Refrigerator: "Refrigerators",
+    Washer: "Washers",
+    Dryer: "Dryers",
+    Dishwasher: "Dishwashers",
+    "Air Purifier": "Air_Purifiers",
+  },
+  uk: {
+    TV: "TVs",
+    Refrigerator: "Refrigerators",
+    Washer: "Washing_Machines",
+    Dryer: "Dryers",
+    Dishwasher: "Dishwashers",
+    "Air Purifier": "Air_Purifiers",
+  },
+};
+
 const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
   us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
   uk: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
