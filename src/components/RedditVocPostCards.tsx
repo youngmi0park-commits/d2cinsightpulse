@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { classifyRedditPost, type ClassifiedPost } from "@/lib/redditBucketClassifier";
@@ -7,7 +7,7 @@ import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ExternalLink, ChevronDown, Filter } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ExternalLink, ChevronDown, Filter, Languages } from "lucide-react";
 import { toast } from "sonner";
 
 function useRedditPosts(country: string) {
@@ -58,6 +58,24 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
   const { data: posts, isLoading } = useRedditPosts(country);
   const [filter, setFilter] = useState<BucketFilter>("ALL");
   const [showCount, setShowCount] = useState(12);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translating, setTranslating] = useState<Record<string, boolean>>({});
+
+  const handleTranslate = useCallback(async (id: string, content: string) => {
+    if (translations[id]) return;
+    setTranslating((prev) => ({ ...prev, [id]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-review", {
+        body: { text: content },
+      });
+      if (error) throw error;
+      setTranslations((prev) => ({ ...prev, [id]: data.translated }));
+    } catch {
+      toast.error("번역에 실패했습니다.");
+    } finally {
+      setTranslating((prev) => ({ ...prev, [id]: false }));
+    }
+  }, [translations]);
 
   const filtered = useMemo(() => {
     if (!posts) return [];
@@ -163,6 +181,13 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   {maskCompetitorNames(post.content)}
                 </p>
 
+                {/* Translation */}
+                {translations[post.id] && (
+                  <p className="text-[11px] text-primary/80 leading-relaxed bg-primary/5 rounded px-2 py-1">
+                    🇰🇷 {translations[post.id]}
+                  </p>
+                )}
+
                 {/* Keywords */}
                 {post.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
@@ -188,9 +213,21 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   <span className="text-[9px] text-muted-foreground">
                     {(post as any).author || "anonymous"} · {post.source}
                   </span>
-                  <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[9px]" onClick={() => handleCopy(post.content)}>
-                    <Copy className="h-2.5 w-2.5 mr-0.5" />복사
-                  </Button>
+                  <div className="flex items-center gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-[9px]"
+                      disabled={translating[post.id]}
+                      onClick={() => handleTranslate(post.id, post.content)}
+                    >
+                      <Languages className="h-2.5 w-2.5 mr-0.5" />
+                      {translating[post.id] ? "..." : translations[post.id] ? "번역됨" : "번역"}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[9px]" onClick={() => handleCopy(post.content)}>
+                      <Copy className="h-2.5 w-2.5 mr-0.5" />복사
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
