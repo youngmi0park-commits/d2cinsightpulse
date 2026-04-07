@@ -189,14 +189,34 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
     if (subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return CATEGORY_MAP["Soundbar"];
   }
 
-  // For TV category without specific sub_category, infer from displayName / modelNumber
   const catLower = category.toLowerCase();
+
+  // For TV category without specific sub_category, infer from displayName / modelNumber
   if (catLower === "tv" || catLower === "television") {
     const combined = `${displayName || ""} ${modelNumber || ""}`;
     const tvType = inferTvSubType(combined);
     if (tvType) return CATEGORY_MAP[tvType];
-    return CATEGORY_MAP["TV"]; // fallback generic TV
+    return CATEGORY_MAP["TV"];
   }
+
+  // "General" category — infer everything from name/model
+  if (catLower === "general" || catLower === "g4" || catLower === "app" || catLower === "remote" || catLower === "accessories" || catLower === "ai core tech" || catLower === "phone" || catLower === "mobile") {
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred && CATEGORY_MAP[inferred]) return CATEGORY_MAP[inferred];
+    return { group: "Other", icon: "📦", color: "#6B7280", bgColor: "#F9FAFB" };
+  }
+
+  // "Audio" → Soundbar
+  if (catLower === "audio") return CATEGORY_MAP["Soundbar"];
+
+  // "Cooking" → Range
+  if (catLower === "cooking") return CATEGORY_MAP["Range"];
+
+  // "LG art cool" → Air Conditioner
+  if (catLower.includes("art cool") || catLower.includes("artcool")) return CATEGORY_MAP["Air Conditioner"];
+
+  // "Projector" → Other (not in main map)
+  if (catLower === "projector") return { group: "Other", icon: "📽", color: "#6B7280", bgColor: "#F9FAFB" };
 
   // Direct match on category
   if (CATEGORY_MAP[category]) return CATEGORY_MAP[category];
@@ -227,7 +247,7 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
   if (catLower.includes("cooktop")) return CATEGORY_MAP["Cooktop"];
   if (catLower.includes("microwave")) return CATEGORY_MAP["Microwave"];
 
-  // Last resort: check displayName
+  // Last resort: infer from displayName
   if (displayName) {
     const tvType = inferTvSubType(displayName);
     if (tvType) return CATEGORY_MAP[tvType];
