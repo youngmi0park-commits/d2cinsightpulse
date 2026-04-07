@@ -73,14 +73,15 @@ export function CategoryHubCard({ categoryLabel, meta, products }: CategoryHubCa
   const sources = useMemo(() => getSourceDistribution(products), [products]);
   const sc = sentimentColor(stats.avgScore);
 
-  // Collect unique sub-categories
+  // Use defined subSeries from meta, fall back to data-derived sub-categories
   const subCategories = useMemo(() => {
+    if (meta.subSeries && meta.subSeries.length > 0) return meta.subSeries;
     const set = new Set<string>();
     for (const p of products) {
       if (p.product.subCategory) set.add(p.product.subCategory);
     }
     return Array.from(set).slice(0, 6);
-  }, [products]);
+  }, [products, meta.subSeries]);
 
   // Generate marketing action signal
   const actionSignal = useMemo(() => {
