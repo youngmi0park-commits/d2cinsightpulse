@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
               const aiKey = Deno.env.get("LOVABLE_API_KEY");
               if (!aiKey) continue;
 
-              const extractionRes = await fetch("https://api.lovable.dev/v1/chat/completions", {
+              const extractionRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
                 headers: {
                   Authorization: `Bearer ${aiKey}`,
