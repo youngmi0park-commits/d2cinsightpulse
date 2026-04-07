@@ -353,7 +353,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier"];
+  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier", "Vacuum", "Range", "Microwave"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
   let bvPages = 5;
