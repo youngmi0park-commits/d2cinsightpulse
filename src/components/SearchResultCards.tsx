@@ -624,14 +624,26 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               )}
             </div>
 
-            {/* ── 미디어 에셋 & LG Crew ── */}
-            <ContentCreationActions
-              productName={item.product.name}
-              displayName={item.product.displayName}
-            />
+            {/* ── 마케팅 에셋 스튜디오 블록 ── */}
+            <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 border border-primary/15 p-5 space-y-4 mt-2">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-block w-1 h-5 rounded-full bg-primary" />
+                <h3 className="text-sm font-bold text-primary">🎨 마케팅 에셋 스튜디오</h3>
+              </div>
+              <ContentCreationActions
+                productName={item.product.name}
+                displayName={item.product.displayName}
+              />
+            </div>
 
-            {/* ── 실고객 리뷰 (참고용, 최하단) ── */}
-            <ReviewList reviews={item.product.reviews} />
+            {/* ── 실고객 리뷰 블록 ── */}
+            <div className="rounded-2xl bg-gradient-to-br from-secondary/30 via-muted/40 to-secondary/20 border border-border/60 p-5 space-y-4 mt-2">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-block w-1 h-5 rounded-full bg-muted-foreground/50" />
+                <h3 className="text-sm font-bold text-muted-foreground">💬 실고객 리뷰</h3>
+              </div>
+              <ReviewList reviews={item.product.reviews} />
+            </div>
           </div>
         );
       })()}
