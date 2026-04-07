@@ -561,6 +561,7 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                     .map(([source, count]) => (
                       <Badge key={source} variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-normal">
                         {source} {count}
+                        {source === "LG.com" && <span className="ml-0.5 opacity-60">(요약)</span>}
                       </Badge>
                     ))}
                 </div>
@@ -624,6 +625,18 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             </div>
 
             {/* ── 실고객 리뷰 블록 ── */}
+            {isAllPrivacyRestricted(item.product.reviews) && (
+              <div className="flex items-start gap-2.5 p-4 rounded-xl border border-primary/20 bg-primary/5">
+                <span className="text-lg">🔒</span>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">LG.com 리뷰 원문 비공개</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    개인정보 보호 정책에 따라 LG.com 리뷰 원문은 표시되지 않습니다.
+                    평점 및 감성 분류 데이터를 기반으로 집계된 인사이트를 제공합니다.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="rounded-2xl bg-gradient-to-br from-secondary/30 via-muted/40 to-secondary/20 border border-border/60 p-5 space-y-4 mt-2">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-1 h-5 rounded-full bg-muted-foreground/50" />
