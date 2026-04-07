@@ -14,7 +14,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
-import { isPrivacyRestricted, isAllPrivacyRestricted } from "@/lib/reviewUtils";
+import { isAllPrivacyRestricted } from "@/lib/reviewUtils";
 
 
 export interface AnalyzedProduct {
