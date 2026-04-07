@@ -181,7 +181,7 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
 }
 
 /** Get marketing-friendly category label — must mirror resolveCategoryMeta */
-export function getCategoryLabel(category: string, subCategory?: string): string {
+export function getCategoryLabel(category: string, subCategory?: string, displayName?: string, modelNumber?: string): string {
   if (subCategory) {
     const subLower = subCategory.toLowerCase();
     if (subLower.includes("oled")) return "OLED TV";
@@ -192,6 +192,10 @@ export function getCategoryLabel(category: string, subCategory?: string): string
     if (subLower.includes("stanbyme") || subLower.includes("stanby")) return "StanbyME";
     if (subLower.includes("soundbar") || subLower.includes("s-series") || subLower.includes("sp-series") || subLower.includes("sp7") || subLower.includes("sp9") || subLower.includes("s95") || subLower.includes("s80")) return "Soundbar";
     if (subLower.includes("smart monitor") || subLower.includes("myview") || subLower.includes("dualup")) return "Smart Monitor";
+    if (subLower.includes("lifestyle")) {
+      const tvType = inferTvSubType(displayName || modelNumber || "");
+      if (tvType) return tvType;
+    }
     if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth")) return "French Door Refrigerator";
     if (subLower.includes("side-by-side") || subLower.includes("side by side")) return "Side-by-Side Refrigerator";
     if (subLower.includes("column")) return "Column Refrigerator";
@@ -204,7 +208,13 @@ export function getCategoryLabel(category: string, subCategory?: string): string
     if (subLower.includes("quadwash")) return "Dishwasher";
     if (subLower.includes("wall oven")) return "Wall Oven";
     if (subLower.includes("induction cooktop") || subLower.includes("gas cooktop") || subLower.includes("electric cooktop")) return "Cooktop";
-    if (subLower.includes("puricare") || subLower.includes("aerotower") || subLower.includes("aero furniture") || subLower.includes("hepa")) return "Air Purifier";
+    if (subLower.includes("induction") || subLower.includes("gas") || subLower.includes("electric")) {
+      const cl = category.toLowerCase();
+      if (cl.includes("cooktop")) return "Cooktop";
+      if (cl.includes("range")) return "Range";
+      if (cl.includes("dryer")) return "Dryer";
+    }
+    if (subLower.includes("puricare") || subLower.includes("aerotower") || subLower.includes("aero furniture") || subLower.includes("hepa") || subLower.includes("aerohit")) return "Air Purifier";
     if (subLower.includes("dehumidifier")) return "Dehumidifier";
     if (subLower.includes("dual inverter") || subLower.includes("mini split") || subLower.includes("portable ac") || subLower.includes("artcool")) return "Air Conditioner";
     if (subLower.includes("gram")) return "Laptop";
@@ -213,10 +223,19 @@ export function getCategoryLabel(category: string, subCategory?: string): string
     if (subLower.includes("cordzero") || subLower.includes("kompressor")) return "Vacuum";
     if (subLower.includes("robot")) return "Robot Vacuum";
     if (subLower.includes("thinq")) return "Smart Home Hub";
+    if (subLower.includes("soundbar") || subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return "Soundbar";
+  }
+
+  // For TV category, infer from displayName / modelNumber
+  const catLower = category.toLowerCase();
+  if (catLower === "tv" || catLower === "television") {
+    const combined = `${displayName || ""} ${modelNumber || ""}`;
+    const tvType = inferTvSubType(combined);
+    if (tvType) return tvType;
+    return "TV";
   }
 
   // Fuzzy match on category itself
-  const catLower = category.toLowerCase();
   if (catLower.includes("oled")) return "OLED TV";
   if (catLower.includes("qned")) return "QNED TV";
   if (catLower.includes("nanocell") || catLower.includes("nano cell")) return "NanoCell TV";
@@ -229,9 +248,17 @@ export function getCategoryLabel(category: string, subCategory?: string): string
   if (catLower.includes("washtower")) return "WashTower";
   if (catLower.includes("dehumidifier")) return "Dehumidifier";
   if (catLower.includes("air purifier") || catLower.includes("puricare")) return "Air Purifier";
-  if (catLower.includes("air conditioner") || catLower.includes("artcool")) return "Air Conditioner";
+  if (catLower.includes("air conditioner") || catLower.includes("artcool") || catLower.includes("art cool")) return "Air Conditioner";
+  if (catLower.includes("cooking")) return "Range";
 
   if (CATEGORY_MAP[category]) return category;
+
+  // Last resort: check displayName
+  if (displayName) {
+    const tvType = inferTvSubType(displayName);
+    if (tvType) return tvType;
+  }
+
   return category;
 }
 
