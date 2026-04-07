@@ -705,18 +705,56 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     totalComposite += normalized;
 
     // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
-    const textForKeywords = (analysisText && !/개인정보 보호 정책|LG 리뷰 — 감성/.test(analysisText))
-      ? analysisText
+    // Combine title + text for richer keyword extraction
+    const textForKeywords = isRealText
+      ? (review.title ? `${review.title}. ${analysisText}` : analysisText)
       : (review.title || "");
     const reviewSentences = splitSentences(textForKeywords);
+    
+    // For short title-only reviews, try direct feature matching as fallback
+    let foundKeywordInReview = false;
     for (const sent of reviewSentences) {
       const fco = classifySentenceFCO(sent);
       if (fco.function === "General") continue;
+      foundKeywordInReview = true;
       const meaningKey = `${fco.function} – ${extractEvidencePhrase(sent, 8, 3)}`;
       if (fco.isPositive) {
         posKeywords.set(meaningKey, (posKeywords.get(meaningKey) || 0) + 1);
       } else {
         negKeywords.set(meaningKey, (negKeywords.get(meaningKey) || 0) + 1);
+      }
+    }
+
+    // Fallback: if no FCO keyword found but we have title + sentiment, create a simple keyword
+    if (!foundKeywordInReview && review.title && review.title.length >= 3) {
+      const titleLower = review.title.toLowerCase();
+      // Try to match title against known positive/negative words to create keywords
+      let matched = false;
+      for (const w of Object.keys(POSITIVE_WORDS)) {
+        if (titleLower.includes(w) && review.sentiment !== "negative") {
+          const key = `Value & Price – ${review.title}`;
+          posKeywords.set(key, (posKeywords.get(key) || 0) + 1);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        for (const w of Object.keys(NEGATIVE_WORDS)) {
+          if (titleLower.includes(w) && review.sentiment !== "positive") {
+            const key = `Reliability & Quality – ${review.title}`;
+            negKeywords.set(key, (negKeywords.get(key) || 0) + 1);
+            matched = true;
+            break;
+          }
+        }
+      }
+      // Last resort: use sentiment to bucket the title
+      if (!matched && review.sentiment) {
+        if (review.sentiment === "positive") {
+          posKeywords.set(`General – ${review.title}`, (posKeywords.get(`General – ${review.title}`) || 0) + 1);
+        } else if (review.sentiment === "negative") {
+          negKeywords.set(`General – ${review.title}`, (negKeywords.get(`General – ${review.title}`) || 0) + 1);
+        }
       }
     }
 
