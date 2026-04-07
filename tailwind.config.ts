@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Noto Sans', 'Noto Sans KR', 'sans-serif'],
-        heading: ['Noto Sans', 'Noto Sans KR', 'sans-serif'],
+        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+        heading: ['Inter', 'Noto Sans KR', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
