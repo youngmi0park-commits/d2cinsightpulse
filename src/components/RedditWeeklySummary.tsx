@@ -47,16 +47,22 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
     // Bucket classification
     const buckets = generateBucketSummaries(classified.map((r: any) => classifyRedditPost(r)));
 
-    // Top products by mention
-    const prodMap: Record<string, { name: string; category: string; pos: number; neg: number; total: number }> = {};
+    // Top products by mention with sample comments
+    const prodMap: Record<string, { name: string; category: string; pos: number; neg: number; total: number; posSamples: string[]; negSamples: string[] }> = {};
     for (const r of classified) {
       const prod = (r as any).products;
       if (!prod) continue;
       const key = prod.display_name;
-      if (!prodMap[key]) prodMap[key] = { name: prod.display_name, category: prod.category, pos: 0, neg: 0, total: 0 };
+      if (!prodMap[key]) prodMap[key] = { name: prod.display_name, category: prod.category, pos: 0, neg: 0, total: 0, posSamples: [], negSamples: [] };
       prodMap[key].total++;
-      if ((r as any).sentiment === "positive") prodMap[key].pos++;
-      if ((r as any).sentiment === "negative") prodMap[key].neg++;
+      if ((r as any).sentiment === "positive") {
+        prodMap[key].pos++;
+        if (prodMap[key].posSamples.length < 2) prodMap[key].posSamples.push((r.content || "").slice(0, 80));
+      }
+      if ((r as any).sentiment === "negative") {
+        prodMap[key].neg++;
+        if (prodMap[key].negSamples.length < 2) prodMap[key].negSamples.push((r.content || "").slice(0, 80));
+      }
     }
     const topProducts = Object.values(prodMap).sort((a, b) => b.total - a.total).slice(0, 5);
     const topPos = Object.values(prodMap).sort((a, b) => b.pos - a.pos).slice(0, 3);
@@ -64,6 +70,44 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
 
     return { total, pos, neg, neutral, buckets, topProducts, topPos, topNeg };
   }, [classified]);
+
+  // AI-translate sample comments for top3 pos/neg products
+  const [summaryTranslations, setSummaryTranslations] = useState<Record<string, string>>({});
+  const summaryTranslated = useRef(false);
+
+  useEffect(() => {
+    if (!stats || summaryTranslated.current) return;
+    summaryTranslated.current = true;
+
+    const items: { key: string; text: string }[] = [];
+    stats.topPos.forEach((p, i) => {
+      const samples = p.posSamples?.join(" / ") || "";
+      if (samples) items.push({ key: `pos_${i}`, text: samples });
+    });
+    stats.topNeg.forEach((p, i) => {
+      const samples = p.negSamples?.join(" / ") || "";
+      if (samples) items.push({ key: `neg_${i}`, text: samples });
+    });
+
+    if (items.length === 0) return;
+
+    const batchText = items.map((it, idx) => `[${idx}] ${it.text}`).join("\n");
+    supabase.functions.invoke("translate-review", {
+      body: { text: `Translate each numbered line to natural Korean. Keep [N] prefixes. Be concise (1 sentence each):\n${batchText}` },
+    }).then(({ data }) => {
+      if (!data?.translated) return;
+      const map: Record<string, string> = {};
+      const lines = (data.translated as string).split("\n").filter(Boolean);
+      for (const line of lines) {
+        const m = line.match(/^\[(\d+)\]\s*(.+)/);
+        if (m) {
+          const idx = parseInt(m[1]);
+          if (items[idx]) map[items[idx].key] = m[2].trim();
+        }
+      }
+      setSummaryTranslations(map);
+    });
+  }, [stats]);
 
   if (!stats) return null;
 
