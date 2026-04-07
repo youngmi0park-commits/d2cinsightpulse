@@ -65,6 +65,9 @@ const Index = () => {
         dishwasher: ["Dishwasher"],
         vacuum: ["Vacuum"],
         soundbar: ["Soundbar", "Audio"],
+        "air purifier": ["Air Purifier"],
+        puricare: ["Air Purifier"],
+        aerotower: ["Air Purifier"],
       };
       const qLower = query.toLowerCase().trim();
       const matchedCategories = categoryKeywords[qLower];
