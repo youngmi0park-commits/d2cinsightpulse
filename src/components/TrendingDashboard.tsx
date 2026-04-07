@@ -859,14 +859,21 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               </div>
             </div>
           </div>
-          {/* Sentiment gap */}
-          {sentimentGap >= 20 && (
-            <div className="mx-3.5 mb-3 p-2.5 rounded-lg bg-blue-50 border border-blue-100 text-[10px] text-blue-900 leading-relaxed">
+          {/* Sentiment gap insight */}
+          {sentimentGap >= 15 && (
+            <div className="mx-3.5 mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-900 leading-relaxed">
               💡 Reddit 감성({redditSentiment}점) vs LG.com({lgcomSentiment}점)
               격차 {sentimentGap}pts — 커뮤니티 내 부정 확산 전
-              <strong> GEO 방어 콘텐츠·FAQ 선제 배치 권고</strong>
+              <strong className="text-amber-800"> GEO 방어 콘텐츠·FAQ 선제 배치 권고</strong>
             </div>
           )}
+          {/* Always-visible action insight */}
+          <div className="mx-3.5 mb-3 p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-200 text-[10px] text-emerald-900 leading-relaxed">
+            📌 Reddit 실구매자 VOC는 PDP 전환율에 직접 영향 —{" "}
+            <strong className="text-emerald-800">
+              긍정 TOP 제품은 UGC 소재로 즉시 활용, 부정 TOP은 CS·FAQ 선제 대응 필요
+            </strong>
+          </div>
         </div>
       </div>
     </div>
