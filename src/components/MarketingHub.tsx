@@ -481,6 +481,9 @@ export function MarketingHub({
           <TrendingUp className="h-4 w-4 text-primary shrink-0" />
           <p className="text-xs font-medium text-foreground/90">{marketing.tagline}</p>
         </div>
+
+        {/* ═══ 미디어 에셋 크리에이션 + LG Crew Anita ═══ */}
+        <ContentCreationActions productName={productName} displayName={displayName} />
       </div>
     </div>
   );
