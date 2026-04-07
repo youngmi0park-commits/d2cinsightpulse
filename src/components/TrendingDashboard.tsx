@@ -395,7 +395,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
   // LG.com products for heatmap
   const lgcomProducts = useMemo(() => {
-    const allProds = [...lgcomPos, ...lgcomNeg];
+    const _allProds = [...lgcomPos, ...lgcomNeg];
     const map: Record<string, { displayName: string; category: string; modelNumber: string; posCount: number; negCount: number }> = {};
     for (const p of lgcomPos) {
       if (!map[p.product_id]) map[p.product_id] = { displayName: p.display_name, category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
