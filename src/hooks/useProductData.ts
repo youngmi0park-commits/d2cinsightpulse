@@ -250,6 +250,8 @@ export function toReviewFormat(dbReview: DBReview) {
     source: dbReview.source as any,
     author: restricted ? "LG.com User" : (dbReview.author || "Anonymous"),
     text: displayText,
+    // Pass real content for internal analysis (never displayed directly)
+    _analysisText: dbReview.content && dbReview.content.length > 20 ? dbReview.content : undefined,
     title: dbReview.title || undefined,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
     rating: restricted ? undefined : (dbReview.rating ?? undefined),

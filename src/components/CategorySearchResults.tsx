@@ -9,6 +9,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { ReviewList } from "./ReviewList";
 import { MarketingHub } from "./MarketingHub";
+import { isPrivacyRestricted } from "@/lib/reviewUtils";
 
 interface CategorySearchResultsProps {
   results: AnalyzedProduct[];
@@ -75,8 +76,22 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
   const positivePoints = (item.sentiment.keywords.positive || []).slice(0, 5);
   const negativePoints = (item.sentiment.keywords.negative || []).slice(0, 5);
 
-  // Best review quote
-  const bestQuote = item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase;
+  // Check if primarily LG.com reviews
+  const isLgComDominant = item.product.reviews.filter(r => isPrivacyRestricted(r.source)).length > item.product.reviews.length * 0.5;
+
+  // Best review quote — for LG.com show sentiment insight, not raw text
+  const bestQuote = isLgComDominant
+    ? null
+    : (item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase);
+
+  // Generate LG.com sentiment insight summary
+  const lgComInsight = isLgComDominant ? (() => {
+    const total = item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral;
+    const posPct = total > 0 ? Math.round((item.sentiment.positive / total) * 100) : 0;
+    const negPct2 = total > 0 ? Math.round((item.sentiment.negative / total) * 100) : 0;
+    const score = item.sentiment.compositeScore;
+    return `감성 점수 ${score}점 · 긍정 ${posPct}% · 부정 ${negPct2}% — ${total}건 리뷰 기반 분석`;
+  })() : null;
 
   // Marketing action
   const negPct = item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral > 0
@@ -86,9 +101,28 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
     ? `부정 비율 ${negPct}%로 높음. 주요 이슈 대응 콘텐츠 제작 필요.`
     : `긍정 비율이 높음. UGC 활용 및 소셜 확산 전략 추천.`;
 
+  // Generate fallback positive/negative summaries from sentiment data for LG.com
+  const positiveSummary = positivePoints.length > 0 ? positivePoints : (isLgComDominant && item.sentiment.positive > 0
+    ? [`긍정 리뷰 ${item.sentiment.positive}건 확인 — 주요 만족 포인트 감성 기반 분석`]
+    : []);
+  const negativeSummary = negativePoints.length > 0 ? negativePoints : (isLgComDominant && item.sentiment.negative > 0
+    ? [`부정 리뷰 ${item.sentiment.negative}건 확인 — 주요 불만 사항 감성 기반 분석`]
+    : []);
+
   return (
     <div className="px-4 pb-4 space-y-4 animate-slide-up">
-      {/* Best Quote */}
+      {/* LG.com Sentiment Insight */}
+      {lgComInsight && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+          <span className="text-xs">🔒</span>
+          <p className="text-[11px] text-foreground leading-relaxed flex-1">
+            <span className="font-semibold text-primary">Sentiment Insight</span> — {lgComInsight}
+          </p>
+          <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">2차 가공</Badge>
+        </div>
+      )}
+
+      {/* Best Quote (non-LG.com only) */}
       {bestQuote && (
         <p className="text-xs italic text-muted-foreground border-l-3 border-primary/40 pl-3 py-1">
           "{bestQuote}"
@@ -99,7 +133,7 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="p-3 rounded-lg border border-[#15803D]/20 bg-[#15803D]/5 space-y-2">
           <p className="text-[11px] font-bold text-[#15803D]">✓ 긍정 포인트</p>
-          {positivePoints.length > 0 ? positivePoints.map(word => (
+          {positiveSummary.length > 0 ? positiveSummary.map(word => (
             <div key={word} className="text-[11px] text-foreground flex items-center gap-1.5">
               <span className="text-[#15803D]">✓</span> {word}
             </div>
@@ -107,7 +141,7 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
         </div>
         <div className="p-3 rounded-lg border border-red-500/20 bg-red-500/5 space-y-2">
           <p className="text-[11px] font-bold text-red-600">✕ 부정 이슈</p>
-          {negativePoints.length > 0 ? negativePoints.map(word => (
+          {negativeSummary.length > 0 ? negativeSummary.map(word => (
             <div key={word} className="text-[11px] text-foreground flex items-center gap-1.5">
               <span className="text-red-500">✕</span> {word}
             </div>

@@ -3,6 +3,8 @@ export interface Review {
   source: "lge_com" | "reddit" | "amazon" | "rtings" | "trusted_reviews" | "consumer_reports" | "cnet" | "trustpilot" | "bestreviews";
   author: string;
   text: string;
+  /** Real content for internal analysis only (never displayed for privacy-restricted sources) */
+  _analysisText?: string;
   title?: string;
   date: string;
   rating?: number;
