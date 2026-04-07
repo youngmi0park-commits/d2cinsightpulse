@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, MessageSquare, ArrowUpDown } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
