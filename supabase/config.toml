@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.bv-sweep-products]
+verify_jwt = false
+
+[functions.bv-collect-reviews]
+verify_jwt = false
+
+[functions.bv-incremental-sync]
+verify_jwt = false

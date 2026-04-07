@@ -30,6 +30,34 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     descriptionKo: "LG.com US/UK 제품 페이지 직접 크롤링 (냉장고, 세탁기)",
   },
   {
+    id: "bv_sweep",
+    label: "BV Sweep",
+    icon: Globe,
+    description: "Scan all BV products & register for full collection",
+    descriptionKo: "BV 전체 제품 스캔 및 수집 대상 등록",
+  },
+  {
+    id: "bv_collect_us",
+    label: "BV Collect US",
+    icon: Download,
+    description: "Full pagination collect from BV US (batch of 15 products)",
+    descriptionKo: "BV US 전체 페이지네이션 수집 (15개 제품 배치)",
+  },
+  {
+    id: "bv_collect_uk",
+    label: "BV Collect UK",
+    icon: Download,
+    description: "Full pagination collect from BV UK (batch of 15 products)",
+    descriptionKo: "BV UK 전체 페이지네이션 수집 (15개 제품 배치)",
+  },
+  {
+    id: "bv_sync",
+    label: "BV Daily Sync",
+    icon: Download,
+    description: "Incremental sync — new reviews from last 25 hours",
+    descriptionKo: "증분 동기화 — 최근 25시간 신규 리뷰",
+  },
+  {
     id: "reddit",
     label: "Reddit",
     icon: MessageSquare,
@@ -90,16 +118,38 @@ export function ReviewCollectButtons() {
     setResults((prev) => ({ ...prev, [channelId]: null }));
 
     try {
-      const functionName = channelId === "lge_com_direct" 
-        ? "crawl-lge-reviews" 
-        : channelId === "youtube_comments"
-          ? "collect-youtube-comments"
-          : "collect-reviews";
-      const body = channelId === "lge_com_direct" 
-        ? { categories: ["Refrigerator", "Washer"], regions: ["us", "uk"], maxPages: 3 }
-        : channelId === "youtube_comments"
-          ? { maxPerChannel: 3 }
-          : { channels: [channelId] };
+      let functionName: string;
+      let body: Record<string, unknown>;
+
+      switch (channelId) {
+        case "lge_com_direct":
+          functionName = "crawl-lge-reviews";
+          body = { categories: ["Refrigerator", "Washer"], regions: ["us", "uk"], maxPages: 3 };
+          break;
+        case "youtube_comments":
+          functionName = "collect-youtube-comments";
+          body = { maxPerChannel: 3 };
+          break;
+        case "bv_sweep":
+          functionName = "bv-sweep-products";
+          body = { locale: "en_US" };
+          break;
+        case "bv_collect_us":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_US", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_uk":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_GB", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_sync":
+          functionName = "bv-incremental-sync";
+          body = {};
+          break;
+        default:
+          functionName = "collect-reviews";
+          body = { channels: [channelId] };
+      }
 
       const { data, error } = await supabase.functions.invoke(functionName, { body });
 

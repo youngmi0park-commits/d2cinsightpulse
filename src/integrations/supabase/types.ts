@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      bv_collection_progress: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          is_complete: boolean | null
+          last_offset: number | null
+          last_run_at: string | null
+          locale: string
+          product_id: string
+          product_name: string | null
+          total_available: number | null
+          total_collected: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_complete?: boolean | null
+          last_offset?: number | null
+          last_run_at?: string | null
+          locale: string
+          product_id: string
+          product_name?: string | null
+          total_available?: number | null
+          total_collected?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_complete?: boolean | null
+          last_offset?: number | null
+          last_run_at?: string | null
+          locale?: string
+          product_id?: string
+          product_name?: string | null
+          total_available?: number | null
+          total_collected?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      bv_collection_runs: {
+        Row: {
+          completed_at: string | null
+          error_count: number | null
+          id: string
+          locale: string
+          products_done: number | null
+          products_queued: number | null
+          reviews_fetched: number | null
+          reviews_inserted: number | null
+          reviews_skipped: number | null
+          run_type: string
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          error_count?: number | null
+          id?: string
+          locale: string
+          products_done?: number | null
+          products_queued?: number | null
+          reviews_fetched?: number | null
+          reviews_inserted?: number | null
+          reviews_skipped?: number | null
+          run_type: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          error_count?: number | null
+          id?: string
+          locale?: string
+          products_done?: number | null
+          products_queued?: number | null
+          reviews_fetched?: number | null
+          reviews_inserted?: number | null
+          reviews_skipped?: number | null
+          run_type?: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       collection_logs: {
         Row: {
           completed_at: string | null
@@ -350,7 +440,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      bv_collection_summary: {
+        Row: {
+          collection_rate_pct: number | null
+          last_run_at: string | null
+          locale: string | null
+          products_complete: number | null
+          products_pending: number | null
+          products_tracked: number | null
+          total_available: number | null
+          total_collected: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
