@@ -100,9 +100,6 @@ export function DataStatusBar() {
               <span className={`h-2 w-2 rounded-full ${channel.dotColor}`} />
             )}
             {channel.label} {channel.count.toLocaleString()}
-            {channel.key === "lge_com" && (
-              <span className="text-[9px] opacity-70 ml-0.5">(평점 기반)</span>
-            )}
           </span>
         ))}
         {(sortedChannels.length > 6 || othersCount > 0) && (
