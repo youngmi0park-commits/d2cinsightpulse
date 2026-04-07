@@ -58,6 +58,24 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
   const { data: posts, isLoading } = useRedditPosts(country);
   const [filter, setFilter] = useState<BucketFilter>("ALL");
   const [showCount, setShowCount] = useState(12);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translating, setTranslating] = useState<Record<string, boolean>>({});
+
+  const handleTranslate = useCallback(async (id: string, content: string) => {
+    if (translations[id]) return;
+    setTranslating((prev) => ({ ...prev, [id]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-review", {
+        body: { text: content },
+      });
+      if (error) throw error;
+      setTranslations((prev) => ({ ...prev, [id]: data.translated }));
+    } catch {
+      toast.error("번역에 실패했습니다.");
+    } finally {
+      setTranslating((prev) => ({ ...prev, [id]: false }));
+    }
+  }, [translations]);
 
   const filtered = useMemo(() => {
     if (!posts) return [];
