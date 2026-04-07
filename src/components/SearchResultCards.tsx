@@ -14,8 +14,8 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
-import { isAllPrivacyRestricted } from "@/lib/reviewUtils";
-
+import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
+import { LgcomReviewSummary } from "@/components/LgcomReviewSummary";
 
 export interface AnalyzedProduct {
   product: ProductData;
@@ -600,6 +600,21 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             {/* ── 리뷰 인사이트 ── */}
             <div className="space-y-4">
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
+
+              {/* LG.com-only: show summary component instead of raw analysis */}
+              {item.sentiment.ratingOnlyMode && isAllPrivacyRestricted(item.product.reviews) ? (
+                <LgcomReviewSummary
+                  positivePct={Math.round((item.sentiment.positive / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
+                  negativePct={Math.round((item.sentiment.negative / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
+                  neutralPct={Math.round((item.sentiment.neutral / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
+                  positiveCount={item.sentiment.positive}
+                  negativeCount={item.sentiment.negative}
+                  total={item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral}
+                  score={item.sentiment.compositeScore}
+                  topKeywords={[...item.sentiment.keywords.positive.slice(0, 4), ...item.sentiment.keywords.negative.slice(0, 4)]}
+                  productName={item.product.name}
+                />
+              ) : null}
 
               {/* 1) 주요 긍/부정 키워드 & 주제별 요약 (맨 위) */}
               <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
