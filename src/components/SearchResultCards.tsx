@@ -640,18 +640,25 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             </div>
 
             {/* ── 실고객 리뷰 블록 ── */}
-            {isAllPrivacyRestricted(item.product.reviews) && (
+            {isAllPrivacyRestricted(item.product.reviews) ? (
               <div className="flex items-start gap-2.5 p-4 rounded-xl border border-primary/20 bg-primary/5">
                 <span className="text-lg">🔒</span>
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-foreground">LG.com 리뷰 원문 비공개</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     개인정보 보호 정책에 따라 LG.com 리뷰 원문은 표시되지 않습니다.
-                    평점 및 감성 분류 데이터를 기반으로 집계된 인사이트를 제공합니다.
+                    감성 분류 데이터를 기반으로 집계된 인사이트를 제공합니다.
                   </p>
                 </div>
               </div>
-            )}
+            ) : item.product.reviews.some((r) => isPrivacyRestricted(r.source)) ? (
+              <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/15 bg-primary/5">
+                <span className="text-sm">🔒</span>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  LG.com 리뷰 원문은 개인정보 보호 정책에 따라 비공개됩니다. 타 채널 리뷰 기반으로 분석됩니다.
+                </p>
+              </div>
+            ) : null}
             <div className="rounded-2xl bg-gradient-to-br from-secondary/30 via-muted/40 to-secondary/20 border border-border/60 p-5 space-y-4 mt-2">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-1 h-5 rounded-full bg-muted-foreground/50" />
