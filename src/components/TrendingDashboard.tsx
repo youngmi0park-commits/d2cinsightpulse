@@ -527,10 +527,10 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           valueSize="text-sm"
         />
         {/* Card 5 — 주간 언급 TOP */}
-        <KPICard accentColor="bg-blue-600" label="주간 언급 TOP"
+        <KPICard accentColor="bg-teal-600" label="주간 언급 TOP"
           value={topProduct?.displayName || "—"}
           sub={topProduct ? `${topProduct.mentions}건 · 1위` : "데이터 없음"}
-          subColor="text-blue-700"
+          subColor="text-teal-700"
           valueSize="text-[13px]"
           truncate
         />
@@ -623,8 +623,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           </div>
           {/* Sentiment gap notice */}
           {sentimentGap >= 20 && (
-            <div className="mx-3.5 mb-3 mt-1 p-2.5 rounded-lg bg-blue-50 border border-blue-100">
-              <p className="text-[10px] text-blue-900 leading-relaxed">
+            <div className="mx-3.5 mb-3 mt-1 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+              <p className="text-[10px] text-amber-900 leading-relaxed">
                 💡 LG.com 감성({lgcomSentiment}점) vs Reddit({redditSentiment}점)
                 격차 {sentimentGap}pts — 커뮤니티 내 부정 확산 전
                 <strong> GEO 방어 콘텐츠·FAQ 선제 배치 권고</strong>
@@ -693,7 +693,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               className={cn("border-[1.5px] rounded-xl p-3 transition-all",
                 signal.type === "rising" && "border-green-200 bg-green-50/30",
                 signal.type === "falling" && "border-red-200 bg-red-50/20",
-                signal.type === "new" && "border-blue-200 bg-blue-50/20",
+                signal.type === "new" && "border-violet-200 bg-violet-50/20",
                 signal.type === "stable" && "border-border",
               )}
             >
@@ -707,7 +707,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 <span className={cn("text-[8px] font-bold px-1.5 py-0.5 rounded ml-2 flex-shrink-0",
                   signal.type === "rising" && "bg-green-100 text-green-700",
                   signal.type === "falling" && "bg-red-100 text-red-700",
-                  signal.type === "new" && "bg-blue-100 text-blue-700",
+                  signal.type === "new" && "bg-violet-100 text-violet-700",
                   signal.type === "stable" && "bg-muted text-muted-foreground",
                 )}>
                   {signal.type === "rising" ? "📈 급증" :
