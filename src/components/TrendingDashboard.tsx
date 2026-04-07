@@ -283,16 +283,18 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
   // Quick wins from takeaway data
   const quickWins = useMemo(() => {
-    const wins: { label: string; action: string; basis: string; tags: string[] }[] = [];
+    const wins: { label: string; action: string; basis: string; tags: string[]; country: string }[] = [];
 
     // From negative takeaway — urgent fix
     const negItem = [...(lgcomTakeaway || []), ...(redditTakeaway || [])].find(t => t.negative_msg);
     if (negItem) {
+      const isLgcom = lgcomTakeaway?.some(t => t === negItem);
       wins.push({
         label: "1️⃣ 긴급 · 오늘 처리",
         action: `${negItem.product} PDP에 FAQ 즉시 배치`,
         basis: negItem.negative_msg,
         tags: ["긴급", "PDP", "CS 연동"],
+        country: isLgcom ? "🇺🇸 US" : "🌐 Global",
       });
     }
 
@@ -304,6 +306,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         action: `${posItem.product} "excellent" 리뷰 → PMAX 카피 즉시 제작`,
         basis: posItem.positive_msg,
         tags: ["소재 준비용", "PMAX", "Affiliate"],
+        country: "🇺🇸 US",
       });
     }
 
@@ -315,6 +318,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         action: `${redditItem.product} GEO 답변 스크립트 제작`,
         basis: redditItem.marketer_action,
         tags: ["GEO", "SEO", "UGC 활용"],
+        country: "🌐 Global",
       });
     }
 
@@ -325,6 +329,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         action: "채널별 감성 점수 기반 콘텐츠 우선순위 재조정",
         basis: "주간 데이터 분석 기반 자동 제안",
         tags: ["콘텐츠", "분석"],
+        country: "🌐 Global",
       });
     }
 
