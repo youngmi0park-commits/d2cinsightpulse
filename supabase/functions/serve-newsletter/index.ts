@@ -166,6 +166,11 @@ function buildNewsletterHTML(d: {
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
   channels: { name: string; count: number; color: string }[];
+  topPositiveKeyword: string; topPositiveCount: number;
+  topNegativeKeyword: string; topNegativeCount: number;
+  topProduct: string; topProductCount: number;
+  opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[];
+  trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
@@ -410,6 +415,119 @@ a {text-decoration:none;}
   </table>
 </td></tr>
 
+<!-- KPI Pulse Row -->
+<tr><td style="padding:20px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+        <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:12px 10px;text-align:center;font-family:${INTER};">
+          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
+          <div style="font-size:20px;font-weight:800;color:#1a1a1a;line-height:26px;margin-top:3px;">${d.totalReviews.toLocaleString()}</div>
+          <div style="font-size:10px;color:${d.wow >= 0 ? '#16a34a' : '#dc2626'};font-weight:600;margin-top:2px;">${d.wow > 0 ? '▲+' : d.wow < 0 ? '▼' : ''}${d.wow}% vs 전주</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:0 3px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+        <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:12px 10px;text-align:center;font-family:${INTER};">
+          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
+          <div style="font-size:13px;font-weight:800;color:#16a34a;line-height:18px;margin-top:5px;">"${d.topPositiveKeyword}"</div>
+          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 언급 1위</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:0 3px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+        <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:12px 10px;text-align:center;font-family:${INTER};">
+          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
+          <div style="font-size:13px;font-weight:800;color:#dc2626;line-height:18px;margin-top:5px;">"${d.topNegativeKeyword}"</div>
+          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · FAQ 대응</div>
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+        <tr><td style="height:3px;background:#2563eb;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:12px 10px;text-align:center;font-family:${INTER};">
+          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
+          <div style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;margin-top:5px;">${d.topProduct}</div>
+          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위</div>
+        </td></tr>
+      </table>
+    </td>
+  </tr></table>
+</td></tr>
+
+${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
+<tr><td style="padding:16px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#F7F4EF;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
+        <td style="text-align:right;font-size:9px;color:#999;font-family:${FONT};">리뷰 기반 자동 분류</td>
+      </tr></table>
+    </td></tr>
+    ${d.opportunities.map(op => {
+      const tc = op.tag === "amplify" ? "#16a34a" : op.tag === "fix" ? "#dc2626" : "#d97706";
+      const tb = op.tag === "amplify" ? "#f0fdf4" : op.tag === "fix" ? "#fef2f2" : "#fffbeb";
+      const tl = op.tag === "amplify" ? "AMPLIFY" : op.tag === "fix" ? "FIX" : "WATCH";
+      const dc = op.delta.startsWith("+") ? "#16a34a" : op.delta.startsWith("-") ? "#dc2626" : "#888";
+      return `<tr><td style="padding:0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #E8E4DC;"><tr>
+          <td width="4" style="background:${tc};font-size:0;">&nbsp;</td>
+          <td style="padding:10px 14px;font-family:${FONT};">
+            <div style="margin-bottom:3px;"><span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span></div>
+            <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
+            <div style="font-size:10px;color:#888;line-height:15px;margin-top:2px;">${op.desc}</div>
+          </td>
+          <td width="70" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
+            <div style="font-size:16px;font-weight:800;color:${dc};">${op.count}</div>
+            <div style="font-size:9px;color:#888;">건</div>
+            <div style="font-size:10px;font-weight:700;color:${dc};margin-top:2px;">${op.delta}</div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+    }).join("")}
+  </table>
+</td></tr>` : ""}
+
+${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
+<tr><td style="padding:16px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;">
+    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#F7F4EF;">
+      <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
+    </td></tr>
+    <tr><td style="padding:12px 14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>${d.trendingSignals.slice(0, 3).map(sig => {
+          const bc = sig.type === "rising" ? "#bbf7d0" : sig.type === "falling" ? "#fecaca" : "#e5e7eb";
+          const bg = sig.type === "rising" ? "#f0fdf4" : sig.type === "falling" ? "#fef2f2" : "#fafafa";
+          const bl = sig.type === "rising" ? "급증" : sig.type === "falling" ? "주의" : "유지";
+          const blb = sig.type === "rising" ? "#dcfce7" : sig.type === "falling" ? "#fee2e2" : "#f3f4f6";
+          const blc = sig.type === "rising" ? "#16a34a" : sig.type === "falling" ? "#dc2626" : "#888";
+          const vc = sig.sentiment === "positive" ? "#16a34a" : sig.sentiment === "negative" ? "#dc2626" : "#1a1a1a";
+          const dtc = sig.delta > 0 ? "#16a34a" : sig.delta < 0 ? "#dc2626" : "#888";
+          return `<td width="33%" style="padding:0 3px;vertical-align:top;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${bc};background:${bg};">
+              <tr><td style="padding:10px;font-family:${INTER};">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+                  <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;">"${sig.keyword}"</td>
+                  <td width="40" style="text-align:right;"><span style="font-size:8px;font-weight:700;padding:2px 4px;background:${blb};color:${blc};">${bl}</span></td>
+                </tr></table>
+                <div style="font-size:18px;font-weight:800;color:${vc};margin-top:5px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
+                <div style="font-size:10px;font-weight:600;color:${dtc};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+              </td></tr>
+            </table>
+          </td>`;
+        }).join("")}</tr>
+      </table>
+    </td></tr>
+  </table>
+</td></tr>` : ""}
+
 <!-- KEY TAKEAWAY -->
 <tr><td style="padding:24px 32px 0;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -514,11 +632,13 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} – ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-    const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
+    const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
+      sb.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
+      sb.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
     ]);
 
     const wow = (lastWeekRes.count || 0) > 0
@@ -544,12 +664,53 @@ Deno.serve(async (req) => {
       topChannels.push({ name: `+${sortedSources.length - 4}개 채널`, count: otherCount, color: "#999" });
     }
 
+    // Keywords
+    const kws = keywordsRes.data || [];
+    const posKws = kws.filter((k: any) => k.sentiment === "positive").sort((a: any, b: any) => b.count - a.count);
+    const negKws = kws.filter((k: any) => k.sentiment === "negative").sort((a: any, b: any) => b.count - a.count);
+
+    // Top product
+    const trendProds = trendingRes.data || [];
+    const topProd = trendProds[0];
+
+    // Opportunities
+    const opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[] = [];
+    for (const tp of trendProds.slice(0, 3)) {
+      const prod = (tp as any).products;
+      const chg = Number(tp.change_percent) || 0;
+      const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+      opportunities.push({
+        tag,
+        title: prod?.display_name || "Unknown",
+        desc: tag === "amplify" ? "긍정 트렌드 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS 즉시 대응" : "모니터링 필요",
+        count: tp.mention_count,
+        delta: (chg > 0 ? "+" : "") + chg + "%",
+      });
+    }
+
+    // Trending signals
+    const trendingSignals = kws.slice(0, 6).map((k: any) => ({
+      keyword: k.keyword,
+      count: k.count,
+      delta: Number(k.change_percent) || 0,
+      type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
+      sentiment: k.sentiment,
+    }));
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
       totalReviews: totalRes.count || 0,
       productCount: productRes.count || 0,
       channels: topChannels,
+      topPositiveKeyword: posKws[0]?.keyword || "—",
+      topPositiveCount: posKws[0]?.count || 0,
+      topNegativeKeyword: negKws[0]?.keyword || "—",
+      topNegativeCount: negKws[0]?.count || 0,
+      topProduct: (topProd as any)?.products?.display_name || "—",
+      topProductCount: topProd?.mention_count || 0,
+      opportunities,
+      trendingSignals,
     };
 
     // ── Generate AI insights ──
