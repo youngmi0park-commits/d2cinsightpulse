@@ -740,7 +740,7 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     // Build signal
     if (result.evidencePhrase) {
       signals.push({
-        product: extractProductEntity(review.text),
+        product: extractProductEntity(analysisText),
         sentiment: result.sentiment === "neutral" ? "mixed" : result.sentiment,
         score: result.baseScore,
         evidencePhrase: result.evidencePhrase,
