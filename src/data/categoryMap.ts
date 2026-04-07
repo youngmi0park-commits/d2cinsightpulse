@@ -10,19 +10,19 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
   // TV & Entertainment
   "OLED TV":        { group: "TV & Entertainment", icon: "🖥", color: "#15803D", bgColor: "#F0FDF4", subSeries: ["OLED evo AI (C/G/Z-series)", "OLED Gallery", "OLED Flex", "OLED evo"] },
   "QNED TV":        { group: "TV & Entertainment", icon: "📺", color: "#C2410C", bgColor: "#FFF7ED", subSeries: ["QNED90", "QNED85", "QNED80", "QNED75", "QNED70"] },
-  "4K UHD TV":      { group: "TV & Entertainment", icon: "🔲", color: "#1D4ED8", bgColor: "#EFF6FF", subSeries: ["UQ-series", "UR-series"] },
-  "NanoCell TV":    { group: "TV & Entertainment", icon: "💠", color: "#4338CA", bgColor: "#EEF2FF", subSeries: ["NANO75", "NANO80", "NANO90"] },
+  "4K UHD TV":      { group: "TV & Entertainment", icon: "🔲", color: "#92400E", bgColor: "#FEF3C7", subSeries: ["UQ-series", "UR-series"] },
+  "NanoCell TV":    { group: "TV & Entertainment", icon: "💠", color: "#9F1239", bgColor: "#FFF1F2", subSeries: ["NANO75", "NANO80", "NANO90"] },
   "8K TV":          { group: "TV & Entertainment", icon: "✨", color: "#7C3AED", bgColor: "#F5F3FF", subSeries: ["Z-series 8K"] },
   "StanbyME":       { group: "TV & Entertainment", icon: "🖱", color: "#B45309", bgColor: "#FFF7ED", subSeries: ["StanbyME Go", "StanbyME Closet"] },
   "Soundbar":       { group: "TV & Entertainment", icon: "🔊", color: "#6D28D9", bgColor: "#F5F3FF", subSeries: ["S-series", "SP-series"] },
   "Smart Monitor":  { group: "TV & Entertainment", icon: "🖥", color: "#0D9488", bgColor: "#F0FDFA", subSeries: ["MyView", "DualUp"] },
   // Refrigerators
-  "French Door Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF", subSeries: ["InstaView Door-in-Door", "Craft Ice", "Counter-depth"] },
-  "Side-by-Side Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF", subSeries: ["Side-by-Side"] },
-  "Top Freezer Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF", subSeries: ["Top Freezer"] },
-  "Bottom Freezer Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF", subSeries: ["Bottom Freezer"] },
-  "Column Refrigerator":      { group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF", subSeries: ["Column Refrigerator", "Column Freezer"] },
-  "Refrigerator":             { group: "Refrigerators", icon: "🧊", color: "#0369A1", bgColor: "#F0F9FF" },
+  "French Door Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["InstaView Door-in-Door", "Craft Ice", "Counter-depth"] },
+  "Side-by-Side Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Side-by-Side"] },
+  "Top Freezer Refrigerator": { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Top Freezer"] },
+  "Bottom Freezer Refrigerator":{ group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Bottom Freezer"] },
+  "Column Refrigerator":      { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Column Refrigerator", "Column Freezer"] },
+  "Refrigerator":             { group: "Refrigerators", icon: "🧊", color: "#0F766E", bgColor: "#F0FDFA" },
   // Laundry
   "Washer":    { group: "Laundry", icon: "👕", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Front Load (TurboWash)", "Top Load", "Combo"] },
   "Dryer":     { group: "Laundry", icon: "🌀", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Electric Dryer", "Gas Dryer", "Heat Pump Dryer"] },
@@ -35,9 +35,9 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
   "Microwave":  { group: "Kitchen", icon: "📡", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Over-the-Range", "Countertop", "Built-in"] },
   "Wall Oven":  { group: "Kitchen", icon: "🫙", color: "#B45309", bgColor: "#FFFBEB", subSeries: ["Single Wall Oven", "Double Wall Oven"] },
   // Air Solutions
-  "Air Conditioner":{ group: "Air Solutions", icon: "❄️", color: "#0284C7", bgColor: "#F0F9FF", subSeries: ["Window AC (Dual Inverter)", "Portable AC", "Mini Split"] },
+  "Air Conditioner":{ group: "Air Solutions", icon: "❄️", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["Window AC (Dual Inverter)", "Portable AC", "Mini Split"] },
   "Air Purifier":   { group: "Air Solutions", icon: "🌿", color: "#059669", bgColor: "#ECFDF5", subSeries: ["PuriCare AeroTower", "PuriCare 360", "HEPA"] },
-  "Dehumidifier":   { group: "Air Solutions", icon: "💧", color: "#0284C7", bgColor: "#F0F9FF", subSeries: ["PuriCare Dehumidifier"] },
+  "Dehumidifier":   { group: "Air Solutions", icon: "💧", color: "#0F766E", bgColor: "#F0FDFA", subSeries: ["PuriCare Dehumidifier"] },
   // Computers
   "Laptop":  { group: "Computers", icon: "💻", color: "#374151", bgColor: "#F9FAFB", subSeries: ["gram14", "gram16", "gram17", "gram+", "gram Style", "gram Ultra"] },
   "Monitor": { group: "Computers", icon: "🖥", color: "#374151", bgColor: "#F9FAFB", subSeries: ["UltraWide", "UltraGear (Gaming)", "UltraFine", "DualUp", "StanbyME (Monitor)"] },
@@ -49,7 +49,7 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
   "Smart Home Hub": { group: "Smart Home & Other", icon: "📱", color: "#6B7280", bgColor: "#F9FAFB", subSeries: ["LG ThinQ App"] },
   "Phone / Tablet": { group: "Smart Home & Other", icon: "📱", color: "#6B7280", bgColor: "#F9FAFB", subSeries: ["(legacy)"] },
   // TV fallback
-  "TV": { group: "TV & Entertainment", icon: "📺", color: "#1D4ED8", bgColor: "#EFF6FF" },
+  "TV": { group: "TV & Entertainment", icon: "📺", color: "#92400E", bgColor: "#FEF3C7" },
 };
 
 /** Resolve category from product category + subCategory fields */
