@@ -5,7 +5,7 @@ import { useSourceCounts } from "@/hooks/useProductData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowUpRight, ArrowDownRight, Copy, Check,
+  Copy, Check,
   ThumbsUp, Lightbulb,
   Loader2, Sparkles, AlertTriangle, Star, ChevronDown, ChevronUp, TrendingUp
 } from "lucide-react";
@@ -80,7 +80,8 @@ interface OverviewData {
 export function OverviewDashboard({ country: _country }: { country?: string }) {
   useLang();
   
-  const { data: kpis } = useOverviewKPIs();
+  // KPI hook kept for potential future use
+  const { data: _kpis } = useOverviewKPIs();
 
   // AI overview states
   const [lgcomOverview, setLgcomOverview] = useState<OverviewData | null>(null);
@@ -110,13 +111,7 @@ export function OverviewDashboard({ country: _country }: { country?: string }) {
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard label="TOTAL REVIEWS" weekly={kpis?.total.weekly} cumulative={kpis?.total.cumulative} wow={kpis?.total.wow} />
-        <KPICard label="LG.COM REVIEWS" weekly={kpis?.lgcom.weekly} cumulative={kpis?.lgcom.cumulative} wow={kpis?.lgcom.wow} />
-        <KPICard label="REDDIT SIGNALS" weekly={kpis?.reddit.weekly} cumulative={kpis?.reddit.cumulative} wow={kpis?.reddit.wow} />
-        <KPICard label="COMMUNITY" weekly={kpis?.community.weekly} cumulative={kpis?.community.cumulative} wow={kpis?.community.wow} sub="닷컴·레딧 제외 타채널" />
-      </div>
+      {/* KPIs removed */}
 
       {/* LG.com Weekly Overview */}
       <ChannelOverviewSection
@@ -361,29 +356,7 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function KPICard({ label, weekly, cumulative, wow, sub }: {
-  label: string; weekly?: number; cumulative?: number; wow?: number; sub?: string;
-}) {
-  const wowPositive = (wow ?? 0) > 0;
-  const wowNegative = (wow ?? 0) < 0;
-  return (
-    <Card className="border border-border bg-card">
-      <CardContent className="p-4 text-center">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">{label}</p>
-        <p className="text-3xl font-bold text-foreground">{weekly != null ? weekly.toLocaleString() : "—"}</p>
-        <div className="flex items-center justify-center gap-1 mt-1">
-          {wowPositive ? <ArrowUpRight className="h-3 w-3 text-success" /> : wowNegative ? <ArrowDownRight className="h-3 w-3 text-destructive" /> : null}
-          <span className={`text-[10px] font-semibold ${wowPositive ? "text-success" : wowNegative ? "text-destructive" : "text-muted-foreground"}`}>
-            {wow != null ? `${wow > 0 ? "+" : ""}${wow}% WoW` : "—"}
-          </span>
-        </div>
-        <p className="text-[10px] text-muted-foreground mt-1">누적 {cumulative != null ? cumulative.toLocaleString() : "—"}건</p>
-        {sub && <p className="text-[9px] text-muted-foreground/70 mt-0.5">{sub}</p>}
-      </CardContent>
-    </Card>
-  );
-}
-
+// KPICard removed — no longer displayed
 function CollapsibleSection({ icon, title, open, onToggle, bgClass, children }: {
   icon: React.ReactNode; title: string; open: boolean;
   onToggle: () => void; bgClass: string; children: React.ReactNode;
