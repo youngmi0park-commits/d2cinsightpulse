@@ -138,20 +138,20 @@ RULES:
 // ── BV CategoryId mapping (used to filter reviews by category) ──
 const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
   us: {
-    TV: "TVs",
-    Refrigerator: "Refrigerators",
-    Washer: "Washers",
-    Dryer: "Dryers",
-    Dishwasher: "Dishwashers",
-    "Air Purifier": "Air_Purifiers",
+    TV: "CT10000007",
+    Refrigerator: "CT10000003",
+    Washer: "CT10000005",
+    Dryer: "CT20187",
+    Dishwasher: "CT20188",
+    "Air Purifier": "CT32001601",
   },
   uk: {
-    TV: "TVs",
-    Refrigerator: "Refrigerators",
-    Washer: "Washing_Machines",
-    Dryer: "Dryers",
-    Dishwasher: "Dishwashers",
-    "Air Purifier": "Air_Purifiers",
+    TV: "CT10000007",
+    Refrigerator: "CT10000003",
+    Washer: "CT10000005",
+    Dryer: "CT20187",
+    Dishwasher: "CT20188",
+    "Air Purifier": "CT32001601",
   },
 };
 
