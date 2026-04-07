@@ -59,18 +59,74 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
 /** Infer TV sub-type from model number or display name */
 function inferTvSubType(text: string): string | null {
   const t = text.toLowerCase();
-  // OLED checks (must come before generic checks)
   if (t.includes("oled")) return "OLED TV";
-  // QNED checks
   if (t.includes("qned")) return "QNED TV";
-  // NanoCell checks
   if (t.includes("nanocell") || t.includes("nano cell") || /\bnano\s?\d/i.test(text)) return "NanoCell TV";
-  // 8K check (before 4K to avoid false match)
   if (t.includes("8k") || t.includes("z-series 8k")) return "8K TV";
-  // 4K UHD checks
   if (t.includes("4k") || t.includes("uhd") || /\bu[rq]\d/i.test(text) || t.includes("ur-series") || t.includes("uq-series") || t.includes("ultra hd")) return "4K UHD TV";
-  // StanbyME
   if (t.includes("stanbyme") || t.includes("stanby me")) return "StanbyME";
+  return null;
+}
+
+/** Infer any product category from display name and model number */
+function inferCategoryFromName(displayName?: string, modelNumber?: string): string | null {
+  if (!displayName && !modelNumber) return null;
+  const combined = `${displayName || ""} ${modelNumber || ""}`.toLowerCase();
+
+  // TV types
+  const tvType = inferTvSubType(combined);
+  if (tvType) return tvType;
+
+  // Soundbar / Audio
+  if (combined.includes("soundbar") || combined.includes("s95") || combined.includes("sp7") || combined.includes("sp9") || /\bsj\d/i.test(combined) || /\bsn\d/i.test(combined) || /\bsc9/i.test(combined)) return "Soundbar";
+  if (combined.includes("xboom")) return "Soundbar";
+
+  // Monitor patterns
+  if (/\b\d{2}(gn|gp|gq|gs|gk|gl|bn|bp|bq|un|up|uq|md|mp|mb|mk|wk|wl|wn|wp|wq)\d/i.test(combined) || combined.includes("ultragear") || combined.includes("ultrawide") || combined.includes("ultrafine")) return "Monitor";
+
+  // Laptop (gram)
+  if (combined.includes("gram") || /\b\d{2}z\d{2,}/i.test(combined)) return "Laptop";
+
+  // Refrigerator patterns
+  if (/\blr[a-z]{2,}/i.test(combined) || /\blfc/i.test(combined) || /\blmx/i.test(combined) || combined.includes("refrigerator") || combined.includes("fridge") || combined.includes("instaview")) {
+    if (combined.includes("french door") || combined.includes("4-door") || combined.includes("instaview")) return "French Door Refrigerator";
+    if (combined.includes("side-by-side") || combined.includes("side by side")) return "Side-by-Side Refrigerator";
+    if (combined.includes("top freezer")) return "Top Freezer Refrigerator";
+    if (combined.includes("bottom freezer")) return "Bottom Freezer Refrigerator";
+    return "Refrigerator";
+  }
+
+  // Washer patterns
+  if (/\bw[mt]\d{3,}/i.test(combined) || combined.includes("washer") || combined.includes("washing machine") || combined.includes("washcombo") || combined.includes("washtower")) {
+    if (combined.includes("washtower")) return "WashTower";
+    return "Washer";
+  }
+
+  // Dryer patterns
+  if (/\bdl[eg]\d/i.test(combined) || combined.includes("dryer")) return "Dryer";
+
+  // Dishwasher
+  if (/\bld[a-z]\d/i.test(combined) || combined.includes("dishwasher") || combined.includes("quadwash")) return "Dishwasher";
+
+  // Range / Oven
+  if (/\blsg/i.test(combined) || /\blre/i.test(combined) || combined.includes("range") || combined.includes("oven")) return "Range";
+  if (combined.includes("cooktop")) return "Cooktop";
+  if (combined.includes("microwave") || /\blmc/i.test(combined) || /\blmv/i.test(combined)) return "Microwave";
+
+  // Air solutions
+  if (combined.includes("air conditioner") || combined.includes("artcool") || combined.includes("art cool") || /\blw\d{2}/i.test(combined)) return "Air Conditioner";
+  if (combined.includes("puricare") || combined.includes("aerotower") || combined.includes("aero") || combined.includes("air purifier")) return "Air Purifier";
+
+  // Vacuum
+  if (combined.includes("cordzero") || combined.includes("vacuum") || combined.includes("kompressor")) return "Vacuum";
+  if (combined.includes("robot vacuum") || combined.includes("robot cleaner")) return "Robot Vacuum";
+
+  // Styler
+  if (combined.includes("styler") || /\bs3\w{3,}/i.test(combined)) return "Styler";
+
+  // Projector → group as Other for now
+  if (combined.includes("projector") || combined.includes("cinebeam")) return "Projector";
+
   return null;
 }
 
