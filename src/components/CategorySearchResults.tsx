@@ -433,6 +433,7 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
             />
           );
         })()}
+        </>
       )}
     </div>
   );
