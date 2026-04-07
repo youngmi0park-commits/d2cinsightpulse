@@ -456,21 +456,23 @@ export function MarketingHub({
         {searchIntentIdeas.length > 0 && (
           <div>
             <SectionHeader title="🔍 검색의도 기반 광고 아이디어" subtitle="리뷰 키워드에서 추출한 검색 광고 기회" />
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {searchIntentIdeas.map((idea, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
-                  <Badge variant="outline" className="text-[10px] shrink-0 border-primary/30 text-primary mt-0.5">
-                    🔎 {idea.query}
-                  </Badge>
-                  <p className="text-xs text-foreground/80 leading-relaxed flex-1">{idea.adIdea}</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-[10px] shrink-0"
-                    onClick={() => copyText(`${idea.query}\n${idea.adIdea}`, `si-${i}`)}
-                  >
-                    {copiedKey === `si-${i}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  </Button>
+                <div key={i} className="p-3 rounded-xl border border-border bg-card space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      🔎 {idea.query}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0"
+                      onClick={() => copyText(`${idea.query}\n${idea.adIdea}`, `si-${i}`)}
+                    >
+                      {copiedKey === `si-${i}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">{idea.adIdea}</p>
                 </div>
               ))}
             </div>
