@@ -56,8 +56,26 @@ export const CATEGORY_MAP: Record<string, CategoryMeta> = {
   "TV": { group: "TV & Entertainment", icon: "📺", color: LG_GRAY, bgColor: LG_GRAY_BG },
 };
 
-/** Resolve category from product category + subCategory fields */
-export function resolveCategoryMeta(category: string, subCategory?: string): CategoryMeta {
+/** Infer TV sub-type from model number or display name */
+function inferTvSubType(text: string): string | null {
+  const t = text.toLowerCase();
+  // OLED checks (must come before generic checks)
+  if (t.includes("oled")) return "OLED TV";
+  // QNED checks
+  if (t.includes("qned")) return "QNED TV";
+  // NanoCell checks
+  if (t.includes("nanocell") || t.includes("nano cell") || /\bnano\s?\d/i.test(text)) return "NanoCell TV";
+  // 8K check (before 4K to avoid false match)
+  if (t.includes("8k") || t.includes("z-series 8k")) return "8K TV";
+  // 4K UHD checks
+  if (t.includes("4k") || t.includes("uhd") || /\bu[rq]\d/i.test(text) || t.includes("ur-series") || t.includes("uq-series") || t.includes("ultra hd")) return "4K UHD TV";
+  // StanbyME
+  if (t.includes("stanbyme") || t.includes("stanby me")) return "StanbyME";
+  return null;
+}
+
+/** Resolve category from product fields (category, subCategory, displayName, modelNumber) */
+export function resolveCategoryMeta(category: string, subCategory?: string, displayName?: string, modelNumber?: string): CategoryMeta {
   // Try exact match on subCategory first
   if (subCategory) {
     const subLower = subCategory.toLowerCase();
@@ -70,6 +88,11 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
     if (subLower.includes("stanbyme") || subLower.includes("stanby")) return CATEGORY_MAP["StanbyME"];
     if (subLower.includes("soundbar") || subLower.includes("s-series") || subLower.includes("sp-series") || subLower.includes("sp7") || subLower.includes("sp9") || subLower.includes("s95") || subLower.includes("s80")) return CATEGORY_MAP["Soundbar"];
     if (subLower.includes("smart monitor") || subLower.includes("myview") || subLower.includes("dualup")) return CATEGORY_MAP["Smart Monitor"];
+    if (subLower.includes("lifestyle")) {
+      // Lifestyle Screens → try to infer from display name
+      const tvType = inferTvSubType(displayName || modelNumber || "");
+      if (tvType) return CATEGORY_MAP[tvType];
+    }
     // Refrigerators
     if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth")) return CATEGORY_MAP["French Door Refrigerator"];
     if (subLower.includes("side-by-side") || subLower.includes("side by side")) return CATEGORY_MAP["Side-by-Side Refrigerator"];
@@ -85,8 +108,15 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
     if (subLower.includes("quadwash")) return CATEGORY_MAP["Dishwasher"];
     if (subLower.includes("wall oven")) return CATEGORY_MAP["Wall Oven"];
     if (subLower.includes("induction cooktop") || subLower.includes("gas cooktop") || subLower.includes("electric cooktop")) return CATEGORY_MAP["Cooktop"];
+    if (subLower.includes("induction") || subLower.includes("gas") || subLower.includes("electric")) {
+      // Check if parent category is Cooktop or Range
+      const cl = category.toLowerCase();
+      if (cl.includes("cooktop")) return CATEGORY_MAP["Cooktop"];
+      if (cl.includes("range")) return CATEGORY_MAP["Range"];
+      if (cl.includes("dryer")) return CATEGORY_MAP["Dryer"];
+    }
     // Air
-    if (subLower.includes("puricare") || subLower.includes("aerotower") || subLower.includes("aero furniture") || subLower.includes("hepa")) return CATEGORY_MAP["Air Purifier"];
+    if (subLower.includes("puricare") || subLower.includes("aerotower") || subLower.includes("aero furniture") || subLower.includes("hepa") || subLower.includes("aerohit")) return CATEGORY_MAP["Air Purifier"];
     if (subLower.includes("dehumidifier")) return CATEGORY_MAP["Dehumidifier"];
     if (subLower.includes("dual inverter") || subLower.includes("mini split") || subLower.includes("portable ac") || subLower.includes("artcool")) return CATEGORY_MAP["Air Conditioner"];
     // Computers
@@ -98,13 +128,24 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
     if (subLower.includes("robot")) return CATEGORY_MAP["Robot Vacuum"];
     // Smart Home
     if (subLower.includes("thinq")) return CATEGORY_MAP["Smart Home Hub"];
+    // Audio → Soundbar
+    if (subLower.includes("soundbar")) return CATEGORY_MAP["Soundbar"];
+    if (subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return CATEGORY_MAP["Soundbar"];
+  }
+
+  // For TV category without specific sub_category, infer from displayName / modelNumber
+  const catLower = category.toLowerCase();
+  if (catLower === "tv" || catLower === "television") {
+    const combined = `${displayName || ""} ${modelNumber || ""}`;
+    const tvType = inferTvSubType(combined);
+    if (tvType) return CATEGORY_MAP[tvType];
+    return CATEGORY_MAP["TV"]; // fallback generic TV
   }
 
   // Direct match on category
   if (CATEGORY_MAP[category]) return CATEGORY_MAP[category];
 
   // Fuzzy match on category field
-  const catLower = category.toLowerCase();
   if (catLower.includes("oled")) return CATEGORY_MAP["OLED TV"];
   if (catLower.includes("qned")) return CATEGORY_MAP["QNED TV"];
   if (catLower.includes("nanocell") || catLower.includes("nano cell")) return CATEGORY_MAP["NanoCell TV"];
@@ -112,7 +153,6 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
   if (catLower.includes("8k")) return CATEGORY_MAP["8K TV"];
   if (catLower.includes("stanbyme") || catLower.includes("stanby")) return CATEGORY_MAP["StanbyME"];
   if (catLower.includes("soundbar") || catLower.includes("audio")) return CATEGORY_MAP["Soundbar"];
-  if (catLower.includes("tv") || catLower.includes("television")) return CATEGORY_MAP["TV"];
   if (catLower.includes("french door")) return CATEGORY_MAP["French Door Refrigerator"];
   if (catLower.includes("side-by-side") || catLower.includes("side by side")) return CATEGORY_MAP["Side-by-Side Refrigerator"];
   if (catLower.includes("refrigerator") || catLower.includes("fridge")) return CATEGORY_MAP["Refrigerator"];
@@ -122,14 +162,20 @@ export function resolveCategoryMeta(category: string, subCategory?: string): Cat
   if (catLower.includes("dishwasher")) return CATEGORY_MAP["Dishwasher"];
   if (catLower.includes("vacuum")) return CATEGORY_MAP["Vacuum"];
   if (catLower.includes("air purifier") || catLower.includes("puricare")) return CATEGORY_MAP["Air Purifier"];
-  if (catLower.includes("air conditioner") || catLower.includes("artcool")) return CATEGORY_MAP["Air Conditioner"];
+  if (catLower.includes("air conditioner") || catLower.includes("artcool") || catLower.includes("art cool")) return CATEGORY_MAP["Air Conditioner"];
   if (catLower.includes("dehumidifier")) return CATEGORY_MAP["Dehumidifier"];
   if (catLower.includes("laptop") || catLower.includes("gram")) return CATEGORY_MAP["Laptop"];
   if (catLower.includes("monitor")) return CATEGORY_MAP["Monitor"];
   if (catLower.includes("desktop")) return CATEGORY_MAP["Desktop"];
-  if (catLower.includes("range") || catLower.includes("oven")) return CATEGORY_MAP["Range"];
+  if (catLower.includes("range") || catLower.includes("oven") || catLower.includes("cooking")) return CATEGORY_MAP["Range"];
   if (catLower.includes("cooktop")) return CATEGORY_MAP["Cooktop"];
   if (catLower.includes("microwave")) return CATEGORY_MAP["Microwave"];
+
+  // Last resort: check displayName
+  if (displayName) {
+    const tvType = inferTvSubType(displayName);
+    if (tvType) return CATEGORY_MAP[tvType];
+  }
 
   return { group: "Other", icon: "📦", color: "#6B7280", bgColor: "#F9FAFB" };
 }
