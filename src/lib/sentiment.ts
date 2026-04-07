@@ -681,12 +681,15 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
   let bestNegEvidence = { phrase: "", score: Infinity };
 
   for (const review of reviews) {
+    // Use _analysisText (real content) for analysis if available, otherwise use text
+    const analysisText = (review as any)._analysisText || review.text;
+    
     // Check if this review has real (non-placeholder) text
-    const isRealText = review.text && !/개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(review.text) && review.text.length > 20;
+    const isRealText = analysisText && !/개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(analysisText) && analysisText.length > 20;
     if (isRealText) hasRealText = true;
 
     const result = analyzeReviewText(
-      review.text,
+      analysisText,
       review.source,
       review.sentiment,
       review.score
@@ -702,9 +705,8 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     totalComposite += normalized;
 
     // Keywords: FCO meaning-unit extraction (sentence-level, not word-level)
-    // For placeholder LG.com reviews, use title for keyword extraction
-    const textForKeywords = (review.text && !/개인정보 보호 정책|LG 리뷰 — 감성/.test(review.text))
-      ? review.text
+    const textForKeywords = (analysisText && !/개인정보 보호 정책|LG 리뷰 — 감성/.test(analysisText))
+      ? analysisText
       : (review.title || "");
     const reviewSentences = splitSentences(textForKeywords);
     for (const sent of reviewSentences) {
