@@ -139,7 +139,7 @@ RULES:
 const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
   us: {
     TV: "CT10000007",
-    Refrigerator: "CT10000003",
+    Refrigerator: "CT10000021",
     Washer: "CT10000005",
     Dryer: "CT20187",
     Dishwasher: "CT20188",
@@ -147,7 +147,7 @@ const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
   },
   uk: {
     TV: "CT10000007",
-    Refrigerator: "CT10000003",
+    Refrigerator: "CT10000021",
     Washer: "CT10000005",
     Dryer: "CT20187",
     Dishwasher: "CT20188",
