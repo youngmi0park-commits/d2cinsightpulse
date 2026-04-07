@@ -50,6 +50,33 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["smell", "odor", "pet"], tag: "Odor_Control" },
     { keywords: ["coverage", "room size", "sq ft"], tag: "Coverage_Area" },
   ],
+  Dishwasher: [
+    { keywords: ["quadwash", "quad wash"], tag: "QuadWash_Feature" },
+    { keywords: ["truesteam", "true steam"], tag: "TrueSteam_Feature" },
+    { keywords: ["noise", "quiet", "loud", "decibel"], tag: "Noise_Level" },
+    { keywords: ["dry", "drying", "heat dry"], tag: "Drying_Performance" },
+    { keywords: ["rack", "3rd rack", "third rack"], tag: "Rack_Design" },
+    { keywords: ["leak", "water"], tag: "Leak_Issue" },
+  ],
+  Vacuum: [
+    { keywords: ["suction", "power", "motor"], tag: "Suction_Power" },
+    { keywords: ["battery", "runtime", "charge"], tag: "Battery_Life" },
+    { keywords: ["cordzero", "cordless"], tag: "CordZero_Feature" },
+    { keywords: ["kompressor", "compress"], tag: "Kompressor_Feature" },
+    { keywords: ["mop", "mopping"], tag: "Mop_Feature" },
+    { keywords: ["auto empty", "dustbin", "tower"], tag: "Auto_Empty" },
+  ],
+  Range: [
+    { keywords: ["air fry", "air fryer"], tag: "AirFry_Feature" },
+    { keywords: ["instaview", "knock"], tag: "InstaView_Feature" },
+    { keywords: ["probake", "convection"], tag: "ProBake_Feature" },
+    { keywords: ["temperature", "heat", "uneven"], tag: "Temperature_Issue" },
+  ],
+  Microwave: [
+    { keywords: ["sensor cook", "sensor"], tag: "SensorCook_Feature" },
+    { keywords: ["low profile", "slim"], tag: "LowProfile_Design" },
+    { keywords: ["thinq", "smart", "wifi"], tag: "Smart_Feature" },
+  ],
 };
 const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   Refrigerator: {
@@ -112,8 +139,44 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
       'LG PuriCare review UK air quality',
     ],
   },
+  Dishwasher: {
+    us: [
+      '"LG dishwasher" review verified purchase 2024 2025 2026',
+      'LG QuadWash dishwasher review owner experience',
+      'LG LDFC2423V LDFN4542W dishwasher review',
+      'LG FlushFit dishwasher LDNPM545S review',
+    ],
+    uk: [
+      '"LG dishwasher" review UK owner 2024 2025',
+    ],
+  },
+  Vacuum: {
+    us: [
+      '"LG CordZero" vacuum review verified purchase 2024 2025 2026',
+      'LG cordless stick vacuum review owner experience suction',
+      'LG A937KGMS A949KTMS CordZero review',
+      'LG CordZero Kompressor vacuum review battery',
+    ],
+    uk: [
+      '"LG CordZero" vacuum review UK owner 2024 2025',
+    ],
+  },
+  Range: {
+    us: [
+      '"LG range" review verified purchase 2024 2025 2026',
+      'LG InstaView range review owner experience air fry',
+      'LG LRGL5825F gas range review ProBake',
+    ],
+    uk: [],
+  },
+  Microwave: {
+    us: [
+      '"LG microwave" review verified purchase 2024 2025 2026',
+      'LG over the range microwave MVEL2033F review',
+    ],
+    uk: [],
+  },
 };
-
 // ── AI Prompt ──
 const REVIEW_EXTRACT_PROMPT = `You are an expert data scientist extracting LG Electronics product reviews.
 
@@ -290,7 +353,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier"];
+  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier", "Vacuum", "Range", "Microwave"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
   let bvPages = 5;

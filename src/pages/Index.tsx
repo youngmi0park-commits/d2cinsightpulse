@@ -60,14 +60,20 @@ const Index = () => {
         laptop: ["Laptop"],
         monitor: ["Monitor"],
         refrigerator: ["Refrigerator"],
+        fridge: ["Refrigerator"],
         washer: ["Washer"],
         dryer: ["Dryer"],
         dishwasher: ["Dishwasher"],
         vacuum: ["Vacuum"],
+        cordzero: ["Vacuum"],
         soundbar: ["Soundbar", "Audio"],
         "air purifier": ["Air Purifier"],
         puricare: ["Air Purifier"],
         aerotower: ["Air Purifier"],
+        range: ["Range"],
+        oven: ["Range"],
+        cooktop: ["Cooktop"],
+        microwave: ["Microwave"],
       };
       const qLower = query.toLowerCase().trim();
       const matchedCategories = categoryKeywords[qLower];
