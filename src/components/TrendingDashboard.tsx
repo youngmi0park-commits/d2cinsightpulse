@@ -648,6 +648,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                   {i + 1}
                 </div>
                 <span className="text-[10px] font-bold text-primary">{win.label}</span>
+                <span className="ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{win.country}</span>
               </div>
               <p className="text-[12px] font-bold leading-snug mb-2 text-foreground">{win.action}</p>
               <p className="text-[10px] text-muted-foreground leading-relaxed mb-3" style={{ wordBreak: "keep-all" }}>{win.basis}</p>
