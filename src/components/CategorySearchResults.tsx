@@ -70,6 +70,7 @@ function MiniSentimentBar({ positive, negative, neutral }: { positive: number; n
 
 /** Expanded product detail */
 function ProductDetail({ item }: { item: AnalyzedProduct }) {
+  const [showReviews, setShowReviews] = useState(false);
   const sources = getSourceDist(item.product.reviews);
   const positivePoints = (item.sentiment.keywords.positive || []).slice(0, 5);
   const negativePoints = (item.sentiment.keywords.negative || []).slice(0, 5);
@@ -145,11 +146,17 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
           />
         )}
         <div className="rounded-2xl bg-gradient-to-br from-secondary/30 via-muted/40 to-secondary/20 border border-border/60 p-5 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
+          <button
+            onClick={() => setShowReviews(!showReviews)}
+            className="flex items-center gap-2 mb-1 w-full text-left hover:opacity-80 transition-opacity"
+          >
             <span className="inline-block w-1 h-5 rounded-full bg-muted-foreground/50" />
             <h3 className="text-sm font-bold text-muted-foreground">💬 실고객 리뷰</h3>
-          </div>
-          <ReviewList reviews={item.product.reviews} />
+            <Badge variant="secondary" className="text-[9px] ml-1">{item.product.reviews.length}건</Badge>
+            <span className="ml-auto text-[10px] text-primary font-semibold">{showReviews ? "접기" : "펼치기"}</span>
+            {showReviews ? <ChevronUp className="h-3.5 w-3.5 text-primary" /> : <ChevronDown className="h-3.5 w-3.5 text-primary" />}
+          </button>
+          {showReviews && <ReviewList reviews={item.product.reviews} />}
         </div>
       </div>
     </div>
