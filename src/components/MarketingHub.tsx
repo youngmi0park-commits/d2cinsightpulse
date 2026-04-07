@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { FaqToolkitPanel } from "@/components/FaqToolkitPanel";
+import { FaqPanel } from "@/components/FaqPanel";
 import { ContentCreationActions } from "@/components/ContentCreationActions";
 import { useLang } from "@/contexts/LanguageContext";
 import {
@@ -401,7 +401,7 @@ export function MarketingHub({
                 </div>
               ))}
             </div>
-            <FaqToolkitPanel productName={productName} displayName={displayName} sentiment={sentiment} reviews={reviews} locale="en-US" />
+            <FaqPanel productName={productName} displayName={displayName} sentiment={sentiment} reviews={reviews} locale="en-US" />
           </CollapsibleContent>
         </Collapsible>
 
