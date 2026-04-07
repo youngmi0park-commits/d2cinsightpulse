@@ -74,46 +74,32 @@ export function KeywordCloud({ keywords, signals = [] }: KeywordCloudProps) {
         </div>
       </div>
 
-      {/* Topic-grouped evidence */}
+      {/* Topic-grouped prose summary (Korean) */}
       {hasTopicView && (
         <div className="space-y-2 border-t border-border pt-3">
           <p className="text-[10px] font-semibold text-muted-foreground">
-            {t("Topic Evidence (max 3 per sentiment)", "주제별 근거 (긍부정 각 최대 3건)")}
+            📋 {t("Topic Summary", "주제별 인사이트 요약")}
           </p>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {grouped.map(([category, { positive, negative }]) => (
-              <div key={category} className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
-                <p className="text-[10px] font-bold text-foreground mb-1.5">🏷️ {category}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                  {/* Positive comments */}
+          <div className="space-y-2">
+            {grouped.map(([category, { positive, negative }]) => {
+              const posText = positive.map((s) => maskCompetitorNames(s.evidencePhrase)).join(", ");
+              const negText = negative.map((s) => maskCompetitorNames(s.evidencePhrase)).join(", ");
+              return (
+                <div key={category} className="rounded-lg border border-border/60 bg-muted/20 p-3">
+                  <p className="text-[11px] font-bold text-foreground mb-1">🏷️ {category}</p>
                   {positive.length > 0 && (
-                    <div className="space-y-1">
-                      {positive.map((sig, i) => (
-                        <div key={i} className="flex items-start gap-1 text-[10px] p-1.5 rounded bg-[hsl(var(--success)/0.05)] border border-[hsl(var(--success)/0.1)]">
-                          <span className="shrink-0">👍</span>
-                          <span className="text-foreground leading-tight line-clamp-2">
-                            "{maskCompetitorNames(sig.evidencePhrase)}"
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-[11px] text-foreground/80 leading-relaxed mb-0.5">
+                      <span className="font-medium text-[#006600]">👍 긍정:</span> {posText}
+                    </p>
                   )}
-                  {/* Negative comments */}
                   {negative.length > 0 && (
-                    <div className="space-y-1">
-                      {negative.map((sig, i) => (
-                        <div key={i} className="flex items-start gap-1 text-[10px] p-1.5 rounded bg-destructive/5 border border-destructive/10">
-                          <span className="shrink-0">👎</span>
-                          <span className="text-foreground leading-tight line-clamp-2">
-                            "{maskCompetitorNames(sig.evidencePhrase)}"
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-[11px] text-foreground/80 leading-relaxed">
+                      <span className="font-medium text-destructive">👎 부정:</span> {negText}
+                    </p>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

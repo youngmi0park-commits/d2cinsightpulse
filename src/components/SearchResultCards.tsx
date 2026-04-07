@@ -597,14 +597,14 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             <div className="space-y-4">
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
-              {/* 1) 긍정/부정 리뷰 & 데이터 비중 */}
-              <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
+              {/* 1) 주요 긍/부정 키워드 & 주제별 요약 (맨 위) */}
+              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
 
-              {/* 2) 감성 차트 (비중 시각화) */}
+              {/* 2) 감성 분석 결과 그래프 */}
               <SentimentChart sentiment={item.sentiment} />
 
-              {/* 3) 주요 긍/부정 키워드 */}
-              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
+              {/* 3) 핵심 근거 & 시그널 */}
+              <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
 
 
               {item.product.reviews.length > 0 && (
