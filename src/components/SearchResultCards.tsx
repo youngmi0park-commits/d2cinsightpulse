@@ -606,10 +606,6 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
               {/* 3) 주요 긍/부정 키워드 */}
               <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
 
-              {/* 4) 고객 실제 Using Scene (리뷰에서 언급된 경우만) */}
-              {item.sentiment.usageScenes.length > 0 && (
-                <UsageSceneSection scenes={item.sentiment.usageScenes} />
-              )}
 
               {item.product.reviews.length > 0 && (
                 <MarketingHub
