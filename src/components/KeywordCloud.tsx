@@ -30,8 +30,11 @@ function groupByCategory(signals: SentimentSignal[]) {
     .sort(([, a], [, b]) => (b.positive.length + b.negative.length) - (a.positive.length + a.negative.length));
 }
 
-/** Build a single text block from grouped signals for batch translation */
-function buildTranslationBlock(grouped: [string, { positive: SentimentSignal[]; negative: SentimentSignal[] }][]): string {
+/** Build a single text block from grouped signals + keywords for batch translation */
+function buildTranslationBlock(
+  grouped: [string, { positive: SentimentSignal[]; negative: SentimentSignal[] }][],
+  keywords?: { positive: string[]; negative: string[] }
+): string {
   const lines: string[] = [];
   for (const [category, { positive, negative }] of grouped) {
     const parts: string[] = [`[${category}]`];
@@ -42,6 +45,17 @@ function buildTranslationBlock(grouped: [string, { positive: SentimentSignal[]; 
       parts.push(`Negative: ${negative.map((s) => maskCompetitorNames(s.evidencePhrase)).join(" / ")}`);
     }
     lines.push(parts.join("\n"));
+  }
+  // Append keyword section
+  if (keywords) {
+    const kwParts: string[] = ["[Keywords]"];
+    if (keywords.positive.length > 0) {
+      kwParts.push(`Positive: ${keywords.positive.slice(0, 3).join(" / ")}`);
+    }
+    if (keywords.negative.length > 0) {
+      kwParts.push(`Negative: ${keywords.negative.slice(0, 3).join(" / ")}`);
+    }
+    lines.push(kwParts.join("\n"));
   }
   return lines.join("\n\n");
 }
