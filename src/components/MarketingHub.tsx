@@ -463,7 +463,32 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
-        {/* ═══ 6. 🤖 AI 툴 프롬프트 스튜디오 — 8종 ═══ */}
+        {/* ═══ 6. CRM Segment (리타겟팅) ═══ */}
+        {marketing.crmInsights && (
+          <Collapsible open={openSections.crm} onOpenChange={() => toggleSection("crm")}>
+            <CollapsibleTrigger className="w-full">
+              <SectionHeader title="📞 리타겟팅 · CRM 세그먼트 인사이트" subtitle="리뷰 기반 CRM 대응 전략과 세그먼트 아이디어" collapsible isOpen={openSections.crm} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="p-3 rounded-lg border border-rose-500/20 bg-rose-500/5">
+                  <p className="text-[10px] font-semibold text-rose-600 mb-1">⚡ 기대 괴리</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.expectationGap}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-amber-600/20 bg-amber-600/5">
+                  <p className="text-[10px] font-semibold text-amber-700 mb-1">💰 서비스 기회</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.serviceOpportunity}</p>
+                </div>
+                <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                  <p className="text-[10px] font-semibold text-primary mb-1">🤝 CRM 대응</p>
+                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.crmResponse}</p>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* ═══ 7. 🤖 AI 툴 프롬프트 스튜디오 — 8종 ═══ */}
         <Collapsible open={openSections.aitools} onOpenChange={() => toggleSection("aitools")}>
           <CollapsibleTrigger className="w-full">
             <SectionHeader title="🤖 AI 툴 프롬프트 스튜디오 — 8종" subtitle="각 AI 툴에 최적화된 프롬프트를 자동 생성합니다" collapsible isOpen={openSections.aitools} />
@@ -499,31 +524,6 @@ export function MarketingHub({
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-        {/* ═══ 7. CRM Segment (기존) ═══ */}
-        {marketing.crmInsights && (
-          <Collapsible open={openSections.crm} onOpenChange={() => toggleSection("crm")}>
-            <CollapsibleTrigger className="w-full">
-              <SectionHeader title="📞 리타겟팅 · CRM 세그먼트 인사이트" subtitle="리뷰 기반 CRM 대응 전략과 세그먼트 아이디어" collapsible isOpen={openSections.crm} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div className="p-3 rounded-lg border border-rose-500/20 bg-rose-500/5">
-                  <p className="text-[10px] font-semibold text-rose-600 mb-1">⚡ 기대 괴리</p>
-                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.expectationGap}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-amber-600/20 bg-amber-600/5">
-                  <p className="text-[10px] font-semibold text-amber-700 mb-1">💰 서비스 기회</p>
-                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.serviceOpportunity}</p>
-                </div>
-                <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-                  <p className="text-[10px] font-semibold text-primary mb-1">🤝 CRM 대응</p>
-                  <p className="text-[10px] text-foreground/80 leading-relaxed">{marketing.crmInsights.crmResponse}</p>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
 
         {/* Tagline */}
         <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center gap-2">
