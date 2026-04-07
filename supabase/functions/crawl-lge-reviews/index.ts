@@ -41,9 +41,16 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["brightness", "dim", "peak"], tag: "Brightness_Issue" },
     { keywords: ["panel", "dead pixel", "banding"], tag: "Panel_Issue" },
   ],
+  "Air Purifier": [
+    { keywords: ["hepa", "filter", "filtration"], tag: "HEPA_Filter" },
+    { keywords: ["air quality", "pm2.5", "dust", "pollen", "allergen"], tag: "Air_Quality" },
+    { keywords: ["noise", "quiet", "whisper", "silent"], tag: "Noise_Level" },
+    { keywords: ["puricare", "aerotower", "aerohit", "aero furniture"], tag: "PuriCare_Feature" },
+    { keywords: ["smart", "thinq", "app", "wifi"], tag: "Smart_Feature" },
+    { keywords: ["smell", "odor", "pet"], tag: "Odor_Control" },
+    { keywords: ["coverage", "room size", "sq ft"], tag: "Coverage_Area" },
+  ],
 };
-
-// ── Search queries per category+region ──
 const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   Refrigerator: {
     us: [
@@ -76,6 +83,17 @@ const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
     uk: [
       '"LG OLED" TV review UK owner 2024 2025',
       'LG OLED evo review UK picture quality',
+    ],
+  },
+  "Air Purifier": {
+    us: [
+      '"LG air purifier" review verified purchase 2024 2025',
+      'LG PuriCare air purifier review owner experience',
+      'LG AeroTower review air purifier HEPA',
+    ],
+    uk: [
+      '"LG air purifier" review UK owner 2024 2025',
+      'LG PuriCare review UK air quality',
     ],
   },
 };
@@ -117,6 +135,26 @@ RULES:
 - Return ONLY valid JSON array, no markdown`;
 
 // ── Bazaarvoice Conversations API ──
+// ── BV CategoryId mapping (used to filter reviews by category) ──
+const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
+  us: {
+    TV: "CT10000007",
+    Refrigerator: "CT10000003",
+    Washer: "CT10000005",
+    Dryer: "CT20187",
+    Dishwasher: "CT20188",
+    "Air Purifier": "CT32001601",
+  },
+  uk: {
+    TV: "CT10000007",
+    Refrigerator: "CT10000003",
+    Washer: "CT10000005",
+    Dryer: "CT20187",
+    Dishwasher: "CT20188",
+    "Air Purifier": "CT32001601",
+  },
+};
+
 const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
   us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
   uk: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
@@ -144,6 +182,12 @@ async function fetchBazaarvoiceReviews(
   // Product-specific filter (BV ProductId or OriginalProductName)
   if (productFilter) {
     url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
+  } else {
+    // Category filter — use BV CategoryAncestorId to scope to specific product category
+    const bvCatId = BV_CATEGORY_IDS[region]?.[category];
+    if (bvCatId) {
+      url.searchParams.append("Filter", `CategoryAncestorId:eq:${bvCatId}`);
+    }
   }
   
   // Date range filters
@@ -230,7 +274,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher"];
+  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier"];
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 2;
   let bvPages = 5;
