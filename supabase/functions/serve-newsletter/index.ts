@@ -632,11 +632,13 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} – ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-    const [weeklyRes, lastWeekRes, totalRes, productRes] = await Promise.all([
+    const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
+      sb.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
+      sb.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
     ]);
 
     const wow = (lastWeekRes.count || 0) > 0
@@ -662,12 +664,53 @@ Deno.serve(async (req) => {
       topChannels.push({ name: `+${sortedSources.length - 4}개 채널`, count: otherCount, color: "#999" });
     }
 
+    // Keywords
+    const kws = keywordsRes.data || [];
+    const posKws = kws.filter((k: any) => k.sentiment === "positive").sort((a: any, b: any) => b.count - a.count);
+    const negKws = kws.filter((k: any) => k.sentiment === "negative").sort((a: any, b: any) => b.count - a.count);
+
+    // Top product
+    const trendProds = trendingRes.data || [];
+    const topProd = trendProds[0];
+
+    // Opportunities
+    const opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[] = [];
+    for (const tp of trendProds.slice(0, 3)) {
+      const prod = (tp as any).products;
+      const chg = Number(tp.change_percent) || 0;
+      const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+      opportunities.push({
+        tag,
+        title: prod?.display_name || "Unknown",
+        desc: tag === "amplify" ? "긍정 트렌드 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS 즉시 대응" : "모니터링 필요",
+        count: tp.mention_count,
+        delta: (chg > 0 ? "+" : "") + chg + "%",
+      });
+    }
+
+    // Trending signals
+    const trendingSignals = kws.slice(0, 6).map((k: any) => ({
+      keyword: k.keyword,
+      count: k.count,
+      delta: Number(k.change_percent) || 0,
+      type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
+      sentiment: k.sentiment,
+    }));
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
       totalReviews: totalRes.count || 0,
       productCount: productRes.count || 0,
       channels: topChannels,
+      topPositiveKeyword: posKws[0]?.keyword || "—",
+      topPositiveCount: posKws[0]?.count || 0,
+      topNegativeKeyword: negKws[0]?.keyword || "—",
+      topNegativeCount: negKws[0]?.count || 0,
+      topProduct: (topProd as any)?.products?.display_name || "—",
+      topProductCount: topProd?.mention_count || 0,
+      opportunities,
+      trendingSignals,
     };
 
     // ── Generate AI insights ──
