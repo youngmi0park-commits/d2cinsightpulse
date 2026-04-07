@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isPrivacyRestricted, getSafeReviewText } from "@/lib/reviewUtils";
 
 export interface DBReview {
   id: string;
@@ -227,18 +228,18 @@ function stripPII(text: string): string {
 
 // Convert DB review to the format used by existing components
 export function toReviewFormat(dbReview: DBReview) {
-  const isLgeCom = dbReview.source?.startsWith("lge_com");
+  const restricted = isPrivacyRestricted(dbReview.source);
 
-  // For LG.com reviews: never expose original text — show sentiment-based summary only
+  // For privacy-restricted sources: show sentiment summary, never raw text
   let displayText: string;
-  if (isLgeCom) {
+  if (restricted) {
     const sentLabel = dbReview.sentiment === "positive"
-      ? "긍정적 사용 경험이 확인된 리뷰입니다."
+      ? "👍 긍정적 사용 경험 확인"
       : dbReview.sentiment === "negative"
-        ? "불만 또는 개선 요청이 확인된 리뷰입니다."
-        : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+        ? "👎 불만 또는 개선 요청 확인"
+        : "➖ 중립적 의견";
     displayText = dbReview.title
-      ? `${dbReview.sentiment === "positive" ? "긍정" : dbReview.sentiment === "negative" ? "부정" : "중립"} 반응 — ${dbReview.title}`
+      ? `${sentLabel} — ${dbReview.title}`
       : sentLabel;
   } else {
     displayText = dbReview.content;
@@ -247,11 +248,11 @@ export function toReviewFormat(dbReview: DBReview) {
   return {
     id: dbReview.id,
     source: dbReview.source as any,
-    author: isLgeCom ? "LG.com User" : (dbReview.author || "Anonymous"),
+    author: restricted ? "LG.com User" : (dbReview.author || "Anonymous"),
     text: displayText,
     title: dbReview.title || undefined,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
-    rating: isLgeCom ? undefined : (dbReview.rating ?? undefined),
+    rating: restricted ? undefined : (dbReview.rating ?? undefined),
     sentiment: (dbReview.sentiment || "neutral") as "positive" | "negative" | "neutral",
     score: dbReview.sentiment_score ?? 0.5,
   };
