@@ -302,14 +302,27 @@ export function getCategoryLabel(category: string, subCategory?: string, display
     if (subLower.includes("soundbar") || subLower.includes("xboom") || subLower.includes("bluetooth speaker")) return "Soundbar";
   }
 
-  // For TV category, infer from displayName / modelNumber
   const catLower = category.toLowerCase();
+
+  // For TV category, infer from displayName / modelNumber
   if (catLower === "tv" || catLower === "television") {
     const combined = `${displayName || ""} ${modelNumber || ""}`;
     const tvType = inferTvSubType(combined);
     if (tvType) return tvType;
     return "TV";
   }
+
+  // "General" / misc categories — infer from name
+  if (catLower === "general" || catLower === "g4" || catLower === "app" || catLower === "remote" || catLower === "accessories" || catLower === "ai core tech" || catLower === "phone" || catLower === "mobile") {
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred) return inferred;
+    return category;
+  }
+
+  if (catLower === "audio") return "Soundbar";
+  if (catLower === "cooking") return "Range";
+  if (catLower.includes("art cool") || catLower.includes("artcool")) return "Air Conditioner";
+  if (catLower === "projector") return "Projector";
 
   // Fuzzy match on category itself
   if (catLower.includes("oled")) return "OLED TV";
@@ -325,14 +338,13 @@ export function getCategoryLabel(category: string, subCategory?: string, display
   if (catLower.includes("dehumidifier")) return "Dehumidifier";
   if (catLower.includes("air purifier") || catLower.includes("puricare")) return "Air Purifier";
   if (catLower.includes("air conditioner") || catLower.includes("artcool") || catLower.includes("art cool")) return "Air Conditioner";
-  if (catLower.includes("cooking")) return "Range";
 
   if (CATEGORY_MAP[category]) return category;
 
-  // Last resort: check displayName
+  // Last resort: infer from displayName
   if (displayName) {
-    const tvType = inferTvSubType(displayName);
-    if (tvType) return tvType;
+    const inferred = inferCategoryFromName(displayName, modelNumber);
+    if (inferred) return inferred;
   }
 
   return category;
