@@ -252,7 +252,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
       </td>
       <td width="25%" style="padding:0 0 0 4px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
-          <tr><td style="height:3px;background:#2563eb;font-size:0;line-height:0;">&nbsp;</td></tr>
+          <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">주간 언급 TOP</div>
             <div style="font-size:13px;font-weight:800;color:#1a1a1a;line-height:18px;margin-top:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.topProduct}</div>
