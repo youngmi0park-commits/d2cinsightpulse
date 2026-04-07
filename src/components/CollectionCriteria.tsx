@@ -25,6 +25,27 @@ function useLgComCounts() {
   return counts;
 }
 
+// Live country collection counts hook
+function useAllCountryCounts() {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    supabase.rpc("get_country_counts").then((res) => {
+      const data = res.data || [];
+      const map: Record<string, number> = {};
+      data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
+      setCounts(map);
+    });
+  }, []);
+  return counts;
+}
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩",
+  TH: "🇹🇭", PH: "🇵🇭", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
+  IQ: "🇮🇶", Global: "🌐", Other: "🔹",
+};
+
 // Estimated collectible reviews since Jan 2025 (excluding <20 char content & duplicates)
 const BV_2025_US = 9500;
 const BV_2025_UK = 5400;
