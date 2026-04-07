@@ -5,7 +5,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { TrendingDashboard } from "@/components/TrendingDashboard";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
-import { ResultsGroupFilter, extractSubCategory, extractInch, type GroupMode } from "@/components/ResultsGroupFilter";
 import type { ProductData } from "@/data/dummyData";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages, type MarketingOutput, type GeoMessage } from "@/lib/formatMessage";
@@ -14,7 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Database, Activity, LayoutDashboard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLang } from "@/contexts/LanguageContext";
-import { SearchResultCards, type AnalyzedProduct } from "@/components/SearchResultCards";
+import { type AnalyzedProduct } from "@/components/SearchResultCards";
+import { CategorySearchResults } from "@/components/CategorySearchResults";
 
 
 const Index = () => {
@@ -22,8 +22,6 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [groupMode, setGroupMode] = useState<GroupMode>("subcategory");
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("all");
   const { t, lang } = useLang();
   const { data: stats } = useProductStats();
