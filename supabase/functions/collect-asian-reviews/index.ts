@@ -6,30 +6,24 @@ const corsHeaders = {
 
 interface CollectRequest {
   countries?: string[];
-  platforms?: string[];
   categories?: string[];
   maxPages?: number;
 }
 
-// Country → platform mapping
-const COUNTRY_PLATFORMS: Record<string, { platforms: string[]; lang: string; searchSuffix: string }> = {
-  JP: { platforms: ["amazon_jp", "youtube_jp", "trustpilot", "reviews_io"], lang: "ja", searchSuffix: "site:amazon.co.jp" },
-  SG: { platforms: ["shopee_sg", "lazada_sg", "youtube_sg", "trustpilot"], lang: "en", searchSuffix: "site:shopee.sg OR site:lazada.sg" },
-  MY: { platforms: ["shopee_my", "lazada_my", "youtube_my", "trustpilot"], lang: "ms", searchSuffix: "site:shopee.com.my OR site:lazada.com.my" },
-  ID: { platforms: ["shopee_id", "lazada_id", "youtube_id", "trustpilot"], lang: "id", searchSuffix: "site:shopee.co.id OR site:lazada.co.id" },
-  TH: { platforms: ["shopee_th", "lazada_th", "youtube_th", "trustpilot"], lang: "th", searchSuffix: "site:shopee.co.th OR site:lazada.co.th" },
-  PH: { platforms: ["shopee_ph", "lazada_ph", "youtube_ph", "trustpilot"], lang: "en", searchSuffix: "site:shopee.ph OR site:lazada.com.ph" },
-  VN: { platforms: ["shopee_vn", "lazada_vn", "youtube_vn", "trustpilot"], lang: "vi", searchSuffix: "site:shopee.vn OR site:lazada.vn" },
-  TW: { platforms: ["amazon_tw", "youtube_tw", "trustpilot", "reviews_io"], lang: "zh", searchSuffix: "site:amazon.co.jp LG" },
-  HK: { platforms: ["amazon_hk", "youtube_hk", "trustpilot", "reviews_io"], lang: "zh", searchSuffix: "LG review hong kong" },
-  IN: { platforms: ["amazon_in", "youtube_in", "trustpilot", "complaintsboard"], lang: "en", searchSuffix: "site:amazon.in" },
-  IQ: { platforms: ["complaintsboard", "trustpilot"], lang: "en", searchSuffix: "LG Iraq review" },
+const COUNTRY_CONFIG: Record<string, { lang: string; searchTerms: string[] }> = {
+  JP: { lang: "ja", searchTerms: ["LG TV review Japan", "LG OLED レビュー", "LG 冷蔵庫 レビュー", "LG gram レビュー", "LG 洗濯機 レビュー"] },
+  SG: { lang: "en", searchTerms: ["LG TV review Singapore", "LG OLED review Singapore shopee", "LG refrigerator Singapore lazada", "LG washing machine review SG"] },
+  MY: { lang: "ms", searchTerms: ["LG TV review Malaysia", "LG OLED review Malaysia shopee", "LG peti sejuk review Malaysia", "LG mesin basuh review"] },
+  ID: { lang: "id", searchTerms: ["LG TV review Indonesia", "LG OLED review Indonesia", "LG kulkas review Indonesia shopee", "LG mesin cuci review"] },
+  TH: { lang: "th", searchTerms: ["LG TV review Thailand", "LG OLED รีวิว", "LG ตู้เย็น รีวิว", "LG เครื่องซักผ้า รีวิว"] },
+  PH: { lang: "en", searchTerms: ["LG TV review Philippines", "LG OLED review Philippines shopee", "LG refrigerator Philippines lazada", "LG washing machine PH"] },
+  VN: { lang: "vi", searchTerms: ["LG TV review Vietnam", "LG OLED đánh giá", "LG tủ lạnh đánh giá shopee", "LG máy giặt đánh giá"] },
+  TW: { lang: "zh", searchTerms: ["LG TV review Taiwan", "LG OLED 評價 台灣", "LG 冰箱 評價", "LG 洗衣機 評價"] },
+  HK: { lang: "zh", searchTerms: ["LG TV review Hong Kong", "LG OLED 評價 香港", "LG 雪櫃 評價"] },
+  IN: { lang: "en", searchTerms: ["LG TV review India", "LG OLED review India amazon", "LG refrigerator review India", "LG washing machine India"] },
 };
 
-const LG_PRODUCT_CATEGORIES = [
-  "TV", "OLED", "Refrigerator", "Washing Machine", "Air Conditioner",
-  "Soundbar", "Monitor", "Laptop", "Dishwasher", "Dryer", "Microwave",
-];
+const LG_CATEGORIES = ["TV", "OLED", "Refrigerator", "Washing Machine", "Air Conditioner", "Soundbar", "Monitor", "Laptop", "Dishwasher"];
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,17 +32,17 @@ Deno.serve(async (req) => {
 
   try {
     const body: CollectRequest = await req.json().catch(() => ({}));
-    const countries = body.countries || Object.keys(COUNTRY_PLATFORMS);
-    const categories = body.categories || LG_PRODUCT_CATEGORIES;
-    const maxPages = body.maxPages || 5;
+    const countries = body.countries || Object.keys(COUNTRY_CONFIG);
+    const maxPages = body.maxPages || 3;
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+    const aiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    if (!firecrawlKey) {
+    if (!firecrawlKey || !aiKey) {
       return new Response(
-        JSON.stringify({ success: false, error: "FIRECRAWL_API_KEY not configured" }),
+        JSON.stringify({ success: false, error: "Missing API keys" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -56,16 +50,16 @@ Deno.serve(async (req) => {
     const results: Record<string, { collected: number; errors: string[] }> = {};
 
     for (const country of countries) {
-      const config = COUNTRY_PLATFORMS[country];
+      const config = COUNTRY_CONFIG[country];
       if (!config) continue;
 
       results[country] = { collected: 0, errors: [] };
 
-      for (const category of categories.slice(0, 3)) {
+      // Use country-specific search terms (limit to avoid timeout)
+      const terms = config.searchTerms.slice(0, maxPages);
+
+      for (const searchQuery of terms) {
         try {
-          // Search for LG product reviews using Firecrawl
-          const searchQuery = `LG ${category} review ${country !== "JP" ? country : "Japan"}`;
-          
           const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
             method: "POST",
             headers: {
@@ -74,30 +68,24 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               query: searchQuery,
-              limit: maxPages,
+              limit: 3,
               lang: config.lang,
               scrapeOptions: { formats: ["markdown"] },
             }),
           });
 
           if (!searchRes.ok) {
-            const errText = await searchRes.text();
-            results[country].errors.push(`Search failed for ${category}: ${errText}`);
+            results[country].errors.push(`Search failed: ${searchQuery}`);
             continue;
           }
 
           const searchData = await searchRes.json();
           const searchResults = searchData.data || [];
 
-          // Extract reviews from scraped content using AI
           for (const result of searchResults) {
-            if (!result.markdown || result.markdown.length < 50) continue;
+            if (!result.markdown || result.markdown.length < 100) continue;
 
             try {
-              // Use Lovable AI to extract structured reviews
-              const aiKey = Deno.env.get("LOVABLE_API_KEY");
-              if (!aiKey) continue;
-
               const extractionRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -109,11 +97,25 @@ Deno.serve(async (req) => {
                   messages: [
                     {
                       role: "system",
-                      content: `You extract LG Electronics product reviews from web content. Return a JSON array of reviews. Each review must have: title (string), content (string, the review text), rating (number 1-5 or null), sentiment ("positive"|"negative"|"neutral"), sentiment_score (0.0-1.0), author (string or null), product_name (string - the LG product being reviewed). Only extract actual user reviews about LG products. Skip ads, navigation, unrelated content. If no reviews found, return empty array []. Return ONLY valid JSON array, no markdown.`,
+                      content: `You extract LG Electronics product reviews from web content. Return a JSON array of reviews. Each review object must have:
+- title (string, brief summary in Korean)
+- content (string, Korean translation of the review - always translate to Korean)
+- rating (number 1-5 or null)
+- sentiment ("positive"|"negative"|"neutral")
+- sentiment_score (0.0-1.0)
+- author (string, anonymized - first char + "***")
+- product_name (string, the LG product name)
+- category (string, one of: TV, OLED TV, QNED TV, Refrigerator, Washing Machine, Air Conditioner, Soundbar, Monitor, Laptop, Dishwasher, Dryer, Vacuum, Air Purifier)
+
+Only extract actual user reviews about LG products. Skip ads, navigation, unrelated content.
+Always translate review content to Korean.
+Remove any PII (emails, phone numbers, addresses).
+If no LG reviews found, return empty array [].
+Return ONLY valid JSON array, no markdown.`,
                     },
                     {
                       role: "user",
-                      content: `Extract LG product reviews from this ${country} webpage content:\n\nURL: ${result.url}\n\n${result.markdown.slice(0, 8000)}`,
+                      content: `Extract LG product reviews from this ${country} webpage:\n\nURL: ${result.url}\n\n${result.markdown.slice(0, 6000)}`,
                     },
                   ],
                   temperature: 0.1,
@@ -124,8 +126,7 @@ Deno.serve(async (req) => {
 
               const aiData = await extractionRes.json();
               const rawText = aiData.choices?.[0]?.message?.content || "[]";
-              
-              // Parse JSON from AI response
+
               let reviews: any[] = [];
               try {
                 const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -135,41 +136,33 @@ Deno.serve(async (req) => {
                 continue;
               }
 
-              // Save reviews to DB
               for (const review of reviews) {
-                if (!review.content || review.content.length < 10) continue;
+                if (!review.content || review.content.length < 15) continue;
 
                 // Find or create product
-                const productName = review.product_name || `LG ${category}`;
-                const modelNumber = productName.toLowerCase().replace(/\s+/g, "-");
+                const productName = review.product_name || "LG Product";
+                const modelNumber = productName.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 50);
 
-                const { data: existingProduct } = await fetch(
+                const productsRes = await fetch(
                   `${supabaseUrl}/rest/v1/products?model_number=eq.${encodeURIComponent(modelNumber)}&limit=1`,
-                  {
-                    headers: {
-                      apikey: serviceKey,
-                      Authorization: `Bearer ${serviceKey}`,
-                    },
-                  }
-                ).then((r) => r.json().then((d) => ({ data: d })));
+                  { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+                );
+                const existingProducts = await productsRes.json();
 
                 let productId: string;
-                if (existingProduct && existingProduct.length > 0) {
-                  productId = existingProduct[0].id;
+                if (existingProducts?.length > 0) {
+                  productId = existingProducts[0].id;
                 } else {
-                  // Create product
                   const createRes = await fetch(`${supabaseUrl}/rest/v1/products`, {
                     method: "POST",
                     headers: {
-                      apikey: serviceKey,
-                      Authorization: `Bearer ${serviceKey}`,
-                      "Content-Type": "application/json",
-                      Prefer: "return=representation",
+                      apikey: serviceKey, Authorization: `Bearer ${serviceKey}`,
+                      "Content-Type": "application/json", Prefer: "return=representation",
                     },
                     body: JSON.stringify({
                       model_number: modelNumber,
                       display_name: productName,
-                      category: category,
+                      category: review.category || "TV",
                       is_active: true,
                     }),
                   });
@@ -178,28 +171,36 @@ Deno.serve(async (req) => {
                   if (!productId) continue;
                 }
 
-                // Determine source name
+                // Determine source
                 const sourceUrl = result.url || "";
-                let source = "web_review";
+                let source = `web_review_${country.toLowerCase()}`;
                 if (sourceUrl.includes("shopee")) source = `shopee_${country.toLowerCase()}`;
                 else if (sourceUrl.includes("lazada")) source = `lazada_${country.toLowerCase()}`;
                 else if (sourceUrl.includes("amazon")) source = `amazon_${country.toLowerCase()}`;
+                else if (sourceUrl.includes("youtube")) source = `youtube_${country.toLowerCase()}`;
                 else if (sourceUrl.includes("trustpilot")) source = "trustpilot";
                 else if (sourceUrl.includes("reviews.io")) source = "reviews_io";
-                else if (sourceUrl.includes("complaintsboard")) source = "complaintsboard";
-                else if (sourceUrl.includes("youtube")) source = `youtube_${country.toLowerCase()}`;
-                else source = `web_review_${country.toLowerCase()}`;
 
-                // Insert review with dedup check
-                const externalId = `${source}_${btoa(review.content.slice(0, 100)).slice(0, 40)}`;
+                // Dedup
+                // Create hash-based external ID (handles non-ASCII)
+                const encoder = new TextEncoder();
+                const data = encoder.encode(`${source}:${review.content.slice(0, 100)}`);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+                const hashArr = Array.from(new Uint8Array(hashBuffer));
+                const externalId = `${source}_${hashArr.map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32)}`;
+
+                const dupCheck = await fetch(
+                  `${supabaseUrl}/rest/v1/reviews?external_id=eq.${encodeURIComponent(externalId)}&limit=1`,
+                  { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+                );
+                const dups = await dupCheck.json();
+                if (dups?.length > 0) continue;
 
                 await fetch(`${supabaseUrl}/rest/v1/reviews`, {
                   method: "POST",
                   headers: {
-                    apikey: serviceKey,
-                    Authorization: `Bearer ${serviceKey}`,
-                    "Content-Type": "application/json",
-                    Prefer: "return=minimal",
+                    apikey: serviceKey, Authorization: `Bearer ${serviceKey}`,
+                    "Content-Type": "application/json", Prefer: "return=minimal",
                   },
                   body: JSON.stringify({
                     product_id: productId,
@@ -220,26 +221,25 @@ Deno.serve(async (req) => {
                 results[country].collected++;
               }
             } catch (innerErr) {
-              results[country].errors.push(`Extract error: ${String(innerErr).slice(0, 100)}`);
+              results[country].errors.push(`Extract: ${String(innerErr).slice(0, 80)}`);
             }
           }
-        } catch (catErr) {
-          results[country].errors.push(`Category ${category}: ${String(catErr).slice(0, 100)}`);
+        } catch (searchErr) {
+          results[country].errors.push(`Search: ${String(searchErr).slice(0, 80)}`);
         }
       }
     }
 
-    // Log collection
+    // Log
     const totalCollected = Object.values(results).reduce((s, r) => s + r.collected, 0);
     await fetch(`${supabaseUrl}/rest/v1/collection_logs`, {
       method: "POST",
       headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
+        apikey: serviceKey, Authorization: `Bearer ${serviceKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        source: `asian_reviews_${countries.join("_")}`,
+        source: `asian_reviews`,
         status: "completed",
         items_collected: totalCollected,
         completed_at: new Date().toISOString(),
