@@ -229,10 +229,20 @@ function stripPII(text: string): string {
 export function toReviewFormat(dbReview: DBReview) {
   const isLgeCom = dbReview.source?.startsWith("lge_com");
 
-  // For LG.com reviews: strip PII but keep content for keyword extraction
-  const displayText = isLgeCom
-    ? stripPII(dbReview.content)
-    : dbReview.content;
+  // For LG.com reviews: never expose original text — show sentiment-based summary only
+  let displayText: string;
+  if (isLgeCom) {
+    const sentLabel = dbReview.sentiment === "positive"
+      ? "긍정적 사용 경험이 확인된 리뷰입니다."
+      : dbReview.sentiment === "negative"
+        ? "불만 또는 개선 요청이 확인된 리뷰입니다."
+        : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+    displayText = dbReview.title
+      ? `${dbReview.sentiment === "positive" ? "긍정" : dbReview.sentiment === "negative" ? "부정" : "중립"} 반응 — ${dbReview.title}`
+      : sentLabel;
+  } else {
+    displayText = dbReview.content;
+  }
 
   return {
     id: dbReview.id,
@@ -241,7 +251,7 @@ export function toReviewFormat(dbReview: DBReview) {
     text: displayText,
     title: dbReview.title || undefined,
     date: dbReview.published_at?.split("T")[0] || dbReview.collected_at.split("T")[0],
-    rating: dbReview.rating ?? undefined,
+    rating: isLgeCom ? undefined : (dbReview.rating ?? undefined),
     sentiment: (dbReview.sentiment || "neutral") as "positive" | "negative" | "neutral",
     score: dbReview.sentiment_score ?? 0.5,
   };
