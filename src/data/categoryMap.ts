@@ -150,16 +150,21 @@ export function resolveCategoryMeta(category: string, subCategory?: string, disp
       if (tvType) return CATEGORY_MAP[tvType];
     }
     // Refrigerators
-    if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth")) return CATEGORY_MAP["French Door Refrigerator"];
+    if (subLower.includes("instaview") || subLower.includes("french door") || subLower.includes("craft ice") || subLower.includes("counter-depth") || subLower.includes("counter depth") || subLower.includes("4-door")) return CATEGORY_MAP["French Door Refrigerator"];
     if (subLower.includes("side-by-side") || subLower.includes("side by side")) return CATEGORY_MAP["Side-by-Side Refrigerator"];
     if (subLower.includes("column")) return CATEGORY_MAP["Column Refrigerator"];
     if (subLower.includes("top freezer")) return CATEGORY_MAP["Top Freezer Refrigerator"];
     if (subLower.includes("bottom freezer")) return CATEGORY_MAP["Bottom Freezer Refrigerator"];
+    if (subLower.includes("kimchi") || subLower.includes("specialty")) return CATEGORY_MAP["Refrigerator"];
     // Laundry
-    if (subLower.includes("washtower")) return CATEGORY_MAP["WashTower"];
+    if (subLower.includes("washtower") || subLower.includes("washcombo") || subLower.includes("wash combo")) return CATEGORY_MAP["WashTower"];
     if (subLower.includes("turbowash") || subLower.includes("front load")) return CATEGORY_MAP["Washer"];
-    if (subLower.includes("heat pump") || subLower.includes("electric dryer") || subLower.includes("gas dryer")) return CATEGORY_MAP["Dryer"];
+    if (subLower.includes("top load")) return CATEGORY_MAP["Washer"];
+    if (subLower.includes("heat pump") || subLower.includes("electric dryer") || subLower.includes("gas dryer") || subLower.includes("electric") || subLower.includes("gas")) {
+      if (category.toLowerCase().includes("dryer")) return CATEGORY_MAP["Dryer"];
+    }
     if (subLower.includes("styler")) return CATEGORY_MAP["Styler"];
+    if (subLower.includes("low profile")) return CATEGORY_MAP["Microwave"];
     // Kitchen
     if (subLower.includes("quadwash")) return CATEGORY_MAP["Dishwasher"];
     if (subLower.includes("wall oven")) return CATEGORY_MAP["Wall Oven"];
