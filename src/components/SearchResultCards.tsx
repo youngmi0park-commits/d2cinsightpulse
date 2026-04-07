@@ -14,6 +14,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
+import { isPrivacyRestricted, isAllPrivacyRestricted } from "@/lib/reviewUtils";
 
 
 export interface AnalyzedProduct {
@@ -164,7 +165,7 @@ function excerpt(text: string, maxLen = 120): string {
 
 /** Check if text is a placeholder (no real content) */
 function isPlaceholder(text: string): boolean {
-  return /개인정보 보호 정책|LG 리뷰 — 감성/.test(text);
+  return /개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(text);
 }
 
 /** Display-ready excerpt — uses title fallback for placeholder reviews; LG.com shows sentiment summary only */
