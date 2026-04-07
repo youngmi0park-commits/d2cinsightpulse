@@ -5,7 +5,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
   TrendingUp, Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
-  ExternalLink, FileText, Search, Globe, Image as ImageIcon,
+  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -253,7 +253,7 @@ function generateAiPrompt(tool: string, pName: string, sentiment: SentimentResul
 }
 
 export function MarketingHub({
-  geoMessages,
+  geoMessages: _geoMessages,
   productName,
   displayName,
   totalReviews,
