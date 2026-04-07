@@ -266,6 +266,7 @@ export function CategorySearchResults({ results, searchQuery, selectedCountry }:
 
       {/* Two-column layout */}
       {effectiveCategory && activeGroup && (
+        <>
         <div className="flex flex-col lg:flex-row gap-5">
           {/* LEFT: Category Hub Card */}
           <CategoryHubCard
