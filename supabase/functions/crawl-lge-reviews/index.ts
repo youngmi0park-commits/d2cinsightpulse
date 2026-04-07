@@ -50,6 +50,33 @@ const ISSUE_TAG_MAP: Record<string, { keywords: string[]; tag: string }[]> = {
     { keywords: ["smell", "odor", "pet"], tag: "Odor_Control" },
     { keywords: ["coverage", "room size", "sq ft"], tag: "Coverage_Area" },
   ],
+  Dishwasher: [
+    { keywords: ["quadwash", "quad wash"], tag: "QuadWash_Feature" },
+    { keywords: ["truesteam", "true steam"], tag: "TrueSteam_Feature" },
+    { keywords: ["noise", "quiet", "loud", "decibel"], tag: "Noise_Level" },
+    { keywords: ["dry", "drying", "heat dry"], tag: "Drying_Performance" },
+    { keywords: ["rack", "3rd rack", "third rack"], tag: "Rack_Design" },
+    { keywords: ["leak", "water"], tag: "Leak_Issue" },
+  ],
+  Vacuum: [
+    { keywords: ["suction", "power", "motor"], tag: "Suction_Power" },
+    { keywords: ["battery", "runtime", "charge"], tag: "Battery_Life" },
+    { keywords: ["cordzero", "cordless"], tag: "CordZero_Feature" },
+    { keywords: ["kompressor", "compress"], tag: "Kompressor_Feature" },
+    { keywords: ["mop", "mopping"], tag: "Mop_Feature" },
+    { keywords: ["auto empty", "dustbin", "tower"], tag: "Auto_Empty" },
+  ],
+  Range: [
+    { keywords: ["air fry", "air fryer"], tag: "AirFry_Feature" },
+    { keywords: ["instaview", "knock"], tag: "InstaView_Feature" },
+    { keywords: ["probake", "convection"], tag: "ProBake_Feature" },
+    { keywords: ["temperature", "heat", "uneven"], tag: "Temperature_Issue" },
+  ],
+  Microwave: [
+    { keywords: ["sensor cook", "sensor"], tag: "SensorCook_Feature" },
+    { keywords: ["low profile", "slim"], tag: "LowProfile_Design" },
+    { keywords: ["thinq", "smart", "wifi"], tag: "Smart_Feature" },
+  ],
 };
 const SEARCH_QUERIES: Record<string, Record<string, string[]>> = {
   Refrigerator: {
