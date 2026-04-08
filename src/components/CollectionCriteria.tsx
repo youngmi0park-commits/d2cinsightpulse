@@ -46,11 +46,9 @@ const COUNTRY_FLAGS: Record<string, string> = {
   IQ: "🇮🇶", Global: "🌐", Other: "🔹",
 };
 
-// Estimated collectible reviews since Jan 2025 (excluding <20 char content & duplicates)
-const BV_2025_US = 9500;
-const BV_2025_UK = 5400;
-const BV_TOTAL_US = 435995;
-const BV_TOTAL_UK = 48093;
+const BV_AVAILABLE: Record<string, number> = {
+  US: 121353, UK: 68862, DE: 41097, AU: 17842, IN: 7761, TH: 5503, TW: 4633, JP: 1322,
+};
 
 const criteria: CriteriaItem[] = [
   {
@@ -58,7 +56,7 @@ const criteria: CriteriaItem[] = [
     titleEn: "Collection Channels",
     titleKo: "수집 채널",
     itemsEn: [
-      "LG.com (lg.com/us, lg.com/uk) — Official LG product pages & customer reviews (US & UK: Bazaarvoice Conversations API Production 연동)",
+      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — Official LG product pages & customer reviews (8 countries: Bazaarvoice Conversations API Production 연동)",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
       "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR, JP, SG)",
       "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 수집 (US 핵심 채널)",
@@ -90,7 +88,7 @@ const criteria: CriteriaItem[] = [
       "🆕 Stack Exchange / SuperUser — Technical Q&A for LG product troubleshooting (RSS·API)",
     ],
     itemsKo: [
-      "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지 및 고객 리뷰 (US & UK: Bazaarvoice Conversations API Production 연동)",
+      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — LG 공식 제품 페이지 및 고객 리뷰 (8개국: Bazaarvoice Conversations API Production 연동)",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
       "Amazon — 'Verified Purchase' 신뢰 시그널 포함 제품 리뷰 (US, UK, CA, DE, IN, FR, JP, SG)",
       "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 (US 핵심 채널)",
