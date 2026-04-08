@@ -184,6 +184,30 @@ export function ReviewCollectButtons() {
           functionName = "bv-collect-reviews";
           body = { locale: "en_GB", runType: "resume", batchSize: 15 };
           break;
+        case "bv_collect_in":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_IN", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_tw":
+          functionName = "bv-collect-reviews";
+          body = { locale: "zh_TW", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_jp":
+          functionName = "bv-collect-reviews";
+          body = { locale: "ja_JP", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_th":
+          functionName = "bv-collect-reviews";
+          body = { locale: "th_TH", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_de":
+          functionName = "bv-collect-reviews";
+          body = { locale: "de_DE", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_au":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_AU", runType: "resume", batchSize: 15 };
+          break;
         case "bv_sync":
           functionName = "bv-incremental-sync";
           body = {};
