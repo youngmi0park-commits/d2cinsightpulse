@@ -521,7 +521,7 @@ const criteria: CriteriaItem[] = [
 
 export const CollectionCriteria = () => {
   const { t } = useLang();
-  const counts = useLgComCounts();
+  const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
 
   // Countries with actual data
@@ -538,20 +538,30 @@ export const CollectionCriteria = () => {
       <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
         {/* Live collection stats */}
         <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
-          <h4 className="text-sm font-semibold">{t("📊 Collection Status by Country", "📊 국가별 수집 현황")}</h4>
-          <div className="grid grid-cols-1 gap-2.5 text-xs">
-            <div>
-              <span className="text-muted-foreground">🇺🇸 {t("US LG.com", "미국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 — `)}
-              <span className="font-bold text-foreground">{counts.us.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">🇬🇧 {t("UK LG.com", "영국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 — `)}
-              <span className="font-bold text-foreground">{counts.uk.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-            </div>
+          <h4 className="text-sm font-semibold">{t("📊 LG.com (Bazaarvoice) Collection Status", "📊 LG.com (Bazaarvoice) 국가별 수집 현황")}</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {Object.entries(BV_AVAILABLE)
+              .sort(([, a], [, b]) => b - a)
+              .map(([country, available]) => {
+                const collected = lgComCounts[country] || 0;
+                const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
+                return (
+                  <div key={country} className="rounded-lg border border-border bg-background/60 p-2.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold">{COUNTRY_FLAGS[country]} {country}</span>
+                      <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      <span className="font-bold text-foreground">{collected.toLocaleString()}</span> / {available.toLocaleString()}
+                    </p>
+                  </div>
+                );
+              })}
           </div>
-          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice Conversations API (Production) · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
+          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice Conversations API (Production) · 8 countries · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
 
           {/* Live country badges */}
           {activeCountries.length > 0 && (
