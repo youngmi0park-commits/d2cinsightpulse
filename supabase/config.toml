@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.bv-incremental-sync]
 verify_jwt = false
+
+[functions.bv-auto-collect]
+verify_jwt = false
