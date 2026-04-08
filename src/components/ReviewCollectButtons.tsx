@@ -226,6 +226,14 @@ export function ReviewCollectButtons() {
           functionName = "bv-incremental-sync";
           body = {};
           break;
+        case "bv_auto_full":
+          functionName = "bv-auto-collect";
+          body = { mode: "full" };
+          break;
+        case "bv_auto_sweep":
+          functionName = "bv-auto-collect";
+          body = { mode: "sweep" };
+          break;
         default:
           functionName = "collect-reviews";
           body = { channels: [channelId] };
