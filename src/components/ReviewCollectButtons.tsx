@@ -51,6 +51,48 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     descriptionKo: "BV UK 전체 페이지네이션 수집 (15개 제품 배치)",
   },
   {
+    id: "bv_collect_in",
+    label: "BV Collect IN",
+    icon: Download,
+    description: "Full pagination collect from BV India",
+    descriptionKo: "BV 인도 전체 페이지네이션 수집",
+  },
+  {
+    id: "bv_collect_tw",
+    label: "BV Collect TW",
+    icon: Download,
+    description: "Full pagination collect from BV Taiwan",
+    descriptionKo: "BV 대만 전체 페이지네이션 수집",
+  },
+  {
+    id: "bv_collect_jp",
+    label: "BV Collect JP",
+    icon: Download,
+    description: "Full pagination collect from BV Japan",
+    descriptionKo: "BV 일본 전체 페이지네이션 수집",
+  },
+  {
+    id: "bv_collect_th",
+    label: "BV Collect TH",
+    icon: Download,
+    description: "Full pagination collect from BV Thailand",
+    descriptionKo: "BV 태국 전체 페이지네이션 수집",
+  },
+  {
+    id: "bv_collect_de",
+    label: "BV Collect DE",
+    icon: Download,
+    description: "Full pagination collect from BV Germany",
+    descriptionKo: "BV 독일 전체 페이지네이션 수집",
+  },
+  {
+    id: "bv_collect_au",
+    label: "BV Collect AU",
+    icon: Download,
+    description: "Full pagination collect from BV Australia",
+    descriptionKo: "BV 호주 전체 페이지네이션 수집",
+  },
+  {
     id: "bv_sync",
     label: "BV Daily Sync",
     icon: Download,
@@ -141,6 +183,30 @@ export function ReviewCollectButtons() {
         case "bv_collect_uk":
           functionName = "bv-collect-reviews";
           body = { locale: "en_GB", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_in":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_IN", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_tw":
+          functionName = "bv-collect-reviews";
+          body = { locale: "zh_TW", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_jp":
+          functionName = "bv-collect-reviews";
+          body = { locale: "ja_JP", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_th":
+          functionName = "bv-collect-reviews";
+          body = { locale: "th_TH", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_de":
+          functionName = "bv-collect-reviews";
+          body = { locale: "de_DE", runType: "resume", batchSize: 15 };
+          break;
+        case "bv_collect_au":
+          functionName = "bv-collect-reviews";
+          body = { locale: "en_AU", runType: "resume", batchSize: 15 };
           break;
         case "bv_sync":
           functionName = "bv-incremental-sync";

@@ -28,6 +28,12 @@ Deno.serve(async (req) => {
   const locales = [
     { locale: "en_US", region: "us", key: Deno.env.get("BAZAARVOICE_US_API_KEY")! },
     { locale: "en_GB", region: "uk", key: Deno.env.get("BAZAARVOICE_UK_API_KEY")! },
+    { locale: "en_IN", region: "in", key: Deno.env.get("BAZAARVOICE_IN_API_KEY")! },
+    { locale: "zh_TW", region: "tw", key: Deno.env.get("BAZAARVOICE_TW_API_KEY")! },
+    { locale: "ja_JP", region: "jp", key: Deno.env.get("BAZAARVOICE_JP_API_KEY")! },
+    { locale: "th_TH", region: "th", key: Deno.env.get("BAZAARVOICE_TH_API_KEY")! },
+    { locale: "de_DE", region: "de", key: Deno.env.get("BAZAARVOICE_DE_API_KEY")! },
+    { locale: "en_AU", region: "au", key: Deno.env.get("BAZAARVOICE_AU_API_KEY")! },
   ].filter(l => !!l.key);
 
   // Reviews submitted in the last 25 hours

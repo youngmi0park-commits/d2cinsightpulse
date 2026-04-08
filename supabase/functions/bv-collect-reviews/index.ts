@@ -28,10 +28,22 @@ Deno.serve(async (req) => {
     batchSize = DEFAULT_BATCH,
   } = await req.json().catch(() => ({}));
 
-  const passkey = locale === "en_US"
-    ? Deno.env.get("BAZAARVOICE_US_API_KEY")!
-    : Deno.env.get("BAZAARVOICE_UK_API_KEY")!;
-  const region = locale === "en_US" ? "us" : "uk";
+  const LOCALE_KEY_MAP: Record<string, string> = {
+    en_US: "BAZAARVOICE_US_API_KEY",
+    en_GB: "BAZAARVOICE_UK_API_KEY",
+    en_IN: "BAZAARVOICE_IN_API_KEY",
+    zh_TW: "BAZAARVOICE_TW_API_KEY",
+    ja_JP: "BAZAARVOICE_JP_API_KEY",
+    th_TH: "BAZAARVOICE_TH_API_KEY",
+    de_DE: "BAZAARVOICE_DE_API_KEY",
+    en_AU: "BAZAARVOICE_AU_API_KEY",
+  };
+  const LOCALE_REGION_MAP: Record<string, string> = {
+    en_US: "us", en_GB: "uk", en_IN: "in", zh_TW: "tw",
+    ja_JP: "jp", th_TH: "th", de_DE: "de", en_AU: "au",
+  };
+  const passkey = Deno.env.get(LOCALE_KEY_MAP[locale] ?? "BAZAARVOICE_US_API_KEY")!;
+  const region = LOCALE_REGION_MAP[locale] ?? "us";
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,

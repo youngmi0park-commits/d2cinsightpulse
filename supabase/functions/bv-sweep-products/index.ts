@@ -13,9 +13,17 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const { locale = "en_US" } = await req.json().catch(() => ({}));
-  const passkey = locale === "en_US"
-    ? Deno.env.get("BAZAARVOICE_US_API_KEY")!
-    : Deno.env.get("BAZAARVOICE_UK_API_KEY")!;
+  const LOCALE_KEY_MAP: Record<string, string> = {
+    en_US: "BAZAARVOICE_US_API_KEY",
+    en_GB: "BAZAARVOICE_UK_API_KEY",
+    en_IN: "BAZAARVOICE_IN_API_KEY",
+    zh_TW: "BAZAARVOICE_TW_API_KEY",
+    ja_JP: "BAZAARVOICE_JP_API_KEY",
+    th_TH: "BAZAARVOICE_TH_API_KEY",
+    de_DE: "BAZAARVOICE_DE_API_KEY",
+    en_AU: "BAZAARVOICE_AU_API_KEY",
+  };
+  const passkey = Deno.env.get(LOCALE_KEY_MAP[locale] ?? "BAZAARVOICE_US_API_KEY")!;
 
   if (!passkey) {
     return new Response(JSON.stringify({ success: false, error: "Missing BV API key for " + locale }),
