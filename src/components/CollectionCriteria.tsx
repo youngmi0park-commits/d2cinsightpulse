@@ -13,13 +13,13 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     supabase.rpc("get_lgcom_country_counts").then((countRes) => {
       const data = countRes.data || [];
-      const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
-      const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
-      setCounts({ us, uk });
+      const map: Record<string, number> = {};
+      data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
+      setCounts(map);
     });
   }, []);
   return counts;
