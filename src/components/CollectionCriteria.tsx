@@ -13,13 +13,13 @@ interface CriteriaItem {
 
 // Live collection counts hook
 function useLgComCounts() {
-  const [counts, setCounts] = useState<{ us: number; uk: number }>({ us: 0, uk: 0 });
+  const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     supabase.rpc("get_lgcom_country_counts").then((countRes) => {
       const data = countRes.data || [];
-      const us = Number(data.find((d: any) => d.country === "US")?.count || 0);
-      const uk = Number(data.find((d: any) => d.country === "UK")?.count || 0);
-      setCounts({ us, uk });
+      const map: Record<string, number> = {};
+      data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
+      setCounts(map);
     });
   }, []);
   return counts;
@@ -46,11 +46,9 @@ const COUNTRY_FLAGS: Record<string, string> = {
   IQ: "🇮🇶", Global: "🌐", Other: "🔹",
 };
 
-// Estimated collectible reviews since Jan 2025 (excluding <20 char content & duplicates)
-const BV_2025_US = 9500;
-const BV_2025_UK = 5400;
-const BV_TOTAL_US = 435995;
-const BV_TOTAL_UK = 48093;
+const BV_AVAILABLE: Record<string, number> = {
+  US: 121353, UK: 68862, DE: 41097, AU: 17842, IN: 7761, TH: 5503, TW: 4633, JP: 1322,
+};
 
 const criteria: CriteriaItem[] = [
   {
@@ -58,7 +56,7 @@ const criteria: CriteriaItem[] = [
     titleEn: "Collection Channels",
     titleKo: "수집 채널",
     itemsEn: [
-      "LG.com (lg.com/us, lg.com/uk) — Official LG product pages & customer reviews (US & UK: Bazaarvoice Conversations API Production 연동)",
+      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — Official LG product pages & customer reviews (8 countries: Bazaarvoice Conversations API Production 연동)",
       "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
       "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR, JP, SG)",
       "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 수집 (US 핵심 채널)",
@@ -90,7 +88,7 @@ const criteria: CriteriaItem[] = [
       "🆕 Stack Exchange / SuperUser — Technical Q&A for LG product troubleshooting (RSS·API)",
     ],
     itemsKo: [
-      "LG.com (lg.com/us, lg.com/uk) — LG 공식 제품 페이지 및 고객 리뷰 (US & UK: Bazaarvoice Conversations API Production 연동)",
+      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — LG 공식 제품 페이지 및 고객 리뷰 (8개국: Bazaarvoice Conversations API Production 연동)",
       "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
       "Amazon — 'Verified Purchase' 신뢰 시그널 포함 제품 리뷰 (US, UK, CA, DE, IN, FR, JP, SG)",
       "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 (US 핵심 채널)",
@@ -218,28 +216,32 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "🇺🇸 United States [LGEUS] — LG.com (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
       "🇬🇧 United Kingdom [LGEUK] — LG.com (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇯🇵 Japan [LGEJP] — Amazon JP + YouTube JP + Web Reviews (Firecrawl)",
-      "🇮🇳 India [LGEIN] — Amazon IN + YouTube IN + Web Reviews (Firecrawl)",
-      "🇹🇭 Thailand [LGETH] — Shopee TH + Lazada TH + YouTube TH + Web Reviews",
+      "🇩🇪 Germany [LGEDE] — 🆕 LG.com (Bazaarvoice) + Amazon DE + YouTube DE + Web Reviews",
+      "🇦🇺 Australia [LGEAU] — 🆕 LG.com (Bazaarvoice) + YouTube AU + Web Reviews",
+      "🇮🇳 India [LGEIN] — 🆕 LG.com (Bazaarvoice) + Amazon IN + YouTube IN + Web Reviews",
+      "🇯🇵 Japan [LGEJP] — 🆕 LG.com (Bazaarvoice) + Amazon JP + YouTube JP + Web Reviews",
+      "🇹🇼 Taiwan [LGETW] — 🆕 LG.com (Bazaarvoice) + Amazon Global + YouTube TW + Reviews.io",
+      "🇹🇭 Thailand [LGETH] — 🆕 LG.com (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
       "🇸🇬 Singapore [LGESG] — Shopee SG + Lazada SG + YouTube SG + Web Reviews",
       "🇻🇳 Vietnam [LGEVN] — Shopee VN + Lazada VN + YouTube VN + Web Reviews",
       "🇭🇰 Hong Kong [LGEHK] — Amazon Global + YouTube HK + Reviews.io",
-      "🇹🇼 Taiwan [LGETW] — Amazon Global + YouTube TW + Reviews.io",
       "🌐 Global — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇩🇪 DE · 🇫🇷 FR · 🇦🇺 AU · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
+      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇫🇷 FR · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
     ],
     itemsKo: [
       "🇺🇸 미국 [LGEUS] — LG.com (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
       "🇬🇧 영국 [LGEUK] — LG.com (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇯🇵 일본 [LGEJP] — Amazon JP + YouTube JP + 웹 리뷰 (Firecrawl)",
-      "🇮🇳 인도 [LGEIN] — Amazon IN + YouTube IN + 웹 리뷰 (Firecrawl)",
-      "🇹🇭 태국 [LGETH] — Shopee TH + Lazada TH + YouTube TH + 웹 리뷰",
+      "🇩🇪 독일 [LGEDE] — 🆕 LG.com (Bazaarvoice) + Amazon DE + YouTube DE + 웹 리뷰",
+      "🇦🇺 호주 [LGEAU] — 🆕 LG.com (Bazaarvoice) + YouTube AU + 웹 리뷰",
+      "🇮🇳 인도 [LGEIN] — 🆕 LG.com (Bazaarvoice) + Amazon IN + YouTube IN + 웹 리뷰",
+      "🇯🇵 일본 [LGEJP] — 🆕 LG.com (Bazaarvoice) + Amazon JP + YouTube JP + 웹 리뷰",
+      "🇹🇼 대만 [LGETW] — 🆕 LG.com (Bazaarvoice) + Amazon 글로벌 + YouTube TW + Reviews.io",
+      "🇹🇭 태국 [LGETH] — 🆕 LG.com (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
       "🇸🇬 싱가포르 [LGESG] — Shopee SG + Lazada SG + YouTube SG + 웹 리뷰",
       "🇻🇳 베트남 [LGEVN] — Shopee VN + Lazada VN + YouTube VN + 웹 리뷰",
       "🇭🇰 홍콩 [LGEHK] — Amazon 글로벌 + YouTube HK + Reviews.io",
-      "🇹🇼 대만 [LGETW] — Amazon 글로벌 + YouTube TW + Reviews.io",
       "🌐 글로벌 — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇩🇪 DE · 🇫🇷 FR · 🇦🇺 AU · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
+      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇫🇷 FR · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
     ],
   },
   {
@@ -269,7 +271,7 @@ const criteria: CriteriaItem[] = [
       "⏰ Automated daily collection at 07:00 AM KST (22:00 UTC) via pg_cron scheduled job",
       "📦 collect-reviews runs at 07:00 KST → collect-youtube-comments follows at 07:05 KST",
       "🆕 collect-asian-reviews runs at 07:10 KST → Firecrawl-based scraping for Shopee/Lazada/Reviews.io/ComplaintsBoard",
-      "🆕 LG.com review collection: Bazaarvoice API (US & UK) — No date restriction, all categories, daily incremental",
+      "🆕 LG.com review collection: Bazaarvoice API (US, UK, IN, TW, JP, TH, DE, AU — 8 countries) — No date restriction, all categories, daily incremental",
       "Trending dashboard updates automatically after each collection cycle (same timing)",
       "Weekly aggregation period: Last 7 days rolling window for trend snapshots & keywords",
       "Based on last 12 months data for long-term analysis (rolling update)",
@@ -279,7 +281,7 @@ const criteria: CriteriaItem[] = [
       "⏰ 매일 오전 7:00 KST (UTC 22:00)에 pg_cron 스케줄링으로 자동 일괄 수집",
       "📦 collect-reviews 07:00 KST 실행 → collect-youtube-comments 07:05 KST 후속 실행",
       "🆕 collect-asian-reviews 07:10 KST 실행 → Shopee/Lazada/Reviews.io/ComplaintsBoard Firecrawl 기반 스크래핑",
-      "🆕 LG.com 리뷰 수집: Bazaarvoice API (US & UK) — 작성시점 제한 없음, 전 카테고리, 매일 증분 수집",
+      "🆕 LG.com 리뷰 수집: Bazaarvoice API (US, UK, IN, TW, JP, TH, DE, AU — 8개국) — 작성시점 제한 없음, 전 카테고리, 매일 증분 수집",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
       "주간 집계 기간: 최근 7일 롤링 윈도우 기준 트렌드 스냅샷 및 키워드 추출",
       "장기 분석을 위한 최근 12개월 데이터 기준 (롤링 업데이트)",
@@ -523,7 +525,7 @@ const criteria: CriteriaItem[] = [
 
 export const CollectionCriteria = () => {
   const { t } = useLang();
-  const counts = useLgComCounts();
+  const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
 
   // Countries with actual data
@@ -540,20 +542,30 @@ export const CollectionCriteria = () => {
       <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
         {/* Live collection stats */}
         <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
-          <h4 className="text-sm font-semibold">{t("📊 Collection Status by Country", "📊 국가별 수집 현황")}</h4>
-          <div className="grid grid-cols-1 gap-2.5 text-xs">
-            <div>
-              <span className="text-muted-foreground">🇺🇸 {t("US LG.com", "미국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_US.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_US.toLocaleString()}건 — `)}
-              <span className="font-bold text-foreground">{counts.us.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">🇬🇧 {t("UK LG.com", "영국 LG.com")}</span>{" "}
-              {t(`Total ${BV_TOTAL_UK.toLocaleString()} reviews — `, `총 누적 리뷰 ${BV_TOTAL_UK.toLocaleString()}건 — `)}
-              <span className="font-bold text-foreground">{counts.uk.toLocaleString()}{t(" collected", "건 수집 완료")}</span>
-            </div>
+          <h4 className="text-sm font-semibold">{t("📊 LG.com (Bazaarvoice) Collection Status", "📊 LG.com (Bazaarvoice) 국가별 수집 현황")}</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {Object.entries(BV_AVAILABLE)
+              .sort(([, a], [, b]) => b - a)
+              .map(([country, available]) => {
+                const collected = lgComCounts[country] || 0;
+                const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
+                return (
+                  <div key={country} className="rounded-lg border border-border bg-background/60 p-2.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold">{COUNTRY_FLAGS[country]} {country}</span>
+                      <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
+                      <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      <span className="font-bold text-foreground">{collected.toLocaleString()}</span> / {available.toLocaleString()}
+                    </p>
+                  </div>
+                );
+              })}
           </div>
-          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice Conversations API (Production) · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
+          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice Conversations API (Production) · 8 countries · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
 
           {/* Live country badges */}
           {activeCountries.length > 0 && (
