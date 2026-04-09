@@ -18,8 +18,8 @@ interface NewsletterData {
   topPositiveKeyword: string; topPositiveCount: number;
   topNegativeKeyword: string; topNegativeCount: number;
   topProduct: string; topProductCount: number;
-  opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[];
-  trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
+  opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
+  trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
 }
 
 /* ───── Channel color map ───── */
