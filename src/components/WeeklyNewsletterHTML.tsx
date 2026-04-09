@@ -93,6 +93,7 @@ function useNewsletterData() {
           desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
           count: tp.mention_count,
           delta: `${chg > 0 ? "+" : ""}${chg}%`,
+          country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 US",
         });
       }
 
@@ -103,6 +104,7 @@ function useNewsletterData() {
         delta: Number(k.change_percent) || 0,
         type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
         sentiment: k.sentiment,
+        countries: (k.related_countries as string[] | null)?.length ? (k.related_countries as string[]) : ["Global"],
       }));
 
       return {
