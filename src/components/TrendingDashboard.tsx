@@ -264,6 +264,18 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         negative: "커뮤니티 모니터링 강화 · GEO 방어 FAQ 선제 배치",
       };
 
+      // Country mapping from relatedCountries or source inference
+      const FLAG_MAP: Record<string, string> = {
+        US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺",
+        IN: "🇮🇳", TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭",
+        SG: "🇸🇬", MY: "🇲🇾", PH: "🇵🇭", ID: "🇮🇩",
+        VN: "🇻🇳", CA: "🇨🇦", FR: "🇫🇷", BR: "🇧🇷",
+        MX: "🇲🇽", HK: "🇭🇰", Global: "🌐",
+      };
+      const countries = (kw.relatedCountries && kw.relatedCountries.length > 0)
+        ? kw.relatedCountries.map(c => `${FLAG_MAP[c] || "🌐"} ${c}`)
+        : ["🌐 Global"];
+
       return {
         keyword: kw.keyword,
         count: kw.count,
@@ -271,6 +283,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         type,
         sentiment: kw.sentiment,
         channels,
+        countries,
         positivePct,
         marketingHint: hints[kw.sentiment] || "OLED 히트 'lifelike picture' GEO·SEO 키워드로 제작 검토",
       };
