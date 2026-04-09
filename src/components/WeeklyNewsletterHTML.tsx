@@ -49,8 +49,8 @@ function useNewsletterData() {
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
-        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
-        supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
+        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent, related_countries").order("count", { ascending: false }).limit(20),
+        supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, source, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
       ]);
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
