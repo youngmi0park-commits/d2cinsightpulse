@@ -369,6 +369,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       items.push({
         tag: "amplify",
         channel: `LG.com · ${item.category}`,
+        country: "🇺🇸 US",
         title: `${item.product} "${topPosKw?.keyword || 'excellent'}" 긍정 급증`,
         description: item.positive_msg,
         count: topPosKw?.count || lgcomPos[0]?.count || 0,
@@ -381,9 +382,11 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
     // Negative fix items
     for (const item of [...lgcomTakeaway, ...redditTakeaway].filter(t => t.negative_msg).slice(0, 2)) {
+      const isLgcom = lgcomTakeaway.includes(item);
       items.push({
         tag: "fix",
-        channel: `LG.com · ${item.category}`,
+        channel: `${isLgcom ? "LG.com" : "Reddit"} · ${item.category}`,
+        country: isLgcom ? "🇺🇸 US" : "🌐 Global",
         title: `${item.product} 부정 리뷰 급증`,
         description: item.negative_msg,
         count: lgcomNeg[0]?.count || topNegKw?.count || 0,
@@ -399,6 +402,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       items.push({
         tag: "watch",
         channel: `Reddit · ${item.category}`,
+        country: "🌐 Global",
         title: `${item.product} 커뮤니티 언급 증가`,
         description: item.marketer_action,
         count: redditPos[0]?.count || redditNeg[0]?.count || 0,
