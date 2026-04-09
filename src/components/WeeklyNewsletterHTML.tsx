@@ -330,6 +330,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
                   </tr></table>
                   <div style="font-size:20px;font-weight:800;color:${valColor};margin-top:6px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
                   <div style="font-size:10px;font-weight:600;color:${deltaColor};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+                  ${sig.countries?.length ? `<div style="margin-top:4px;">${sig.countries.map(c => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-right:2px;">${c}</span>`).join("")}</div>` : ""}
                 </td></tr>
               </table>
             </td>`;
@@ -353,6 +354,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
                   </tr></table>
                   <div style="font-size:20px;font-weight:800;color:${valColor};margin-top:6px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
                   <div style="font-size:10px;font-weight:600;color:${deltaColor};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+                  ${sig.countries?.length ? `<div style="margin-top:4px;">${sig.countries.map(c => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-right:2px;">${c}</span>`).join("")}</div>` : ""}
                 </td></tr>
               </table>
             </td>`;
