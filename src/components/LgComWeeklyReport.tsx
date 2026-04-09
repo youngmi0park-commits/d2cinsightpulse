@@ -151,11 +151,17 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             </CardTitle>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5 flex-wrap">
               {[
                 { value: "all", label: t("All", "전체") },
                 { value: "US", label: "🇺🇸 US" },
                 { value: "UK", label: "🇬🇧 UK" },
+                { value: "DE", label: "🇩🇪 DE" },
+                { value: "AU", label: "🇦🇺 AU" },
+                { value: "IN", label: "🇮🇳 IN" },
+                { value: "TW", label: "🇹🇼 TW" },
+                { value: "JP", label: "🇯🇵 JP" },
+                { value: "TH", label: "🇹🇭 TH" },
               ].map((r) => (
                 <button
                   key={r.value}

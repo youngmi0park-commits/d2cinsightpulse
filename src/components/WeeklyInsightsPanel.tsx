@@ -172,13 +172,14 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
             <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5 flex-wrap">
               {[
                 { value: "all", label: t("All", "전체") },
-                { value: "US", label: "US" },
-                { value: "UK", label: "UK" },
-                { value: "DE", label: "DE" },
-                { value: "FR", label: "FR" },
-                { value: "AU", label: "AU" },
-                { value: "CA", label: "CA" },
-                { value: "JP", label: "JP" },
+                { value: "US", label: "🇺🇸 US" },
+                { value: "UK", label: "🇬🇧 UK" },
+                { value: "DE", label: "🇩🇪 DE" },
+                { value: "AU", label: "🇦🇺 AU" },
+                { value: "IN", label: "🇮🇳 IN" },
+                { value: "TW", label: "🇹🇼 TW" },
+                { value: "JP", label: "🇯🇵 JP" },
+                { value: "TH", label: "🇹🇭 TH" },
               ].map((r) => (
                 <button
                   key={r.value}
