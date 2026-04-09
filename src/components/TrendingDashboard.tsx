@@ -586,6 +586,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                     {item.tag === "amplify" ? "📣 AMPLIFY" : item.tag === "fix" ? "🔧 FIX URGENT" : "👀 WATCH"}
                   </span>
                   <span className="text-[9px] text-muted-foreground">{item.channel}</span>
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
                 </div>
                 <p className="text-[12px] font-bold mb-0.5 leading-tight">{item.title}</p>
                 <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{item.description}</p>
