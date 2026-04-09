@@ -354,6 +354,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     const items: {
       tag: "amplify" | "fix" | "watch";
       channel: string;
+      country: string;
       title: string;
       description: string;
       count: number;
