@@ -264,6 +264,18 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         negative: "커뮤니티 모니터링 강화 · GEO 방어 FAQ 선제 배치",
       };
 
+      // Country mapping from relatedCountries or source inference
+      const FLAG_MAP: Record<string, string> = {
+        US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺",
+        IN: "🇮🇳", TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭",
+        SG: "🇸🇬", MY: "🇲🇾", PH: "🇵🇭", ID: "🇮🇩",
+        VN: "🇻🇳", CA: "🇨🇦", FR: "🇫🇷", BR: "🇧🇷",
+        MX: "🇲🇽", HK: "🇭🇰", Global: "🌐",
+      };
+      const countries = (kw.relatedCountries && kw.relatedCountries.length > 0)
+        ? kw.relatedCountries.map(c => `${FLAG_MAP[c] || "🌐"} ${c}`)
+        : ["🌐 Global"];
+
       return {
         keyword: kw.keyword,
         count: kw.count,
@@ -271,6 +283,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         type,
         sentiment: kw.sentiment,
         channels,
+        countries,
         positivePct,
         marketingHint: hints[kw.sentiment] || "OLED 히트 'lifelike picture' GEO·SEO 키워드로 제작 검토",
       };
@@ -341,6 +354,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     const items: {
       tag: "amplify" | "fix" | "watch";
       channel: string;
+      country: string;
       title: string;
       description: string;
       count: number;
@@ -355,6 +369,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       items.push({
         tag: "amplify",
         channel: `LG.com · ${item.category}`,
+        country: "🇺🇸 US",
         title: `${item.product} "${topPosKw?.keyword || 'excellent'}" 긍정 급증`,
         description: item.positive_msg,
         count: topPosKw?.count || lgcomPos[0]?.count || 0,
@@ -367,9 +382,11 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
     // Negative fix items
     for (const item of [...lgcomTakeaway, ...redditTakeaway].filter(t => t.negative_msg).slice(0, 2)) {
+      const isLgcom = lgcomTakeaway.includes(item);
       items.push({
         tag: "fix",
-        channel: `LG.com · ${item.category}`,
+        channel: `${isLgcom ? "LG.com" : "Reddit"} · ${item.category}`,
+        country: isLgcom ? "🇺🇸 US" : "🌐 Global",
         title: `${item.product} 부정 리뷰 급증`,
         description: item.negative_msg,
         count: lgcomNeg[0]?.count || topNegKw?.count || 0,
@@ -385,6 +402,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       items.push({
         tag: "watch",
         channel: `Reddit · ${item.category}`,
+        country: "🌐 Global",
         title: `${item.product} 커뮤니티 언급 증가`,
         description: item.marketer_action,
         count: redditPos[0]?.count || redditNeg[0]?.count || 0,
@@ -568,6 +586,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                     {item.tag === "amplify" ? "📣 AMPLIFY" : item.tag === "fix" ? "🔧 FIX URGENT" : "👀 WATCH"}
                   </span>
                   <span className="text-[9px] text-muted-foreground">{item.channel}</span>
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
                 </div>
                 <p className="text-[12px] font-bold mb-0.5 leading-tight">{item.title}</p>
                 <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{item.description}</p>
@@ -738,6 +757,9 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               <div className="flex flex-wrap gap-1 mb-2">
                 {signal.channels.map(ch => (
                   <span key={ch} className="text-[8px] px-1.5 py-0.5 border border-border rounded text-muted-foreground bg-background">{ch}</span>
+                ))}
+                {signal.countries.map(c => (
+                  <span key={c} className="text-[8px] px-1.5 py-0.5 border border-primary/20 rounded bg-primary/5 text-foreground font-semibold">{c}</span>
                 ))}
               </div>
               <p className="text-[10px] text-muted-foreground leading-snug pt-2 border-t border-border/40">

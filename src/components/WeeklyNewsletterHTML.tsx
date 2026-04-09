@@ -18,8 +18,8 @@ interface NewsletterData {
   topPositiveKeyword: string; topPositiveCount: number;
   topNegativeKeyword: string; topNegativeCount: number;
   topProduct: string; topProductCount: number;
-  opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[];
-  trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
+  opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
+  trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
 }
 
 /* ───── Channel color map ───── */
@@ -49,8 +49,8 @@ function useNewsletterData() {
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
-        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
-        supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
+        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent, related_countries").order("count", { ascending: false }).limit(20),
+        supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, source, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
       ]);
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
@@ -93,6 +93,7 @@ function useNewsletterData() {
           desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
           count: tp.mention_count,
           delta: `${chg > 0 ? "+" : ""}${chg}%`,
+          country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 US",
         });
       }
 
@@ -103,6 +104,7 @@ function useNewsletterData() {
         delta: Number(k.change_percent) || 0,
         type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
         sentiment: k.sentiment,
+        countries: (k.related_countries as string[] | null)?.length ? (k.related_countries as string[]) : ["Global"],
       }));
 
       return {
@@ -285,6 +287,7 @@ ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
             <td style="padding:10px 14px;font-family:${FONT};">
               <div style="margin-bottom:4px;">
                 <span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;background:${tagBg};color:${tagColor};border:1px solid ${tagColor}33;">${tagLabel}</span>
+                ${op.country ? `<span style="display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-left:4px;">${op.country}</span>` : ""}
               </div>
               <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
               <div style="font-size:10px;color:#888;line-height:16px;margin-top:2px;">${op.desc}</div>
@@ -327,6 +330,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
                   </tr></table>
                   <div style="font-size:20px;font-weight:800;color:${valColor};margin-top:6px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
                   <div style="font-size:10px;font-weight:600;color:${deltaColor};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+                  ${sig.countries?.length ? `<div style="margin-top:4px;">${sig.countries.map(c => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-right:2px;">${c}</span>`).join("")}</div>` : ""}
                 </td></tr>
               </table>
             </td>`;
@@ -350,6 +354,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
                   </tr></table>
                   <div style="font-size:20px;font-weight:800;color:${valColor};margin-top:6px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
                   <div style="font-size:10px;font-weight:600;color:${deltaColor};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+                  ${sig.countries?.length ? `<div style="margin-top:4px;">${sig.countries.map(c => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-right:2px;">${c}</span>`).join("")}</div>` : ""}
                 </td></tr>
               </table>
             </td>`;
