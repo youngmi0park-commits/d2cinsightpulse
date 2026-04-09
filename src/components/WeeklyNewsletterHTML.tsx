@@ -287,6 +287,7 @@ ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
             <td style="padding:10px 14px;font-family:${FONT};">
               <div style="margin-bottom:4px;">
                 <span style="display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;background:${tagBg};color:${tagColor};border:1px solid ${tagColor}33;">${tagLabel}</span>
+                ${op.country ? `<span style="display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;background:#f5f5f4;color:#333;border:1px solid #d4d4d4;margin-left:4px;">${op.country}</span>` : ""}
               </div>
               <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
               <div style="font-size:10px;color:#888;line-height:16px;margin-top:2px;">${op.desc}</div>
