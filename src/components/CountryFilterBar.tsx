@@ -90,6 +90,15 @@ export function countryToSourceFilter(country: string): string[] | null {
     HK: ["amazon_hk", "youtube_hk"],
     IN: ["amazon_in", "youtube_in", "shopee_in"],
     Global: ["trustpilot", "reviews_io", "complaintsboard", "pcmag", "rtings", "techradar", "soundguys", "cnet", "notebookcheck", "houzz", "lemon8"],
+    // Reddit category filters (used by Reddit Intelligence page)
+    tv: ["reddit_lgoled", "reddit_r/lgoled", "reddit_oled_gaming", "reddit_r/oled_gaming", "reddit_4ktv", "reddit_oled"],
+    appliance: ["reddit_appliances", "reddit_appliancerepair", "reddit_ac", "reddit_airconditioners", "reddit_vacuumcleaners", "reddit_buyitforlife", "reddit_homeimprovement"],
+    audio: ["reddit_soundbars"],
+    monitor: ["reddit_monitors", "reddit_ultrawidemasterrace", "reddit_buildapc", "reddit_buildapcsales", "reddit_buildapcmonitors", "reddit_pcgaming", "reddit_nvidia", "reddit_hidpi_monitors"],
+    laptop: ["reddit_lggram", "reddit_suggestalaptop", "reddit_mac", "reddit_macbookpro", "reddit_macsetups", "reddit_editors"],
+    lifestyle: ["reddit_stanbyme"],
+    general: ["reddit", "reddit_lg_userhub", "reddit_r/lg_userhub", "reddit_techsupport", "reddit_fixit"],
+    india: ["reddit_india"],
   };
   return map[country] || [`%_${country.toLowerCase()}`];
 }
