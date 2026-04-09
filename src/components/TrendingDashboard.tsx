@@ -758,6 +758,9 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 {signal.channels.map(ch => (
                   <span key={ch} className="text-[8px] px-1.5 py-0.5 border border-border rounded text-muted-foreground bg-background">{ch}</span>
                 ))}
+                {signal.countries.map(c => (
+                  <span key={c} className="text-[8px] px-1.5 py-0.5 border border-primary/20 rounded bg-primary/5 text-foreground font-semibold">{c}</span>
+                ))}
               </div>
               <p className="text-[10px] text-muted-foreground leading-snug pt-2 border-t border-border/40">
                 → <strong className="text-foreground">{signal.marketingHint}</strong>
