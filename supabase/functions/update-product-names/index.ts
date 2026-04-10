@@ -156,23 +156,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find products needing updates:
-    // 1. "LG Product (XX)" placeholders
-    // 2. display_name = model_number (no real name)
-    // 3. Category is a BV ID (CT...)
-    const { data: allCandidates, error: fetchErr } = await supabase
-      .from("products")
-      .select("id, model_number, display_name, category")
-      .eq("is_active", true)
-      .order("model_number")
-      .limit(500);
+    // Find products needing updates using multiple targeted queries
+    // Query 1: "LG Product" placeholders
+    const q1 = supabase.from("products").select("id, model_number, display_name, category")
+      .eq("is_active", true).ilike("display_name", "LG Product%").limit(batch_size);
+    // Query 2: Category is BV ID (CT...)
+    const q2 = supabase.from("products").select("id, model_number, display_name, category")
+      .eq("is_active", true).ilike("category", "CT%").limit(batch_size);
+    // Query 3: Short/code-like display names (< 15 chars, no spaces)
+    const q3 = supabase.from("products").select("id, model_number, display_name, category")
+      .eq("is_active", true).order("model_number").limit(200);
 
-    if (fetchErr) throw fetchErr;
+    const [r1, r2, r3] = await Promise.all([q1, q2, q3]);
+    if (r1.error) throw r1.error;
 
-    // Filter to those needing updates
-    const products = (allCandidates || [])
-      .filter(p => needsUpdate(p.display_name, p.model_number, p.category))
-      .slice(0, batch_size);
+    // Merge and deduplicate
+    const seen = new Set<string>();
+    const allCandidates: typeof r1.data = [];
+    for (const list of [r1.data || [], r2.data || [], r3.data || []]) {
+      for (const p of list) {
+        if (!seen.has(p.id) && needsUpdate(p.display_name, p.model_number, p.category)) {
+          seen.add(p.id);
+          allCandidates.push(p);
+        }
+      }
+    }
+
+    const products = allCandidates.slice(0, batch_size);
 
     if (products.length === 0) {
       return new Response(JSON.stringify({ message: "No products need updating", updated: 0 }), {
