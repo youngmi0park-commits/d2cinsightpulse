@@ -77,6 +77,42 @@ const NEGATION_TOKENS = [
   "neither", "nor", "without",
 ];
 
+// ── Contrastive conjunctions that flip sentiment weight ──
+const CONTRASTIVE_CONJUNCTIONS = /\b(but|however|although|though|yet|unfortunately|except|still|nevertheless|on the other hand|only complaint|only issue|only problem|one downside|downside is)\b/i;
+
+// ── "too + adjective" pattern → negative override ──
+const TOO_PATTERN = /\btoo\s+(loud|heavy|bulky|big|small|slow|dim|bright|hot|cold|noisy|expensive|thick|thin|large|warm|soft|hard|tight|loose|short|long|fast|quiet|dark|light|sharp|high|low)\b/gi;
+
+// ── "no/zero + negative_noun" → positive override ──
+const NO_PROBLEM_PATTERNS = [
+  /\bno\s+(issues?|problems?|complaints?|flaws?|defects?|regrets?|noise|lag|delay|flicker|stutter|glitch|bloatware|bugs?)\b/gi,
+  /\bzero\s+(issues?|problems?|complaints?|lag|delay|noise)\b/gi,
+  /\bnot\s+a\s+single\s+(issue|problem|complaint|flaw)\b/gi,
+  /\bnothing\s+(wrong|bad|negative)\b/gi,
+  /\bno\s+(trouble|difficulty|difficulties)\b/gi,
+];
+
+// ── Sarcasm / backhanded compliment patterns → negative ──
+const SARCASTIC_PATTERNS = [
+  /\bgreat\s+if\s+you\s+(like|enjoy|want)\b/gi,
+  /\b(?:thanks|thank\s+you)\s+for\s+nothing\b/gi,
+  /\bwhat\s+a\s+waste\b/gi,
+  /\bso\s+much\s+for\b/gi,
+  /\byeah\s+right\b/gi,
+];
+
+// ── Appliance-context word overrides (word → neutral/skip in certain categories) ──
+const CONTEXT_NEUTRAL_WORDS: Record<string, string[]> = {
+  cool: ["TV", "Monitor", "Laptop", "Refrigerator"],      // "cool" ≠ sentiment in these
+  hot: ["Range", "Microwave", "Cooktop"],                  // "hot" is expected
+  clean: ["Washer", "Dishwasher", "Vacuum"],               // "clean" is function, not sentiment
+  sharp: ["TV", "Monitor"],                                // "sharp" can be brand name confusion
+  smooth: ["TV", "Monitor"],                               // often describes motion handling (neutral/technical)
+  bright: ["TV", "Monitor", "Projector"],                  // technical spec, not always positive
+  warm: ["Refrigerator"],                                  // negative in fridge context
+  heavy: ["Washer", "Dryer", "Refrigerator"],              // expected for large appliances
+};
+
 const STRONG_POS_INTENSIFIERS = [
   "absolutely", "incredibly", "love", "perfect", "outstanding",
   "best ever", "blown away", "mind-blowing", "worth every penny",
