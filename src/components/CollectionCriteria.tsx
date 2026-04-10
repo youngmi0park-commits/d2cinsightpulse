@@ -652,6 +652,54 @@ export const CollectionCriteria = () => {
               </div>
             </div>
           )}
+
+          {/* Product Category collection stats */}
+          {categoryCounts.length > 0 && (
+            <div className="border-t border-primary/10 pt-2.5">
+              <p className="text-[10px] font-semibold text-foreground mb-1.5">
+                <Package className="inline h-3 w-3 mr-1" />
+                {t(
+                  `Product category breakdown (${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()} total across ${categoryCounts.length} categories)`,
+                  `제품 카테고리별 수집 현황 (전체 ${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()}건 · ${categoryCounts.length}개 카테고리)`
+                )}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {categoryCounts.filter(c => c.category !== "General").map(({ category, count }) => {
+                  const total = categoryCounts.reduce((s, c) => s + c.count, 0);
+                  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                  return (
+                    <div key={category} className="rounded-lg border border-border bg-background/60 p-2.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-[11px]">
+                          {CATEGORY_ICONS[category] || "📦"} {category}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
+                        <div
+                          className="h-full rounded-full bg-primary/70 transition-all"
+                          style={{ width: `${Math.min(pct * 3, 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                        {t(" reviews", "건")}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* General category as a note */}
+              {categoryCounts.find(c => c.category === "General") && (
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {t(
+                    `+ General/Uncategorized: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()} reviews (BV category codes pending normalization)`,
+                    `+ 일반/미분류: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}건 (BV 카테고리 코드 정규화 진행 중)`
+                  )}
+                </p>
+              )}
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {criteria.map((c) => {
