@@ -77,6 +77,42 @@ const NEGATION_TOKENS = [
   "neither", "nor", "without",
 ];
 
+// ── Contrastive conjunctions that flip sentiment weight ──
+const CONTRASTIVE_CONJUNCTIONS = /\b(but|however|although|though|yet|unfortunately|except|still|nevertheless|on the other hand|only complaint|only issue|only problem|one downside|downside is)\b/i;
+
+// ── "too + adjective" pattern → negative override ──
+const TOO_PATTERN = /\btoo\s+(loud|heavy|bulky|big|small|slow|dim|bright|hot|cold|noisy|expensive|thick|thin|large|warm|soft|hard|tight|loose|short|long|fast|quiet|dark|light|sharp|high|low)\b/gi;
+
+// ── "no/zero + negative_noun" → positive override ──
+const NO_PROBLEM_PATTERNS = [
+  /\bno\s+(issues?|problems?|complaints?|flaws?|defects?|regrets?|noise|lag|delay|flicker|stutter|glitch|bloatware|bugs?)\b/gi,
+  /\bzero\s+(issues?|problems?|complaints?|lag|delay|noise)\b/gi,
+  /\bnot\s+a\s+single\s+(issue|problem|complaint|flaw)\b/gi,
+  /\bnothing\s+(wrong|bad|negative)\b/gi,
+  /\bno\s+(trouble|difficulty|difficulties)\b/gi,
+];
+
+// ── Sarcasm / backhanded compliment patterns → negative ──
+const SARCASTIC_PATTERNS = [
+  /\bgreat\s+if\s+you\s+(like|enjoy|want)\b/gi,
+  /\b(?:thanks|thank\s+you)\s+for\s+nothing\b/gi,
+  /\bwhat\s+a\s+waste\b/gi,
+  /\bso\s+much\s+for\b/gi,
+  /\byeah\s+right\b/gi,
+];
+
+// ── Appliance-context word overrides (word → neutral/skip in certain categories) ──
+const CONTEXT_NEUTRAL_WORDS: Record<string, string[]> = {
+  cool: ["TV", "Monitor", "Laptop", "Refrigerator"],      // "cool" ≠ sentiment in these
+  hot: ["Range", "Microwave", "Cooktop"],                  // "hot" is expected
+  clean: ["Washer", "Dishwasher", "Vacuum"],               // "clean" is function, not sentiment
+  sharp: ["TV", "Monitor"],                                // "sharp" can be brand name confusion
+  smooth: ["TV", "Monitor"],                               // often describes motion handling (neutral/technical)
+  bright: ["TV", "Monitor", "Projector"],                  // technical spec, not always positive
+  warm: ["Refrigerator"],                                  // negative in fridge context
+  heavy: ["Washer", "Dryer", "Refrigerator"],              // expected for large appliances
+};
+
 const STRONG_POS_INTENSIFIERS = [
   "absolutely", "incredibly", "love", "perfect", "outstanding",
   "best ever", "blown away", "mind-blowing", "worth every penny",
@@ -299,7 +335,7 @@ function classifyIssueCategory(text: string): string {
  * FCO: Classify a sentence into Function category, Context, and Outcome direction.
  * Returns a meaning-unit keyword string like "Picture Quality – Deep blacks even in bright rooms"
  */
-function classifySentenceFCO(sentence: string): { function: string; context: string; isPositive: boolean } {
+function classifySentenceFCO(sentence: string, productCategory?: string): { function: string; context: string; isPositive: boolean } {
   const lower = sentence.toLowerCase();
   let bestFunc = "General";
   let bestScore = 0;
@@ -323,13 +359,47 @@ function classifySentenceFCO(sentence: string): { function: string; context: str
     if (m?.[1]) contextClues.push(m[1].trim());
   }
 
-  // Outcome: check if positive or negative
+  // Outcome: check if positive or negative using contextual scoring
   let posSignals = 0, negSignals = 0;
-  for (const w of Object.keys(POSITIVE_WORDS)) { if (lower.includes(w)) posSignals++; }
-  for (const w of Object.keys(NEGATIVE_WORDS)) { if (lower.includes(w)) negSignals++; }
-  // Check negation flipping
-  const hasNeg = NEGATION_TOKENS.some(n => lower.includes(n));
-  if (hasNeg) { [posSignals, negSignals] = [negSignals, posSignals]; }
+
+  // "too + adj" → negative
+  TOO_PATTERN.lastIndex = 0;
+  if (TOO_PATTERN.test(lower)) negSignals += 2;
+
+  // "no issues" patterns → positive
+  for (const pat of NO_PROBLEM_PATTERNS) {
+    pat.lastIndex = 0;
+    if (pat.test(lower)) posSignals += 2;
+  }
+
+  // Sarcasm → negative
+  for (const pat of SARCASTIC_PATTERNS) {
+    pat.lastIndex = 0;
+    if (pat.test(lower)) negSignals += 2;
+  }
+
+  const words = lower.split(/\s+/);
+  for (let i = 0; i < words.length; i++) {
+    const cleanWord = words[i].replace(/[^a-z'-]/g, "");
+
+    // Skip context-neutral words for the given product category
+    if (productCategory && CONTEXT_NEUTRAL_WORDS[cleanWord]?.includes(productCategory)) continue;
+
+    if (POSITIVE_WORDS[cleanWord] !== undefined) {
+      // Check negation before this word
+      if (hasNegation(words, i)) {
+        negSignals++;
+      } else {
+        posSignals++;
+      }
+    } else if (NEGATIVE_WORDS[cleanWord] !== undefined) {
+      if (hasNegation(words, i)) {
+        posSignals += 0.5; // "not bad" is weakly positive
+      } else {
+        negSignals++;
+      }
+    }
+  }
 
   return {
     function: bestFunc,
@@ -385,8 +455,7 @@ interface ReviewSignals {
   priceFlag: boolean;
 }
 
-function analyzeReviewText(text: string, source: string, existingSentiment?: string, existingScore?: number): ReviewSignals {
-  const sentences = splitSentences(text);
+function analyzeReviewText(text: string, source: string, existingSentiment?: string, existingScore?: number, productCategory?: string): ReviewSignals {
   const sourceWeight = getSourceWeight(source);
   let totalScore = 0;
   let sentenceCount = 0;
@@ -401,84 +470,140 @@ function analyzeReviewText(text: string, source: string, existingSentiment?: str
   let competitive: CompetitiveMention | null = null;
   let priceFlag = false;
 
-  for (const sentence of sentences) {
-    const lower = sentence.toLowerCase();
-    const words = lower.split(/\s+/);
-    let sentenceScore = 0;
-    let matchCount = 0;
+  // ── Split by contrastive conjunctions into weighted clauses ──
+  const clauses = text.split(CONTRASTIVE_CONJUNCTIONS).filter(c => c.trim().length > 3);
+  // The clause AFTER a contrastive conjunction gets 1.3x weight (it's the "real point")
+  const clauseWeights: number[] = [];
+  let afterContrastive = false;
+  for (const clause of clauses) {
+    if (CONTRASTIVE_CONJUNCTIONS.test(clause.trim())) {
+      afterContrastive = true;
+      clauseWeights.push(0); // the conjunction itself
+      continue;
+    }
+    clauseWeights.push(afterContrastive ? 1.3 : 1.0);
+    afterContrastive = false;
+  }
 
-    // Rule A + B: Word-level scoring with negation & intensifier
-    for (let i = 0; i < words.length; i++) {
-      const cleanWord = words[i].replace(/[^a-z'-]/g, "");
-      let wordScore = 0;
+  for (let ci = 0; ci < clauses.length; ci++) {
+    const clause = clauses[ci];
+    if (CONTRASTIVE_CONJUNCTIONS.test(clause.trim())) continue;
+    const clauseWeight = clauseWeights[ci] ?? 1.0;
 
-      if (POSITIVE_WORDS[cleanWord] !== undefined) {
-        wordScore = POSITIVE_WORDS[cleanWord];
-      } else if (NEGATIVE_WORDS[cleanWord] !== undefined) {
-        wordScore = NEGATIVE_WORDS[cleanWord];
-      } else {
-        continue;
+    const sentences = splitSentences(clause);
+    for (const sentence of sentences) {
+      const lower = sentence.toLowerCase();
+      const words = lower.split(/\s+/);
+      let sentenceScore = 0;
+      let matchCount = 0;
+
+      // ── "too + adj" pattern → strong negative ──
+      TOO_PATTERN.lastIndex = 0;
+      let tooMatch;
+      while ((tooMatch = TOO_PATTERN.exec(lower)) !== null) {
+        sentenceScore -= 0.7;
+        matchCount++;
       }
 
-      // Rule A: Negation check
-      if (hasNegation(words, i)) {
-        if (wordScore > 0) {
-          wordScore *= -1; // Flip positive to negative
-        } else {
-          wordScore *= -0.7; // Flip negative to weakly positive
+      // ── "no issues" patterns → positive ──
+      for (const pat of NO_PROBLEM_PATTERNS) {
+        pat.lastIndex = 0;
+        if (pat.test(lower)) {
+          sentenceScore += 0.6;
+          matchCount++;
         }
-        negationApplied = true;
       }
 
-      matchCount++;
-      sentenceScore += wordScore;
-    }
-
-    // Rule B: Intensifier amplification at sentence level
-    const intMult = getIntensifierMultiplier(sentence);
-    if (intMult > 1.0) {
-      sentenceScore *= intMult;
-      intensifierMult = Math.max(intensifierMult, intMult);
-    }
-
-    // Rule D: Competitive
-    const comp = detectCompetitive(sentence);
-    if (comp) {
-      comparativeBonus += comp.score;
-      competitive = { brand: comp.brand, win: comp.type === "competitive_win" };
-    }
-
-    // Rule E: Temporal/conditional
-    const temporal = detectTemporalConditional(sentence);
-    if (temporal) {
-      sentenceScore += temporal.score;
-    }
-
-    // Rule F: Price/value
-    const pv = detectPriceValue(sentence);
-    if (pv) {
-      valueSignal += pv.score;
-      if (!pv.positive) priceFlag = true;
-    }
-
-    // Apply source weight
-    sentenceScore *= sourceWeight;
-
-    if (matchCount > 0) {
-      // Track best evidence
-      const evidence = extractEvidencePhrase(sentence);
-      if (sentenceScore > bestPosScore) {
-        bestPosScore = sentenceScore;
-        bestPosPhrase = evidence;
+      // ── Sarcasm → negative ──
+      for (const pat of SARCASTIC_PATTERNS) {
+        pat.lastIndex = 0;
+        if (pat.test(lower)) {
+          sentenceScore -= 0.7;
+          matchCount++;
+        }
       }
-      if (sentenceScore < bestNegScore) {
-        bestNegScore = sentenceScore;
-        bestNegPhrase = evidence;
-      }
-    }
 
-    totalScore += sentenceScore;
-    sentenceCount++;
+      // Rule A + B: Word-level scoring with negation & intensifier
+      for (let i = 0; i < words.length; i++) {
+        const cleanWord = words[i].replace(/[^a-z'-]/g, "");
+        if (!cleanWord) continue;
+
+        // Skip context-neutral words for this product category
+        if (productCategory && CONTEXT_NEUTRAL_WORDS[cleanWord]?.includes(productCategory)) continue;
+
+        // Skip if preceded by "too" (already scored above)
+        if (i > 0 && words[i - 1].replace(/[^a-z]/g, "") === "too") continue;
+
+        let wordScore = 0;
+
+        if (POSITIVE_WORDS[cleanWord] !== undefined) {
+          wordScore = POSITIVE_WORDS[cleanWord];
+        } else if (NEGATIVE_WORDS[cleanWord] !== undefined) {
+          wordScore = NEGATIVE_WORDS[cleanWord];
+        } else {
+          continue;
+        }
+
+        // Rule A: Negation check
+        if (hasNegation(words, i)) {
+          if (wordScore > 0) {
+            wordScore *= -0.8; // "not great" → moderately negative
+          } else {
+            wordScore *= -0.5; // "not bad" → weakly positive
+          }
+          negationApplied = true;
+        }
+
+        matchCount++;
+        sentenceScore += wordScore;
+      }
+
+      // Rule B: Intensifier amplification at sentence level
+      const intMult = getIntensifierMultiplier(sentence);
+      if (intMult > 1.0) {
+        sentenceScore *= intMult;
+        intensifierMult = Math.max(intensifierMult, intMult);
+      }
+
+      // Rule D: Competitive
+      const comp = detectCompetitive(sentence);
+      if (comp) {
+        comparativeBonus += comp.score;
+        competitive = { brand: comp.brand, win: comp.type === "competitive_win" };
+      }
+
+      // Rule E: Temporal/conditional
+      const temporal = detectTemporalConditional(sentence);
+      if (temporal) {
+        sentenceScore += temporal.score;
+      }
+
+      // Rule F: Price/value
+      const pv = detectPriceValue(sentence);
+      if (pv) {
+        valueSignal += pv.score;
+        if (!pv.positive) priceFlag = true;
+      }
+
+      // Apply source weight and clause weight
+      sentenceScore *= sourceWeight * clauseWeight;
+
+      if (matchCount > 0) {
+        // Track best evidence
+        const evidence = extractEvidencePhrase(sentence);
+        if (sentenceScore > bestPosScore) {
+          bestPosScore = sentenceScore;
+          bestPosPhrase = evidence;
+        }
+        if (sentenceScore < bestNegScore) {
+          bestNegScore = sentenceScore;
+          bestNegPhrase = evidence;
+        }
+      }
+
+      totalScore += sentenceScore;
+      sentenceCount++;
+    }
   }
 
   // If we got no matched words, fall back to existing sentiment/score
@@ -518,9 +643,9 @@ function analyzeReviewText(text: string, source: string, existingSentiment?: str
   const compositeRaw = avgSentenceScore + comparativeBonus * 0.3 + valueSignal * 0.2;
 
   let sentiment: "positive" | "negative" | "mixed" | "neutral";
-  if (compositeRaw > 0.2) sentiment = "positive";
-  else if (compositeRaw < -0.2) sentiment = "negative";
-  else if (Math.abs(bestPosScore) > 0 && Math.abs(bestNegScore) > 0) sentiment = "mixed";
+  if (compositeRaw > 0.15) sentiment = "positive";
+  else if (compositeRaw < -0.15) sentiment = "negative";
+  else if (Math.abs(bestPosScore) > 0.3 && Math.abs(bestNegScore) > 0.3) sentiment = "mixed";
   else sentiment = "neutral";
 
   return {
@@ -665,7 +790,7 @@ function extractUsageScenes(reviews: Review[]): string[] {
 // PUBLIC API: analyzeSentiment
 // ═══════════════════════════════════════════════════════════════════
 
-export function analyzeSentiment(reviews: Review[]): SentimentResult {
+export function analyzeSentiment(reviews: Review[], productCategory?: string): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
   let hasRealText = false;
   let totalComposite = 0;
@@ -692,7 +817,8 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
       analysisText,
       review.source,
       review.sentiment,
-      review.score
+      review.score,
+      productCategory
     );
 
     // Count sentiment buckets
@@ -714,7 +840,7 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
     // For short title-only reviews, try direct feature matching as fallback
     let foundKeywordInReview = false;
     for (const sent of reviewSentences) {
-      const fco = classifySentenceFCO(sent);
+      const fco = classifySentenceFCO(sent, productCategory);
       if (fco.function === "General") continue;
       foundKeywordInReview = true;
       const meaningKey = `${fco.function} – ${extractEvidencePhrase(sent, 8, 3)}`;
