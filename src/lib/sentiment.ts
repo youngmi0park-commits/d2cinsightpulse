@@ -335,7 +335,7 @@ function classifyIssueCategory(text: string): string {
  * FCO: Classify a sentence into Function category, Context, and Outcome direction.
  * Returns a meaning-unit keyword string like "Picture Quality – Deep blacks even in bright rooms"
  */
-function classifySentenceFCO(sentence: string): { function: string; context: string; isPositive: boolean } {
+function classifySentenceFCO(sentence: string, productCategory?: string): { function: string; context: string; isPositive: boolean } {
   const lower = sentence.toLowerCase();
   let bestFunc = "General";
   let bestScore = 0;
@@ -359,13 +359,47 @@ function classifySentenceFCO(sentence: string): { function: string; context: str
     if (m?.[1]) contextClues.push(m[1].trim());
   }
 
-  // Outcome: check if positive or negative
+  // Outcome: check if positive or negative using contextual scoring
   let posSignals = 0, negSignals = 0;
-  for (const w of Object.keys(POSITIVE_WORDS)) { if (lower.includes(w)) posSignals++; }
-  for (const w of Object.keys(NEGATIVE_WORDS)) { if (lower.includes(w)) negSignals++; }
-  // Check negation flipping
-  const hasNeg = NEGATION_TOKENS.some(n => lower.includes(n));
-  if (hasNeg) { [posSignals, negSignals] = [negSignals, posSignals]; }
+
+  // "too + adj" → negative
+  TOO_PATTERN.lastIndex = 0;
+  if (TOO_PATTERN.test(lower)) negSignals += 2;
+
+  // "no issues" patterns → positive
+  for (const pat of NO_PROBLEM_PATTERNS) {
+    pat.lastIndex = 0;
+    if (pat.test(lower)) posSignals += 2;
+  }
+
+  // Sarcasm → negative
+  for (const pat of SARCASTIC_PATTERNS) {
+    pat.lastIndex = 0;
+    if (pat.test(lower)) negSignals += 2;
+  }
+
+  const words = lower.split(/\s+/);
+  for (let i = 0; i < words.length; i++) {
+    const cleanWord = words[i].replace(/[^a-z'-]/g, "");
+
+    // Skip context-neutral words for the given product category
+    if (productCategory && CONTEXT_NEUTRAL_WORDS[cleanWord]?.includes(productCategory)) continue;
+
+    if (POSITIVE_WORDS[cleanWord] !== undefined) {
+      // Check negation before this word
+      if (hasNegation(words, i)) {
+        negSignals++;
+      } else {
+        posSignals++;
+      }
+    } else if (NEGATIVE_WORDS[cleanWord] !== undefined) {
+      if (hasNegation(words, i)) {
+        posSignals += 0.5; // "not bad" is weakly positive
+      } else {
+        negSignals++;
+      }
+    }
+  }
 
   return {
     function: bestFunc,
