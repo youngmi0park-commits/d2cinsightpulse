@@ -221,6 +221,345 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_caution_items: {
+        Row: {
+          body_en: string | null
+          body_ko: string | null
+          created_at: string | null
+          id: string
+          issue_id: string | null
+          severity: string | null
+          sort_order: number | null
+          target_codes: string[] | null
+          title_en: string | null
+          title_ko: string | null
+        }
+        Insert: {
+          body_en?: string | null
+          body_ko?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          severity?: string | null
+          sort_order?: number | null
+          target_codes?: string[] | null
+          title_en?: string | null
+          title_ko?: string | null
+        }
+        Update: {
+          body_en?: string | null
+          body_ko?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          severity?: string | null
+          sort_order?: number | null
+          target_codes?: string[] | null
+          title_en?: string | null
+          title_ko?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_caution_items_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_channel_actions: {
+        Row: {
+          action_title_en: string | null
+          action_title_ko: string | null
+          basis_en: string | null
+          basis_ko: string | null
+          channel_type: string
+          copy_headline_en: string | null
+          copy_headline_ko: string | null
+          created_at: string | null
+          id: string
+          issue_id: string | null
+          sort_order: number | null
+          tags: string[] | null
+          target_codes: string[] | null
+        }
+        Insert: {
+          action_title_en?: string | null
+          action_title_ko?: string | null
+          basis_en?: string | null
+          basis_ko?: string | null
+          channel_type: string
+          copy_headline_en?: string | null
+          copy_headline_ko?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          target_codes?: string[] | null
+        }
+        Update: {
+          action_title_en?: string | null
+          action_title_ko?: string | null
+          basis_en?: string | null
+          basis_ko?: string | null
+          channel_type?: string
+          copy_headline_en?: string | null
+          copy_headline_ko?: string | null
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          sort_order?: number | null
+          tags?: string[] | null
+          target_codes?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_channel_actions_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_collection_stats: {
+        Row: {
+          display_name: string | null
+          dot_color: string | null
+          id: string
+          issue_id: string | null
+          review_count: number | null
+          show_as_pill: boolean | null
+          sort_order: number | null
+          source: string
+        }
+        Insert: {
+          display_name?: string | null
+          dot_color?: string | null
+          id?: string
+          issue_id?: string | null
+          review_count?: number | null
+          show_as_pill?: boolean | null
+          sort_order?: number | null
+          source: string
+        }
+        Update: {
+          display_name?: string | null
+          dot_color?: string | null
+          id?: string
+          issue_id?: string | null
+          review_count?: number | null
+          show_as_pill?: boolean | null
+          sort_order?: number | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_collection_stats_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_country_signals: {
+        Row: {
+          created_at: string | null
+          id: string
+          issue_id: string | null
+          negative_count: number | null
+          positive_count: number | null
+          sentiment_score: number | null
+          signal_tags: string[] | null
+          sort_order: number | null
+          subsidiary_code: string
+          top_category: string | null
+          top_insight_en: string | null
+          top_insight_ko: string | null
+          total_reviews: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          negative_count?: number | null
+          positive_count?: number | null
+          sentiment_score?: number | null
+          signal_tags?: string[] | null
+          sort_order?: number | null
+          subsidiary_code: string
+          top_category?: string | null
+          top_insight_en?: string | null
+          top_insight_ko?: string | null
+          total_reviews?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          negative_count?: number | null
+          positive_count?: number | null
+          sentiment_score?: number | null
+          signal_tags?: string[] | null
+          sort_order?: number | null
+          subsidiary_code?: string
+          top_category?: string | null
+          top_insight_en?: string | null
+          top_insight_ko?: string | null
+          total_reviews?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_country_signals_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_faq_items: {
+        Row: {
+          answer_en: string | null
+          answer_ko: string | null
+          cis_score: number | null
+          created_at: string | null
+          faq_type: string
+          id: string
+          issue_id: string | null
+          priority: string | null
+          question_en: string | null
+          question_ko: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          answer_en?: string | null
+          answer_ko?: string | null
+          cis_score?: number | null
+          created_at?: string | null
+          faq_type: string
+          id?: string
+          issue_id?: string | null
+          priority?: string | null
+          question_en?: string | null
+          question_ko?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          answer_en?: string | null
+          answer_ko?: string | null
+          cis_score?: number | null
+          created_at?: string | null
+          faq_type?: string
+          id?: string
+          issue_id?: string | null
+          priority?: string | null
+          question_en?: string | null
+          question_ko?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_faq_items_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_issues: {
+        Row: {
+          avg_sentiment: number | null
+          channels_count: number | null
+          countries_count: number | null
+          created_at: string | null
+          generated_at: string | null
+          html_snapshot: string | null
+          id: string
+          issue_date: string
+          published_at: string | null
+          status: string | null
+          title: string | null
+          total_reviews: number | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          avg_sentiment?: number | null
+          channels_count?: number | null
+          countries_count?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          html_snapshot?: string | null
+          id?: string
+          issue_date: string
+          published_at?: string | null
+          status?: string | null
+          title?: string | null
+          total_reviews?: number | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          avg_sentiment?: number | null
+          channels_count?: number | null
+          countries_count?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          html_snapshot?: string | null
+          id?: string
+          issue_date?: string
+          published_at?: string | null
+          status?: string | null
+          title?: string | null
+          total_reviews?: number | null
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      newsletter_matrix_rows: {
+        Row: {
+          category_name: string
+          category_name_en: string | null
+          cells: Json
+          created_at: string | null
+          id: string
+          issue_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          category_name: string
+          category_name_en?: string | null
+          cells?: Json
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          category_name?: string
+          category_name_en?: string | null
+          cells?: Json
+          created_at?: string | null
+          id?: string
+          issue_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_matrix_rows_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string

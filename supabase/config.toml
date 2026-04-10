@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.bv-auto-collect]
 verify_jwt = false
+
+[functions.generate-newsletter]
+verify_jwt = false
