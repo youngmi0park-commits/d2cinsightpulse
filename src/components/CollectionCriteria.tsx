@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
+import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, Package } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
