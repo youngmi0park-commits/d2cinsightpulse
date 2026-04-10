@@ -840,7 +840,7 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     // For short title-only reviews, try direct feature matching as fallback
     let foundKeywordInReview = false;
     for (const sent of reviewSentences) {
-      const fco = classifySentenceFCO(sent);
+      const fco = classifySentenceFCO(sent, productCategory);
       if (fco.function === "General") continue;
       foundKeywordInReview = true;
       const meaningKey = `${fco.function} – ${extractEvidencePhrase(sent, 8, 3)}`;
