@@ -25,6 +25,121 @@ function useLgComCounts() {
   return counts;
 }
 
+// Normalize BV category codes to readable names
+const CATEGORY_LABEL_MAP: Record<string, string> = {
+  "General": "General", "TV": "TV", "OLED TV": "TV",
+  "Washer": "Washer", "Washing Machine": "Washer",
+  "Refrigerator": "Refrigerator", "Dryer": "Dryer",
+  "Monitor": "Monitor", "Audio": "Audio", "Soundbar": "Audio",
+  "Air Conditioner": "Air Conditioner", "LG art cool": "Air Conditioner",
+  "Laptop": "Laptop", "Air Purifier": "Air Purifier",
+  "Microwave": "Microwave", "Projector": "Projector",
+  "Dishwasher": "Dishwasher", "Vacuum": "Vacuum", "Robot Vacuum": "Vacuum",
+  "Phone": "Phone", "Styler": "Styler", "Cooktop": "Cooktop",
+  // BV category codes
+  "CT52002425": "Washer", "CT52000826": "Refrigerator",
+  "CT52001903": "Dryer", "CT52001906": "Dishwasher",
+  "CT52000821": "TV", "CT52001900": "Air Conditioner",
+  "CT00008334": "Monitor", "CT00008363": "Audio",
+  "C_APPLIANCE_WASHER_DRYER": "Washer/Dryer",
+  "CT10000018": "Refrigerator", "CT52000823": "Microwave",
+  "C_APPLIANCE_AIR_CARE": "Air Purifier",
+  "CT52006585": "Vacuum", "CT52001901": "Range/Oven",
+  "CT52000179": "TV", "CT52000182": "Audio",
+  "CT52000129": "Laptop", "CT10000010": "Monitor",
+  "CT52006087": "Projector", "C_TV_AUDIO_VIDEO_TV_SOUNDBAR": "Audio",
+  "CT10000016": "Air Conditioner", "C_COMPUTING_LAPTOP": "Laptop",
+  "CT52006086": "Vacuum", "CT41000491": "Styler",
+  "CT52106203": "Dishwasher", "CT52006634": "Range/Oven",
+  "CT52006085": "Air Purifier", "CT10000011": "Laptop",
+  "AI Core Tech": "General", "App": "General", "Remote": "General",
+};
+
+const CATEGORY_ICONS: Record<string, string> = {
+  "TV": "📺", "Washer": "🧺", "Refrigerator": "🧊", "Dryer": "🌀",
+  "Monitor": "🖥️", "Audio": "🔊", "Air Conditioner": "❄️", "Laptop": "💻",
+  "Air Purifier": "🌬️", "Microwave": "♨️", "Projector": "📽️",
+  "Dishwasher": "🍽️", "Vacuum": "🧹", "Washer/Dryer": "🔄",
+  "Range/Oven": "🍳", "Styler": "👔", "Cooktop": "🔥",
+  "Phone": "📱", "General": "📦",
+};
+
+// Live category collection counts hook
+function useCategoryCounts() {
+  const [counts, setCounts] = useState<{ category: string; count: number }[]>([]);
+  useEffect(() => {
+    supabase
+      .from("reviews")
+      .select("product_id, products!inner(category)")
+      .then(() => {
+        // Use direct query approach: group by product category
+        // We'll fetch from products joined with review counts
+        supabase
+          .rpc("get_source_counts")
+          .then(() => {
+            // Fallback: query categories directly
+            fetch_categories();
+          });
+      });
+
+    async function fetch_categories() {
+      // Get all products with their categories and count reviews
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, category");
+      if (!products) return;
+
+      const productCategoryMap: Record<string, string> = {};
+      products.forEach(p => {
+        productCategoryMap[p.id] = p.category;
+      });
+
+      // Get review counts per product
+      const { count: totalCount } = await supabase
+        .from("reviews")
+        .select("id", { count: "exact", head: true });
+
+      // Query reviews grouped by product category using products table
+      const categoryAgg: Record<string, number> = {};
+      
+      // Batch approach: get product_id counts from reviews
+      const batchSize = 1000;
+      let offset = 0;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const { data: batch } = await supabase
+          .from("reviews")
+          .select("product_id")
+          .range(offset, offset + batchSize - 1);
+        
+        if (!batch || batch.length === 0) {
+          hasMore = false;
+          break;
+        }
+        
+        batch.forEach(r => {
+          const rawCat = productCategoryMap[r.product_id] || "General";
+          const normalizedCat = CATEGORY_LABEL_MAP[rawCat] || rawCat;
+          categoryAgg[normalizedCat] = (categoryAgg[normalizedCat] || 0) + 1;
+        });
+        
+        if (batch.length < batchSize) hasMore = false;
+        else offset += batchSize;
+      }
+
+      const sorted = Object.entries(categoryAgg)
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count);
+      
+      setCounts(sorted);
+    }
+
+    fetch_categories();
+  }, []);
+  return counts;
+}
+
 // Live country collection counts hook
 function useAllCountryCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
