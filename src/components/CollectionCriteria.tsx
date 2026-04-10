@@ -146,6 +146,10 @@ const criteria: CriteriaItem[] = [
       "🆕 ComplaintsBoard — Consumer complaints platform (Global, including Middle East)",
       "🆕 Quora — Product experience Q&A discussions (RSS·API, tech Q&A)",
       "🆕 Stack Exchange / SuperUser — Technical Q&A for LG product troubleshooting (RSS·API)",
+      "🆕 Consumer Reports — Refrigerator, Washing Machine, Dishwasher, Dryer reliability ratings & lab test reviews (US, public areas · consumerreports.org)",
+      "🆕 Wirecutter (NYTimes) — Washer, Dryer, Refrigerator expert recommendation articles (US · nytimes.com/wirecutter — paywall 제외 공개 영역만)",
+      "🆕 This Old House — Refrigerator, Washing Machine Top Pick & comparison reviews (US · thisoldhouse.com)",
+      "🆕 Designer Appliances — LG WashTower, Refrigerator, Dishwasher 전문가 심층 블로그 리뷰 (US · designerappliances.com)",
     ],
     itemsKo: [
       "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — LG 공식 제품 페이지 및 고객 리뷰 (8개국: Bazaarvoice Conversations API Production 연동)",
@@ -178,6 +182,10 @@ const criteria: CriteriaItem[] = [
       "🆕 ComplaintsBoard — 소비자 불만 플랫폼 (글로벌, 중동 포함)",
       "🆕 Quora — 제품 경험 Q&A 토론 (RSS·API, 기술 Q&A)",
       "🆕 Stack Exchange / SuperUser — LG 제품 기술 Q&A (RSS·API)",
+      "🆕 Consumer Reports — 냉장고·세탁기·식세기·건조기 신뢰성 평가 및 랩 테스트 리뷰 (US, 공개 영역 · consumerreports.org)",
+      "🆕 Wirecutter (NYTimes) — 세탁기·건조기·냉장고 전문 추천 아티클 (US · nytimes.com/wirecutter — 페이월 제외 공개 영역만)",
+      "🆕 This Old House — 냉장고·세탁기 Top Pick 및 비교 리뷰 (US · thisoldhouse.com)",
+      "🆕 Designer Appliances — LG WashTower·냉장고·식세기 전문가 심층 블로그 리뷰 (US · designerappliances.com)",
     ],
   },
   {
