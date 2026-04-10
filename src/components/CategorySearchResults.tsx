@@ -9,7 +9,7 @@ import { SentimentChart } from "./SentimentChart";
 import { KeywordCloud } from "./KeywordCloud";
 import { ReviewList } from "./ReviewList";
 import { MarketingHub } from "./MarketingHub";
-import { isPrivacyRestricted } from "@/lib/reviewUtils";
+import { buildPrivacySafeKeywordSummaries, isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
 
 interface CategorySearchResultsProps {
   results: AnalyzedProduct[];
@@ -78,6 +78,7 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
 
   // Check if primarily LG.com reviews
   const isLgComDominant = item.product.reviews.filter(r => isPrivacyRestricted(r.source)).length > item.product.reviews.length * 0.5;
+  const isAllLgComRestricted = isAllPrivacyRestricted(item.product.reviews);
 
   // Best review quote — for LG.com show sentiment insight, not raw text
   const bestQuote = isLgComDominant
@@ -102,12 +103,19 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
     : `긍정 비율이 높음. UGC 활용 및 소셜 확산 전략 추천.`;
 
   // Generate fallback positive/negative summaries from sentiment data for LG.com
-  const positiveSummary = positivePoints.length > 0 ? positivePoints : (isLgComDominant && item.sentiment.positive > 0
-    ? [`긍정 리뷰 ${item.sentiment.positive}건 확인 — 주요 만족 포인트 감성 기반 분석`]
-    : []);
-  const negativeSummary = negativePoints.length > 0 ? negativePoints : (isLgComDominant && item.sentiment.negative > 0
-    ? [`부정 리뷰 ${item.sentiment.negative}건 확인 — 주요 불만 사항 감성 기반 분석`]
-    : []);
+  const privacyPositiveSummary = buildPrivacySafeKeywordSummaries(positivePoints, "positive");
+  const privacyNegativeSummary = buildPrivacySafeKeywordSummaries(negativePoints, "negative");
+
+  const positiveSummary = isLgComDominant
+    ? (privacyPositiveSummary.length > 0
+        ? privacyPositiveSummary
+        : (item.sentiment.positive > 0 ? [`긍정 리뷰 ${item.sentiment.positive}건 기반 만족 영역 요약`] : []))
+    : positivePoints;
+  const negativeSummary = isLgComDominant
+    ? (privacyNegativeSummary.length > 0
+        ? privacyNegativeSummary
+        : (item.sentiment.negative > 0 ? [`부정 리뷰 ${item.sentiment.negative}건 기반 개선 요청 요약`] : []))
+    : negativePoints;
 
   return (
     <div className="px-4 pb-4 space-y-4 animate-slide-up">
@@ -166,7 +174,7 @@ function ProductDetail({ item }: { item: AnalyzedProduct }) {
 
       {/* Full detail sections */}
       <div className="space-y-4 pt-2 border-t border-border">
-        <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
+        <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={isAllLgComRestricted} />
         <SentimentChart sentiment={item.sentiment} />
         {item.product.reviews.length > 0 && (
           <MarketingHub

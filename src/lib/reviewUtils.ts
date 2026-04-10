@@ -62,3 +62,33 @@ export const isAllPrivacyRestricted = (reviews: { source?: string }[]): boolean 
   if (reviews.length === 0) return false;
   return reviews.every((r) => isPrivacyRestricted(r.source));
 };
+
+const extractThemeLabel = (keyword: string): string => keyword.split(/\s+[–-]\s+/)[0]?.trim() || "";
+
+/** Privacy-safe theme labels derived from processed keywords */
+export const getPrivacySafeThemeLabels = (keywords: string[], limit = 4): string[] => {
+  const labels: string[] = [];
+  const seen = new Set<string>();
+
+  for (const keyword of keywords) {
+    const theme = extractThemeLabel(keyword);
+    if (!theme || theme === "General" || seen.has(theme)) continue;
+    seen.add(theme);
+    labels.push(theme);
+    if (labels.length >= limit) break;
+  }
+
+  return labels;
+};
+
+/** Secondary-processed summaries for privacy-restricted review sources */
+export const buildPrivacySafeKeywordSummaries = (
+  keywords: string[],
+  sentiment: "positive" | "negative",
+  limit = 4
+): string[] => {
+  const themes = getPrivacySafeThemeLabels(keywords, limit);
+  return themes.map((theme) =>
+    sentiment === "positive" ? `${theme} 관련 만족 의견` : `${theme} 관련 개선 의견`
+  );
+};

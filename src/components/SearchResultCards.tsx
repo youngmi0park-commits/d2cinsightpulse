@@ -476,6 +476,13 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
           const sourceDist = getSourceDistribution(item.product.reviews);
           const reviewCount = item.product.reviews.length;
           const cs = item.sentiment.compositeScore;
+          const allPrivacyRestricted = isAllPrivacyRestricted(item.product.reviews);
+          const totalSentiment = Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1);
+          const positivePct = Math.round((item.sentiment.positive / totalSentiment) * 100);
+          const negativePct = Math.round((item.sentiment.negative / totalSentiment) * 100);
+          const previewInsight = allPrivacyRestricted
+            ? `LG.com 요약 중심 보기 · 긍정 ${positivePct}% · 부정 ${negativePct}%`
+            : (item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase);
 
           return (
             <Card
@@ -536,9 +543,11 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                 <SentimentMiniBar sentiment={item.sentiment} />
 
                 {/* Evidence Phrase (top) */}
-                {(item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase) && (
-                  <p className="text-[10px] text-muted-foreground italic line-clamp-2 border-l-2 border-primary/30 pl-2">
-                    "{item.sentiment.topPositivePhrase || item.sentiment.topNegativePhrase}"
+                {previewInsight && (
+                  <p className={`text-[10px] text-muted-foreground line-clamp-2 border-l-2 pl-2 ${
+                    allPrivacyRestricted ? "border-primary/20" : "border-primary/30 italic"
+                  }`}>
+                    {allPrivacyRestricted ? previewInsight : `"${previewInsight}"`}
                   </p>
                 )}
 
@@ -576,6 +585,8 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
         const item = results.find((r) => r.product.name === expandedProduct);
         if (!item) return null;
         const cs = item.sentiment.compositeScore;
+        const allPrivacyRestricted = isAllPrivacyRestricted(item.product.reviews);
+        const totalSentiment = Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1);
         return (
           <div className="animate-slide-up border border-primary/20 rounded-xl bg-card p-5 space-y-5">
             {/* Header */}
@@ -601,29 +612,33 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             <div className="space-y-4">
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
-              {/* LG.com-only: show summary component instead of raw analysis */}
-              {item.sentiment.ratingOnlyMode && isAllPrivacyRestricted(item.product.reviews) ? (
+              {/* LG.com-only: show processed summary instead of raw quote-style evidence */}
+              {allPrivacyRestricted ? (
                 <LgcomReviewSummary
-                  positivePct={Math.round((item.sentiment.positive / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
-                  negativePct={Math.round((item.sentiment.negative / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
-                  neutralPct={Math.round((item.sentiment.neutral / Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1)) * 100)}
+                  positivePct={Math.round((item.sentiment.positive / totalSentiment) * 100)}
+                  negativePct={Math.round((item.sentiment.negative / totalSentiment) * 100)}
+                  neutralPct={Math.round((item.sentiment.neutral / totalSentiment) * 100)}
                   positiveCount={item.sentiment.positive}
                   negativeCount={item.sentiment.negative}
                   total={item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral}
                   score={item.sentiment.compositeScore}
-                  topKeywords={[...item.sentiment.keywords.positive.slice(0, 4), ...item.sentiment.keywords.negative.slice(0, 4)]}
+                  positiveKeywords={item.sentiment.keywords.positive}
+                  negativeKeywords={item.sentiment.keywords.negative}
+                  dominantIssueCategory={item.sentiment.dominantIssueCategory}
                   productName={item.product.name}
                 />
               ) : null}
 
               {/* 1) 주요 긍/부정 키워드 & 주제별 요약 (맨 위) */}
-              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} />
+              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={allPrivacyRestricted} />
 
               {/* 2) 감성 분석 결과 그래프 */}
               <SentimentChart sentiment={item.sentiment} />
 
               {/* 3) 핵심 근거 & 시그널 */}
-              <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
+              {!allPrivacyRestricted && (
+                <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
+              )}
 
 
               {item.product.reviews.length > 0 && (
