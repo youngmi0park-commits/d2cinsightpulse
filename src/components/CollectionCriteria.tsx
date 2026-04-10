@@ -35,7 +35,7 @@ const CATEGORY_LABEL_MAP: Record<string, string> = {
   "Laptop": "Laptop", "Air Purifier": "Air Purifier",
   "Microwave": "Microwave", "Projector": "Projector",
   "Dishwasher": "Dishwasher", "Vacuum": "Vacuum", "Robot Vacuum": "Vacuum",
-  "Phone": "Phone", "Styler": "Styler", "Cooktop": "Cooktop",
+  "Styler": "Styler",
   // BV category codes
   "CT52002425": "Washer", "CT52000826": "Refrigerator",
   "CT52001903": "Dryer", "CT52001906": "Dishwasher",
@@ -60,8 +60,8 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Monitor": "🖥️", "Audio": "🔊", "Air Conditioner": "❄️", "Laptop": "💻",
   "Air Purifier": "🌬️", "Microwave": "♨️", "Projector": "📽️",
   "Dishwasher": "🍽️", "Vacuum": "🧹", "Washer/Dryer": "🔄",
-  "Range/Oven": "🍳", "Styler": "👔", "Cooktop": "🔥",
-  "Phone": "📱", "General": "📦",
+  "Range/Oven": "🍳", "Styler": "👔",
+  "General": "📦",
 };
 
 // Live category collection counts hook
