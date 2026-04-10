@@ -253,9 +253,7 @@ Deno.serve(async (req) => {
     }
 
     // Count remaining
-    const totalRemaining = (allCandidates || [])
-      .filter(p => needsUpdate(p.display_name, p.model_number, p.category))
-      .length - updated;
+    const totalRemaining = allCandidates.length - updated;
 
     console.log(`[${regionUpper}] Updated: ${updated}, Skipped: ${skipped}, Remaining: ~${totalRemaining}`);
 
