@@ -587,6 +587,7 @@ export const CollectionCriteria = () => {
   const { t } = useLang();
   const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
+  const categoryCounts = useCategoryCounts();
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
