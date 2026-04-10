@@ -128,7 +128,7 @@ const Index = () => {
         });
         const bestProduct = sortedProducts[0];
 
-        const sentiment = analyzeSentiment(formattedReviews);
+        const sentiment = analyzeSentiment(formattedReviews, bestProduct.category);
         const marketing = generateMarketingMessage(bestProduct.display_name, sentiment, lang);
         const geoMessages = generateGeoMarketingMessages(bestProduct.display_name, sentiment);
 
