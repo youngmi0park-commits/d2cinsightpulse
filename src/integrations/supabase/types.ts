@@ -802,6 +802,13 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_category_counts: {
+        Args: never
+        Returns: {
+          category: string
+          count: number
+        }[]
+      }
       get_country_counts: {
         Args: never
         Returns: {

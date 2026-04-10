@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
+import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, Package } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,66 @@ function useLgComCounts() {
       const map: Record<string, number> = {};
       data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
       setCounts(map);
+    });
+  }, []);
+  return counts;
+}
+
+// Normalize BV category codes to readable names
+const CATEGORY_LABEL_MAP: Record<string, string> = {
+  "General": "General", "TV": "TV", "OLED TV": "TV",
+  "Washer": "Washer", "Washing Machine": "Washer",
+  "Refrigerator": "Refrigerator", "Dryer": "Dryer",
+  "Monitor": "Monitor", "Audio": "Audio", "Soundbar": "Audio",
+  "Air Conditioner": "Air Conditioner", "LG art cool": "Air Conditioner",
+  "Laptop": "Laptop", "Air Purifier": "Air Purifier",
+  "Microwave": "Microwave", "Projector": "Projector",
+  "Dishwasher": "Dishwasher", "Vacuum": "Vacuum", "Robot Vacuum": "Vacuum",
+  "Phone": "Phone", "Styler": "Styler", "Cooktop": "Cooktop",
+  // BV category codes
+  "CT52002425": "Washer", "CT52000826": "Refrigerator",
+  "CT52001903": "Dryer", "CT52001906": "Dishwasher",
+  "CT52000821": "TV", "CT52001900": "Air Conditioner",
+  "CT00008334": "Monitor", "CT00008363": "Audio",
+  "C_APPLIANCE_WASHER_DRYER": "Washer/Dryer",
+  "CT10000018": "Refrigerator", "CT52000823": "Microwave",
+  "C_APPLIANCE_AIR_CARE": "Air Purifier",
+  "CT52006585": "Vacuum", "CT52001901": "Range/Oven",
+  "CT52000179": "TV", "CT52000182": "Audio",
+  "CT52000129": "Laptop", "CT10000010": "Monitor",
+  "CT52006087": "Projector", "C_TV_AUDIO_VIDEO_TV_SOUNDBAR": "Audio",
+  "CT10000016": "Air Conditioner", "C_COMPUTING_LAPTOP": "Laptop",
+  "CT52006086": "Vacuum", "CT41000491": "Styler",
+  "CT52106203": "Dishwasher", "CT52006634": "Range/Oven",
+  "CT52006085": "Air Purifier", "CT10000011": "Laptop",
+  "AI Core Tech": "General", "App": "General", "Remote": "General",
+};
+
+const CATEGORY_ICONS: Record<string, string> = {
+  "TV": "📺", "Washer": "🧺", "Refrigerator": "🧊", "Dryer": "🌀",
+  "Monitor": "🖥️", "Audio": "🔊", "Air Conditioner": "❄️", "Laptop": "💻",
+  "Air Purifier": "🌬️", "Microwave": "♨️", "Projector": "📽️",
+  "Dishwasher": "🍽️", "Vacuum": "🧹", "Washer/Dryer": "🔄",
+  "Range/Oven": "🍳", "Styler": "👔", "Cooktop": "🔥",
+  "Phone": "📱", "General": "📦",
+};
+
+// Live category collection counts hook
+function useCategoryCounts() {
+  const [counts, setCounts] = useState<{ category: string; count: number }[]>([]);
+  useEffect(() => {
+    supabase.rpc("get_category_counts").then((res) => {
+      const data = (res.data || []) as { category: string; count: number }[];
+      // Normalize and merge categories
+      const agg: Record<string, number> = {};
+      data.forEach((d) => {
+        const normalized = CATEGORY_LABEL_MAP[d.category] || d.category;
+        agg[normalized] = (agg[normalized] || 0) + Number(d.count || 0);
+      });
+      const sorted = Object.entries(agg)
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count);
+      setCounts(sorted);
     });
   }, []);
   return counts;
@@ -527,6 +587,7 @@ export const CollectionCriteria = () => {
   const { t } = useLang();
   const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
+  const categoryCounts = useCategoryCounts();
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
@@ -589,6 +650,54 @@ export const CollectionCriteria = () => {
                   </span>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Product Category collection stats */}
+          {categoryCounts.length > 0 && (
+            <div className="border-t border-primary/10 pt-2.5">
+              <p className="text-[10px] font-semibold text-foreground mb-1.5">
+                <Package className="inline h-3 w-3 mr-1" />
+                {t(
+                  `Product category breakdown (${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()} total across ${categoryCounts.length} categories)`,
+                  `제품 카테고리별 수집 현황 (전체 ${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()}건 · ${categoryCounts.length}개 카테고리)`
+                )}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {categoryCounts.filter(c => c.category !== "General").map(({ category, count }) => {
+                  const total = categoryCounts.reduce((s, c) => s + c.count, 0);
+                  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                  return (
+                    <div key={category} className="rounded-lg border border-border bg-background/60 p-2.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-[11px]">
+                          {CATEGORY_ICONS[category] || "📦"} {category}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
+                        <div
+                          className="h-full rounded-full bg-primary/70 transition-all"
+                          style={{ width: `${Math.min(pct * 3, 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                        {t(" reviews", "건")}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* General category as a note */}
+              {categoryCounts.find(c => c.category === "General") && (
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {t(
+                    `+ General/Uncategorized: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()} reviews (BV category codes pending normalization)`,
+                    `+ 일반/미분류: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}건 (BV 카테고리 코드 정규화 진행 중)`
+                  )}
+                </p>
+              )}
             </div>
           )}
         </div>
