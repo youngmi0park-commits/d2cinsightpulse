@@ -28,17 +28,29 @@ const CATEGORY_MAP: Record<string, string> = {
 // BV category ID → human category mapping
 const BV_CATEGORY_MAP: Record<string, string> = {
   CT10000018: "TV",
-  CT52000821: "TV",
+  CT10000010: "TV",
+  CT52000821: "TV",       // DE TV
+  CT00008334: "TV",       // UK TV
+  CT52000129: "TV",       // AU TV
+  CT52000179: "TV",       // JP TV
   CT10000030: "Monitor",
   CT52001901: "Monitor",
   CT10000002: "Refrigerator",
-  CT52000826: "Washer",
-  CT52001903: "Dryer",
-  CT52001906: "Dishwasher",
+  CT52000823: "Refrigerator", // DE Refrigerator
+  CT52001900: "Refrigerator", // AU Refrigerator
+  CT52000826: "Washer",   // DE Washer
+  CT00008363: "Washer",   // UK Washer
   CT10000011: "Washer",
-  CT00000305: "Accessory",
+  CT52001903: "Dryer",    // AU Dryer
+  CT52001906: "Dishwasher", // AU Dishwasher
+  CT52002425: "Vacuum",   // Vacuum/Home Care
+  CT52006086: "Audio",    // Soundbar
+  CT52006634: "Air Purifier",
+  CT10000016: "Accessory", // Filters etc.
   CT41000327: "TV",
   CT41000325: "Audio",
+  CT41000491: "Appliance Bundle",
+  CT00000305: "Accessory",
 };
 
 const LOCALE_API_KEYS: Record<string, { envKey: string; locale: string; label: string }> = {
