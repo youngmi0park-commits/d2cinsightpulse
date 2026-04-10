@@ -790,7 +790,7 @@ function extractUsageScenes(reviews: Review[]): string[] {
 // PUBLIC API: analyzeSentiment
 // ═══════════════════════════════════════════════════════════════════
 
-export function analyzeSentiment(reviews: Review[]): SentimentResult {
+export function analyzeSentiment(reviews: Review[], productCategory?: string): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
   let hasRealText = false;
   let totalComposite = 0;
@@ -817,7 +817,8 @@ export function analyzeSentiment(reviews: Review[]): SentimentResult {
       analysisText,
       review.source,
       review.sentiment,
-      review.score
+      review.score,
+      productCategory
     );
 
     // Count sentiment buckets
