@@ -68,74 +68,19 @@ const CATEGORY_ICONS: Record<string, string> = {
 function useCategoryCounts() {
   const [counts, setCounts] = useState<{ category: string; count: number }[]>([]);
   useEffect(() => {
-    supabase
-      .from("reviews")
-      .select("product_id, products!inner(category)")
-      .then(() => {
-        // Use direct query approach: group by product category
-        // We'll fetch from products joined with review counts
-        supabase
-          .rpc("get_source_counts")
-          .then(() => {
-            // Fallback: query categories directly
-            fetch_categories();
-          });
+    supabase.rpc("get_category_counts").then((res) => {
+      const data = (res.data || []) as { category: string; count: number }[];
+      // Normalize and merge categories
+      const agg: Record<string, number> = {};
+      data.forEach((d) => {
+        const normalized = CATEGORY_LABEL_MAP[d.category] || d.category;
+        agg[normalized] = (agg[normalized] || 0) + Number(d.count || 0);
       });
-
-    async function fetch_categories() {
-      // Get all products with their categories and count reviews
-      const { data: products } = await supabase
-        .from("products")
-        .select("id, category");
-      if (!products) return;
-
-      const productCategoryMap: Record<string, string> = {};
-      products.forEach(p => {
-        productCategoryMap[p.id] = p.category;
-      });
-
-      // Get review counts per product
-      const { count: totalCount } = await supabase
-        .from("reviews")
-        .select("id", { count: "exact", head: true });
-
-      // Query reviews grouped by product category using products table
-      const categoryAgg: Record<string, number> = {};
-      
-      // Batch approach: get product_id counts from reviews
-      const batchSize = 1000;
-      let offset = 0;
-      let hasMore = true;
-      
-      while (hasMore) {
-        const { data: batch } = await supabase
-          .from("reviews")
-          .select("product_id")
-          .range(offset, offset + batchSize - 1);
-        
-        if (!batch || batch.length === 0) {
-          hasMore = false;
-          break;
-        }
-        
-        batch.forEach(r => {
-          const rawCat = productCategoryMap[r.product_id] || "General";
-          const normalizedCat = CATEGORY_LABEL_MAP[rawCat] || rawCat;
-          categoryAgg[normalizedCat] = (categoryAgg[normalizedCat] || 0) + 1;
-        });
-        
-        if (batch.length < batchSize) hasMore = false;
-        else offset += batchSize;
-      }
-
-      const sorted = Object.entries(categoryAgg)
+      const sorted = Object.entries(agg)
         .map(([category, count]) => ({ category, count }))
         .sort((a, b) => b.count - a.count);
-      
       setCounts(sorted);
-    }
-
-    fetch_categories();
+    });
   }, []);
   return counts;
 }
