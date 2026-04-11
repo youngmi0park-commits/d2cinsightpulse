@@ -244,7 +244,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">긍정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#16a34a;line-height:20px;margin-top:6px;">"${d.topPositiveKeyword}"</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 언급 1위</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 · ${d.topPositiveMeta || '언급 1위'}</div>
           </td></tr>
         </table>
       </td>
@@ -254,7 +254,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">부정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#dc2626;line-height:20px;margin-top:6px;">"${d.topNegativeKeyword}"</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · FAQ 대응 권고</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · ${d.topNegativeMeta || 'FAQ 대응 권고'}</div>
           </td></tr>
         </table>
       </td>
@@ -264,7 +264,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">주간 언급 TOP</div>
             <div style="font-size:13px;font-weight:800;color:#1a1a1a;line-height:18px;margin-top:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.topProduct}</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위${d.topProductKws ? ` · ${d.topProductKws}` : ''}</div>
           </td></tr>
         </table>
       </td>
