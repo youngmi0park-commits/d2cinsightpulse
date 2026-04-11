@@ -101,7 +101,7 @@ function useAllCountryCounts() {
 
 // ISO → LGE RIS code mapping (source: ris.lge.com/SearchSubsidiaryCmd.laf)
 const ISO_TO_LGE: Record<string, string> = {
-  US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIL",
+  US: "LGEUS", UK: "LGEUK", DE: "LGEDE", AU: "LGEAP", IN: "LGEIL",
   TH: "LGETH", TW: "LGETT", JP: "LGEJP", SG: "LGESL", MY: "LGEML",
   ID: "LGEIN", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
   BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
@@ -110,12 +110,12 @@ const ISO_TO_LGE: Record<string, string> = {
 const LGE_FLAGS: Record<string, string> = {
   LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIN: "🇮🇩",
   LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
-  LGEDG: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
+  LGEDE: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
   Global: "🌐", Other: "🔹",
 };
 
 const BV_AVAILABLE: Record<string, number> = {
-  LGEUS: 121353, LGEUK: 68862, LGEDG: 41097, LGEAP: 17842, LGEIL: 7761, LGETH: 5503, LGETT: 4633, LGEJP: 1322,
+  LGEUS: 121353, LGEUK: 68862, LGEDE: 41097, LGEAP: 17842, LGEIL: 7761, LGETH: 5503, LGETT: 4633, LGEJP: 1322,
 };
 
 // Channel data organized by product category
@@ -139,10 +139,10 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "TV · Display · Audio",
     labelKo: "TV · 디스플레이 · 오디오",
     channels: [
-      { platform: "lg.com (BV)", descEn: "Official product reviews via Bazaarvoice API", descKo: "Bazaarvoice API 기반 공식 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGETT, LGEJP, LGETH, LGEDG, LGEAP" },
+      { platform: "lg.com (BV)", descEn: "Official product reviews via Bazaarvoice API", descKo: "Bazaarvoice API 기반 공식 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGETT, LGEJP, LGETH, LGEDE, LGEAP" },
       { platform: "Reddit", descEn: "r/OLED, r/hometheater, r/4kTV, r/soundbars", descKo: "r/OLED, r/hometheater, r/4kTV, r/soundbars", countries: "LGEUS (주력), Global" },
       { platform: "RTINGS", descEn: "Lab measurements & professional test results", descKo: "랩 측정 및 전문 테스트 결과", countries: "Global" },
-      { platform: "Amazon", descEn: "Verified Purchase reviews", descKo: "Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIL, LGEJP, LGECI, LGEFS, LGESL" },
+      { platform: "Amazon", descEn: "Verified Purchase reviews", descKo: "Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEDE, LGEIL, LGEJP, LGECI, LGEFS, LGESL" },
       { platform: "Best Buy", descEn: "Retail reviews & ratings (Public API)", descKo: "리테일 리뷰 및 평점 (공개 API)", countries: "LGEUS" },
       { platform: "YouTube", descEn: "Review & unboxing video comments", descKo: "리뷰 및 언박싱 영상 댓글", countries: "LGEUS, LGEUK, LGEAP, LGEJP, LGEIL, LGESL, LGETH 등 13개국" },
       { platform: "CNET · TechRadar", descEn: "Editor reviews & Editor's Choice ratings", descKo: "에디터 리뷰 및 에디터 초이스 평가", countries: "Global" },
@@ -154,8 +154,8 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Refrigerator · Kitchen Appliance",
     labelKo: "냉장고 · 주방 가전",
     channels: [
-      { platform: "lg.com (BV)", descEn: "InstaView, French Door, Side-by-Side reviews", descKo: "InstaView, French Door, Side-by-Side 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDG, LGEAP, LGETH, LGETT, LGEJP" },
-      { platform: "Amazon", descEn: "Refrigerator, Range, Microwave, Dishwasher reviews", descKo: "냉장고, 레인지, 전자레인지, 식기세척기 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIL" },
+      { platform: "lg.com (BV)", descEn: "InstaView, French Door, Side-by-Side reviews", descKo: "InstaView, French Door, Side-by-Side 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDE, LGEAP, LGETH, LGETT, LGEJP" },
+      { platform: "Amazon", descEn: "Refrigerator, Range, Microwave, Dishwasher reviews", descKo: "냉장고, 레인지, 전자레인지, 식기세척기 리뷰", countries: "LGEUS, LGEUK, LGEDE, LGEIL" },
       { platform: "Consumer Reports", descEn: "Reliability ratings & lab test reviews", descKo: "신뢰성 평가 및 랩 테스트 리뷰", countries: "LGEUS" },
       { platform: "This Old House", descEn: "Top Pick & comparison reviews", descKo: "Top Pick 및 비교 리뷰", countries: "LGEUS" },
       { platform: "Designer Appliances", descEn: "Expert in-depth blog reviews", descKo: "전문가 심층 블로그 리뷰", countries: "LGEUS" },
@@ -168,7 +168,7 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Washer · Dryer · Laundry",
     labelKo: "세탁기 · 건조기 · 세탁",
     channels: [
-      { platform: "lg.com (BV)", descEn: "WashTower, TurboWash, Heat Pump Dryer reviews", descKo: "WashTower, TurboWash, 히트펌프 건조기 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDG, LGEAP, LGETH, LGETT, LGEJP" },
+      { platform: "lg.com (BV)", descEn: "WashTower, TurboWash, Heat Pump Dryer reviews", descKo: "WashTower, TurboWash, 히트펌프 건조기 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDE, LGEAP, LGETH, LGETT, LGEJP" },
       { platform: "Reddit", descEn: "r/Appliances, r/BuyItForLife", descKo: "r/Appliances, r/BuyItForLife", countries: "LGEUS, Global" },
       { platform: "Consumer Reports", descEn: "Washer/Dryer reliability & lab tests", descKo: "세탁기/건조기 신뢰성 및 랩 테스트", countries: "LGEUS" },
       { platform: "Wirecutter (NYT)", descEn: "Expert recommendation articles (public only)", descKo: "전문 추천 아티클 (공개 영역만)", countries: "LGEUS" },
@@ -181,9 +181,9 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Air Conditioner · Air Purifier",
     labelKo: "에어컨 · 공기청정기",
     channels: [
-      { platform: "lg.com (BV)", descEn: "Artcool, Dual Inverter, PuriCare reviews", descKo: "Artcool, Dual Inverter, PuriCare 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDG, LGEAP, LGETH, LGETT, LGEJP" },
+      { platform: "lg.com (BV)", descEn: "Artcool, Dual Inverter, PuriCare reviews", descKo: "Artcool, Dual Inverter, PuriCare 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDE, LGEAP, LGETH, LGETT, LGEJP" },
       { platform: "Reddit", descEn: "r/Appliances, r/HVAC, r/AirPurifiers", descKo: "r/Appliances, r/HVAC, r/AirPurifiers", countries: "LGEUS, Global" },
-      { platform: "Amazon", descEn: "AC & air purifier Verified Purchase reviews", descKo: "에어컨 및 공기청정기 Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDG" },
+      { platform: "Amazon", descEn: "AC & air purifier Verified Purchase reviews", descKo: "에어컨 및 공기청정기 Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEIL, LGEDE" },
       { platform: "Trustpilot", descEn: "Consumer reviews for appliances & services", descKo: "가전·서비스 소비자 직접 리뷰", countries: "Global" },
     ],
   },
@@ -192,7 +192,7 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Laptop · Monitor · Computing",
     labelKo: "노트북 · 모니터 · 컴퓨팅",
     channels: [
-      { platform: "lg.com (BV)", descEn: "LG Gram, UltraGear, MyView, DualUp reviews", descKo: "LG Gram, UltraGear, MyView, DualUp 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEAP, LGEJP" },
+      { platform: "lg.com (BV)", descEn: "LG Gram, UltraGear, MyView, DualUp reviews", descKo: "LG Gram, UltraGear, MyView, DualUp 리뷰", countries: "LGEUS, LGEUK, LGEDE, LGEAP, LGEJP" },
       { platform: "Reddit", descEn: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", descKo: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", countries: "LGEUS, Global" },
       { platform: "Notebookcheck", descEn: "In-depth laptop reviews & performance data", descKo: "노트북 심층 리뷰 및 성능 데이터", countries: "Global" },
       { platform: "Tom's Hardware", descEn: "Monitor & laptop benchmark reviews", descKo: "모니터 및 노트북 벤치마크 리뷰", countries: "Global" },
@@ -205,8 +205,8 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Vacuum · Robot · Small Appliance",
     labelKo: "청소기 · 로봇 · 소형 가전",
     channels: [
-      { platform: "lg.com (BV)", descEn: "CordZero, Robot Vacuum reviews", descKo: "CordZero, 로봇청소기 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEAP, LGETH, LGETT, LGEJP" },
-      { platform: "Amazon", descEn: "Vacuum & small appliance reviews", descKo: "청소기 및 소형 가전 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIL, LGEJP" },
+      { platform: "lg.com (BV)", descEn: "CordZero, Robot Vacuum reviews", descKo: "CordZero, 로봇청소기 리뷰", countries: "LGEUS, LGEUK, LGEDE, LGEAP, LGETH, LGETT, LGEJP" },
+      { platform: "Amazon", descEn: "Vacuum & small appliance reviews", descKo: "청소기 및 소형 가전 리뷰", countries: "LGEUS, LGEUK, LGEDE, LGEIL, LGEJP" },
       { platform: "BestReviews", descEn: "Appliance & projector recommendation reviews", descKo: "가전·프로젝터 종합 추천 리뷰", countries: "LGEUS" },
       { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "LGESL, LGEML, LGEPH, LGETH, LGEIN, LGEVN" },
     ],
@@ -325,7 +325,7 @@ const criteria: CriteriaItem[] = [
     itemsEn: [
       "🇺🇸 United States [LGEUS] — lg.com/us (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
       "🇬🇧 United Kingdom [LGEUK] — lg.com/uk (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇩🇪 Germany [LGEDG] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + Web Reviews",
+      "🇩🇪 Germany [LGEDE] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + Web Reviews",
       "🇦🇺 Australia [LGEAP] — 🆕 lg.com/au (Bazaarvoice) + YouTube AU + Web Reviews",
       "🇮🇳 India [LGEIL] — 🆕 lg.com/in (Bazaarvoice) + Amazon IN + YouTube IN + Web Reviews",
       "🇯🇵 Japan [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + Web Reviews",
@@ -340,7 +340,7 @@ const criteria: CriteriaItem[] = [
     itemsKo: [
       "🇺🇸 미국 [LGEUS] — lg.com/us (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
       "🇬🇧 영국 [LGEUK] — lg.com/uk (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇩🇪 독일 [LGEDG] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + 웹 리뷰",
+      "🇩🇪 독일 [LGEDE] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + 웹 리뷰",
       "🇦🇺 호주 [LGEAP] — 🆕 lg.com/au (Bazaarvoice) + YouTube AU + 웹 리뷰",
       "🇮🇳 인도 [LGEIL] — 🆕 lg.com/in (Bazaarvoice) + Amazon IN + YouTube IN + 웹 리뷰",
       "🇯🇵 일본 [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + 웹 리뷰",
@@ -411,14 +411,14 @@ const criteria: CriteriaItem[] = [
       "🔍 US/Global Top 100: High-traffic keywords from lge.com search analytics — OLED, Gram, UltraGear, Refrigerator, Washer, Dryer, Dishwasher, Air Conditioner, and more",
       "📊 Categories: TV & Display (OLED/QNED/NanoCell), Home Appliances (InstaView/TurboWash/QuadWash), Computing (Gram/UltraGear), Marketing/SEO terms",
       "🌍 Non-US/NL Top 100: Multi-language keywords (excl. US/NL) — Portuguese, Spanish, German — ar condicionado, lava e seca, refrigerador, lavasecadora, waschmaschine, kühlschrank, soundbar, washtower, etc.",
-      "🌐 Non-US/NL regions: Brazil (LGESP), Mexico (LGEMS), Germany (LGEDG), and other global markets — last 12 months",
+      "🌐 Non-US/NL regions: Brazil (LGESP), Mexico (LGEMS), Germany (LGEDE), and other global markets — last 12 months",
       "These 200 keywords are included in the automated daily collection to capture real search-driven user interest across all markets",
     ],
     itemsKo: [
       "🔍 US/글로벌 Top 100: lge.com 검색 분석 기반 상위 100개 키워드 — OLED, Gram, UltraGear, 냉장고, 세탁기, 건조기, 식기세척기, 에어컨 등",
       "📊 포함 카테고리: TV·디스플레이(OLED/QNED/NanoCell), 생활가전(InstaView/TurboWash/QuadWash), 컴퓨팅(Gram/UltraGear), 마케팅/SEO 용어",
       "🌍 비미국/네덜란드 Top 100: 다국어 키워드 — 포르투갈어, 스페인어, 독일어 — ar condicionado, lava e seca, refrigerador, lavasecadora, waschmaschine, kühlschrank, soundbar, washtower 등",
-      "🌐 비미국/네덜란드 대상: 브라질(LGESP), 멕시코(LGEMS), 독일(LGEDG) 등 글로벌 시장 — 최근 12개월 데이터 기반",
+      "🌐 비미국/네덜란드 대상: 브라질(LGESP), 멕시코(LGEMS), 독일(LGEDE) 등 글로벌 시장 — 최근 12개월 데이터 기반",
       "이 200개 키워드는 실제 검색 기반 사용자 관심을 포착하기 위해 매일 자동 수집에 포함됩니다",
     ],
   },

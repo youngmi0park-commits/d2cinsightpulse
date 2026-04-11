@@ -7,7 +7,7 @@ const CORS = {
 };
 
 const SOURCE_TO_LGE: Record<string, string> = {
-  lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDG",
+  lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDE",
   lge_com_au: "LGEAP", lge_com_in: "LGEIL", lge_com_tw: "LGETT",
   lge_com_jp: "LGEJP", lge_com_th: "LGETH",
   lge_com_sg: "LGESL", lge_com_my: "LGEML", lge_com_id: "LGEIN",
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
     const systemPrompt = "You are a senior LG Electronics global performance marketing strategist. " +
       "Analyze weekly VOC data and generate actionable marketing decisions.\n\n" +
       "RULES:\n" +
-      "1. Use LGE subsidiary codes (LGEUS, LGEDG, etc.) — never ISO 2-letter codes\n" +
+      "1. Use LGE subsidiary codes (LGEUS, LGEDE, etc.) — never ISO 2-letter codes\n" +
       "2. SignalTags: PMAX_UP|PMAX_HOLD|PMAX_PAUSE|CRITEO_ON|CRITEO_OFF|AFFILIATE_UP|AFFILIATE_BRIEF|FAQ_URGENT|PDP_FAQ|GEO_READY|SEO_READY|META_ON|YOUTUBE_ON|SEASON_ON|MONITOR|DEFEND\n" +
       "3. FAQ CIS score = conversion impact 0-100. P0>=80, P1=65-79, P2=50-64\n" +
       "4. FAQ types: pdp|geo|seo|crm. Channel types: pmax|criteo|affiliate|meta|youtube\n" +
