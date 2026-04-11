@@ -234,8 +234,6 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             isLoading={isLoading}
             hasResult={!!report}
           />
-            ))}
-          </div>
         )}
 
         {/* Empty state */}
