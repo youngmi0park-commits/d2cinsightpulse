@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy, Archive } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,33 +66,11 @@ const getDefaultWeek = () => {
 };
 
 const NewsletterPage = () => {
-  /* Dynamic country & source counts */
-  const { data: countryCounts } = useQuery({
-    queryKey: ["newsletter-country-count"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_country_counts");
-      if (error) throw error;
-      return (data || []).filter((r: { country: string }) => r.country !== "Other" && r.country !== "Global");
-    },
-    staleTime: 10 * 60_000,
-  });
-  const { data: sourceCounts } = useQuery({
-    queryKey: ["newsletter-source-count"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_source_counts");
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 10 * 60_000,
-  });
-  const countryNum = countryCounts?.length || 14;
-  const channelNum = sourceCounts?.length || 30;
-
+  const defaults = getDefaultWeek();
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState("");
-  const defaultWeek = getDefaultWeek();
-  const [weekStart, setWeekStart] = useState(defaultWeek.start);
-  const [weekEnd, setWeekEnd] = useState(defaultWeek.end);
+  const [weekStart, setWeekStart] = useState(defaults.start);
+  const [weekEnd, setWeekEnd] = useState(defaults.end);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
@@ -206,7 +183,7 @@ const NewsletterPage = () => {
       <PageHeader
         icon={Mail}
         title="📧 주간 인사이트 뉴스레터"
-        description={`고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.\nD2C Insight Pulse는 ${countryNum}개국, ${channelNum}개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 메시지를 제공하는 데이터 플랫폼입니다.`}
+        description="매주 화요일 오전 10시 발행 | AI 기반 국가별 마케팅 시그널 분석 · PMAX / Criteo / Affiliate / FAQ 중심"
       />
 
       {/* ── Top Action Bar ── */}
