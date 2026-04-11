@@ -99,11 +99,19 @@ function useAllCountryCounts() {
   return counts;
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  US: "🇺🇸", UK: "🇬🇧", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩",
-  TH: "🇹🇭", PH: "🇵🇭", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
-  DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
-  IQ: "🇮🇶", Global: "🌐", Other: "🔹",
+// ISO → LGE code mapping for display
+const ISO_TO_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIN",
+  TH: "LGETH", TW: "LGETW", JP: "LGEJP", SG: "LGESG", MY: "LGEMY",
+  ID: "LGEID", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
+  BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
+};
+
+const LGE_FLAGS: Record<string, string> = {
+  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESG: "🇸🇬", LGEMY: "🇲🇾", LGEID: "🇮🇩",
+  LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETW: "🇹🇼", LGEHK: "🇭🇰", LGEIN: "🇮🇳",
+  LGEDG: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
+  Global: "🌐", Other: "🔹",
 };
 
 const BV_AVAILABLE: Record<string, number> = {
