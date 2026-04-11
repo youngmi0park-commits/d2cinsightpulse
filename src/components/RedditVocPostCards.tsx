@@ -100,6 +100,26 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
     toast.success("복사 완료!");
   };
 
+  const handleGenerateCopy = useCallback(async (id: string, content: string, sentiment: string) => {
+    if (generatedCopy[id]) return;
+    setGenerating((prev) => ({ ...prev, [id]: true }));
+    try {
+      const prompt = sentiment === "negative"
+        ? `Based on this negative Reddit VOC about LG products, generate 1 defensive marketing message that addresses the concern and reassures. Under 2 lines. Include Korean translation.\n\nVOC: ${content.slice(0, 300)}`
+        : `Based on this positive Reddit review about LG products, generate 1 marketing message that amplifies satisfaction. Perfect for PDP/social copy. Under 2 lines. Include Korean translation.\n\nReview: ${content.slice(0, 300)}`;
+
+      const { data, error } = await supabase.functions.invoke("generate-faq", {
+        body: { prompt, mode: "copy" },
+      });
+      if (error) throw error;
+      setGeneratedCopy((prev) => ({ ...prev, [id]: data?.answer || data?.result || "생성 실패" }));
+    } catch {
+      toast.error("마케팅 카피 생성에 실패했습니다.");
+    } finally {
+      setGenerating((prev) => ({ ...prev, [id]: false }));
+    }
+  }, [generatedCopy]);
+
   if (isLoading) {
     return (
       <Card>
