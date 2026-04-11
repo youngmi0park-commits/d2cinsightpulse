@@ -131,14 +131,9 @@ Deno.serve(async (req) => {
       let totalSkipped = 0;
       let productsDone = 0;
 
-      // 미완료 제품을 리뷰 많은 순으로 가져오기 (배치 확대)
+      // 카테고리 우선순위: 냉장고/세탁기/건조기 → 식기세척기/청소기/에어컨 → 기타 → TV
       const { data: products } = await supabase
-        .from("bv_collection_progress")
-        .select("*")
-        .eq("locale", locale)
-        .eq("is_complete", false)
-        .order("total_available", { ascending: false })
-        .limit(COLLECT_BATCH);
+        .rpc("get_bv_priority_products", { p_locale: locale, p_limit: COLLECT_BATCH });
 
       if (!products?.length) {
         results[`collect_${locale}`] = { message: "no pending products" };
