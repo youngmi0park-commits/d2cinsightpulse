@@ -99,15 +99,23 @@ function useAllCountryCounts() {
   return counts;
 }
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  US: "🇺🇸", UK: "🇬🇧", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩",
-  TH: "🇹🇭", PH: "🇵🇭", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
-  DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
-  IQ: "🇮🇶", Global: "🌐", Other: "🔹",
+// ISO → LGE code mapping for display
+const ISO_TO_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIN",
+  TH: "LGETH", TW: "LGETW", JP: "LGEJP", SG: "LGESG", MY: "LGEMY",
+  ID: "LGEID", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
+  BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
+};
+
+const LGE_FLAGS: Record<string, string> = {
+  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESG: "🇸🇬", LGEMY: "🇲🇾", LGEID: "🇮🇩",
+  LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETW: "🇹🇼", LGEHK: "🇭🇰", LGEIN: "🇮🇳",
+  LGEDG: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
+  Global: "🌐", Other: "🔹",
 };
 
 const BV_AVAILABLE: Record<string, number> = {
-  US: 121353, UK: 68862, DE: 41097, AU: 17842, IN: 7761, TH: 5503, TW: 4633, JP: 1322,
+  LGEUS: 121353, LGEUK: 68862, LGEDG: 41097, LGEAP: 17842, LGEIN: 7761, LGETH: 5503, LGETW: 4633, LGEJP: 1322,
 };
 
 // Channel data organized by product category
@@ -131,12 +139,12 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "TV · Display · Audio",
     labelKo: "TV · 디스플레이 · 오디오",
     channels: [
-      { platform: "LG.com (BV)", descEn: "Official product reviews via Bazaarvoice API", descKo: "Bazaarvoice API 기반 공식 리뷰", countries: "US, UK, IN, TW, JP, TH, DE, AU" },
-      { platform: "Reddit", descEn: "r/OLED, r/hometheater, r/4kTV, r/soundbars", descKo: "r/OLED, r/hometheater, r/4kTV, r/soundbars", countries: "US (주력), Global" },
+      { platform: "lg.com (BV)", descEn: "Official product reviews via Bazaarvoice API", descKo: "Bazaarvoice API 기반 공식 리뷰", countries: "LGEUS, LGEUK, LGEIN, LGETW, LGEJP, LGETH, LGEDG, LGEAP" },
+      { platform: "Reddit", descEn: "r/OLED, r/hometheater, r/4kTV, r/soundbars", descKo: "r/OLED, r/hometheater, r/4kTV, r/soundbars", countries: "LGEUS (주력), Global" },
       { platform: "RTINGS", descEn: "Lab measurements & professional test results", descKo: "랩 측정 및 전문 테스트 결과", countries: "Global" },
-      { platform: "Amazon", descEn: "Verified Purchase reviews", descKo: "Verified Purchase 리뷰", countries: "US, UK, DE, IN, JP, CA, FR, SG" },
-      { platform: "Best Buy", descEn: "Retail reviews & ratings (Public API)", descKo: "리테일 리뷰 및 평점 (공개 API)", countries: "US" },
-      { platform: "YouTube", descEn: "Review & unboxing video comments", descKo: "리뷰 및 언박싱 영상 댓글", countries: "US, UK, AU, JP, IN, SG, TH 등 13개국" },
+      { platform: "Amazon", descEn: "Verified Purchase reviews", descKo: "Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIN, LGEJP, LGECI, LGEFS, LGESG" },
+      { platform: "Best Buy", descEn: "Retail reviews & ratings (Public API)", descKo: "리테일 리뷰 및 평점 (공개 API)", countries: "LGEUS" },
+      { platform: "YouTube", descEn: "Review & unboxing video comments", descKo: "리뷰 및 언박싱 영상 댓글", countries: "LGEUS, LGEUK, LGEAP, LGEJP, LGEIN, LGESG, LGETH 등 13개국" },
       { platform: "CNET · TechRadar", descEn: "Editor reviews & Editor's Choice ratings", descKo: "에디터 리뷰 및 에디터 초이스 평가", countries: "Global" },
       { platform: "SoundGuys", descEn: "Audio product specialist reviews & measurements", descKo: "오디오 제품 전문 리뷰 및 측정", countries: "Global" },
     ],
@@ -146,13 +154,13 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Refrigerator · Kitchen Appliance",
     labelKo: "냉장고 · 주방 가전",
     channels: [
-      { platform: "LG.com (BV)", descEn: "InstaView, French Door, Side-by-Side reviews", descKo: "InstaView, French Door, Side-by-Side 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
-      { platform: "Amazon", descEn: "Refrigerator, Range, Microwave, Dishwasher reviews", descKo: "냉장고, 레인지, 전자레인지, 식기세척기 리뷰", countries: "US, UK, DE, IN" },
-      { platform: "Consumer Reports", descEn: "Reliability ratings & lab test reviews", descKo: "신뢰성 평가 및 랩 테스트 리뷰", countries: "US" },
-      { platform: "This Old House", descEn: "Top Pick & comparison reviews", descKo: "Top Pick 및 비교 리뷰", countries: "US" },
-      { platform: "Designer Appliances", descEn: "Expert in-depth blog reviews", descKo: "전문가 심층 블로그 리뷰", countries: "US" },
-      { platform: "ConsumerAffairs", descEn: "Consumer complaint & review platform", descKo: "소비자 불만 및 리뷰 플랫폼", countries: "US" },
-      { platform: "Houzz", descEn: "Home improvement community reviews", descKo: "홈 인테리어 커뮤니티 리뷰", countries: "US" },
+      { platform: "lg.com (BV)", descEn: "InstaView, French Door, Side-by-Side reviews", descKo: "InstaView, French Door, Side-by-Side 리뷰", countries: "LGEUS, LGEUK, LGEIN, LGEDG, LGEAP, LGETH, LGETW, LGEJP" },
+      { platform: "Amazon", descEn: "Refrigerator, Range, Microwave, Dishwasher reviews", descKo: "냉장고, 레인지, 전자레인지, 식기세척기 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIN" },
+      { platform: "Consumer Reports", descEn: "Reliability ratings & lab test reviews", descKo: "신뢰성 평가 및 랩 테스트 리뷰", countries: "LGEUS" },
+      { platform: "This Old House", descEn: "Top Pick & comparison reviews", descKo: "Top Pick 및 비교 리뷰", countries: "LGEUS" },
+      { platform: "Designer Appliances", descEn: "Expert in-depth blog reviews", descKo: "전문가 심층 블로그 리뷰", countries: "LGEUS" },
+      { platform: "ConsumerAffairs", descEn: "Consumer complaint & review platform", descKo: "소비자 불만 및 리뷰 플랫폼", countries: "LGEUS" },
+      { platform: "Houzz", descEn: "Home improvement community reviews", descKo: "홈 인테리어 커뮤니티 리뷰", countries: "LGEUS" },
     ],
   },
   {
@@ -160,12 +168,12 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Washer · Dryer · Laundry",
     labelKo: "세탁기 · 건조기 · 세탁",
     channels: [
-      { platform: "LG.com (BV)", descEn: "WashTower, TurboWash, Heat Pump Dryer reviews", descKo: "WashTower, TurboWash, 히트펌프 건조기 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
-      { platform: "Reddit", descEn: "r/Appliances, r/BuyItForLife", descKo: "r/Appliances, r/BuyItForLife", countries: "US, Global" },
-      { platform: "Consumer Reports", descEn: "Washer/Dryer reliability & lab tests", descKo: "세탁기/건조기 신뢰성 및 랩 테스트", countries: "US" },
-      { platform: "Wirecutter (NYT)", descEn: "Expert recommendation articles (public only)", descKo: "전문 추천 아티클 (공개 영역만)", countries: "US" },
-      { platform: "Best Buy · Walmart · Target", descEn: "Retail channel VOC (Public API)", descKo: "유통 채널 VOC (공개 API)", countries: "US" },
-      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "SG, MY, PH, TH, ID, VN" },
+      { platform: "lg.com (BV)", descEn: "WashTower, TurboWash, Heat Pump Dryer reviews", descKo: "WashTower, TurboWash, 히트펌프 건조기 리뷰", countries: "LGEUS, LGEUK, LGEIN, LGEDG, LGEAP, LGETH, LGETW, LGEJP" },
+      { platform: "Reddit", descEn: "r/Appliances, r/BuyItForLife", descKo: "r/Appliances, r/BuyItForLife", countries: "LGEUS, Global" },
+      { platform: "Consumer Reports", descEn: "Washer/Dryer reliability & lab tests", descKo: "세탁기/건조기 신뢰성 및 랩 테스트", countries: "LGEUS" },
+      { platform: "Wirecutter (NYT)", descEn: "Expert recommendation articles (public only)", descKo: "전문 추천 아티클 (공개 영역만)", countries: "LGEUS" },
+      { platform: "Best Buy · Walmart · Target", descEn: "Retail channel VOC (Public API)", descKo: "유통 채널 VOC (공개 API)", countries: "LGEUS" },
+      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "LGESG, LGEMY, LGEPH, LGETH, LGEID, LGEVN" },
     ],
   },
   {
@@ -173,9 +181,9 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Air Conditioner · Air Purifier",
     labelKo: "에어컨 · 공기청정기",
     channels: [
-      { platform: "LG.com (BV)", descEn: "Artcool, Dual Inverter, PuriCare reviews", descKo: "Artcool, Dual Inverter, PuriCare 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
-      { platform: "Reddit", descEn: "r/Appliances, r/HVAC, r/AirPurifiers", descKo: "r/Appliances, r/HVAC, r/AirPurifiers", countries: "US, Global" },
-      { platform: "Amazon", descEn: "AC & air purifier Verified Purchase reviews", descKo: "에어컨 및 공기청정기 Verified Purchase 리뷰", countries: "US, UK, IN, DE" },
+      { platform: "lg.com (BV)", descEn: "Artcool, Dual Inverter, PuriCare reviews", descKo: "Artcool, Dual Inverter, PuriCare 리뷰", countries: "LGEUS, LGEUK, LGEIN, LGEDG, LGEAP, LGETH, LGETW, LGEJP" },
+      { platform: "Reddit", descEn: "r/Appliances, r/HVAC, r/AirPurifiers", descKo: "r/Appliances, r/HVAC, r/AirPurifiers", countries: "LGEUS, Global" },
+      { platform: "Amazon", descEn: "AC & air purifier Verified Purchase reviews", descKo: "에어컨 및 공기청정기 Verified Purchase 리뷰", countries: "LGEUS, LGEUK, LGEIN, LGEDG" },
       { platform: "Trustpilot", descEn: "Consumer reviews for appliances & services", descKo: "가전·서비스 소비자 직접 리뷰", countries: "Global" },
     ],
   },
@@ -184,12 +192,12 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Laptop · Monitor · Computing",
     labelKo: "노트북 · 모니터 · 컴퓨팅",
     channels: [
-      { platform: "LG.com (BV)", descEn: "LG Gram, UltraGear, MyView, DualUp reviews", descKo: "LG Gram, UltraGear, MyView, DualUp 리뷰", countries: "US, UK, DE, AU, JP" },
-      { platform: "Reddit", descEn: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", descKo: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", countries: "US, Global" },
+      { platform: "lg.com (BV)", descEn: "LG Gram, UltraGear, MyView, DualUp reviews", descKo: "LG Gram, UltraGear, MyView, DualUp 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEAP, LGEJP" },
+      { platform: "Reddit", descEn: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", descKo: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", countries: "LGEUS, Global" },
       { platform: "Notebookcheck", descEn: "In-depth laptop reviews & performance data", descKo: "노트북 심층 리뷰 및 성능 데이터", countries: "Global" },
       { platform: "Tom's Hardware", descEn: "Monitor & laptop benchmark reviews", descKo: "모니터 및 노트북 벤치마크 리뷰", countries: "Global" },
       { platform: "PCMag", descEn: "Professional tech product reviews & ratings", descKo: "전문 테크 제품 리뷰 및 평가", countries: "Global" },
-      { platform: "Trusted Reviews", descEn: "Editor reviews for monitors & laptops (UK)", descKo: "모니터·노트북 에디터 리뷰 (UK 기반)", countries: "UK" },
+      { platform: "Trusted Reviews", descEn: "Editor reviews for monitors & laptops", descKo: "모니터·노트북 에디터 리뷰", countries: "LGEUK" },
     ],
   },
   {
@@ -197,10 +205,10 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Vacuum · Robot · Small Appliance",
     labelKo: "청소기 · 로봇 · 소형 가전",
     channels: [
-      { platform: "LG.com (BV)", descEn: "CordZero, Robot Vacuum reviews", descKo: "CordZero, 로봇청소기 리뷰", countries: "US, UK, DE, AU, TH, TW, JP" },
-      { platform: "Amazon", descEn: "Vacuum & small appliance reviews", descKo: "청소기 및 소형 가전 리뷰", countries: "US, UK, DE, IN, JP" },
-      { platform: "BestReviews", descEn: "Appliance & projector recommendation reviews", descKo: "가전·프로젝터 종합 추천 리뷰", countries: "US" },
-      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "SG, MY, PH, TH, ID, VN" },
+      { platform: "lg.com (BV)", descEn: "CordZero, Robot Vacuum reviews", descKo: "CordZero, 로봇청소기 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEAP, LGETH, LGETW, LGEJP" },
+      { platform: "Amazon", descEn: "Vacuum & small appliance reviews", descKo: "청소기 및 소형 가전 리뷰", countries: "LGEUS, LGEUK, LGEDG, LGEIN, LGEJP" },
+      { platform: "BestReviews", descEn: "Appliance & projector recommendation reviews", descKo: "가전·프로젝터 종합 추천 리뷰", countries: "LGEUS" },
+      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "LGESG, LGEMY, LGEPH, LGETH, LGEID, LGEVN" },
     ],
   },
   {
@@ -211,11 +219,11 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
       { platform: "Google Reviews/Maps", descEn: "LG store & service center reviews", descKo: "LG 스토어 및 서비스센터 리뷰", countries: "Global" },
       { platform: "LG Community", descEn: "Official LG community forum discussions", descKo: "LG 공식 커뮤니티 포럼 토론", countries: "Global" },
       { platform: "Lemon8", descEn: "Social platform product reviews & lifestyle", descKo: "소셜 플랫폼 제품 리뷰 및 라이프스타일", countries: "Global" },
-      { platform: "Reviews.io", descEn: "Consumer reviews platform", descKo: "소비자 리뷰 플랫폼", countries: "Global, JP, TW, HK" },
+      { platform: "Reviews.io", descEn: "Consumer reviews platform", descKo: "소비자 리뷰 플랫폼", countries: "Global, LGEJP, LGETW, LGEHK" },
       { platform: "ComplaintsBoard", descEn: "Consumer complaints platform (incl. Middle East)", descKo: "소비자 불만 플랫폼 (중동 포함)", countries: "Global" },
       { platform: "Quora", descEn: "Product experience Q&A discussions", descKo: "제품 경험 Q&A 토론", countries: "Global" },
       { platform: "Stack Exchange", descEn: "Technical Q&A for product troubleshooting", descKo: "제품 기술 Q&A", countries: "Global" },
-      { platform: "Costco", descEn: "Member product reviews", descKo: "회원 제품 리뷰", countries: "US" },
+      { platform: "Costco", descEn: "Member product reviews", descKo: "회원 제품 리뷰", countries: "LGEUS" },
     ],
   },
 ];
@@ -315,34 +323,34 @@ const criteria: CriteriaItem[] = [
     titleEn: "Target Regions (20+ Countries)",
     titleKo: "대상 지역 (20개국+)",
     itemsEn: [
-      "🇺🇸 United States [LGEUS] — LG.com (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
-      "🇬🇧 United Kingdom [LGEUK] — LG.com (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇩🇪 Germany [LGEDE] — 🆕 LG.com (Bazaarvoice) + Amazon DE + YouTube DE + Web Reviews",
-      "🇦🇺 Australia [LGEAU] — 🆕 LG.com (Bazaarvoice) + YouTube AU + Web Reviews",
-      "🇮🇳 India [LGEIN] — 🆕 LG.com (Bazaarvoice) + Amazon IN + YouTube IN + Web Reviews",
-      "🇯🇵 Japan [LGEJP] — 🆕 LG.com (Bazaarvoice) + Amazon JP + YouTube JP + Web Reviews",
-      "🇹🇼 Taiwan [LGETW] — 🆕 LG.com (Bazaarvoice) + Amazon Global + YouTube TW + Reviews.io",
-      "🇹🇭 Thailand [LGETH] — 🆕 LG.com (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
+      "🇺🇸 United States [LGEUS] — lg.com/us (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
+      "🇬🇧 United Kingdom [LGEUK] — lg.com/uk (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
+      "🇩🇪 Germany [LGEDG] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + Web Reviews",
+      "🇦🇺 Australia [LGEAP] — 🆕 lg.com/au (Bazaarvoice) + YouTube AU + Web Reviews",
+      "🇮🇳 India [LGEIN] — 🆕 lg.com/in (Bazaarvoice) + Amazon IN + YouTube IN + Web Reviews",
+      "🇯🇵 Japan [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + Web Reviews",
+      "🇹🇼 Taiwan [LGETW] — 🆕 lg.com/tw (Bazaarvoice) + Amazon Global + YouTube TW + Reviews.io",
+      "🇹🇭 Thailand [LGETH] — 🆕 lg.com/th (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
       "🇸🇬 Singapore [LGESG] — Shopee SG + Lazada SG + YouTube SG + Web Reviews",
       "🇻🇳 Vietnam [LGEVN] — Shopee VN + Lazada VN + YouTube VN + Web Reviews",
       "🇭🇰 Hong Kong [LGEHK] — Amazon Global + YouTube HK + Reviews.io",
       "🌐 Global — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇫🇷 FR · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
+      "📋 수집 예정: 🇲🇾 LGEMY · 🇮🇩 LGEID · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇧🇷 LGESP · 🇲🇽 LGEMS",
     ],
     itemsKo: [
-      "🇺🇸 미국 [LGEUS] — LG.com (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
-      "🇬🇧 영국 [LGEUK] — LG.com (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
-      "🇩🇪 독일 [LGEDE] — 🆕 LG.com (Bazaarvoice) + Amazon DE + YouTube DE + 웹 리뷰",
-      "🇦🇺 호주 [LGEAU] — 🆕 LG.com (Bazaarvoice) + YouTube AU + 웹 리뷰",
-      "🇮🇳 인도 [LGEIN] — 🆕 LG.com (Bazaarvoice) + Amazon IN + YouTube IN + 웹 리뷰",
-      "🇯🇵 일본 [LGEJP] — 🆕 LG.com (Bazaarvoice) + Amazon JP + YouTube JP + 웹 리뷰",
-      "🇹🇼 대만 [LGETW] — 🆕 LG.com (Bazaarvoice) + Amazon 글로벌 + YouTube TW + Reviews.io",
-      "🇹🇭 태국 [LGETH] — 🆕 LG.com (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
+      "🇺🇸 미국 [LGEUS] — lg.com/us (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
+      "🇬🇧 영국 [LGEUK] — lg.com/uk (Bazaarvoice) + Amazon UK + YouTube UK + Trusted Reviews",
+      "🇩🇪 독일 [LGEDG] — 🆕 lg.com/de (Bazaarvoice) + Amazon DE + YouTube DE + 웹 리뷰",
+      "🇦🇺 호주 [LGEAP] — 🆕 lg.com/au (Bazaarvoice) + YouTube AU + 웹 리뷰",
+      "🇮🇳 인도 [LGEIN] — 🆕 lg.com/in (Bazaarvoice) + Amazon IN + YouTube IN + 웹 리뷰",
+      "🇯🇵 일본 [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + 웹 리뷰",
+      "🇹🇼 대만 [LGETW] — 🆕 lg.com/tw (Bazaarvoice) + Amazon 글로벌 + YouTube TW + Reviews.io",
+      "🇹🇭 태국 [LGETH] — 🆕 lg.com/th (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
       "🇸🇬 싱가포르 [LGESG] — Shopee SG + Lazada SG + YouTube SG + 웹 리뷰",
       "🇻🇳 베트남 [LGEVN] — Shopee VN + Lazada VN + YouTube VN + 웹 리뷰",
       "🇭🇰 홍콩 [LGEHK] — Amazon 글로벌 + YouTube HK + Reviews.io",
       "🌐 글로벌 — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 MY · 🇮🇩 ID · 🇵🇭 PH · 🇫🇷 FR · 🇨🇦 CA · 🇧🇷 BR · 🇲🇽 MX · 🇮🇶 IQ",
+      "📋 수집 예정: 🇲🇾 LGEMY · 🇮🇩 LGEID · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇧🇷 LGESP · 🇲🇽 LGEMS",
     ],
   },
   {
@@ -624,13 +632,15 @@ export const CollectionCriteria = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {Object.entries(BV_AVAILABLE)
               .sort(([, a], [, b]) => b - a)
-              .map(([country, available]) => {
-                const collected = lgComCounts[country] || 0;
+              .map(([lgeCode, available]) => {
+                // DB returns ISO codes, map to LGE for lookup
+                const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
+                const collected = lgComCounts[isoKey] || 0;
                 const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
                 return (
-                  <div key={country} className="rounded-lg border border-border bg-background/60 p-2.5">
+                  <div key={lgeCode} className="rounded-lg border border-border bg-background/60 p-2.5">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold">{COUNTRY_FLAGS[country]} {country}</span>
+                      <span className="font-semibold">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
                       <span className="text-[10px] text-muted-foreground">{pct}%</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
@@ -652,15 +662,18 @@ export const CollectionCriteria = () => {
                 🌏 {t(`Currently collecting from ${activeCountries.length} countries`, `현재 ${activeCountries.length}개국 수집 중`)}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {activeCountries.map(([country, count]) => (
-                  <span
-                    key={country}
-                    className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground"
-                  >
-                    {COUNTRY_FLAGS[country] || "🔹"} {country}
-                    <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                  </span>
-                ))}
+                {activeCountries.map(([isoCode, count]) => {
+                  const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
+                  return (
+                    <span
+                      key={isoCode}
+                      className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground"
+                    >
+                      {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}
+                      <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                    </span>
+                  );
+                })}
                 {countryCounts["Global"] && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
                     🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
