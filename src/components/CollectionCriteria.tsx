@@ -632,13 +632,15 @@ export const CollectionCriteria = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {Object.entries(BV_AVAILABLE)
               .sort(([, a], [, b]) => b - a)
-              .map(([country, available]) => {
-                const collected = lgComCounts[country] || 0;
+              .map(([lgeCode, available]) => {
+                // DB returns ISO codes, map to LGE for lookup
+                const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
+                const collected = lgComCounts[isoKey] || 0;
                 const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
                 return (
-                  <div key={country} className="rounded-lg border border-border bg-background/60 p-2.5">
+                  <div key={lgeCode} className="rounded-lg border border-border bg-background/60 p-2.5">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold">{COUNTRY_FLAGS[country]} {country}</span>
+                      <span className="font-semibold">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
                       <span className="text-[10px] text-muted-foreground">{pct}%</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
@@ -660,15 +662,18 @@ export const CollectionCriteria = () => {
                 🌏 {t(`Currently collecting from ${activeCountries.length} countries`, `현재 ${activeCountries.length}개국 수집 중`)}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {activeCountries.map(([country, count]) => (
-                  <span
-                    key={country}
-                    className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground"
-                  >
-                    {COUNTRY_FLAGS[country] || "🔹"} {country}
-                    <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                  </span>
-                ))}
+                {activeCountries.map(([isoCode, count]) => {
+                  const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
+                  return (
+                    <span
+                      key={isoCode}
+                      className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground"
+                    >
+                      {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}
+                      <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                    </span>
+                  );
+                })}
                 {countryCounts["Global"] && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
                     🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
