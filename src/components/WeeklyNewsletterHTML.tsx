@@ -119,9 +119,9 @@ function useNewsletterData() {
         totalReviews: totalRes.count || 0,
         productCount: productRes.count || 0,
         channels: topChannels,
-        topPositiveKeyword, topPositiveCount,
-        topNegativeKeyword, topNegativeCount,
-        topProduct, topProductCount,
+        topPositiveKeyword, topPositiveCount, topPositiveMeta,
+        topNegativeKeyword, topNegativeCount, topNegativeMeta,
+        topProduct, topProductCount, topProductKws,
         opportunities,
         trendingSignals,
       } as NewsletterData;
