@@ -8,9 +8,9 @@ const CORS = {
 
 const SOURCE_TO_LGE: Record<string, string> = {
   lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDG",
-  lge_com_au: "LGEAP", lge_com_in: "LGEIN", lge_com_tw: "LGETW",
+  lge_com_au: "LGEAP", lge_com_in: "LGEIL", lge_com_tw: "LGETT",
   lge_com_jp: "LGEJP", lge_com_th: "LGETH",
-  lge_com_sg: "LGESG", lge_com_my: "LGEMY", lge_com_id: "LGEID",
+  lge_com_sg: "LGESL", lge_com_my: "LGEML", lge_com_id: "LGEIN",
   lge_com_ph: "LGEPH", lge_com_vn: "LGEVN", lge_com_hk: "LGEHK",
   lge_com_ca: "LGECI", lge_com_br: "LGESP", lge_com_mx: "LGEMS",
   lge_com_fr: "LGEFS", lge_com_nl: "LGEBN",
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
       { name: "Audio", nameEn: "Audio" },
     ];
 
-    const SE_ASIA = ["LGESG", "LGEMY", "LGEID", "LGETH", "LGEPH", "LGEVN"];
+    const SE_ASIA = ["LGESL", "LGEML", "LGEIN", "LGETH", "LGEPH", "LGEVN"];
 
     const buildMatrixCells = (catName: string): Record<string, string> => {
       const cells: Record<string, string> = {};
