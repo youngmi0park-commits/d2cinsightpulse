@@ -1,4 +1,4 @@
-import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity, Mail, Languages, HelpCircle, LayoutDashboard } from "lucide-react";
+import { Store, MessageSquare, Globe, BarChart3, Activity, Mail, Languages, LayoutDashboard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLang } from "@/contexts/LanguageContext";
@@ -23,9 +23,10 @@ const analyticsItems = [
   { title: "Other Communities", url: "/communities", icon: Globe },
 ];
 
-const mktToolItems = [
-  { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
-];
+// Marketing Asset Studio hidden from sidebar for now
+// const mktToolItems = [
+//   { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
+// ];
 
 const pipelineItems = [
   { title: "Collection Criteria", url: "/collection", icon: BarChart3 },
@@ -112,7 +113,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2 py-4 space-y-5">
         {renderGroup("ANALYTICS", "📊", analyticsItems)}
-        {renderGroup("MKT TOOLS", "🎯", mktToolItems)}
+        {/* MKT TOOLS hidden */}
         {renderGroup("DATA PIPELINE", "⚙️", pipelineItems)}
       </SidebarContent>
 
