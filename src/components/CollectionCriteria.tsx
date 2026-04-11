@@ -613,11 +613,27 @@ export const CollectionCriteria = () => {
   const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
   const categoryCounts = useCategoryCounts();
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const [showAllCriteria, setShowAllCriteria] = useState(false);
+
+  const toggleCat = (key: string) => {
+    setExpandedCats((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
     .filter(([k]) => k !== "Other" && k !== "Global")
     .sort(([, a], [, b]) => b - a);
+
+  // Split criteria into priority groups
+  const priorityCriteria = criteria.filter((c) =>
+    ["Collection Schedule & Dashboard Sync", "Target Regions (20+ Countries)", "Selection Logic"].includes(c.titleEn)
+  );
+  const secondaryCriteria = criteria.filter((c) => !priorityCriteria.includes(c));
 
   return (
     <div className="space-y-0">
@@ -625,25 +641,78 @@ export const CollectionCriteria = () => {
         <Database className="h-5 w-5 text-primary" />
         <h3 className="text-base font-bold font-heading">📋 {t("Data Collection Criteria", "데이터 수집 기준")}</h3>
       </div>
-      <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
-        {/* Live collection stats */}
-        <div className="mb-5 p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
-          <h4 className="text-sm font-semibold">{t("📊 LG.com (Bazaarvoice) Collection Status", "📊 LG.com (Bazaarvoice) 국가별 수집 현황")}</h4>
+      <div className="gradient-card rounded-b-xl border border-t-0 border-border p-4 md:p-6 space-y-5">
+
+        {/* ─── 1. 수집 채널 (Accordion) ─── */}
+        <section>
+          <div className="flex items-center gap-2 mb-2">
+            <Globe className="h-4 w-4 text-primary" />
+            <h4 className="font-semibold text-sm">{t("Collection Channels by Product Category", "제품 카테고리별 수집 채널")}</h4>
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} {t("channels", "채널")} · {CATEGORY_CHANNELS.length} {t("categories", "카테고리")}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {CATEGORY_CHANNELS.map((cat) => {
+              const isOpen = expandedCats.has(cat.labelEn);
+              return (
+                <div key={cat.labelEn} className="rounded-lg border border-border bg-background/50 overflow-hidden">
+                  <button
+                    onClick={() => toggleCat(cat.labelEn)}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-muted/30 transition-colors"
+                  >
+                    <span className="text-base">{cat.icon}</span>
+                    <span className="font-semibold text-xs flex-1">{t(cat.labelEn, cat.labelKo)}</span>
+                    <span className="text-[10px] text-muted-foreground">{cat.channels.length} {t("ch", "채널")}</span>
+                    <span className={`text-muted-foreground transition-transform text-xs ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                  </button>
+                  {isOpen && (
+                    <div className="border-t border-border">
+                      <div className="grid grid-cols-[120px_1fr_100px] text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1 border-b border-border">
+                        <span>{t("Platform", "플랫폼")}</span>
+                        <span>{t("Description", "설명")}</span>
+                        <span className="text-right">{t("Countries", "국가")}</span>
+                      </div>
+                      {cat.channels.map((ch, i) => (
+                        <div
+                          key={ch.platform}
+                          className={`grid grid-cols-[120px_1fr_100px] text-[11px] px-2.5 py-1.5 items-center ${i % 2 === 0 ? "bg-background/30" : "bg-muted/20"} ${i < cat.channels.length - 1 ? "border-b border-border/50" : ""}`}
+                        >
+                          <span className="font-medium text-foreground truncate">{ch.platform}</span>
+                          <span className="text-muted-foreground">{t(ch.descEn, ch.descKo)}</span>
+                          <span className="text-[10px] text-muted-foreground text-right">{ch.countries}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ─── 2. 국가 (BV 현황 + 국가 배지 + 카테고리) ─── */}
+        <section className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+          <h4 className="text-sm font-semibold flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-primary" />
+            {t("Country & BV Collection Status", "국가별 수집 현황")}
+          </h4>
+
+          {/* BV grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {Object.entries(BV_AVAILABLE)
               .sort(([, a], [, b]) => b - a)
               .map(([lgeCode, available]) => {
-                // DB returns ISO codes, map to LGE for lookup
                 const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
                 const collected = lgComCounts[isoKey] || 0;
                 const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
                 return (
-                  <div key={lgeCode} className="rounded-lg border border-border bg-background/60 p-2.5">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
+                  <div key={lgeCode} className="rounded-lg border border-border bg-background/60 p-2">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="font-semibold text-[11px]">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
                       <span className="text-[10px] text-muted-foreground">{pct}%</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-0.5">
                       <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
                     </div>
                     <p className="text-[10px] text-muted-foreground">
@@ -653,152 +722,125 @@ export const CollectionCriteria = () => {
                 );
               })}
           </div>
-          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice Conversations API (Production) · 8 countries · All categories · No date restriction · Excludes <20 chars & duplicates", "출처: Bazaarvoice Conversations API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음 · 20자 미만 및 중복 리뷰 제외")}</p>
 
-          {/* Live country badges */}
-          {activeCountries.length > 0 && (
-            <div className="border-t border-primary/10 pt-2.5">
-              <p className="text-[10px] font-semibold text-foreground mb-1.5">
-                🌏 {t(`Currently collecting from ${activeCountries.length} countries`, `현재 ${activeCountries.length}개국 수집 중`)}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {activeCountries.map(([isoCode, count]) => {
-                  const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
-                  return (
-                    <span
-                      key={isoCode}
-                      className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground"
-                    >
-                      {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}
-                      <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                    </span>
-                  );
-                })}
-                {countryCounts["Global"] && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
-                    🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Product Category collection stats */}
-          {categoryCounts.length > 0 && (
-            <div className="border-t border-primary/10 pt-2.5">
-              <p className="text-[10px] font-semibold text-foreground mb-1.5">
-                <Package className="inline h-3 w-3 mr-1" />
-                {t(
-                  `Product category breakdown (${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()} total across ${categoryCounts.length} categories)`,
-                  `제품 카테고리별 수집 현황 (전체 ${categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()}건 · ${categoryCounts.length}개 카테고리)`
-                )}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {categoryCounts.filter(c => c.category !== "General").map(({ category, count }) => {
-                  const total = categoryCounts.reduce((s, c) => s + c.count, 0);
-                  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-                  return (
-                    <div key={category} className="rounded-lg border border-border bg-background/60 p-2.5">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-[11px]">
-                          {CATEGORY_ICONS[category] || "📦"} {category}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">{pct}%</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-1">
-                        <div
-                          className="h-full rounded-full bg-primary/70 transition-all"
-                          style={{ width: `${Math.min(pct * 3, 100)}%` }}
-                        />
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">
-                        <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                        {t(" reviews", "건")}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* General category as a note */}
-              {categoryCounts.find(c => c.category === "General") && (
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  {t(
-                    `+ General/Uncategorized: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()} reviews (BV category codes pending normalization)`,
-                    `+ 일반/미분류: ${categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}건 (BV 카테고리 코드 정규화 진행 중)`
-                  )}
+          {/* Country badges + Category stats in 2-col */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Active countries */}
+            {activeCountries.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-foreground mb-1">
+                  🌏 {t(`${activeCountries.length} countries active`, `${activeCountries.length}개국 수집 중`)}
                 </p>
-              )}
+                <div className="flex flex-wrap gap-1">
+                  {activeCountries.map(([isoCode, count]) => {
+                    const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
+                    return (
+                      <span key={isoCode} className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
+                        {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode} <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                      </span>
+                    );
+                  })}
+                  {countryCounts["Global"] && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
+                      🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Category breakdown */}
+            {categoryCounts.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-foreground mb-1">
+                  <Package className="inline h-3 w-3 mr-0.5" />
+                  {t(`${categoryCounts.length} categories`, `${categoryCounts.length}개 카테고리`)}
+                  <span className="font-normal text-muted-foreground ml-1">({categoryCounts.reduce((s, c) => s + c.count, 0).toLocaleString()})</span>
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {categoryCounts.filter(c => c.category !== "General").map(({ category, count }) => (
+                    <span key={category} className="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 bg-card border border-border text-muted-foreground">
+                      {CATEGORY_ICONS[category] || "📦"} {category} <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <p className="text-[10px] text-muted-foreground">{t("Source: Bazaarvoice API (Prod) · 8 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음")}</p>
+        </section>
+
+        {/* ─── 3. 수집 방식 (Schedule + Regions + Logic) ─── */}
+        <section>
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            <h4 className="font-semibold text-sm">{t("Collection Method & Schedule", "수집 방식 및 주기")}</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {priorityCriteria.map((c) => {
+              const Icon = c.icon;
+              const title = t(c.titleEn, c.titleKo);
+              const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
+              return (
+                <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-4 w-4 text-primary shrink-0" />
+                    <h5 className="font-semibold text-xs">{title}</h5>
+                  </div>
+                  <ul className="space-y-1">
+                    {items.map((item, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                        <span className="text-primary mt-0.5 shrink-0">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ─── 4. 나머지 기준 (접기/펼치기) ─── */}
+        <section>
+          <button
+            onClick={() => setShowAllCriteria(!showAllCriteria)}
+            className="flex items-center gap-2 text-xs font-semibold text-primary hover:underline mb-2"
+          >
+            <span className={`transition-transform ${showAllCriteria ? "rotate-180" : ""}`}>▾</span>
+            {t(
+              `${showAllCriteria ? "Hide" : "Show"} detailed criteria (${secondaryCriteria.length} sections)`,
+              `상세 기준 ${showAllCriteria ? "접기" : "펼치기"} (${secondaryCriteria.length}개 섹션)`
+            )}
+          </button>
+          {showAllCriteria && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {secondaryCriteria.map((c) => {
+                const Icon = c.icon;
+                const title = t(c.titleEn, c.titleKo);
+                const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
+                return (
+                  <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className="h-4 w-4 text-primary shrink-0" />
+                      <h5 className="font-semibold text-xs">{title}</h5>
+                    </div>
+                    <ul className="space-y-1">
+                      {items.map((item, i) => (
+                        <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                          <span className="text-primary mt-0.5 shrink-0">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Collection Channels by Product Category */}
-        <div className="mb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <Globe className="h-5 w-5 text-primary" />
-            <h4 className="font-semibold font-heading text-sm">
-              {t("Collection Channels by Product Category", "제품 카테고리별 수집 채널")}
-            </h4>
-            <span className="text-[10px] text-muted-foreground ml-auto">
-              {t(`${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} channels · ${CATEGORY_CHANNELS.length} categories`, `${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · ${CATEGORY_CHANNELS.length}개 카테고리`)}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {CATEGORY_CHANNELS.map((cat) => (
-              <div key={cat.labelEn} className="rounded-lg border border-border bg-background/50 p-4">
-                <h5 className="font-semibold text-sm mb-3 flex items-center gap-1.5">
-                  <span>{cat.icon}</span>
-                  <span>{t(cat.labelEn, cat.labelKo)}</span>
-                  <span className="text-[10px] text-muted-foreground font-normal ml-auto">
-                    {cat.channels.length} {t("channels", "채널")}
-                  </span>
-                </h5>
-                <div className="space-y-0 rounded-lg border border-border overflow-hidden">
-                  {/* Header */}
-                  <div className="grid grid-cols-[130px_1fr_110px] text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1.5 border-b border-border">
-                    <span>{t("Platform", "플랫폼")}</span>
-                    <span>{t("Description", "설명")}</span>
-                    <span className="text-right">{t("Countries", "국가")}</span>
-                  </div>
-                  {cat.channels.map((ch, i) => (
-                    <div
-                      key={ch.platform}
-                      className={`grid grid-cols-[130px_1fr_110px] text-[11px] px-2.5 py-1.5 items-center ${i % 2 === 0 ? "bg-background/30" : "bg-muted/20"} ${i < cat.channels.length - 1 ? "border-b border-border/50" : ""}`}
-                    >
-                      <span className="font-medium text-foreground truncate">{ch.platform}</span>
-                      <span className="text-muted-foreground">{t(ch.descEn, ch.descKo)}</span>
-                      <span className="text-[10px] text-muted-foreground text-right">{ch.countries}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {criteria.map((c) => {
-            const Icon = c.icon;
-            const title = t(c.titleEn, c.titleKo);
-            const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
-            return (
-              <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon className="h-5 w-5 text-primary shrink-0" />
-                  <h4 className="font-semibold font-heading text-sm">{title}</h4>
-                </div>
-                <ul className="space-y-1.5">
-                  {items.map((item, i) => (
-                    <li key={i} className="text-xs text-muted-foreground flex gap-2">
-                      <span className="text-primary mt-0.5 shrink-0">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );
