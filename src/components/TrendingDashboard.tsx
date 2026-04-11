@@ -533,21 +533,24 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         {/* Card 2 — 긍정 Top 키워드 */}
         <KPICard accentColor="bg-green-600" label="긍정 TOP 키워드"
           value={topPosKw ? `"${topPosKw.keyword}"` : "—"}
-          sub={topPosKw ? `${topPosKw.count}건 언급 1위` : "데이터 없음"}
+          sub={topPosKw ? `${topPosKw.count}건 · ${topPosKw.relatedProducts?.[0] || ""} ${topPosKw.relatedCountries?.[0] ? `· ${topPosKw.relatedCountries[0]}` : ""}`.trim() : "데이터 없음"}
           subColor="text-green-700"
           valueSize="text-sm"
         />
         {/* Card 3 — 부정 Top 키워드 */}
         <KPICard accentColor="bg-destructive" label="부정 TOP 키워드"
           value={topNegKw ? `"${topNegKw.keyword}"` : "—"}
-          sub={topNegKw ? `${topNegKw.count}건 · FAQ 대응 권고` : "데이터 없음"}
+          sub={topNegKw ? `${topNegKw.count}건 · ${topNegKw.relatedProducts?.[0] || ""} ${topNegKw.relatedCountries?.[0] ? `· ${topNegKw.relatedCountries[0]}` : ""} · FAQ 대응 권고`.trim() : "데이터 없음"}
           subColor="text-destructive"
           valueSize="text-sm"
         />
         {/* Card 4 — 주간 언급 TOP */}
         <KPICard accentColor="bg-teal-600" label="주간 언급 TOP"
           value={topProduct?.displayName || "—"}
-          sub={topProduct ? `${topProduct.mentions}건 · 1위` : "데이터 없음"}
+          sub={topProduct ? `${topProduct.mentions}건 · 1위 ${(() => {
+            const prodKws = allKeywords.filter(k => k.relatedProducts?.some(p => p.toLowerCase().includes(topProduct.modelNumber.toLowerCase()))).slice(0, 2);
+            return prodKws.length > 0 ? `· ${prodKws.map(k => k.keyword).join(", ")}` : "";
+          })()}`.trim() : "데이터 없음"}
           subColor="text-teal-700"
           valueSize="text-[13px]"
           truncate
