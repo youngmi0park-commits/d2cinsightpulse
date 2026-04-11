@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Globe, Loader2, ThumbsUp, ThumbsDown, TrendingUp, AlertTriangle, Sparkles, RefreshCw, BarChart3, Lightbulb } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
