@@ -1,4 +1,4 @@
-import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale, Package } from "lucide-react";
+import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -600,16 +600,8 @@ export const CollectionCriteria = () => {
   const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
   const categoryCounts = useCategoryCounts();
-  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [showAllCriteria, setShowAllCriteria] = useState(false);
-
-  const toggleCat = (key: string) => {
-    setExpandedCats((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
+  const [statusTab, setStatusTab] = useState<"country" | "category" | "channel">("country");
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
@@ -630,65 +622,17 @@ export const CollectionCriteria = () => {
       </div>
       <div className="gradient-card rounded-b-xl border border-t-0 border-border p-4 md:p-6 space-y-5">
 
-        {/* ─── 1. 수집 채널 (Accordion) ─── */}
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <Globe className="h-4 w-4 text-primary" />
-            <h4 className="font-semibold text-sm">{t("Collection Channels by Product Category", "제품 카테고리별 수집 채널")}</h4>
-            <span className="text-[10px] text-muted-foreground ml-auto">
-              {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} {t("channels", "채널")} · {CATEGORY_CHANNELS.length} {t("categories", "카테고리")}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {CATEGORY_CHANNELS.map((cat) => {
-              const isOpen = expandedCats.has(cat.labelEn);
-              return (
-                <div key={cat.labelEn} className="rounded-lg border border-border bg-background/50 overflow-hidden">
-                  <button
-                    onClick={() => toggleCat(cat.labelEn)}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-muted/30 transition-colors"
-                  >
-                    <span className="text-base">{cat.icon}</span>
-                    <span className="font-semibold text-xs flex-1">{t(cat.labelEn, cat.labelKo)}</span>
-                    <span className="text-[10px] text-muted-foreground">{cat.channels.length} {t("ch", "채널")}</span>
-                    <span className={`text-muted-foreground transition-transform text-xs ${isOpen ? "rotate-180" : ""}`}>▾</span>
-                  </button>
-                  {isOpen && (
-                    <div className="border-t border-border">
-                      <div className="grid grid-cols-[120px_1fr_100px] text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1 border-b border-border">
-                        <span>{t("Platform", "플랫폼")}</span>
-                        <span>{t("Description", "설명")}</span>
-                        <span className="text-right">{t("Countries", "국가")}</span>
-                      </div>
-                      {cat.channels.map((ch, i) => (
-                        <div
-                          key={ch.platform}
-                          className={`grid grid-cols-[120px_1fr_100px] text-[11px] px-2.5 py-1.5 items-center ${i % 2 === 0 ? "bg-background/30" : "bg-muted/20"} ${i < cat.channels.length - 1 ? "border-b border-border/50" : ""}`}
-                        >
-                          <span className="font-medium text-foreground truncate">{ch.platform}</span>
-                          <span className="text-muted-foreground">{t(ch.descEn, ch.descKo)}</span>
-                          <span className="text-[10px] text-muted-foreground text-right">{ch.countries}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ─── 2. 수집 현황 종합 ─── */}
+        {/* ─── 수집 현황 종합 (3-tab: 국가 / 카테고리 / 채널) ─── */}
         <section className="rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
-          {/* Summary header bar */}
+          {/* Summary header */}
           {(() => {
             const totalCountry = Object.values(countryCounts).reduce((s, v) => s + v, 0);
-            const totalCategory = categoryCounts.reduce((s, c) => s + c.count, 0);
             const bvCollected = Object.entries(BV_AVAILABLE).reduce((s, [code]) => {
               const iso = Object.entries(ISO_TO_LGE).find(([, v]) => v === code)?.[0] || "";
               return s + (lgComCounts[iso] || 0);
             }, 0);
             const bvTotal = Object.values(BV_AVAILABLE).reduce((s, v) => s + v, 0);
+            const totalChannels = CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0);
             return (
               <div className="bg-primary/10 px-4 py-2.5 flex flex-wrap items-center gap-4 border-b border-primary/20">
                 <h4 className="text-sm font-bold flex items-center gap-1.5">
@@ -706,106 +650,161 @@ export const CollectionCriteria = () => {
                     📦 {categoryCounts.filter(c => c.category !== "General").length} {t("categories", "카테고리")}
                   </span>
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
-                    🏪 BV {bvCollected.toLocaleString()} / {bvTotal.toLocaleString()}
+                    📡 {totalChannels} {t("channels", "채널")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    🏪 BV {bvCollected.toLocaleString()}/{bvTotal.toLocaleString()}
                   </span>
                 </div>
               </div>
             );
           })()}
 
-          <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Left: 국가별 */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-bold text-foreground">🌏 {t("By Country", "국가별 수집 현황")}</p>
+          {/* Tab buttons */}
+          <div className="flex border-b border-primary/10 px-3 pt-2 gap-1">
+            {([
+              { key: "country" as const, label: t("By Country", "국가별"), icon: "🌏" },
+              { key: "category" as const, label: t("By Category", "카테고리별"), icon: "📦" },
+              { key: "channel" as const, label: t("By Channel", "채널별"), icon: "📡" },
+            ]).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setStatusTab(tab.key)}
+                className={`px-3 py-1.5 text-[11px] font-semibold rounded-t-md transition-colors border border-b-0 ${
+                  statusTab === tab.key
+                    ? "bg-background text-primary border-primary/20"
+                    : "bg-transparent text-muted-foreground border-transparent hover:text-foreground"
+                }`}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
 
-              {/* BV progress cards */}
-              <div className="grid grid-cols-2 gap-1.5">
-                {Object.entries(BV_AVAILABLE)
-                  .sort(([codeA, ], [codeB, ]) => {
-                    const isoA = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeA)?.[0] || "";
-                    const isoB = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeB)?.[0] || "";
-                    return (lgComCounts[isoB] || 0) - (lgComCounts[isoA] || 0);
-                  })
-                  .map(([lgeCode, available]) => {
-                    const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
-                    const collected = lgComCounts[isoKey] || 0;
-                    const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
-                    return (
-                      <div key={lgeCode} className="rounded border border-border bg-background/60 px-2 py-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-[10px]">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
-                          <span className="text-[9px] text-muted-foreground">{pct}%</span>
-                        </div>
-                        <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
-                          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
-                        </div>
-                        <p className="text-[9px] text-muted-foreground">
-                          <span className="font-bold text-foreground">{collected.toLocaleString()}</span> / {available.toLocaleString()}
-                        </p>
-                      </div>
-                    );
-                  })}
-              </div>
-
-              {/* Non-BV country badges */}
-              {activeCountries.length > 0 && (
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {activeCountries.map(([isoCode, count]) => {
-                    const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
-                    return (
-                      <span key={isoCode} className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
-                        {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode} <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                      </span>
-                    );
-                  })}
-                  {countryCounts["Global"] && (
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
-                      🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Right: 카테고리별 */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-bold text-foreground">
-                📦 {t("By Product Category", "제품 카테고리별 수집 현황")}
-              </p>
-              {categoryCounts.length > 0 && (() => {
-                const total = categoryCounts.reduce((s, c) => s + c.count, 0);
-                const filtered = categoryCounts.filter(c => c.category !== "General");
-                return (
-                  <div className="space-y-1">
-                    {filtered.map(({ category, count }) => {
-                      const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+          <div className="p-3">
+            {/* ── 국가별 ── */}
+            {statusTab === "country" && (
+              <div className="space-y-3">
+                {/* BV progress grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {Object.entries(BV_AVAILABLE)
+                    .sort(([codeA], [codeB]) => {
+                      const isoA = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeA)?.[0] || "";
+                      const isoB = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeB)?.[0] || "";
+                      return (lgComCounts[isoB] || 0) - (lgComCounts[isoA] || 0);
+                    })
+                    .map(([lgeCode, available]) => {
+                      const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
+                      const collected = lgComCounts[isoKey] || 0;
+                      const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
                       return (
-                        <div key={category} className="flex items-center gap-2 text-[11px]">
-                          <span className="w-[110px] truncate font-medium">
-                            {CATEGORY_ICONS[category] || "📦"} {category}
-                          </span>
-                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full rounded-full bg-primary/70 transition-all" style={{ width: `${Math.min(pct * 2.5, 100)}%` }} />
+                        <div key={lgeCode} className="rounded border border-border bg-background/60 px-2 py-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[10px]">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
+                            <span className="text-[9px] text-muted-foreground">{pct}%</span>
                           </div>
-                          <span className="w-[60px] text-right text-[10px] text-muted-foreground">
-                            <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                            <span className="ml-0.5">({pct}%)</span>
-                          </span>
+                          <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
+                          </div>
+                          <p className="text-[9px] text-muted-foreground">
+                            <span className="font-bold text-foreground">{collected.toLocaleString()}</span> / {available.toLocaleString()}
+                          </p>
                         </div>
                       );
                     })}
-                    {categoryCounts.find(c => c.category === "General") && (
-                      <p className="text-[9px] text-muted-foreground mt-1">
-                        + General: {categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}
-                      </p>
+                </div>
+                {/* All country badges */}
+                {activeCountries.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {activeCountries.map(([isoCode, count]) => {
+                      const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
+                      return (
+                        <span key={isoCode} className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
+                          {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode} <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                        </span>
+                      );
+                    })}
+                    {countryCounts["Global"] && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
+                        🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
+                      </span>
                     )}
                   </div>
-                );
-              })()}
-            </div>
+                )}
+              </div>
+            )}
+
+            {/* ── 카테고리별 ── */}
+            {statusTab === "category" && categoryCounts.length > 0 && (() => {
+              const total = categoryCounts.reduce((s, c) => s + c.count, 0);
+              const filtered = categoryCounts.filter(c => c.category !== "General");
+              return (
+                <div className="space-y-1.5">
+                  {filtered.map(({ category, count }) => {
+                    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                    return (
+                      <div key={category} className="flex items-center gap-2 text-[11px]">
+                        <span className="w-[120px] truncate font-medium">
+                          {CATEGORY_ICONS[category] || "📦"} {category}
+                        </span>
+                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full rounded-full bg-primary/70 transition-all" style={{ width: `${Math.min(pct * 2.5, 100)}%` }} />
+                        </div>
+                        <span className="w-[70px] text-right text-[10px] text-muted-foreground">
+                          <span className="font-bold text-foreground">{count.toLocaleString()}</span>
+                          <span className="ml-0.5">({pct}%)</span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {categoryCounts.find(c => c.category === "General") && (
+                    <p className="text-[9px] text-muted-foreground mt-1">
+                      + General: {categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── 채널별 (flat table with category prefix) ── */}
+            {statusTab === "channel" && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <div className="grid grid-cols-[100px_140px_1fr_120px] text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1.5 border-b border-border">
+                  <span>{t("Category", "카테고리")}</span>
+                  <span>{t("Platform", "플랫폼")}</span>
+                  <span>{t("Description", "설명")}</span>
+                  <span className="text-right">{t("Key Countries", "주요 국가")}</span>
+                </div>
+                <div className="max-h-[400px] overflow-y-auto">
+                  {CATEGORY_CHANNELS.flatMap((cat) =>
+                    cat.channels.map((ch, i) => ({
+                      catIcon: cat.icon,
+                      catLabel: t(cat.labelEn, cat.labelKo).split("·")[0].trim(),
+                      ...ch,
+                      isFirst: i === 0,
+                      catKey: cat.labelEn,
+                    }))
+                  ).map((row, idx) => (
+                    <div
+                      key={`${row.catKey}-${row.platform}`}
+                      className={`grid grid-cols-[100px_140px_1fr_120px] text-[11px] px-2.5 py-1.5 items-center ${idx % 2 === 0 ? "bg-background/30" : "bg-muted/15"} border-b border-border/30`}
+                    >
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {row.isFirst ? `${row.catIcon} ${row.catLabel}` : ""}
+                      </span>
+                      <span className="font-medium text-foreground truncate">{row.platform}</span>
+                      <span className="text-muted-foreground truncate">{t(row.descEn, row.descKo)}</span>
+                      <span className="text-[10px] text-muted-foreground text-right truncate">{row.countries}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <p className="text-[9px] text-muted-foreground px-3 pb-2">{t("Source: Bazaarvoice API (Prod) · 8 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음")}</p>
+          <p className="text-[9px] text-muted-foreground px-3 pb-2">
+            {t("Source: Bazaarvoice API (Prod) · 8 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음")}
+          </p>
         </section>
 
         {/* ─── 3. 수집 방식 (Schedule + Regions + Logic) ─── */}
