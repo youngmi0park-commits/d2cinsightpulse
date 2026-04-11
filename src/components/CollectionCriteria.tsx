@@ -11,16 +11,22 @@ interface CriteriaItem {
   itemsKo: string[];
 }
 
-// Live collection counts hook
+// Live collection counts hook (auto-refresh every 30s + realtime)
 function useLgComCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
-    supabase.rpc("get_lgcom_country_counts").then((countRes) => {
-      const data = countRes.data || [];
-      const map: Record<string, number> = {};
-      data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
-      setCounts(map);
-    });
+    const fetch = () => {
+      supabase.rpc("get_lgcom_country_counts").then((countRes) => {
+        const data = countRes.data || [];
+        const map: Record<string, number> = {};
+        data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
+        setCounts(map);
+      });
+    };
+    fetch();
+    const interval = setInterval(fetch, 30_000);
+    const channel = supabase.channel("lgcom-counts").on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, fetch).subscribe();
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
   }, []);
   return counts;
 }
