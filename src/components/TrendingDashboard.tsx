@@ -207,8 +207,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       .sort((a, b) => b.count - a.count);
 
     // Group small channels into "기타"
-    const top = entries.filter(e => e.count >= 50);
-    const rest = entries.filter(e => e.count < 50);
+    const top = entries.filter(e => e.count >= 100);
+    const rest = entries.filter(e => e.count < 100);
     if (rest.length > 0) {
       const totalRest = rest.reduce((s, e) => s + e.count, 0);
       const avgSent = rest.length > 0 ? Math.round(rest.reduce((s, e) => s + e.sentiment, 0) / rest.length) : 70;
