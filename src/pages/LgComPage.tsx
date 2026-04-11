@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { SearchBar } from "@/components/SearchBar";
 import { CategorySearchResults } from "@/components/CategorySearchResults";
 import { useLang } from "@/contexts/LanguageContext";
-import { Badge } from "@/components/ui/badge";
+
 import { analyzeSentiment } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages } from "@/lib/formatMessage";
 import { toReviewFormat } from "@/hooks/useProductData";
@@ -242,7 +242,6 @@ const LgComPage = () => {
         <SearchBar
           onSearch={handleSearch}
           isLoading={isSearching}
-          placeholder={t("Search product to analyze LG.com reviews...", "LG.com 리뷰를 분석할 제품을 검색하세요...")}
         />
       </div>
 
