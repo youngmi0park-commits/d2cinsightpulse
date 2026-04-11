@@ -15,9 +15,9 @@ interface NewsletterData {
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
   channels: { name: string; count: number; color: string }[];
-  topPositiveKeyword: string; topPositiveCount: number;
-  topNegativeKeyword: string; topNegativeCount: number;
-  topProduct: string; topProductCount: number;
+  topPositiveKeyword: string; topPositiveCount: number; topPositiveMeta: string;
+  topNegativeKeyword: string; topNegativeCount: number; topNegativeMeta: string;
+  topProduct: string; topProductCount: number; topProductKws: string;
   opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
 }
@@ -49,7 +49,7 @@ function useNewsletterData() {
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
-        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent, related_countries").order("count", { ascending: false }).limit(20),
+        supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent, related_countries, related_products").order("count", { ascending: false }).limit(20),
         supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, source, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
       ]);
 
@@ -70,16 +70,22 @@ function useNewsletterData() {
       const kws = keywordsRes.data || [];
       const posKws = kws.filter(k => k.sentiment === "positive").sort((a, b) => b.count - a.count);
       const negKws = kws.filter(k => k.sentiment === "negative").sort((a, b) => b.count - a.count);
-      const topPositiveKeyword = posKws[0]?.keyword || "—";
-      const topPositiveCount = posKws[0]?.count || 0;
-      const topNegativeKeyword = negKws[0]?.keyword || "—";
-      const topNegativeCount = negKws[0]?.count || 0;
+      const topPosKw = posKws[0];
+      const topPositiveKeyword = topPosKw?.keyword || "—";
+      const topPositiveCount = topPosKw?.count || 0;
+      const topPositiveMeta = topPosKw ? `${(topPosKw.related_products as string[] | null)?.[0] || ""} ${(topPosKw.related_countries as string[] | null)?.[0] ? `· ${(topPosKw.related_countries as string[])[0]}` : ""}`.trim() : "";
+      const topNegKw = negKws[0];
+      const topNegativeKeyword = topNegKw?.keyword || "—";
+      const topNegativeCount = topNegKw?.count || 0;
+      const topNegativeMeta = topNegKw ? `${(topNegKw.related_products as string[] | null)?.[0] || ""} ${(topNegKw.related_countries as string[] | null)?.[0] ? `· ${(topNegKw.related_countries as string[])[0]}` : ""}`.trim() : "";
 
       // Top product
       const trendProds = trendingRes.data || [];
       const topProd = trendProds[0];
       const topProduct = (topProd?.products as any)?.display_name || "—";
+      const topProductModel = (topProd?.products as any)?.model_number || "";
       const topProductCount = topProd?.mention_count || 0;
+      const topProductKws = kws.filter(k => (k.related_products as string[] | null)?.some((p: string) => p.toLowerCase().includes(topProductModel.toLowerCase()))).slice(0, 2).map(k => k.keyword).join(", ");
 
       // Opportunities (derived from trending)
       const opportunities: NewsletterData["opportunities"] = [];
@@ -113,9 +119,9 @@ function useNewsletterData() {
         totalReviews: totalRes.count || 0,
         productCount: productRes.count || 0,
         channels: topChannels,
-        topPositiveKeyword, topPositiveCount,
-        topNegativeKeyword, topNegativeCount,
-        topProduct, topProductCount,
+        topPositiveKeyword, topPositiveCount, topPositiveMeta,
+        topNegativeKeyword, topNegativeCount, topNegativeMeta,
+        topProduct, topProductCount, topProductKws,
         opportunities,
         trendingSignals,
       } as NewsletterData;
@@ -238,7 +244,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">긍정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#16a34a;line-height:20px;margin-top:6px;">"${d.topPositiveKeyword}"</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 언급 1위</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 · ${d.topPositiveMeta || '언급 1위'}</div>
           </td></tr>
         </table>
       </td>
@@ -248,7 +254,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">부정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#dc2626;line-height:20px;margin-top:6px;">"${d.topNegativeKeyword}"</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · FAQ 대응 권고</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · ${d.topNegativeMeta || 'FAQ 대응 권고'}</div>
           </td></tr>
         </table>
       </td>
@@ -258,7 +264,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
           <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">주간 언급 TOP</div>
             <div style="font-size:13px;font-weight:800;color:#1a1a1a;line-height:18px;margin-top:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.topProduct}</div>
-            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위</div>
+            <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위${d.topProductKws ? ` · ${d.topProductKws}` : ''}</div>
           </td></tr>
         </table>
       </td>
