@@ -15,9 +15,9 @@ interface NewsletterData {
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
   channels: { name: string; count: number; color: string }[];
-  topPositiveKeyword: string; topPositiveCount: number;
-  topNegativeKeyword: string; topNegativeCount: number;
-  topProduct: string; topProductCount: number;
+  topPositiveKeyword: string; topPositiveCount: number; topPositiveMeta: string;
+  topNegativeKeyword: string; topNegativeCount: number; topNegativeMeta: string;
+  topProduct: string; topProductCount: number; topProductKws: string;
   opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
 }
