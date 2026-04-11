@@ -224,7 +224,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     return top;
   }, [sourceCounts]);
 
-  const maxChannelCount = channelStats.length > 0 ? channelStats[0].count : 1;
+  const _maxChannelCount = channelStats.length > 0 ? channelStats[0].count : 1;
 
   // LG.com sentiment estimate
   const lgcomSentiment = useMemo(() => {
