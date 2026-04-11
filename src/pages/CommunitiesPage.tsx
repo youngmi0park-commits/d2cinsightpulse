@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Globe, Loader2, ThumbsUp, ThumbsDown, TrendingUp, AlertTriangle, Sparkles, RefreshCw, BarChart3, Lightbulb } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,9 @@ interface InsightsResponse {
   totalReviews: number;
 }
 
-/* ── source label map (for basic stats) ── */
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+/* ── source label map ── */
 function sourceLabel(source: string): string {
   if (source.startsWith("amazon")) return "Amazon";
   if (source.startsWith("youtube")) return "YouTube";
@@ -53,7 +55,7 @@ function sourceLabel(source: string): string {
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/* ── basic stats hook (fast, no AI) ── */
+/* ── basic stats hook with <50 merging ── */
 function useBasicStats(country: string) {
   const sourcesFilter = countryToSourceFilter(country);
   return useQuery({
@@ -70,6 +72,7 @@ function useBasicStats(country: string) {
       }
       const { data, error, count } = await query;
       if (error) throw error;
+
       const byChannel: Record<string, { total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
         const ch = sourceLabel(r.source);
@@ -78,11 +81,27 @@ function useBasicStats(country: string) {
         if (r.sentiment === "positive") byChannel[ch].positive++;
         if (r.sentiment === "negative") byChannel[ch].negative++;
       }
+
+      // Merge channels with <50 reviews into "기타"
+      const mainChannels: { name: string; total: number; positive: number; negative: number }[] = [];
+      let etcTotal = 0, etcPos = 0, etcNeg = 0;
+
+      for (const [name, s] of Object.entries(byChannel)) {
+        if (s.total >= 50) {
+          mainChannels.push({ name, ...s });
+        } else {
+          etcTotal += s.total;
+          etcPos += s.positive;
+          etcNeg += s.negative;
+        }
+      }
+
+      if (etcTotal > 0) {
+        mainChannels.push({ name: "기타", total: etcTotal, positive: etcPos, negative: etcNeg });
+      }
+
       return {
-        channels: Object.entries(byChannel)
-          .map(([name, s]) => ({ name, ...s }))
-          .filter((ch) => ch.total >= 50)
-          .sort((a, b) => b.total - a.total),
+        channels: mainChannels.sort((a, b) => b.total - a.total),
         total: count || (data?.length ?? 0),
       };
     },
@@ -90,20 +109,22 @@ function useBasicStats(country: string) {
   });
 }
 
-/* ── AI insights mutation ── */
-function useGenerateInsights() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (country: string): Promise<InsightsResponse> => {
+/* ── AI insights with 30-min cache (useQuery auto-trigger) ── */
+function useAutoInsights(country: string, hasData: boolean) {
+  return useQuery<InsightsResponse>({
+    queryKey: ["community-insights", country],
+    queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-community-insights", {
         body: { country },
       });
       if (error) throw error;
       return data as InsightsResponse;
     },
-    onSuccess: (data, country) => {
-      queryClient.setQueryData(["community-insights", country], data);
-    },
+    enabled: hasData,
+    staleTime: CACHE_TTL,
+    gcTime: CACHE_TTL * 2,
+    refetchOnWindowFocus: false,
+    retry: 1,
   });
 }
 
@@ -111,7 +132,6 @@ function useGenerateInsights() {
 function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
   return (
     <div className="gradient-card rounded-xl border border-border p-5 space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-primary" />
@@ -122,7 +142,6 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
         </Badge>
       </div>
 
-      {/* Products */}
       <div className="space-y-3">
         {insight.products.map((product) => (
           <div key={product.rank} className="rounded-lg border border-border bg-background/50 p-3.5">
@@ -134,7 +153,6 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
               <Badge variant="outline" className="text-[9px] px-1.5 py-0">{product.category}</Badge>
               <span className="text-[10px] text-muted-foreground ml-auto">{product.mentions}건</span>
             </div>
-
             <div className="space-y-1.5">
               <div className="flex items-start gap-2">
                 <ThumbsUp className="h-3.5 w-3.5 text-success mt-0.5 shrink-0" />
@@ -149,7 +167,6 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
         ))}
       </div>
 
-      {/* Takeaway */}
       {insight.takeaway && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
           <div className="flex items-center gap-1.5 mb-2">
@@ -176,9 +193,9 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
   const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry);
-  const { mutate: generateInsights, isPending: insightsLoading } = useGenerateInsights();
-  const queryClient = useQueryClient();
-  const insights = queryClient.getQueryData<InsightsResponse>(["community-insights", selectedCountry]);
+
+  const hasData = !statsLoading && !!stats && stats.channels.length > 0;
+  const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, hasData);
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
@@ -190,7 +207,6 @@ const CommunitiesPage = () => {
 
       <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
 
-      {/* Quick Stats Bar */}
       {statsLoading ? (
         <div className="flex items-center justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -203,12 +219,12 @@ const CommunitiesPage = () => {
         </div>
       ) : (
         <>
-          {/* Overview bar */}
+          {/* Channel Stats Bar */}
           <div className="gradient-card rounded-xl border border-border p-5">
             <div className="flex items-center gap-2 mb-3">
               <Globe className="h-4 w-4 text-primary" />
               <h4 className="text-sm font-semibold font-heading">채널별 리뷰 현황</h4>
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">누적 기준</Badge>
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">50건 이상 채널 · 기타 통합</Badge>
               <Badge variant="secondary" className="text-[10px] ml-auto">
                 Total {stats.total.toLocaleString()}
               </Badge>
@@ -232,9 +248,7 @@ const CommunitiesPage = () => {
                         <ThumbsDown className="h-2.5 w-2.5" />
                         {ch.negative.toLocaleString()}
                       </span>
-                      <span className="text-muted-foreground ml-auto">
-                        긍정 {posP}%
-                      </span>
+                      <span className="text-muted-foreground ml-auto">긍정 {posP}%</span>
                     </div>
                     <div className="h-1.5 rounded-full overflow-hidden flex bg-secondary mt-1">
                       <div className="bg-success h-full" style={{ width: `${posP}%` }} />
@@ -246,13 +260,20 @@ const CommunitiesPage = () => {
             </div>
           </div>
 
-          {/* Generate Insights Button */}
+          {/* Insights Header with Refresh */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 주간 인사이트</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 주간 인사이트</h3>
+              {insights && !insightsLoading && (
+                <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">
+                  30분 캐시 적용
+                </Badge>
+              )}
+            </div>
             <Button
               size="sm"
-              variant={insights ? "outline" : "default"}
-              onClick={() => generateInsights(selectedCountry)}
+              variant="outline"
+              onClick={() => refetch()}
               disabled={insightsLoading}
               className="gap-1.5"
             >
@@ -261,7 +282,7 @@ const CommunitiesPage = () => {
               ) : (
                 <RefreshCw className="h-3.5 w-3.5" />
               )}
-              {insights ? "인사이트 새로고침" : "AI 인사이트 생성"}
+              새로고침
             </Button>
           </div>
 
@@ -297,7 +318,6 @@ const CommunitiesPage = () => {
                   );
                 })}
               </div>
-              {/* Key Takeaway */}
               {insights.keyTakeaway && (
                 <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 mt-2">
                   <div className="flex items-start gap-2">
@@ -318,19 +338,6 @@ const CommunitiesPage = () => {
               {insights.channels.map((ch) => (
                 <ChannelInsightCard key={ch.channel} insight={ch} />
               ))}
-            </div>
-          )}
-
-          {/* No insights yet prompt */}
-          {!insights && !insightsLoading && (
-            <div className="gradient-card rounded-xl border border-border border-dashed p-8 text-center">
-              <Sparkles className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground mb-1">
-                "AI 인사이트 생성" 버튼을 클릭하면 채널별 Top 3 제품 인사이트가 생성됩니다.
-              </p>
-              <p className="text-[11px] text-muted-foreground/60">
-                최근 7일 리뷰를 기반으로 분석합니다
-              </p>
             </div>
           )}
         </>
