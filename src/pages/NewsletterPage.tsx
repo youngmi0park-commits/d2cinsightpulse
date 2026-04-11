@@ -206,7 +206,7 @@ const NewsletterPage = () => {
       <PageHeader
         icon={Mail}
         title="📧 주간 인사이트 뉴스레터"
-        description="매주 화요일 오전 10시 발행 | AI 기반 국가별 마케팅 시그널 분석 · PMAX / Criteo / Affiliate / FAQ 중심"
+        description={`고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.\nD2C Insight Pulse는 ${countryNum}개국, ${channelNum}개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 메시지를 제공하는 데이터 플랫폼입니다.`}
       />
 
       {/* ── Top Action Bar ── */}
