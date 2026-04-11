@@ -7,7 +7,7 @@ const CollectionPage = () => {
       <PageHeader
         icon={BarChart3}
         title="⚙️ Collection Overview"
-        description="실사용자 리뷰 기반 감성 분석 및 마케팅 인사이트를 제공하는 수집 파이프라인입니다. Reddit 국가별 사용자 수 · Shopee/Lazada/Amazon 이커머스 활동량 · LG.com 트래픽을 종합해 선정한 20개국 이상의 채널에서 리뷰를 자동 수집하며, 수집 주기·대상 채널·최근 실행 로그를 이 화면에서 확인하고 모니터링할 수 있습니다."
+        description="실사용자 리뷰 기반 감성 분석 및 마케팅 인사이트를 제공하는 수집 파이프라인입니다. LG.com · Reddit · Amazon · YouTube · Consumer Reports 등 30개+ 채널에서 14개국의 리뷰를 자동 수집하며, 수집 주기·대상 채널·최근 실행 로그를 이 화면에서 확인하고 모니터링할 수 있습니다."
       />
       <CollectionCriteria />
     </div>
