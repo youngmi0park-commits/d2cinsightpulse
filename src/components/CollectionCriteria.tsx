@@ -70,37 +70,48 @@ const CATEGORY_ICONS: Record<string, string> = {
   "General": "📦",
 };
 
-// Live category collection counts hook
+// Live category collection counts hook (auto-refresh every 30s + realtime)
 function useCategoryCounts() {
   const [counts, setCounts] = useState<{ category: string; count: number }[]>([]);
   useEffect(() => {
-    supabase.rpc("get_category_counts").then((res) => {
-      const data = (res.data || []) as { category: string; count: number }[];
-      // Normalize and merge categories
-      const agg: Record<string, number> = {};
-      data.forEach((d) => {
-        const normalized = CATEGORY_LABEL_MAP[d.category] || d.category;
-        agg[normalized] = (agg[normalized] || 0) + Number(d.count || 0);
+    const fetchData = () => {
+      supabase.rpc("get_category_counts").then((res) => {
+        const data = (res.data || []) as { category: string; count: number }[];
+        const agg: Record<string, number> = {};
+        data.forEach((d) => {
+          const normalized = CATEGORY_LABEL_MAP[d.category] || d.category;
+          agg[normalized] = (agg[normalized] || 0) + Number(d.count || 0);
+        });
+        const sorted = Object.entries(agg)
+          .map(([category, count]) => ({ category, count }))
+          .sort((a, b) => b.count - a.count);
+        setCounts(sorted);
       });
-      const sorted = Object.entries(agg)
-        .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count);
-      setCounts(sorted);
-    });
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 30_000);
+    const channel = supabase.channel("cat-counts").on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, fetchData).subscribe();
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
   }, []);
   return counts;
 }
 
-// Live country collection counts hook
+// Live country collection counts hook (auto-refresh every 30s + realtime)
 function useAllCountryCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
-    supabase.rpc("get_country_counts").then((res) => {
-      const data = res.data || [];
-      const map: Record<string, number> = {};
-      data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
-      setCounts(map);
-    });
+    const fetchData = () => {
+      supabase.rpc("get_country_counts").then((res) => {
+        const data = res.data || [];
+        const map: Record<string, number> = {};
+        data.forEach((d: any) => { map[d.country] = Number(d.count || 0); });
+        setCounts(map);
+      });
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 30_000);
+    const channel = supabase.channel("country-counts").on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, fetchData).subscribe();
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
   }, []);
   return counts;
 }
