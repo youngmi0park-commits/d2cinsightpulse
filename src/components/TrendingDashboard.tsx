@@ -224,7 +224,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     return top;
   }, [sourceCounts]);
 
-  const maxChannelCount = channelStats.length > 0 ? channelStats[0].count : 1;
+  const _maxChannelCount = channelStats.length > 0 ? channelStats[0].count : 1;
 
   // LG.com sentiment estimate
   const lgcomSentiment = useMemo(() => {
@@ -554,103 +554,58 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         />
       </div>
 
-      {/* ═══ [D] MAIN TWO-COLUMN GRID ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* LEFT — Opportunity Matrix */}
-        <div className="bg-background border border-border rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between bg-muted/40 border-b border-border p-3 px-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold">🎯 마케팅 기회 매트릭스</span>
-              {(lgcomTakeawayL || redditTakeawayL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-            </div>
-            <span className="text-[9px] text-muted-foreground">리뷰 인사이트 기반 자동 분류</span>
+      {/* ═══ [D] MARKETING OPPORTUNITY MATRIX — FULL WIDTH ═══ */}
+      <div className="bg-background border border-border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between bg-muted/40 border-b border-border p-3 px-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-extrabold">🎯 마케팅 기회 매트릭스</span>
+            {(lgcomTakeawayL || redditTakeawayL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
           </div>
-          {opportunities.length > 0 ? opportunities.map((item, i) => (
-            <div
-              key={i}
-              className="flex items-stretch border-b border-border/40 last:border-0 cursor-pointer hover:bg-muted/20 transition-colors"
-              onClick={() => handleProductClick(item.modelNumber)}
-            >
-              <div className={cn("w-1 flex-shrink-0", {
-                "bg-green-600": item.tag === "amplify",
-                "bg-destructive": item.tag === "fix",
-                "bg-amber-500": item.tag === "watch",
-              })} />
-              <div className="flex-1 p-2.5 px-3.5">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded",
-                    item.tag === "amplify" && "bg-green-50 text-green-700 border border-green-200",
-                    item.tag === "fix" && "bg-red-50 text-red-700 border border-red-200",
-                    item.tag === "watch" && "bg-amber-50 text-amber-700 border border-amber-200",
-                  )}>
-                    {item.tag === "amplify" ? "📣 AMPLIFY" : item.tag === "fix" ? "🔧 FIX URGENT" : "👀 WATCH"}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground">{item.channel}</span>
-                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
-                </div>
-                <p className="text-[12px] font-bold mb-0.5 leading-tight">{item.title}</p>
-                <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{item.description}</p>
-              </div>
-              <div className="p-2.5 flex flex-col items-end justify-center gap-0.5 flex-shrink-0">
-                <span className={cn("text-sm font-extrabold tracking-tight",
-                  item.deltaPositive ? "text-green-700" : "text-destructive"
-                )}>{item.count}</span>
-                <span className="text-[8px] text-muted-foreground text-right">{item.countLabel}</span>
-                <span className={cn("text-[9px] font-bold",
-                  item.deltaPositive ? "text-green-600" : "text-red-500"
-                )}>{item.delta}</span>
-              </div>
-            </div>
-          )) : (
-            <div className="p-6 text-center text-[11px] text-muted-foreground">
-              {lgcomTakeawayL ? "AI 분석 중..." : "인사이트 생성 대기 중"}
-            </div>
-          )}
+          <span className="text-[9px] text-muted-foreground">리뷰 인사이트 기반 자동 분류</span>
         </div>
-
-        {/* RIGHT — Channel Comparison */}
-        <div className="bg-background border border-border rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between bg-muted/40 border-b border-border p-3 px-4">
-            <span className="text-xs font-extrabold">📡 채널별 수집 현황 & 감성</span>
-            <span className="text-xs font-bold text-primary">총 {totalReviews.toLocaleString()}건</span>
-          </div>
-          <div className="divide-y divide-border/30">
-            {channelStats.map(ch => (
-              <div key={ch.key} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-muted/20 transition-colors cursor-default">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ch.color }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold truncate">{ch.label}</p>
-                  <p className="text-[9px] text-muted-foreground truncate">{ch.desc}</p>
+        {opportunities.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/40">
+            {opportunities.map((item, i) => (
+              <div
+                key={i}
+                className="flex items-stretch border-b border-border/40 last:border-0 md:[&:nth-last-child(2)]:border-0 cursor-pointer hover:bg-muted/20 transition-colors"
+                onClick={() => handleProductClick(item.modelNumber)}
+              >
+                <div className={cn("w-1 flex-shrink-0", {
+                  "bg-green-600": item.tag === "amplify",
+                  "bg-destructive": item.tag === "fix",
+                  "bg-amber-500": item.tag === "watch",
+                })} />
+                <div className="flex-1 p-3 px-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded",
+                      item.tag === "amplify" && "bg-green-50 text-green-700 border border-green-200",
+                      item.tag === "fix" && "bg-red-50 text-red-700 border border-red-200",
+                      item.tag === "watch" && "bg-amber-50 text-amber-700 border border-amber-200",
+                    )}>
+                      {item.tag === "amplify" ? "📣 AMPLIFY" : item.tag === "fix" ? "🔧 FIX URGENT" : "👀 WATCH"}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground">{item.channel}</span>
+                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
+                    <span className={cn("ml-auto text-sm font-extrabold tracking-tight",
+                      item.deltaPositive ? "text-green-700" : "text-destructive"
+                    )}>{item.count}</span>
+                    <span className="text-[8px] text-muted-foreground">{item.countLabel}</span>
+                    <span className={cn("text-[9px] font-bold",
+                      item.deltaPositive ? "text-green-600" : "text-red-500"
+                    )}>{item.delta}</span>
+                  </div>
+                  <p className="text-[12px] font-bold mb-1 leading-snug">{item.title}</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
-                <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden flex-shrink-0">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(ch.count / maxChannelCount) * 100}%`, background: ch.color }}
-                  />
-                </div>
-                <span className="text-[11px] font-bold w-14 text-right flex-shrink-0">
-                  {ch.count.toLocaleString()}건
-                </span>
-                <span className={cn("text-[10px] font-bold w-7 text-right flex-shrink-0",
-                  ch.sentiment >= 80 ? "text-green-700" :
-                  ch.sentiment >= 60 ? "text-amber-600" : "text-destructive"
-                )}>
-                  {ch.sentiment}
-                </span>
               </div>
             ))}
           </div>
-          {/* Sentiment gap notice */}
-          {sentimentGap >= 20 && (
-            <div className="mx-3.5 mb-3 mt-1 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-[10px] text-amber-900 leading-relaxed">
-                💡 LG.com 감성({lgcomSentiment}점) vs Reddit({redditSentiment}점)
-                격차 {sentimentGap}pts — 커뮤니티 내 부정 확산 전
-                <strong> GEO 방어 콘텐츠·FAQ 선제 배치 권고</strong>
-              </p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="p-6 text-center text-[11px] text-muted-foreground">
+            {lgcomTakeawayL ? "AI 분석 중..." : "인사이트 생성 대기 중"}
+          </div>
+        )}
       </div>
 
       {/* ═══ [E] QUICK WINS ═══ */}
