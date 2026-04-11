@@ -8,7 +8,7 @@ export const LGE_SUBSIDIARIES = [
   { code:"LGESP", country:"브라질",     countryEn:"Brazil",         flag:"🇧🇷", region:"Americas"  },
   { code:"LGEMS", country:"멕시코",     countryEn:"Mexico",         flag:"🇲🇽", region:"Americas"  },
   { code:"LGEUK", country:"영국",       countryEn:"United Kingdom", flag:"🇬🇧", region:"Europe"    },
-  { code:"LGEDG", country:"독일",       countryEn:"Germany",        flag:"🇩🇪", region:"Europe"    },
+  { code:"LGEDE", country:"독일",       countryEn:"Germany",        flag:"🇩🇪", region:"Europe"    },
   { code:"LGEFS", country:"프랑스",     countryEn:"France",         flag:"🇫🇷", region:"Europe"    },
   { code:"LGEBN", country:"네덜란드",   countryEn:"Netherlands",    flag:"🇳🇱", region:"Europe"    },
   { code:"LGEIL", country:"인도",       countryEn:"India",          flag:"🇮🇳", region:"SouthAsia" },
@@ -35,7 +35,7 @@ export const getLgeByRegion = (region: LgeRegion) =>
 /** source 필드 → LGE 법인 코드 매핑 */
 export const sourceToLgeCode = (source: string): string => {
   const map: Record<string, string> = {
-    lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDG",
+    lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDE",
     lge_com_au: "LGEAP", lge_com_in: "LGEIL", lge_com_tw: "LGETT",
     lge_com_jp: "LGEJP", lge_com_th: "LGETH",
     lge_com_sg: "LGESL", lge_com_my: "LGEML", lge_com_id: "LGEIN",

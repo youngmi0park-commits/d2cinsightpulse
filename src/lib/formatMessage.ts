@@ -339,7 +339,7 @@ export function generateGeoMarketingMessages(
       ],
     },
     {
-      geo: "LGEDG",
+      geo: "LGEDE",
       geoLabel: "Germany",
       flag: "🇩🇪",
       language: "Deutsch / English",

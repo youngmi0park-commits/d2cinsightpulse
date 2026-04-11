@@ -48,7 +48,7 @@ export const amazonTrending: TrendingProduct[] = [
 
 export const redditKeywords: TrendingKeyword[] = [
   { keyword: "picture quality", count: 2841, sentiment: "positive", change: 15, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
-  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK", "🇩🇪 LGEDG"] },
+  { keyword: "burn-in", count: 1876, sentiment: "negative", change: -8, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK", "🇩🇪 LGEDE"] },
   { keyword: "gaming performance", count: 1654, sentiment: "positive", change: 32, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 34\""] },
   { keyword: "brightness", count: 1432, sentiment: "positive", change: 45, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
   { keyword: "price too high", count: 1298, sentiment: "negative", change: 12, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI", "🇦🇺 LGEAP"] },
@@ -58,7 +58,7 @@ export const redditKeywords: TrendingKeyword[] = [
   { keyword: "speaker quality", count: 876, sentiment: "negative", change: -3, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇮🇳 LGEIN"] },
   { keyword: "HDR performance", count: 812, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
   { keyword: "input lag", count: 743, sentiment: "positive", change: 9, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
-  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDG"] },
+  { keyword: "software bugs", count: 698, sentiment: "negative", change: 34, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇰🇷 LGEKR", "🇩🇪 LGEDE"] },
 ];
 
 export const amazonKeywords: TrendingKeyword[] = [
@@ -68,7 +68,7 @@ export const amazonKeywords: TrendingKeyword[] = [
   { keyword: "picture quality", count: 1876, sentiment: "positive", change: 11, relatedProducts: ["OLED evo G6 65\"", "OLED evo G5 97\""] },
   { keyword: "warranty issues", count: 1654, sentiment: "negative", change: 25, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI", "🇮🇳 LGEIN"] },
   { keyword: "energy efficient", count: 1432, sentiment: "positive", change: 18, relatedProducts: ["WashTower™ Washer", "OLED evo G6 65\""] },
-  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG"] },
+  { keyword: "noise level", count: 1298, sentiment: "negative", change: -5, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDE"] },
   { keyword: "smart features", count: 1187, sentiment: "positive", change: 33, relatedProducts: ["OLED evo G6 65\"", "OLED C4 83\""] },
   { keyword: "customer service", count: 1098, sentiment: "negative", change: 19, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
   { keyword: "durability", count: 987, sentiment: "positive", change: 7, relatedProducts: ["gram 17\" Copilot+", "WashTower™ Washer"] },
@@ -92,7 +92,7 @@ export const rtingsKeywords: TrendingKeyword[] = [
   { keyword: "response time", count: 354, sentiment: "positive", change: 12, relatedProducts: ["UltraGear evo G9 52\"", "UltraGear OLED 27\""] },
   { keyword: "reflection handling", count: 298, sentiment: "positive", change: 32, relatedProducts: ["OLED evo G5 97\""] },
   { keyword: "burn-in risk", count: 265, sentiment: "negative", change: -5, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS", "🇬🇧 LGEUK"] },
-  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8, relatedProducts: ["UltraGear OLED 34\""], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG"] },
+  { keyword: "uniformity issues", count: 198, sentiment: "negative", change: 8, relatedProducts: ["UltraGear OLED 34\""], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDE"] },
   { keyword: "input lag", count: 176, sentiment: "positive", change: 15, relatedProducts: ["UltraGear evo G9 52\""] },
   { keyword: "viewing angles", count: 154, sentiment: "negative", change: 11, relatedProducts: ["OLED C4 83\""], relatedCountries: ["🇺🇸 LGEUS"] },
 ];
@@ -110,7 +110,7 @@ export const trustedReviewsKeywords: TrendingKeyword[] = [
   { keyword: "value proposition", count: 198, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G6 65\""] },
   { keyword: "software experience", count: 176, sentiment: "negative", change: 22, relatedProducts: ["gram 17\" Copilot+"], relatedCountries: ["🇬🇧 LGEUK"] },
   { keyword: "design premium", count: 165, sentiment: "positive", change: 18, relatedProducts: ["OLED evo G6 65\"", "UltraGear evo G9 52\""] },
-  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG"] },
+  { keyword: "overpriced", count: 143, sentiment: "negative", change: 15, relatedProducts: ["OLED evo G5 97\""], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDE"] },
   { keyword: "innovation", count: 132, sentiment: "positive", change: 30, relatedProducts: ["OLED evo G6 65\"", "CineBeam S 4K UST"] },
 ];
 
@@ -129,7 +129,7 @@ export const consumerReportsKeywords: TrendingKeyword[] = [
   { keyword: "energy efficiency", count: 476, sentiment: "positive", change: 15, relatedProducts: ["WashTower™ Washer", "OLED evo G6 65\""] },
   { keyword: "repair frequency", count: 387, sentiment: "negative", change: 12, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇺🇸 LGEUS", "🇨🇦 LGECI"] },
   { keyword: "safety rating", count: 354, sentiment: "positive", change: 5, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"] },
-  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
+  { keyword: "noise output", count: 298, sentiment: "negative", change: 18, relatedProducts: ["WashTower™ Dryer"], relatedCountries: ["🇺🇸 LGEUS", "🇩🇪 LGEDE", "🇳🇱 LGEBN"] },
   { keyword: "owner satisfaction", count: 276, sentiment: "positive", change: 10, relatedProducts: ["OLED evo G5 97\"", "OLED evo G6 65\""] },
 ];
 
@@ -162,11 +162,11 @@ export const trustpilotTrending: TrendingProduct[] = [
 ];
 
 export const trustpilotKeywords: TrendingKeyword[] = [
-  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Washer", "Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG", "🇳🇱 LGEBN"] },
+  { keyword: "customer service", count: 876, sentiment: "negative", change: 20, relatedProducts: ["WashTower™ Washer", "Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDE", "🇳🇱 LGEBN"] },
   { keyword: "delivery experience", count: 654, sentiment: "positive", change: 5, relatedProducts: ["OLED evo G5 97\""] },
   { keyword: "warranty claim", count: 543, sentiment: "negative", change: 15, relatedProducts: ["WashTower™ Washer", "WashTower™ Dryer"], relatedCountries: ["🇬🇧 LGEUK", "🇫🇷 LGEFS"] },
   { keyword: "product quality", count: 487, sentiment: "positive", change: 8, relatedProducts: ["OLED evo G5 97\"", "OLED C4 83\""] },
-  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDG"] },
+  { keyword: "repair delay", count: 398, sentiment: "negative", change: 25, relatedProducts: ["Gas Range 5.8 cu ft"], relatedCountries: ["🇬🇧 LGEUK", "🇩🇪 LGEDE"] },
   { keyword: "value for money", count: 354, sentiment: "positive", change: 12, relatedProducts: ["OLED C4 83\"", "gram 17\" Copilot+"] },
 ];
 

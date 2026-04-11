@@ -58,7 +58,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 5, flag: "🇩🇪", name: "Germany", nameKo: "독일", risCode: "LGEDG",
+    rank: 5, flag: "🇩🇪", name: "Germany", nameKo: "독일", risCode: "LGEDE",
     descriptionEn: "Non-English but active on English Reddit, top lg.com interest",
     descriptionKo: "비영어권이지만 영문 Reddit 사용·테크 토픽 활발, lg.com 관심 상위권",
     keywords: [
