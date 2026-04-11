@@ -600,16 +600,8 @@ export const CollectionCriteria = () => {
   const lgComCounts = useLgComCounts();
   const countryCounts = useAllCountryCounts();
   const categoryCounts = useCategoryCounts();
-  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [showAllCriteria, setShowAllCriteria] = useState(false);
-
-  const toggleCat = (key: string) => {
-    setExpandedCats((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
+  const [statusTab, setStatusTab] = useState<"country" | "category" | "channel">("country");
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
