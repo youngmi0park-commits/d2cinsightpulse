@@ -821,38 +821,34 @@ export const CollectionCriteria = () => {
               );
             })()}
 
-            {/* ── 채널별 (flat table with category prefix) ── */}
+            {/* ── 채널별 (card grid by category, 4 per row) ── */}
             {statusTab === "channel" && (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <div className="grid grid-cols-[100px_140px_1fr_120px] text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1.5 border-b border-border">
-                  <span>{t("Category", "카테고리")}</span>
-                  <span>{t("Platform", "플랫폼")}</span>
-                  <span>{t("Description", "설명")}</span>
-                  <span className="text-right">{t("Key Countries", "주요 국가")}</span>
-                </div>
-                <div className="max-h-[400px] overflow-y-auto">
-                  {CATEGORY_CHANNELS.flatMap((cat) =>
-                    cat.channels.map((ch, i) => ({
-                      catIcon: cat.icon,
-                      catLabel: t(cat.labelEn, cat.labelKo).split("·")[0].trim(),
-                      ...ch,
-                      isFirst: i === 0,
-                      catKey: cat.labelEn,
-                    }))
-                  ).map((row, idx) => (
-                    <div
-                      key={`${row.catKey}-${row.platform}`}
-                      className={`grid grid-cols-[100px_140px_1fr_120px] text-[11px] px-2.5 py-1.5 items-center ${idx % 2 === 0 ? "bg-background/30" : "bg-muted/15"} border-b border-border/30`}
-                    >
-                      <span className="text-[10px] text-muted-foreground truncate">
-                        {row.isFirst ? `${row.catIcon} ${row.catLabel}` : ""}
-                      </span>
-                      <span className="font-medium text-foreground truncate">{row.platform}</span>
-                      <span className="text-muted-foreground truncate">{t(row.descEn, row.descKo)}</span>
-                      <span className="text-[10px] text-muted-foreground text-right truncate">{row.countries}</span>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {CATEGORY_CHANNELS.map((cat) => (
+                    <div key={cat.labelEn} className="rounded border border-border bg-background/60 px-2 py-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-[10px]">
+                          {cat.icon} {t(cat.labelEn, cat.labelKo).split("·")[0].trim()}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground">{cat.channels.length}개</span>
+                      </div>
+                      <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min((cat.channels.length / 8) * 100, 100)}%` }} />
+                      </div>
+                      <div className="mt-1 space-y-0.5">
+                        {cat.channels.map((ch) => (
+                          <p key={ch.platform} className="text-[8px] text-muted-foreground truncate" title={`${ch.platform} — ${t(ch.descEn, ch.descKo)} (${ch.countries})`}>
+                            <span className="text-foreground font-medium">{ch.platform}</span>
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
+                <p className="text-[9px] text-muted-foreground text-right">
+                  총 {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · {CATEGORY_CHANNELS.length}개 카테고리
+                </p>
               </div>
             )}
           </div>
