@@ -23,9 +23,10 @@ const analyticsItems = [
   { title: "Other Communities", url: "/communities", icon: Globe },
 ];
 
-const mktToolItems = [
-  { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
-];
+// Marketing Asset Studio hidden from sidebar for now
+// const mktToolItems = [
+//   { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
+// ];
 
 const pipelineItems = [
   { title: "Collection Criteria", url: "/collection", icon: BarChart3 },
