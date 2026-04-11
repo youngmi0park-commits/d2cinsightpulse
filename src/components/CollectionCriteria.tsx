@@ -774,13 +774,11 @@ export const CollectionCriteria = () => {
               const filtered = categoryCounts.filter(c => c.category !== "General");
               const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
 
-              const tier1 = filtered.filter(c => c.count >= 1000); // 1,000건 이상
-              const tier2 = filtered.filter(c => c.count >= 100 && c.count < 1000); // 100~999건
-              const tier3 = filtered.filter(c => c.count >= 50 && c.count < 100); // 50~99건
-              const excluded = filtered.filter(c => c.count < 50);
-              const maxCount = tier1.length > 0 ? tier1[0].count : 1;
+              const main = filtered.filter(c => c.count >= 100);
+              const minor = filtered.filter(c => c.count < 100);
+              const maxCount = main.length > 0 ? main[0].count : 1;
 
-              const renderBar = (items: typeof tier1, colorOffset: number) => (
+              const renderBar = (items: typeof main, colorOffset: number) => (
                 <div className="space-y-2.5">
                   {items.map((c, i) => {
                     const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
@@ -812,28 +810,20 @@ export const CollectionCriteria = () => {
 
               return (
                 <div className="space-y-4">
-                  {/* Tier 1: 1,000건 이상 */}
-                  {tier1.length > 0 && (
+                  {/* Main: 리뷰 100건 이상 */}
+                  {main.length > 0 && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">1,000건 이상</p>
-                      {renderBar(tier1, 0)}
+                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">리뷰 100건 이상</p>
+                      {renderBar(main, 0)}
                     </div>
                   )}
 
-                  {/* Tier 2: 100~999건 */}
-                  {tier2.length > 0 && (
+                  {/* Minor: 100건 미만 as pills */}
+                  {minor.length > 0 && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">100 ~ 999건</p>
-                      {renderBar(tier2, tier1.length)}
-                    </div>
-                  )}
-
-                  {/* Tier 3: 50~99건 as pills */}
-                  {tier3.length > 0 && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">50 ~ 99건</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">리뷰 100건 미만</p>
                       <div className="flex flex-wrap gap-2">
-                        {tier3.map((c) => {
+                        {minor.map((c) => {
                           const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
                           return (
                             <span key={c.category} className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-3 py-1 border border-border bg-card text-foreground">
@@ -861,13 +851,9 @@ export const CollectionCriteria = () => {
                     </div>
                   )}
 
-                  {/* Excluded (<50건) footer */}
+                  {/* Footer */}
                   <div className="flex items-center justify-between text-[9px] text-muted-foreground border-t border-border/40 pt-2">
-                    <span>
-                      {excluded.length > 0
-                        ? `50건 미만 카테고리(${excluded.map(c => `${CATEGORY_KO[c.category] || c.category} ${c.count}`).join(" · ")}) 제외`
-                        : "모든 카테고리 표시됨"}
-                    </span>
+                    <span>전체 {filtered.length}개 카테고리 · 100건 이상 {main.length}개 바 표시</span>
                     <span>출처: Bazaarvoice API + 커뮤니티 통합</span>
                   </div>
                 </div>
