@@ -60,6 +60,8 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
   const [showCount, setShowCount] = useState(12);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
+  const [generatedCopy, setGeneratedCopy] = useState<Record<string, string>>({});
+  const [generating, setGenerating] = useState<Record<string, boolean>>({});
 
   const handleTranslate = useCallback(async (id: string, content: string) => {
     if (translations[id]) return;
