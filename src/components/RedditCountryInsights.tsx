@@ -69,7 +69,7 @@ const countries: CountryData[] = [
     ],
   },
   {
-    rank: 6, flag: "🇮🇳", name: "India", nameKo: "인도", risCode: "LGEIN",
+    rank: 6, flag: "🇮🇳", name: "India", nameKo: "인도", risCode: "LGEIL",
     descriptionEn: "Growing English-speaking & mobile Reddit user base",
     descriptionKo: "영어 사용층 & 모바일 Reddit 사용자 급증 추세",
     keywords: [
