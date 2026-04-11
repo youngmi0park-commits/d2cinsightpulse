@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users, Briefcase, Loader2, Brain, Lightbulb,
   ShieldAlert, Heart, ArrowRightLeft, TrendingUp, Sparkles, Search,
-  ChevronDown, ChevronUp, Copy, Check, Tv, Refrigerator, WashingMachine
+  ChevronDown, ChevronUp, Copy, Check
 } from "lucide-react";
 import { toast } from "sonner";
 

@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import {
   BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, Copy, Check,
-  Tv, Refrigerator, WashingMachine, FileText, ThumbsUp, ThumbsDown,
-  AlertTriangle, Zap, Users, Megaphone, Wrench, Headphones, TrendingUp,
-  Eye, Cpu, MessageSquare, Star, Target, Lightbulb, Shield, Search
+  FileText, ThumbsUp, ThumbsDown,
+  AlertTriangle, TrendingUp,
+  Star, Target, Lightbulb, Shield, Search
 } from "lucide-react";
 import { toast } from "sonner";
 
