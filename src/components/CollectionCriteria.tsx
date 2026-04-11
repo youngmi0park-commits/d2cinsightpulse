@@ -59,7 +59,7 @@ const CATEGORY_LABEL_MAP: Record<string, string> = {
   "CT52106203": "Dishwasher", "CT52006634": "Range/Oven",
    "CT52006085": "Air Purifier", "CT10000011": "Laptop",
    "C_APPLIANCE_DISHWASHER": "Dishwasher", "C_APPLIANCE_VACUUM_CLEANER": "Vacuum",
-   "AI Core Tech": "General", "App": "General", "Remote": "General",
+   "AI Core Tech": "General", "App": "General", "Remote": "General", "Phone": "General",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
