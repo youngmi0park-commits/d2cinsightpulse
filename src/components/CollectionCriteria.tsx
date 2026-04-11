@@ -103,15 +103,15 @@ function useAllCountryCounts() {
 const ISO_TO_LGE: Record<string, string> = {
   US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIL",
   TH: "LGETH", TW: "LGETT", JP: "LGEJP", SG: "LGESL", MY: "LGEML",
-  ID: "LGEIL", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
+  ID: "LGEIN", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
   BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
 };
 
 const LGE_FLAGS: Record<string, string> = {
-  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIL: "🇮🇩",
+  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIN: "🇮🇩",
   LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
   LGEDG: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
-  LGEIN: "🇮🇩", Global: "🌐", Other: "🔹",
+  Global: "🌐", Other: "🔹",
 };
 
 const BV_AVAILABLE: Record<string, number> = {
