@@ -11,6 +11,54 @@ const PAGE_SIZE = 100;
 const DEFAULT_BATCH = 15;
 const RATE_DELAY = 300;
 
+// ── Normalize BV CategoryId → clean category ──
+const CATEGORY_NORM: Record<string, string> = {
+  CT52002425: "Washer", CT52000826: "Refrigerator", CT52001903: "Dryer",
+  CT52001906: "Dishwasher", CT52000821: "TV", CT52001900: "Air Conditioner",
+  CT00008334: "Monitor", CT00008363: "Audio", CT52006585: "Vacuum",
+  CT52001901: "Range/Oven", CT52000179: "TV", CT52000182: "Audio",
+  CT52000129: "Laptop", CT10000010: "Monitor", CT52006087: "Projector",
+  CT10000016: "Air Conditioner", CT52006086: "Vacuum", CT41000491: "Styler",
+  CT52106203: "Dishwasher", CT52006634: "Range/Oven", CT52006085: "Air Purifier",
+  CT10000011: "Laptop", CT52000823: "Microwave", CT10000018: "Refrigerator",
+  C_APPLIANCE_WASHER_DRYER: "Washer", C_APPLIANCE_AIR_CARE: "Air Purifier",
+  C_APPLIANCE_DISHWASHER: "Dishwasher", C_APPLIANCE_VACUUM_CLEANER: "Vacuum",
+  C_TV_AUDIO_VIDEO_TV_SOUNDBAR: "Audio", C_COMPUTING_LAPTOP: "Laptop",
+  TV: "TV", "OLED TV": "TV", Washer: "Washer", "Washing Machine": "Washer",
+  Refrigerator: "Refrigerator", Dryer: "Dryer", Monitor: "Monitor",
+  Audio: "Audio", Soundbar: "Audio", Laptop: "Laptop",
+  "Air Conditioner": "Air Conditioner", "Air Purifier": "Air Purifier",
+  Microwave: "Microwave", Projector: "Projector", Dishwasher: "Dishwasher",
+  Vacuum: "Vacuum", "Robot Vacuum": "Vacuum", Styler: "Styler",
+  "Range/Oven": "Range/Oven", Range: "Range/Oven", Cooking: "Range/Oven",
+  Accessory: "Accessory", Accessories: "Accessory",
+};
+
+function inferCategoryFromModel(model: string): string | null {
+  const m = model.toUpperCase();
+  if (/^(LREL|LRGL|LSGL|LSEL|LSE\d|LRE\d)/.test(m)) return "Range/Oven";
+  if (/^(LT1000|LT500|LT700|ADQ)/.test(m)) return "Accessory";
+  if (/^(WKEX|WKGX|WKE\d|WKG\d)/.test(m)) return "Washer";
+  if (/^(DLEX|DLE\d|DLG\d|DLGX)/.test(m)) return "Dryer";
+  if (/^(MVEM|MVEL|MH\d|MS\d|MC\d|LMC)/.test(m)) return "Microwave";
+  if (/^(LDFN|LDF\d|LDT\d|LDP\d|UD50)/.test(m)) return "Dishwasher";
+  if (/^(LRFX|LRYX|LRDC|LF\d|LRMV|LRFG|LFDS|LRYKS|LRYKC|LRYXC)/.test(m)) return "Refrigerator";
+  if (/^\d+(UQ|UR|NANO|QNED)/.test(m)) return "TV";
+  if (/^A9[0-9A-Z]/.test(m)) return "Vacuum";
+  if (/^(WM\d|WT\d|WD\d)/.test(m)) return "Washer";
+  if (/^(C53|S5\d)/.test(m)) return "Styler";
+  if (/^\d+(GX|GP|GN|GQ|GL)/.test(m)) return "Monitor";
+  if (/^\d+(OLED|C\d|B\d|G\d)/.test(m)) return "TV";
+  return null;
+}
+
+function normalizeCategory(bvCatId: string | null, modelNumber: string): string {
+  if (bvCatId && CATEGORY_NORM[bvCatId]) return CATEGORY_NORM[bvCatId];
+  const inferred = inferCategoryFromModel(modelNumber);
+  if (inferred) return inferred;
+  return "General";
+}
+
 function sanitizePII(text: string): string {
   return text
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
@@ -153,7 +201,8 @@ Deno.serve(async (req) => {
             const modelNum = originalName && !originalName.startsWith("MD")
               ? originalName : bvProductId;
             const displayName = rv.Products?.[rv.ProductId]?.Name || prog.product_name || "LG Product";
-            const category = rv.Products?.[rv.ProductId]?.CategoryId || prog.category || "General";
+            const rawCategory = rv.Products?.[rv.ProductId]?.CategoryId || prog.category || "General";
+            const category = normalizeCategory(rawCategory, modelNum);
 
             // Ensure product exists in products table
             if (!productCache[modelNum]) {
