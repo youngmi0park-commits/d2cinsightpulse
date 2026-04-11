@@ -230,12 +230,31 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   </div>
                 )}
 
+                {/* Generated Copy */}
+                {generatedCopy[post.id] && (
+                  <div className="bg-primary/5 border border-primary/15 rounded p-2 space-y-1">
+                    <span className="text-[9px] font-semibold text-primary">🎯 AI 마케팅 카피</span>
+                    <p className="text-[11px] text-foreground leading-relaxed">{generatedCopy[post.id]}</p>
+                    <button onClick={() => handleCopy(generatedCopy[post.id])} className="text-[9px] text-primary hover:underline">복사</button>
+                  </div>
+                )}
+
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30">
                   <span className="text-[9px] text-muted-foreground">
                     {(post as any).author || "anonymous"} · {post.source}
                   </span>
                   <div className="flex items-center gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-[9px]"
+                      disabled={generating[post.id]}
+                      onClick={() => handleGenerateCopy(post.id, post.content, post.sentiment || "neutral")}
+                    >
+                      {generating[post.id] ? <Loader2 className="h-2.5 w-2.5 animate-spin mr-0.5" /> : <Wand2 className="h-2.5 w-2.5 mr-0.5" />}
+                      {generatedCopy[post.id] ? "생성됨" : "카피생성"}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
