@@ -469,7 +469,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       <div className="text-center py-16 text-muted-foreground">
         <p className="text-4xl mb-3">📊</p>
         <p className="font-semibold">수집된 데이터가 없습니다</p>
-        <p className="text-sm mt-1">다음 수집 주기(매일 07:00 KST)를 기다리거나 관리자에게 문의하세요.</p>
+        <p className="text-sm mt-1">BV 자동 수집은 6시간마다 실행됩니다. 잠시 후 다시 확인해 주세요.</p>
       </div>
     );
   }
