@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy, Archive } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
