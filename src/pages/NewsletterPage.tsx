@@ -91,8 +91,9 @@ const NewsletterPage = () => {
 
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState("");
-  const [weekStart, setWeekStart] = useState(defaults.start);
-  const [weekEnd, setWeekEnd] = useState(defaults.end);
+  const defaultWeek = getDefaultWeek();
+  const [weekStart, setWeekStart] = useState(defaultWeek.start);
+  const [weekEnd, setWeekEnd] = useState(defaultWeek.end);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
