@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
+import { CategoryPillBar } from "@/components/CategoryPillBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -249,38 +250,12 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
             />
           </div>
         ) : (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {[
-              { cat: "all", label: t("All", "전체"), emoji: "✨" },
-              { cat: "TV", label: "📺 TV" },
-              { cat: "Soundbar", label: "🔊 Soundbar" },
-              { cat: "Monitor", label: "🖥 Monitor" },
-              { cat: "Refrigerator", label: "🧊 " + t("Fridge", "냉장고") },
-              { cat: "Washer", label: "👕 " + t("Washer", "세탁기") },
-              { cat: "Dryer", label: "🌀 " + t("Dryer", "건조기") },
-              { cat: "Dishwasher", label: "🍽 " + t("Dishwasher", "식기세척기") },
-              { cat: "Vacuum", label: "🧹 " + t("Vacuum", "청소기") },
-              { cat: "AC", label: "❄️ " + t("AC", "에어컨") },
-              { cat: "Air Purifier", label: "🌿 " + t("Purifier", "공기청정기") },
-              { cat: "Laptop", label: "💻 gram" },
-              { cat: "Range", label: "🍳 " + t("Range", "레인지") },
-              { cat: "Microwave", label: "📡 " + t("Microwave", "전자레인지") },
-            ].map((item) => (
-              <button
-                key={item.cat}
-                onClick={() => runAnalysis(item.cat)}
-                disabled={isLoading}
-                className={`flex items-center gap-0.5 px-2 py-1 rounded-md border text-[10px] font-medium transition-all disabled:opacity-50 ${
-                  category === item.cat && result
-                    ? "bg-[#4B5563]/15 text-[#4B5563] border-[#4B5563]/30 ring-1 ring-primary/30"
-                    : "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB] hover:bg-[#E5E7EB]"
-                }`}
-              >
-                {item.emoji || ""}{item.label}
-                {isLoading && category === item.cat && <Loader2 className="h-2.5 w-2.5 animate-spin ml-0.5" />}
-              </button>
-            ))}
-          </div>
+          <CategoryPillBar
+            selected={category}
+            onSelect={(cat) => runAnalysis(cat)}
+            isLoading={isLoading}
+            hasResult={!!result}
+          />
         )}
 
         {!ins && !isLoading && (
