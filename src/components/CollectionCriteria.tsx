@@ -99,23 +99,23 @@ function useAllCountryCounts() {
   return counts;
 }
 
-// ISO → LGE code mapping for display
+// ISO → LGE RIS code mapping (source: ris.lge.com/SearchSubsidiaryCmd.laf)
 const ISO_TO_LGE: Record<string, string> = {
-  US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIN",
-  TH: "LGETH", TW: "LGETW", JP: "LGEJP", SG: "LGESG", MY: "LGEMY",
-  ID: "LGEID", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
+  US: "LGEUS", UK: "LGEUK", DE: "LGEDG", AU: "LGEAP", IN: "LGEIL",
+  TH: "LGETH", TW: "LGETT", JP: "LGEJP", SG: "LGESL", MY: "LGEML",
+  ID: "LGEIN", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
   BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
 };
 
 const LGE_FLAGS: Record<string, string> = {
-  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESG: "🇸🇬", LGEMY: "🇲🇾", LGEID: "🇮🇩",
-  LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETW: "🇹🇼", LGEHK: "🇭🇰", LGEIN: "🇮🇳",
+  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIN: "🇮🇩",
+  LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
   LGEDG: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
-  Global: "🌐", Other: "🔹",
+  LGEID: "🇮🇩", Global: "🌐", Other: "🔹",
 };
 
 const BV_AVAILABLE: Record<string, number> = {
-  LGEUS: 121353, LGEUK: 68862, LGEDG: 41097, LGEAP: 17842, LGEIN: 7761, LGETH: 5503, LGETW: 4633, LGEJP: 1322,
+  LGEUS: 121353, LGEUK: 68862, LGEDG: 41097, LGEAP: 17842, LGEIL: 7761, LGETH: 5503, LGETT: 4633, LGEJP: 1322,
 };
 
 // Channel data organized by product category
