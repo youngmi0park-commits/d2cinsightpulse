@@ -1,6 +1,6 @@
 import { Globe, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 
 interface CountryData {
@@ -120,10 +120,38 @@ const countries: CountryData[] = [
   },
 ];
 
-export const RedditCountryInsights = () => {
+/* Category filter → keyword category matching */
+const CATEGORY_KEYWORD_MAP: Record<string, string[]> = {
+  tv: ["TV", "TV/Price", "TV/Streaming", "Gaming", "Gaming/PC"],
+  audio: ["Sound"],
+  monitor: ["Gaming", "Gaming/PC"],
+  laptop: ["Gaming/PC"],
+  appliance: ["Install", "Install/UX", "Climate", "Energy"],
+  india: [],
+};
+
+export const RedditCountryInsights = ({ category = "all" }: { category?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCountry, setExpandedCountry] = useState<number | null>(null);
   const { t } = useLang();
+
+  // Filter country keywords based on selected category
+  const filteredCountries = useMemo(() => {
+    if (category === "all" || category === "general" || category === "lifestyle") return countries;
+
+    // For India category, only show India
+    if (category === "india") return countries.filter((c) => c.risCode === "LGEIL");
+
+    const relevantCats = CATEGORY_KEYWORD_MAP[category] || [];
+    if (relevantCats.length === 0) return countries;
+
+    return countries.map((country) => ({
+      ...country,
+      keywords: country.keywords.filter((kw) =>
+        relevantCats.some((rc) => kw.category.toLowerCase().includes(rc.toLowerCase()))
+      ),
+    })).filter((c) => c.keywords.length > 0);
+  }, [category]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -131,6 +159,11 @@ export const RedditCountryInsights = () => {
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
           <h3 className="text-base font-bold font-heading">🌍 {t("Reddit LG Product Mentions by Country TOP 10", "Reddit 국가별 LG 제품 언급 TOP 10")}</h3>
+          {category !== "all" && (
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+              {category.toUpperCase()} 필터 적용
+            </span>
+          )}
         </div>
         <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
@@ -149,50 +182,56 @@ export const RedditCountryInsights = () => {
             )}
           </p>
 
-          <div className="space-y-3">
-            {countries.map((country) => (
-              <div key={country.rank} className="rounded-lg border border-border bg-background/50 overflow-hidden">
-                <button
-                  onClick={() => setExpandedCountry(expandedCountry === country.rank ? null : country.rank)}
-                  className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-7 h-7 flex items-center justify-center shrink-0">
-                      {country.rank}
-                    </span>
-                    <span className="text-lg">{country.flag}</span>
-                    <div>
-                      <span className="font-semibold text-sm font-heading">{country.name}</span>
-                      <span className="text-muted-foreground text-xs ml-2">({country.nameKo})</span>
-                      <span className="text-xs font-mono text-primary/70 ml-2">[{country.risCode}]</span>
+          {filteredCountries.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {t("No country data for this category filter.", "이 카테고리에 해당하는 국가 데이터가 없습니다.")}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {filteredCountries.map((country) => (
+                <div key={country.rank} className="rounded-lg border border-border bg-background/50 overflow-hidden">
+                  <button
+                    onClick={() => setExpandedCountry(expandedCountry === country.rank ? null : country.rank)}
+                    className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-7 h-7 flex items-center justify-center shrink-0">
+                        {country.rank}
+                      </span>
+                      <span className="text-lg">{country.flag}</span>
+                      <div>
+                        <span className="font-semibold text-sm font-heading">{country.name}</span>
+                        <span className="text-muted-foreground text-xs ml-2">({country.nameKo})</span>
+                        <span className="text-xs font-mono text-primary/70 ml-2">[{country.risCode}]</span>
+                      </div>
                     </div>
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${expandedCountry === country.rank ? "rotate-180" : ""}`} />
-                </button>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${expandedCountry === country.rank ? "rotate-180" : ""}`} />
+                  </button>
 
-                {expandedCountry === country.rank && (
-                  <div className="px-4 pb-4 border-t border-border pt-3">
-                    <p className="text-xs text-muted-foreground mb-3 italic">{t(country.descriptionEn, country.descriptionKo)}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {country.keywords.map((kw) => (
-                        <div key={kw.category} className="rounded-md bg-secondary/30 p-3">
-                          <span className="text-xs font-semibold text-primary mb-1.5 block">{kw.category}</span>
-                          <ul className="space-y-1">
-                            {kw.items.map((item, i) => (
-                              <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
-                                <span className="text-primary shrink-0">•</span>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                  {expandedCountry === country.rank && (
+                    <div className="px-4 pb-4 border-t border-border pt-3">
+                      <p className="text-xs text-muted-foreground mb-3 italic">{t(country.descriptionEn, country.descriptionKo)}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {country.keywords.map((kw) => (
+                          <div key={kw.category} className="rounded-md bg-secondary/30 p-3">
+                            <span className="text-xs font-semibold text-primary mb-1.5 block">{kw.category}</span>
+                            <ul className="space-y-1">
+                              {kw.items.map((item, i) => (
+                                <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
+                                  <span className="text-primary shrink-0">•</span>
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </CollapsibleContent>
     </Collapsible>

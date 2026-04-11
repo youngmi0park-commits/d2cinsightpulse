@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { MessageSquare, Globe } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditVocPostCards } from "@/components/RedditVocPostCards";
-import { RedditAiCopyModal } from "@/components/RedditAiCopyModal";
+
 import { RedditCompetitorMentions } from "@/components/RedditCompetitorMentions";
 import { RedditWeeklySummary } from "@/components/RedditWeeklySummary";
 import { RedditCategoryAnalysis } from "@/components/RedditCategoryAnalysis";
@@ -201,8 +201,7 @@ const RedditPage = () => {
         <RedditCategoryAnalysis country={sourceFilter} />
         <RedditCompetitorMentions country={sourceFilter} />
       </div>
-      <RedditCountryInsights />
-      <RedditAiCopyModal />
+      <RedditCountryInsights category={sourceFilter} />
     </div>
   );
 };

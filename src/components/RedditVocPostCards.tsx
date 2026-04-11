@@ -7,7 +7,7 @@ import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ExternalLink, ChevronDown, Filter, Languages } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ChevronDown, Filter, Languages, Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 function useRedditPosts(country: string) {
@@ -60,6 +60,8 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
   const [showCount, setShowCount] = useState(12);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState<Record<string, boolean>>({});
+  const [generatedCopy, setGeneratedCopy] = useState<Record<string, string>>({});
+  const [generating, setGenerating] = useState<Record<string, boolean>>({});
 
   const handleTranslate = useCallback(async (id: string, content: string) => {
     if (translations[id]) return;
@@ -97,6 +99,26 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
     navigator.clipboard.writeText(text);
     toast.success("복사 완료!");
   };
+
+  const handleGenerateCopy = useCallback(async (id: string, content: string, sentiment: string) => {
+    if (generatedCopy[id]) return;
+    setGenerating((prev) => ({ ...prev, [id]: true }));
+    try {
+      const prompt = sentiment === "negative"
+        ? `Based on this negative Reddit VOC about LG products, generate 1 defensive marketing message that addresses the concern and reassures. Under 2 lines. Include Korean translation.\n\nVOC: ${content.slice(0, 300)}`
+        : `Based on this positive Reddit review about LG products, generate 1 marketing message that amplifies satisfaction. Perfect for PDP/social copy. Under 2 lines. Include Korean translation.\n\nReview: ${content.slice(0, 300)}`;
+
+      const { data, error } = await supabase.functions.invoke("generate-faq", {
+        body: { prompt, mode: "copy" },
+      });
+      if (error) throw error;
+      setGeneratedCopy((prev) => ({ ...prev, [id]: data?.answer || data?.result || "생성 실패" }));
+    } catch {
+      toast.error("마케팅 카피 생성에 실패했습니다.");
+    } finally {
+      setGenerating((prev) => ({ ...prev, [id]: false }));
+    }
+  }, [generatedCopy]);
 
   if (isLoading) {
     return (
@@ -208,12 +230,31 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
                   </div>
                 )}
 
+                {/* Generated Copy */}
+                {generatedCopy[post.id] && (
+                  <div className="bg-primary/5 border border-primary/15 rounded p-2 space-y-1">
+                    <span className="text-[9px] font-semibold text-primary">🎯 AI 마케팅 카피</span>
+                    <p className="text-[11px] text-foreground leading-relaxed">{generatedCopy[post.id]}</p>
+                    <button onClick={() => handleCopy(generatedCopy[post.id])} className="text-[9px] text-primary hover:underline">복사</button>
+                  </div>
+                )}
+
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30">
                   <span className="text-[9px] text-muted-foreground">
                     {(post as any).author || "anonymous"} · {post.source}
                   </span>
                   <div className="flex items-center gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 px-1.5 text-[9px]"
+                      disabled={generating[post.id]}
+                      onClick={() => handleGenerateCopy(post.id, post.content, post.sentiment || "neutral")}
+                    >
+                      {generating[post.id] ? <Loader2 className="h-2.5 w-2.5 animate-spin mr-0.5" /> : <Wand2 className="h-2.5 w-2.5 mr-0.5" />}
+                      {generatedCopy[post.id] ? "생성됨" : "카피생성"}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
