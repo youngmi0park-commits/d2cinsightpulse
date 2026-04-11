@@ -7,7 +7,7 @@ import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ExternalLink, ChevronDown, Filter, Languages } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ChevronDown, Filter, Languages, Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 function useRedditPosts(country: string) {
