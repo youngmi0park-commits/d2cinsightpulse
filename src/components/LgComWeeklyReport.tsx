@@ -228,29 +228,35 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             />
           </div>
         ) : (
-          <div className="flex flex-wrap gap-1.5 mb-4">
+          <div className="flex flex-wrap gap-1 mb-4">
             {[
-              { cat: "all", icon: Sparkles, label: t("All", "전체"), color: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20" },
-              { cat: "TV", icon: Tv, label: "TV", color: "bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20" },
-              { cat: "Refrigerator", icon: Refrigerator, label: t("Refrigerator", "냉장고"), color: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20 hover:bg-cyan-500/20" },
-              { cat: "Washer", icon: WashingMachine, label: t("Washer", "세탁기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
-              { cat: "Dryer", icon: WashingMachine, label: t("Dryer", "건조기"), color: "bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20" },
-              { cat: "Dishwasher", icon: Headphones, label: t("Dishwasher", "식기세척기"), color: "bg-teal-500/10 text-teal-700 border-teal-500/20 hover:bg-teal-500/20" },
-              { cat: "Audio", icon: Headphones, label: t("Audio", "사운드바·오디오"), color: "bg-orange-500/10 text-orange-700 border-orange-500/20 hover:bg-orange-500/20" },
-              { cat: "Monitor", icon: Cpu, label: t("Monitor", "모니터"), color: "bg-slate-500/10 text-slate-700 border-slate-500/20 hover:bg-slate-500/20" },
-              { cat: "AC", icon: Zap, label: t("AC", "에어컨"), color: "bg-sky-500/10 text-sky-700 border-sky-500/20 hover:bg-sky-500/20" },
+              { cat: "all", label: t("All", "전체"), emoji: "✨" },
+              { cat: "TV", label: "📺 TV" },
+              { cat: "Soundbar", label: "🔊 Soundbar" },
+              { cat: "Monitor", label: "🖥 Monitor" },
+              { cat: "Refrigerator", label: "🧊 " + t("Fridge", "냉장고") },
+              { cat: "Washer", label: "👕 " + t("Washer", "세탁기") },
+              { cat: "Dryer", label: "🌀 " + t("Dryer", "건조기") },
+              { cat: "Dishwasher", label: "🍽 " + t("Dishwasher", "식기세척기") },
+              { cat: "Vacuum", label: "🧹 " + t("Vacuum", "청소기") },
+              { cat: "AC", label: "❄️ " + t("AC", "에어컨") },
+              { cat: "Air Purifier", label: "🌿 " + t("Purifier", "공기청정기") },
+              { cat: "Laptop", label: "💻 gram" },
+              { cat: "Range", label: "🍳 " + t("Range", "레인지") },
+              { cat: "Microwave", label: "📡 " + t("Microwave", "전자레인지") },
             ].map((item) => (
               <button
                 key={item.cat}
                 onClick={() => runReport(item.cat)}
                 disabled={isLoading}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all disabled:opacity-50 ${
-                  category === item.cat && report ? item.color + " ring-1 ring-primary/30" : item.color
+                className={`flex items-center gap-0.5 px-2 py-1 rounded-md border text-[10px] font-medium transition-all disabled:opacity-50 ${
+                  category === item.cat && report
+                    ? "bg-[#4B5563]/15 text-[#4B5563] border-[#4B5563]/30 ring-1 ring-primary/30"
+                    : "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB] hover:bg-[#E5E7EB]"
                 }`}
               >
-                <item.icon className="h-3 w-3" />
-                {item.label}
-                {isLoading && category === item.cat && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
+                {item.emoji || ""}{item.label}
+                {isLoading && category === item.cat && <Loader2 className="h-2.5 w-2.5 animate-spin ml-0.5" />}
               </button>
             ))}
           </div>
