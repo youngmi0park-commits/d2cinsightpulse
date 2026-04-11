@@ -67,7 +67,28 @@ const getDefaultWeek = () => {
 };
 
 const NewsletterPage = () => {
-  const defaults = getDefaultWeek();
+  /* Dynamic country & source counts */
+  const { data: countryCounts } = useQuery({
+    queryKey: ["newsletter-country-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_country_counts");
+      if (error) throw error;
+      return (data || []).filter((r: { country: string }) => r.country !== "Other" && r.country !== "Global");
+    },
+    staleTime: 10 * 60_000,
+  });
+  const { data: sourceCounts } = useQuery({
+    queryKey: ["newsletter-source-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_source_counts");
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 10 * 60_000,
+  });
+  const countryNum = countryCounts?.length || 14;
+  const channelNum = sourceCounts?.length || 30;
+
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState("");
   const [weekStart, setWeekStart] = useState(defaults.start);
