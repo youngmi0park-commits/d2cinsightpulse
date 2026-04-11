@@ -199,19 +199,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Country Filter Bar */}
-      <div className="max-w-[1400px] mx-auto px-6 pt-5">
-        <CountryFilterBar
-          selected={selectedCountry}
-          onChange={(c) => {
-            setSelectedCountry(c);
-            if (searchQuery) {
-              setTimeout(() => handleSearch(searchQuery), 0);
-            }
-          }}
-        />
-      </div>
-
       {/* Dashboard Widgets (visible when no search results) */}
       {!hasResults && !error && (
         <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
