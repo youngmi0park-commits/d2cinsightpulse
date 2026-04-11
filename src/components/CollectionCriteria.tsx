@@ -769,75 +769,108 @@ export const CollectionCriteria = () => {
               </div>
             )}
 
-            {/* ── 카테고리별 ── */}
+            {/* ── 카테고리별 (horizontal bar chart, tiered) ── */}
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
               const total = categoryCounts.reduce((s, c) => s + c.count, 0);
               const filtered = categoryCounts.filter(c => c.category !== "General");
-              const mainCats = filtered.filter(c => c.count >= 100);
-              const otherCats = filtered.filter(c => c.count < 100);
-              const othersTotal = otherCats.reduce((s, c) => s + c.count, 0);
               const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
-              const othersGrandTotal = othersTotal + generalCount;
 
-              const pieData = mainCats.map(c => ({
-                name: `${CATEGORY_ICONS[c.category] || "📦"} ${CATEGORY_KO[c.category] || c.category}`,
-                value: c.count,
-              }));
-              if (othersGrandTotal > 0) {
-                const details = [
-                  ...otherCats.map(c => `${CATEGORY_KO[c.category] || c.category} ${c.count}`),
-                  ...(generalCount > 0 ? [`일반 ${generalCount}`] : []),
-                ].join(", ");
-                pieData.push({ name: `기타 (${details})`, value: othersGrandTotal });
-              }
+              const tier1 = filtered.filter(c => c.count >= 1000); // 1,000건 이상
+              const tier2 = filtered.filter(c => c.count >= 100 && c.count < 1000); // 100~999건
+              const tier3 = filtered.filter(c => c.count >= 50 && c.count < 100); // 50~99건
+              const excluded = filtered.filter(c => c.count < 50);
+              const maxCount = tier1.length > 0 ? tier1[0].count : 1;
 
-              const renderLabel = ({ name, percent }: { name: string; percent: number }) => {
-                const short = name.startsWith("기타") ? "기타" : name;
-                return `${short} ${(percent * 100).toFixed(0)}%`;
-              };
+              const renderBar = (items: typeof tier1, colorOffset: number) => (
+                <div className="space-y-2.5">
+                  {items.map((c, i) => {
+                    const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
+                    const barW = Math.max((c.count / maxCount) * 100, 3);
+                    const color = PIE_COLORS[(i + colorOffset) % PIE_COLORS.length];
+                    return (
+                      <div key={c.category} className="flex items-center gap-3">
+                        <span className="w-[90px] shrink-0 text-[12px] font-medium text-foreground flex items-center gap-1.5">
+                          <span>{CATEGORY_ICONS[c.category] || "📦"}</span>
+                          <span>{CATEGORY_KO[c.category] || c.category}</span>
+                        </span>
+                        <div className="flex-1 h-5 bg-muted/40 rounded-full overflow-hidden relative">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width: `${barW}%`, backgroundColor: color }}
+                          />
+                        </div>
+                        <span className="w-[55px] text-right text-[12px] font-semibold text-foreground tabular-nums">
+                          {c.count.toLocaleString()}
+                        </span>
+                        <span className="w-[32px] text-right text-[12px] font-bold tabular-nums" style={{ color }}>
+                          {pct}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
 
               return (
-                <div className="flex flex-col items-center">
-                  <ResponsiveContainer width="100%" height={340}>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={120}
-                        paddingAngle={2}
-                        label={renderLabel}
-                        labelLine={{ strokeWidth: 1 }}
-                        style={{ fontSize: "10px" }}
-                      >
-                        {pieData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value: number, name: string) => [
-                          `${value.toLocaleString()}건 (${total > 0 ? ((value / total) * 100).toFixed(1) : 0}%)`,
-                          name,
-                        ]}
-                        contentStyle={{ fontSize: "11px", borderRadius: "8px" }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Legend below */}
-                  <div className="flex flex-wrap justify-center gap-2 mt-1 px-2">
-                    {pieData.map((d, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <span className="inline-block w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                        {d.name} <span className="font-bold text-foreground">{d.value.toLocaleString()}</span>
-                      </span>
-                    ))}
+                <div className="space-y-4">
+                  {/* Tier 1: 1,000건 이상 */}
+                  {tier1.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">1,000건 이상</p>
+                      {renderBar(tier1, 0)}
+                    </div>
+                  )}
+
+                  {/* Tier 2: 100~999건 */}
+                  {tier2.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">100 ~ 999건</p>
+                      {renderBar(tier2, tier1.length)}
+                    </div>
+                  )}
+
+                  {/* Tier 3: 50~99건 as pills */}
+                  {tier3.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">50 ~ 99건</p>
+                      <div className="flex flex-wrap gap-2">
+                        {tier3.map((c) => {
+                          const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
+                          return (
+                            <span key={c.category} className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-3 py-1 border border-border bg-card text-foreground">
+                              {CATEGORY_ICONS[c.category] || "📦"} {CATEGORY_KO[c.category] || c.category}
+                              <span className="font-bold">{c.count.toLocaleString()}</span>
+                              <span className="text-muted-foreground">{pct}%</span>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* General (미분류) */}
+                  {generalCount > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-[13px] font-semibold text-foreground flex items-center gap-1.5">📦 미분류 (General)</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">카테고리 미지정 리뷰 · 분석 제외</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-muted-foreground">{generalCount.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted-foreground">전체의 {total > 0 ? Math.round((generalCount / total) * 100) : 0}%</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Excluded (<50건) footer */}
+                  <div className="flex items-center justify-between text-[9px] text-muted-foreground border-t border-border/40 pt-2">
+                    <span>
+                      {excluded.length > 0
+                        ? `50건 미만 카테고리(${excluded.map(c => `${CATEGORY_KO[c.category] || c.category} ${c.count}`).join(" · ")}) 제외`
+                        : "모든 카테고리 표시됨"}
+                    </span>
+                    <span>출처: Bazaarvoice API + 커뮤니티 통합</span>
                   </div>
-                  <p className="text-[9px] text-muted-foreground mt-2">
-                    총 {total.toLocaleString()}건 · 100건 미만 카테고리는 '기타'로 통합
-                  </p>
                 </div>
               );
             })()}
