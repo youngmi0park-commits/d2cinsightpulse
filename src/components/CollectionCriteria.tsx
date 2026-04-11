@@ -768,94 +768,54 @@ export const CollectionCriteria = () => {
               </div>
             )}
 
-            {/* ── 카테고리별 (horizontal bar chart, tiered) ── */}
+            {/* ── 카테고리별 (card grid, matching country tab style) ── */}
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
               const total = categoryCounts.reduce((s, c) => s + c.count, 0);
               const filtered = categoryCounts.filter(c => c.category !== "General");
               const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
-
-              const main = filtered.filter(c => c.count >= 100);
-              const minor = filtered.filter(c => c.count < 100);
-              const maxCount = main.length > 0 ? main[0].count : 1;
-
-              const renderBar = (items: typeof main, colorOffset: number) => (
-                <div className="space-y-2.5">
-                  {items.map((c, i) => {
-                    const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
-                    const barW = Math.max((c.count / maxCount) * 100, 3);
-                    const color = PIE_COLORS[(i + colorOffset) % PIE_COLORS.length];
-                    return (
-                      <div key={c.category} className="flex items-center gap-3">
-                        <span className="w-[90px] shrink-0 text-[12px] font-medium text-foreground flex items-center gap-1.5">
-                          <span>{CATEGORY_ICONS[c.category] || "📦"}</span>
-                          <span>{CATEGORY_KO[c.category] || c.category}</span>
-                        </span>
-                        <div className="flex-1 h-5 bg-muted/40 rounded-full overflow-hidden relative">
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{ width: `${barW}%`, backgroundColor: color }}
-                          />
-                        </div>
-                        <span className="w-[55px] text-right text-[12px] font-semibold text-foreground tabular-nums">
-                          {c.count.toLocaleString()}
-                        </span>
-                        <span className="w-[32px] text-right text-[12px] font-bold tabular-nums" style={{ color }}>
-                          {pct}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
+              const maxCount = filtered.length > 0 ? filtered[0].count : 1;
 
               return (
-                <div className="space-y-4">
-                  {/* Main: 리뷰 100건 이상 */}
-                  {main.length > 0 && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">리뷰 100건 이상</p>
-                      {renderBar(main, 0)}
-                    </div>
-                  )}
-
-                  {/* Minor: 100건 미만 as pills */}
-                  {minor.length > 0 && (
-                    <div>
-                      <p className="text-[10px] text-muted-foreground font-semibold mb-2 border-b border-border/50 pb-1">리뷰 100건 미만</p>
-                      <div className="flex flex-wrap gap-2">
-                        {minor.map((c) => {
-                          const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
-                          return (
-                            <span key={c.category} className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-3 py-1 border border-border bg-card text-foreground">
+                <div className="space-y-3">
+                  {/* Card grid - 4 per row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {filtered.map((c) => {
+                      const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
+                      const barW = Math.max((c.count / maxCount) * 100, 4);
+                      return (
+                        <div key={c.category} className="rounded border border-border bg-background/60 px-2 py-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[10px]">
                               {CATEGORY_ICONS[c.category] || "📦"} {CATEGORY_KO[c.category] || c.category}
-                              <span className="font-bold">{c.count.toLocaleString()}</span>
-                              <span className="text-muted-foreground">{pct}%</span>
                             </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                            <span className="text-[9px] text-muted-foreground">{pct}%</span>
+                          </div>
+                          <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${barW}%` }} />
+                          </div>
+                          <p className="text-[9px] text-muted-foreground">
+                            <span className="font-bold text-foreground">{c.count.toLocaleString()}</span> / {total.toLocaleString()}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-                  {/* General (미분류) */}
+                  {/* General (미분류) footer */}
                   {generalCount > 0 && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 px-4 py-3 flex items-center justify-between">
+                    <div className="rounded border border-border bg-muted/30 px-3 py-2 flex items-center justify-between">
                       <div>
-                        <p className="text-[13px] font-semibold text-foreground flex items-center gap-1.5">📦 미분류 (General)</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">카테고리 미지정 리뷰 · 분석 제외</p>
+                        <p className="text-[11px] font-semibold text-muted-foreground">📦 미분류 (General)</p>
+                        <p className="text-[9px] text-muted-foreground">카테고리 미지정 리뷰 · 분석 제외</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-muted-foreground">{generalCount.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground">전체의 {total > 0 ? Math.round((generalCount / total) * 100) : 0}%</p>
+                        <span className="text-sm font-bold text-muted-foreground">{generalCount.toLocaleString()}</span>
+                        <p className="text-[9px] text-muted-foreground">전체의 {total > 0 ? Math.round((generalCount / total) * 100) : 0}%</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between text-[9px] text-muted-foreground border-t border-border/40 pt-2">
-                    <span>전체 {filtered.length}개 카테고리 · 100건 이상 {main.length}개 바 표시</span>
-                    <span>출처: Bazaarvoice API + 커뮤니티 통합</span>
-                  </div>
+                  <p className="text-[9px] text-muted-foreground text-right">출처: Bazaarvoice API + 커뮤니티 통합</p>
                 </div>
               );
             })()}
