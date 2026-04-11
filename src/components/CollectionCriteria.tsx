@@ -721,7 +721,11 @@ export const CollectionCriteria = () => {
               {/* BV progress cards */}
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.entries(BV_AVAILABLE)
-                  .sort(([, a], [, b]) => b - a)
+                  .sort(([codeA, ], [codeB, ]) => {
+                    const isoA = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeA)?.[0] || "";
+                    const isoB = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeB)?.[0] || "";
+                    return (lgComCounts[isoB] || 0) - (lgComCounts[isoA] || 0);
+                  })
                   .map(([lgeCode, available]) => {
                     const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
                     const collected = lgComCounts[isoKey] || 0;
