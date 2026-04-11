@@ -700,7 +700,7 @@ export const CollectionCriteria = () => {
             {([
               { key: "country" as const, label: t("By Country", "국가별"), icon: "🌏" },
               { key: "category" as const, label: t("By Category", "카테고리별"), icon: "📦" },
-              { key: "channel" as const, label: t("By Channel", "채널별"), icon: "📡" },
+              { key: "channel" as const, label: t("By Collection Channel", "수집채널별"), icon: "📡" },
             ]).map((tab) => (
               <button
                 key={tab.key}
@@ -821,32 +821,33 @@ export const CollectionCriteria = () => {
               );
             })()}
 
-            {/* ── 채널별 (card grid by category, 4 per row) ── */}
+            {/* ── 수집채널별 (card grid by category, 4 per row) ── */}
             {statusTab === "channel" && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {CATEGORY_CHANNELS.map((cat) => (
-                    <div key={cat.labelEn} className="rounded border border-border bg-background/60 px-2 py-1.5">
+                    <div key={cat.labelEn} className="rounded border border-border bg-background/60 px-2.5 py-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-[10px]">
+                        <span className="font-semibold text-[11px]">
                           {cat.icon} {t(cat.labelEn, cat.labelKo).split("·")[0].trim()}
                         </span>
-                        <span className="text-[9px] text-muted-foreground">{cat.channels.length}개</span>
+                        <span className="text-[10px] text-muted-foreground">{cat.channels.length}개</span>
                       </div>
-                      <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
+                      <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-1">
                         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min((cat.channels.length / 8) * 100, 100)}%` }} />
                       </div>
-                      <div className="mt-1 space-y-0.5">
+                      <div className="mt-1.5 space-y-1">
                         {cat.channels.map((ch) => (
-                          <p key={ch.platform} className="text-[8px] text-muted-foreground truncate" title={`${ch.platform} — ${t(ch.descEn, ch.descKo)} (${ch.countries})`}>
-                            <span className="text-foreground font-medium">{ch.platform}</span>
-                          </p>
+                          <div key={ch.platform} className="flex items-start gap-1" title={ch.countries}>
+                            <span className="text-[10px] text-foreground font-medium whitespace-nowrap">{ch.platform}</span>
+                            <span className="text-[9px] text-muted-foreground/70 leading-tight truncate">{t(ch.descEn, ch.descKo)}</span>
+                          </div>
                         ))}
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-[9px] text-muted-foreground text-right">
+                <p className="text-[10px] text-muted-foreground text-right">
                   총 {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · {CATEGORY_CHANNELS.length}개 카테고리
                 </p>
               </div>
