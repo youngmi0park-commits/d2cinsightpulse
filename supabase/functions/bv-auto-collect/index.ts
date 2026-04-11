@@ -20,8 +20,8 @@ const ALL_LOCALES = [
 const BV_BASE = "https://api.bazaarvoice.com/data";
 const PAGE_SIZE = 100;
 const SWEEP_DELAY = 300;
-const COLLECT_BATCH = 10;
-const COLLECT_DELAY = 300;
+const COLLECT_BATCH = 25;       // ← 10 → 25 배치 확대
+const COLLECT_DELAY = 250;
 
 function sanitizePII(text: string): string {
   return text
@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const { mode = "full" } = await req.json().catch(() => ({}));
-  // mode: "sweep" | "collect" | "sync" | "full" (all three)
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -85,12 +84,25 @@ Deno.serve(async (req) => {
             const reviewCount = p.ReviewStatistics?.TotalReviewCount ?? 0;
             if (reviewCount === 0) continue;
 
+            // Sweep 시 total_available 업데이트 — 기존 complete 제품도 새 리뷰 추가 시 재오픈
+            const { data: existing } = await supabase
+              .from("bv_collection_progress")
+              .select("total_available, total_collected, is_complete")
+              .eq("locale", locale)
+              .eq("product_id", p.Id)
+              .maybeSingle();
+
+            const shouldReopen = existing?.is_complete &&
+              reviewCount > (existing?.total_available ?? 0);
+
             await supabase.from("bv_collection_progress").upsert({
               locale,
               product_id: p.Id,
               product_name: p.Name ?? "",
               category: p.CategoryId ?? "Uncategorized",
               total_available: reviewCount,
+              // 새 리뷰가 추가된 경우 is_complete를 false로 재설정
+              ...(shouldReopen ? { is_complete: false } : {}),
               updated_at: new Date().toISOString(),
             }, { onConflict: "locale,product_id", ignoreDuplicates: false });
             registered++;
@@ -109,7 +121,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── PHASE 2: COLLECT (batch collect reviews) ──
+  // ── PHASE 2: COLLECT (batch collect reviews — 과거 포함 전량 수집) ──
   if (mode === "collect" || mode === "full") {
     const productCache: Record<string, string> = {};
 
@@ -119,6 +131,7 @@ Deno.serve(async (req) => {
       let totalSkipped = 0;
       let productsDone = 0;
 
+      // 미완료 제품을 리뷰 많은 순으로 가져오기 (배치 확대)
       const { data: products } = await supabase
         .from("bv_collection_progress")
         .select("*")
@@ -148,7 +161,7 @@ Deno.serve(async (req) => {
             url.searchParams.set("Filter", "ProductId:" + bvProductId);
             url.searchParams.set("Limit", String(PAGE_SIZE));
             url.searchParams.set("Offset", String(offset));
-            url.searchParams.set("Sort", "SubmissionTime:asc");
+            url.searchParams.set("Sort", "SubmissionTime:asc"); // 오래된 것부터 수집
             url.searchParams.set("Include", "Products");
 
             const res = await fetch(url.toString());
@@ -252,7 +265,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── PHASE 3: INCREMENTAL SYNC (last 25h) ──
+  // ── PHASE 3: INCREMENTAL SYNC (last 25h — 신규 리뷰) ──
   if (mode === "sync" || mode === "full") {
     const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString().split("T")[0];
     const productCache: Record<string, string> = {};
