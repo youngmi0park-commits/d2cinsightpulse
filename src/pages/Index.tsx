@@ -218,7 +218,7 @@ const Index = () => {
           <PageHeader
             icon={LayoutDashboard}
             title="📊 Main Overview"
-            description="전체 채널의 리뷰 수집 현황과 주요 트렌드를 한눈에 파악할 수 있는 대시보드입니다. 실시간 트렌딩 제품, 채널별 리뷰 통계, 주간 TOP 3 마케팅 액션 아이템을 확인하세요."
+            description="20개국 이상, 30개+ 채널에서 수집된 실사용자 리뷰를 플랫폼·국가별로 통합 분석합니다. 트렌딩 제품, 감성 변화, 주간 마케팅 액션 아이템을 한눈에 확인하세요."
           />
           <DataStatusBar />
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} country={selectedCountry} />
