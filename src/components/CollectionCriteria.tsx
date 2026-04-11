@@ -718,6 +718,51 @@ export const CollectionCriteria = () => {
             </div>
           )}
         </div>
+
+        {/* Collection Channels by Product Category */}
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="h-5 w-5 text-primary" />
+            <h4 className="font-semibold font-heading text-sm">
+              {t("Collection Channels by Product Category", "제품 카테고리별 수집 채널")}
+            </h4>
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {t(`${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} channels · ${CATEGORY_CHANNELS.length} categories`, `${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · ${CATEGORY_CHANNELS.length}개 카테고리`)}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {CATEGORY_CHANNELS.map((cat) => (
+              <div key={cat.labelEn} className="rounded-lg border border-border bg-background/50 p-4">
+                <h5 className="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                  <span>{cat.icon}</span>
+                  <span>{t(cat.labelEn, cat.labelKo)}</span>
+                  <span className="text-[10px] text-muted-foreground font-normal ml-auto">
+                    {cat.channels.length} {t("channels", "채널")}
+                  </span>
+                </h5>
+                <div className="space-y-0 rounded-lg border border-border overflow-hidden">
+                  {/* Header */}
+                  <div className="grid grid-cols-[130px_1fr_110px] text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1.5 border-b border-border">
+                    <span>{t("Platform", "플랫폼")}</span>
+                    <span>{t("Description", "설명")}</span>
+                    <span className="text-right">{t("Countries", "국가")}</span>
+                  </div>
+                  {cat.channels.map((ch, i) => (
+                    <div
+                      key={ch.platform}
+                      className={`grid grid-cols-[130px_1fr_110px] text-[11px] px-2.5 py-1.5 items-center ${i % 2 === 0 ? "bg-background/30" : "bg-muted/20"} ${i < cat.channels.length - 1 ? "border-b border-border/50" : ""}`}
+                    >
+                      <span className="font-medium text-foreground truncate">{ch.platform}</span>
+                      <span className="text-muted-foreground">{t(ch.descEn, ch.descKo)}</span>
+                      <span className="text-[10px] text-muted-foreground text-right">{ch.countries}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {criteria.map((c) => {
             const Icon = c.icon;
