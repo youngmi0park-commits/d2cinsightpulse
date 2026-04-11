@@ -1,7 +1,8 @@
 import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -69,6 +70,23 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Range/Oven": "🍳", "Styler": "👔",
   "General": "📦",
 };
+
+const CATEGORY_KO: Record<string, string> = {
+  "TV": "TV", "Washer": "세탁기", "Refrigerator": "냉장고", "Dryer": "건조기",
+  "Monitor": "모니터", "Audio": "오디오", "Air Conditioner": "에어컨", "Laptop": "노트북",
+  "Air Purifier": "공기청정기", "Microwave": "전자레인지", "Projector": "프로젝터",
+  "Dishwasher": "식기세척기", "Vacuum": "청소기", "Washer/Dryer": "세탁건조기",
+  "Range/Oven": "오븐/레인지", "Styler": "스타일러", "General": "일반",
+  "Accessory": "액세서리", "Phone": "스마트폰", "Cooktop": "쿡탑",
+  "Appliance Bundle": "가전 번들",
+};
+
+const PIE_COLORS = [
+  "#A91D3A", "#0D9488", "#7C3AED", "#D97706", "#2563EB",
+  "#059669", "#DC2626", "#6366F1", "#EA580C", "#0891B2",
+  "#4F46E5", "#65A30D", "#BE185D", "#1D4ED8", "#9333EA",
+  "#78716C",
+];
 
 // Live category collection counts hook (auto-refresh every 30s + realtime)
 function useCategoryCounts() {
@@ -755,30 +773,71 @@ export const CollectionCriteria = () => {
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
               const total = categoryCounts.reduce((s, c) => s + c.count, 0);
               const filtered = categoryCounts.filter(c => c.category !== "General");
+              const mainCats = filtered.filter(c => c.count >= 100);
+              const otherCats = filtered.filter(c => c.count < 100);
+              const othersTotal = otherCats.reduce((s, c) => s + c.count, 0);
+              const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
+              const othersGrandTotal = othersTotal + generalCount;
+
+              const pieData = mainCats.map(c => ({
+                name: `${CATEGORY_ICONS[c.category] || "📦"} ${CATEGORY_KO[c.category] || c.category}`,
+                value: c.count,
+              }));
+              if (othersGrandTotal > 0) {
+                const details = [
+                  ...otherCats.map(c => `${CATEGORY_KO[c.category] || c.category} ${c.count}`),
+                  ...(generalCount > 0 ? [`일반 ${generalCount}`] : []),
+                ].join(", ");
+                pieData.push({ name: `기타 (${details})`, value: othersGrandTotal });
+              }
+
+              const renderLabel = ({ name, percent }: { name: string; percent: number }) => {
+                const short = name.startsWith("기타") ? "기타" : name;
+                return `${short} ${(percent * 100).toFixed(0)}%`;
+              };
+
               return (
-                <div className="space-y-1.5">
-                  {filtered.map(({ category, count }) => {
-                    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-                    return (
-                      <div key={category} className="flex items-center gap-2 text-[11px]">
-                        <span className="w-[120px] truncate font-medium">
-                          {CATEGORY_ICONS[category] || "📦"} {category}
-                        </span>
-                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/70 transition-all" style={{ width: `${Math.min(pct * 2.5, 100)}%` }} />
-                        </div>
-                        <span className="w-[70px] text-right text-[10px] text-muted-foreground">
-                          <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                          <span className="ml-0.5">({pct}%)</span>
-                        </span>
-                      </div>
-                    );
-                  })}
-                  {categoryCounts.find(c => c.category === "General") && (
-                    <p className="text-[9px] text-muted-foreground mt-1">
-                      + General: {categoryCounts.find(c => c.category === "General")!.count.toLocaleString()}
-                    </p>
-                  )}
+                <div className="flex flex-col items-center">
+                  <ResponsiveContainer width="100%" height={340}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={120}
+                        paddingAngle={2}
+                        label={renderLabel}
+                        labelLine={{ strokeWidth: 1 }}
+                        style={{ fontSize: "10px" }}
+                      >
+                        {pieData.map((_, i) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, name: string) => [
+                          `${value.toLocaleString()}건 (${total > 0 ? ((value / total) * 100).toFixed(1) : 0}%)`,
+                          name,
+                        ]}
+                        contentStyle={{ fontSize: "11px", borderRadius: "8px" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Legend below */}
+                  <div className="flex flex-wrap justify-center gap-2 mt-1 px-2">
+                    {pieData.map((d, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <span className="inline-block w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                        {d.name} <span className="font-bold text-foreground">{d.value.toLocaleString()}</span>
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground mt-2">
+                    총 {total.toLocaleString()}건 · 100건 미만 카테고리는 '기타'로 통합
+                  </p>
                 </div>
               );
             })()}
