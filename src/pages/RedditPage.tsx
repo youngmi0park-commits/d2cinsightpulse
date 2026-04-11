@@ -201,8 +201,7 @@ const RedditPage = () => {
         <RedditCategoryAnalysis country={sourceFilter} />
         <RedditCompetitorMentions country={sourceFilter} />
       </div>
-      <RedditCountryInsights />
-      <RedditAiCopyModal />
+      <RedditCountryInsights category={sourceFilter} />
     </div>
   );
 };
