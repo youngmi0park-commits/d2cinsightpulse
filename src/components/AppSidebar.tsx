@@ -1,4 +1,4 @@
-import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity, Mail, Languages, HelpCircle } from "lucide-react";
+import { Store, MessageSquare, Globe, Wrench, BarChart3, Activity, Mail, Languages, HelpCircle, LayoutDashboard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLang } from "@/contexts/LanguageContext";
@@ -17,13 +17,14 @@ import {
 } from "@/components/ui/sidebar";
 
 const analyticsItems = [
+  { title: "Overview", url: "/", icon: LayoutDashboard },
   { title: "LG.com Insights", url: "/lgcom", icon: Store },
   { title: "Reddit Intelligence", url: "/reddit", icon: MessageSquare },
   { title: "Other Communities", url: "/communities", icon: Globe },
 ];
 
-const marketingItems = [
-  { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench, isNew: true },
+const mktToolItems = [
+  { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
   { title: "Onsite FAQ", url: "/faq-gen", icon: HelpCircle },
 ];
 
@@ -39,6 +40,40 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { lang, toggleLang } = useLang();
   const isActive = (path: string) => location.pathname === path;
+
+  const renderGroup = (label: string, emoji: string, items: typeof analyticsItems) => (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
+        {!collapsed && `${emoji} ${label}`}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => {
+            const active = isActive(item.url);
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild isActive={active} className="text-[13px] relative">
+                  <NavLink
+                    to={item.url}
+                    end
+                    className={`rounded-md px-3 py-2 transition-all ${
+                      active
+                        ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
+                        : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
+                    }`}
+                    activeClassName=""
+                  >
+                    <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
+                    {!collapsed && <span>{item.title}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
 
   return (
     <Sidebar
@@ -77,72 +112,9 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-4 space-y-5">
-        {/* ANALYTICS */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
-            {!collapsed && "📊 ANALYTICS"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {analyticsItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={active} className="text-[13px] relative">
-                      <NavLink
-                        to={item.url}
-                        end
-                        className={`rounded-md px-3 py-2 transition-all ${
-                          active
-                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
-                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
-                        }`}
-                        activeClassName=""
-                      >
-                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-
-        {/* DATA PIPELINE */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.15em] text-[hsl(0,0%,40%)] uppercase px-3 mb-1">
-            {!collapsed && "⚙️ DATA PIPELINE"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {pipelineItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={active} className="text-[13px]">
-                      <NavLink
-                        to={item.url}
-                        end
-                        className={`rounded-md px-3 py-2 transition-all ${
-                          active
-                            ? "text-white bg-[hsl(0,0%,14%)] border-l-2 border-[hsl(4,58%,44%)] ml-0 pl-2.5"
-                            : "text-[hsl(0,0%,55%)] hover:text-white hover:bg-[hsl(0,0%,12%)]"
-                        }`}
-                        activeClassName=""
-                      >
-                        <item.icon className="h-4 w-4 mr-2.5 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {renderGroup("ANALYTICS", "📊", analyticsItems)}
+        {renderGroup("MKT TOOLS", "🎯", mktToolItems)}
+        {renderGroup("DATA PIPELINE", "⚙️", pipelineItems)}
       </SidebarContent>
 
       {!collapsed && (
