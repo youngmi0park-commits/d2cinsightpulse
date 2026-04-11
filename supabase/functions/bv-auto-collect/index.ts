@@ -20,7 +20,7 @@ const ALL_LOCALES = [
 const BV_BASE = "https://api.bazaarvoice.com/data";
 const PAGE_SIZE = 100;
 const SWEEP_DELAY = 300;
-const COLLECT_BATCH = 25;       // ← 10 → 25 배치 확대
+const COLLECT_BATCH = 50;       // ← 25 → 50 배치 확대
 const COLLECT_DELAY = 250;
 
 function sanitizePII(text: string): string {
