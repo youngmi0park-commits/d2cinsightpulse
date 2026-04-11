@@ -523,39 +523,48 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       )}
 
       {/* ═══ [C] KPI PULSE ROW ═══ */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        {/* Card 1 — 총 리뷰 수집 */}
-        <KPICard accentColor="bg-primary" label="총 리뷰 수집" value={totalReviews.toLocaleString()}
-          sub={weeklyDelta >= 0 ? `▲ +${weeklyDelta.toLocaleString()} vs 전주` : `▼ ${weeklyDelta.toLocaleString()} vs 전주`}
-          subColor={weeklyDelta >= 0 ? "text-green-700" : "text-destructive"}
-          sparkline
-        />
-        {/* Card 2 — 긍정 Top 키워드 */}
-        <KPICard accentColor="bg-green-600" label="긍정 TOP 키워드"
-          value={topPosKw ? `"${topPosKw.keyword}"` : "—"}
-          sub={topPosKw ? `${topPosKw.count}건 · ${topPosKw.relatedProducts?.[0] || ""} ${topPosKw.relatedCountries?.[0] ? `· ${topPosKw.relatedCountries[0]}` : ""}`.trim() : "데이터 없음"}
-          subColor="text-green-700"
-          valueSize="text-sm"
-        />
-        {/* Card 3 — 부정 Top 키워드 */}
-        <KPICard accentColor="bg-destructive" label="부정 TOP 키워드"
-          value={topNegKw ? `"${topNegKw.keyword}"` : "—"}
-          sub={topNegKw ? `${topNegKw.count}건 · ${topNegKw.relatedProducts?.[0] || ""} ${topNegKw.relatedCountries?.[0] ? `· ${topNegKw.relatedCountries[0]}` : ""} · FAQ 대응 권고`.trim() : "데이터 없음"}
-          subColor="text-destructive"
-          valueSize="text-sm"
-        />
-        {/* Card 4 — 주간 언급 TOP */}
-        <KPICard accentColor="bg-teal-600" label="주간 언급 TOP"
-          value={topProduct?.displayName || "—"}
-          sub={topProduct ? `${topProduct.mentions}건 · 1위 ${(() => {
-            const prodKws = allKeywords.filter(k => k.relatedProducts?.some(p => p.toLowerCase().includes(topProduct.modelNumber.toLowerCase()))).slice(0, 2);
-            return prodKws.length > 0 ? `· ${prodKws.map(k => k.keyword).join(", ")}` : "";
-          })()}`.trim() : "데이터 없음"}
-          subColor="text-teal-700"
-          valueSize="text-[13px]"
-          truncate
-        />
-      </div>
+      {(() => {
+        const posMetaParts = [topPosKw?.count ? `${topPosKw.count}건` : null, topPosKw?.relatedProducts?.[0], topPosKw?.relatedCountries?.[0]].filter(Boolean);
+        const negMetaParts = [topNegKw?.count ? `${topNegKw.count}건` : null, topNegKw?.relatedProducts?.[0], topNegKw?.relatedCountries?.[0], "FAQ 대응 권고"].filter(Boolean);
+        const topProdKws = topProduct ? allKeywords.filter(k => k.relatedProducts?.some(p => p.toLowerCase().includes(topProduct.modelNumber.toLowerCase()))).slice(0, 2).map(k => k.keyword) : [];
+        const topProdParts = [topProduct ? `${topProduct.mentions}건 · 1위` : null, ...topProdKws].filter(Boolean);
+
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />
+              <p className="text-[10px] text-muted-foreground font-medium mb-1">총 리뷰 수집</p>
+              <p className="text-2xl font-extrabold tracking-tight leading-tight">{totalReviews.toLocaleString()}</p>
+              <p className={cn("text-[10px] font-semibold mt-1", weeklyDelta >= 0 ? "text-green-700" : "text-destructive")}>
+                {weeklyDelta >= 0 ? `▲ +${weeklyDelta.toLocaleString()} vs 전주` : `▼ ${weeklyDelta.toLocaleString()} vs 전주`}
+              </p>
+              <div className="absolute bottom-2 right-3 opacity-20">
+                <svg width="48" height="20" viewBox="0 0 48 20">
+                  <polyline points="0,18 8,14 16,16 24,10 32,12 40,6 48,8" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary" />
+                </svg>
+              </div>
+            </div>
+            <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-green-600" />
+              <p className="text-[10px] text-muted-foreground font-medium mb-1">긍정 TOP 키워드</p>
+              <p className="text-sm font-extrabold tracking-tight leading-tight">{topPosKw ? `"${topPosKw.keyword}"` : "—"}</p>
+              <p className="text-[10px] font-semibold mt-1 text-green-700">{posMetaParts.length > 0 ? posMetaParts.join(" · ") : "데이터 없음"}</p>
+            </div>
+            <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-destructive" />
+              <p className="text-[10px] text-muted-foreground font-medium mb-1">부정 TOP 키워드</p>
+              <p className="text-sm font-extrabold tracking-tight leading-tight">{topNegKw ? `"${topNegKw.keyword}"` : "—"}</p>
+              <p className="text-[10px] font-semibold mt-1 text-destructive">{negMetaParts.length > 0 ? negMetaParts.join(" · ") : "데이터 없음"}</p>
+            </div>
+            <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-teal-600" />
+              <p className="text-[10px] text-muted-foreground font-medium mb-1">주간 언급 TOP</p>
+              <p className="text-[13px] font-extrabold tracking-tight leading-tight truncate">{topProduct?.displayName || "—"}</p>
+              <p className="text-[10px] font-semibold mt-1 text-teal-700">{topProdParts.length > 0 ? topProdParts.join(" · ") : "데이터 없음"}</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ═══ [D] MARKETING OPPORTUNITY MATRIX — FULL WIDTH ═══ */}
       <div className="bg-background border border-border rounded-xl overflow-hidden">
