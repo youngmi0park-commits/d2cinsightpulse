@@ -70,16 +70,22 @@ function useNewsletterData() {
       const kws = keywordsRes.data || [];
       const posKws = kws.filter(k => k.sentiment === "positive").sort((a, b) => b.count - a.count);
       const negKws = kws.filter(k => k.sentiment === "negative").sort((a, b) => b.count - a.count);
-      const topPositiveKeyword = posKws[0]?.keyword || "—";
-      const topPositiveCount = posKws[0]?.count || 0;
-      const topNegativeKeyword = negKws[0]?.keyword || "—";
-      const topNegativeCount = negKws[0]?.count || 0;
+      const topPosKw = posKws[0];
+      const topPositiveKeyword = topPosKw?.keyword || "—";
+      const topPositiveCount = topPosKw?.count || 0;
+      const topPositiveMeta = topPosKw ? `${(topPosKw.related_products as string[] | null)?.[0] || ""} ${(topPosKw.related_countries as string[] | null)?.[0] ? `· ${(topPosKw.related_countries as string[])[0]}` : ""}`.trim() : "";
+      const topNegKw = negKws[0];
+      const topNegativeKeyword = topNegKw?.keyword || "—";
+      const topNegativeCount = topNegKw?.count || 0;
+      const topNegativeMeta = topNegKw ? `${(topNegKw.related_products as string[] | null)?.[0] || ""} ${(topNegKw.related_countries as string[] | null)?.[0] ? `· ${(topNegKw.related_countries as string[])[0]}` : ""}`.trim() : "";
 
       // Top product
       const trendProds = trendingRes.data || [];
       const topProd = trendProds[0];
       const topProduct = (topProd?.products as any)?.display_name || "—";
+      const topProductModel = (topProd?.products as any)?.model_number || "";
       const topProductCount = topProd?.mention_count || 0;
+      const topProductKws = kws.filter(k => (k.related_products as string[] | null)?.some((p: string) => p.toLowerCase().includes(topProductModel.toLowerCase()))).slice(0, 2).map(k => k.keyword).join(", ");
 
       // Opportunities (derived from trending)
       const opportunities: NewsletterData["opportunities"] = [];
