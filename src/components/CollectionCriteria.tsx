@@ -1,7 +1,8 @@
 import { Database, Globe, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, MapPin, AlertTriangle, Brain, Users, Zap, Search, HelpCircle, Scale } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -69,6 +70,23 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Range/Oven": "🍳", "Styler": "👔",
   "General": "📦",
 };
+
+const CATEGORY_KO: Record<string, string> = {
+  "TV": "TV", "Washer": "세탁기", "Refrigerator": "냉장고", "Dryer": "건조기",
+  "Monitor": "모니터", "Audio": "오디오", "Air Conditioner": "에어컨", "Laptop": "노트북",
+  "Air Purifier": "공기청정기", "Microwave": "전자레인지", "Projector": "프로젝터",
+  "Dishwasher": "식기세척기", "Vacuum": "청소기", "Washer/Dryer": "세탁건조기",
+  "Range/Oven": "오븐/레인지", "Styler": "스타일러", "General": "일반",
+  "Accessory": "액세서리", "Phone": "스마트폰", "Cooktop": "쿡탑",
+  "Appliance Bundle": "가전 번들",
+};
+
+const PIE_COLORS = [
+  "#A91D3A", "#0D9488", "#7C3AED", "#D97706", "#2563EB",
+  "#059669", "#DC2626", "#6366F1", "#EA580C", "#0891B2",
+  "#4F46E5", "#65A30D", "#BE185D", "#1D4ED8", "#9333EA",
+  "#78716C",
+];
 
 // Live category collection counts hook (auto-refresh every 30s + realtime)
 function useCategoryCounts() {
