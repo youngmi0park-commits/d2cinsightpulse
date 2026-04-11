@@ -110,84 +110,117 @@ const BV_AVAILABLE: Record<string, number> = {
   US: 121353, UK: 68862, DE: 41097, AU: 17842, IN: 7761, TH: 5503, TW: 4633, JP: 1322,
 };
 
-const criteria: CriteriaItem[] = [
+// Channel data organized by product category
+interface ChannelEntry {
+  platform: string;
+  descEn: string;
+  descKo: string;
+  countries: string;
+}
+
+interface CategoryChannels {
+  icon: string;
+  labelEn: string;
+  labelKo: string;
+  channels: ChannelEntry[];
+}
+
+const CATEGORY_CHANNELS: CategoryChannels[] = [
   {
-    icon: Globe,
-    titleEn: "Collection Channels",
-    titleKo: "수집 채널",
-    itemsEn: [
-      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — Official LG product pages & customer reviews (8 countries: Bazaarvoice Conversations API Production 연동)",
-      "Reddit — Major subreddits (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc, etc.)",
-      "Amazon — Product reviews with 'Verified Purchase' trust signal (US, UK, CA, DE, IN, FR, JP, SG)",
-      "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 수집 (US 핵심 채널)",
-      "Costco — Member product reviews (US)",
-      "Walmart — 🔑 공개 API 기반 유통 채널 VOC 수집 (US)",
-      "Target — 🔑 공개 API 기반 유통 채널 VOC 수집 (US)",
-      "YouTube — Official LG channel comments (US, UK, Global, India, AU, JP, SG, TH, PH, ID, VN, TW, HK — Korea excluded) + review/unboxing video comments via Firecrawl",
-      "RTINGS — Professional TV/Monitor/Projector reviews with lab measurements and test results",
-      "Trusted Reviews — Professional editor reviews for TV/Monitor/Laptop (UK-based)",
-      "Consumer Reports — Consumer evaluation and reliability reports (US-based, public areas only)",
-      "CNET — Tech media editor reviews and Editor's Choice ratings",
-      "TechRadar — Professional tech reviews with detailed benchmarks",
-      "Tom's Hardware — Hardware-focused reviews with benchmark data (monitors, laptops)",
-      "Notebookcheck — In-depth laptop reviews with detailed performance measurements",
-      "Trustpilot — Direct consumer reviews for appliances/services and CS evaluation",
-      "BestReviews — Comprehensive appliance/projector recommendation reviews",
-      "ConsumerAffairs — Consumer complaint & review platform for home appliances (US-based)",
-      "Houzz — Home improvement community with professional/consumer appliance reviews",
-      "Google Reviews/Maps — LG store and service center reviews",
-      "LG Community — Official LG community forum discussions and user feedback",
-      "Lemon8 — Social platform product reviews and lifestyle content",
-      "SoundGuys — Audio product specialist reviews and measurements",
-      "PCMag — Professional tech product reviews and ratings",
-      "🆕 Shopee — Southeast Asia e-commerce platform reviews (SG, MY, PH, TH, ID, VN)",
-      "🆕 Lazada — Southeast Asia e-commerce platform reviews (SG, MY, PH, TH, ID, VN)",
-      "🆕 Reviews.io — Consumer reviews platform (Global, JP, TW, HK)",
-      "🆕 ComplaintsBoard — Consumer complaints platform (Global, including Middle East)",
-      "🆕 Quora — Product experience Q&A discussions (RSS·API, tech Q&A)",
-      "🆕 Stack Exchange / SuperUser — Technical Q&A for LG product troubleshooting (RSS·API)",
-      "🆕 Consumer Reports — Refrigerator, Washing Machine, Dishwasher, Dryer reliability ratings & lab test reviews (US, public areas · consumerreports.org)",
-      "🆕 Wirecutter (NYTimes) — Washer, Dryer, Refrigerator expert recommendation articles (US · nytimes.com/wirecutter — paywall 제외 공개 영역만)",
-      "🆕 This Old House — Refrigerator, Washing Machine Top Pick & comparison reviews (US · thisoldhouse.com)",
-      "🆕 Designer Appliances — LG WashTower, Refrigerator, Dishwasher 전문가 심층 블로그 리뷰 (US · designerappliances.com)",
-    ],
-    itemsKo: [
-      "LG.com (lg.com/us, lg.com/uk, lg.com/in, lg.com/tw, lg.com/jp, lg.com/th, lg.com/de, lg.com/au) — LG 공식 제품 페이지 및 고객 리뷰 (8개국: Bazaarvoice Conversations API Production 연동)",
-      "Reddit — 주요 서브레딧 (r/OLED, r/hometheater, r/ultrawidemasterrace, r/LGgram, r/LG_UserHub, r/Appliances, r/buildapc 등)",
-      "Amazon — 'Verified Purchase' 신뢰 시그널 포함 제품 리뷰 (US, UK, CA, DE, IN, FR, JP, SG)",
-      "Best Buy — 🔑 공개 API 기반 리테일 리뷰 및 평점 (US 핵심 채널)",
-      "Costco — 회원 제품 리뷰 (US)",
-      "Walmart — 🔑 공개 API 기반 유통 채널 VOC (US)",
-      "Target — 🔑 공개 API 기반 유통 채널 VOC (US)",
-      "YouTube — LG 공식 채널 댓글 (US, UK, Global, India, AU, JP, SG, TH, PH, ID, VN, TW, HK — 한국 제외)",
-      "RTINGS — TV·모니터·프로젝터 전문 리뷰, 랩 측정 및 테스트 결과",
-      "Trusted Reviews — TV·모니터·노트북 전문 에디터 리뷰 (UK 기반)",
-      "Consumer Reports — 가전·TV·노트북 소비자 평가 및 신뢰도 리포트 (US 기반, 공개 영역만)",
-      "CNET — 테크 미디어 에디터 리뷰 및 Editor's Choice 평가",
-      "TechRadar — 전문 테크 리뷰 및 상세 벤치마크",
-      "Tom's Hardware — 하드웨어 중심 리뷰 및 벤치마크 데이터 (모니터, 노트북)",
-      "Notebookcheck — 노트북 심층 리뷰 및 상세 성능 측정",
-      "Trustpilot — 가전·서비스 소비자 직접 리뷰 및 CS 평가 (글로벌)",
-      "BestReviews — 가전·프로젝터 종합 추천 리뷰",
-      "ConsumerAffairs — 가전 중심 소비자 불만·리뷰 플랫폼 (US 기반)",
-      "Houzz — 홈 인테리어 커뮤니티 내 전문가/소비자 가전 리뷰",
-      "Google Reviews/Maps — LG 스토어 및 서비스센터 리뷰",
-      "LG Community — LG 공식 커뮤니티 포럼 토론 및 사용자 피드백",
-      "Lemon8 — 소셜 플랫폼 제품 리뷰 및 라이프스타일 콘텐츠",
-      "SoundGuys — 오디오 제품 전문 리뷰 및 측정",
-      "PCMag — 전문 테크 제품 리뷰 및 평가",
-      "🆕 Shopee — 동남아 이커머스 플랫폼 리뷰 (SG, MY, PH, TH, ID, VN)",
-      "🆕 Lazada — 동남아 이커머스 플랫폼 리뷰 (SG, MY, PH, TH, ID, VN)",
-      "🆕 Reviews.io — 소비자 리뷰 플랫폼 (글로벌, JP, TW, HK)",
-      "🆕 ComplaintsBoard — 소비자 불만 플랫폼 (글로벌, 중동 포함)",
-      "🆕 Quora — 제품 경험 Q&A 토론 (RSS·API, 기술 Q&A)",
-      "🆕 Stack Exchange / SuperUser — LG 제품 기술 Q&A (RSS·API)",
-      "🆕 Consumer Reports — 냉장고·세탁기·식세기·건조기 신뢰성 평가 및 랩 테스트 리뷰 (US, 공개 영역 · consumerreports.org)",
-      "🆕 Wirecutter (NYTimes) — 세탁기·건조기·냉장고 전문 추천 아티클 (US · nytimes.com/wirecutter — 페이월 제외 공개 영역만)",
-      "🆕 This Old House — 냉장고·세탁기 Top Pick 및 비교 리뷰 (US · thisoldhouse.com)",
-      "🆕 Designer Appliances — LG WashTower·냉장고·식세기 전문가 심층 블로그 리뷰 (US · designerappliances.com)",
+    icon: "📺",
+    labelEn: "TV · Display · Audio",
+    labelKo: "TV · 디스플레이 · 오디오",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "Official product reviews via Bazaarvoice API", descKo: "Bazaarvoice API 기반 공식 리뷰", countries: "US, UK, IN, TW, JP, TH, DE, AU" },
+      { platform: "Reddit", descEn: "r/OLED, r/hometheater, r/4kTV, r/soundbars", descKo: "r/OLED, r/hometheater, r/4kTV, r/soundbars", countries: "US (주력), Global" },
+      { platform: "RTINGS", descEn: "Lab measurements & professional test results", descKo: "랩 측정 및 전문 테스트 결과", countries: "Global" },
+      { platform: "Amazon", descEn: "Verified Purchase reviews", descKo: "Verified Purchase 리뷰", countries: "US, UK, DE, IN, JP, CA, FR, SG" },
+      { platform: "Best Buy", descEn: "Retail reviews & ratings (Public API)", descKo: "리테일 리뷰 및 평점 (공개 API)", countries: "US" },
+      { platform: "YouTube", descEn: "Review & unboxing video comments", descKo: "리뷰 및 언박싱 영상 댓글", countries: "US, UK, AU, JP, IN, SG, TH 등 13개국" },
+      { platform: "CNET · TechRadar", descEn: "Editor reviews & Editor's Choice ratings", descKo: "에디터 리뷰 및 에디터 초이스 평가", countries: "Global" },
+      { platform: "SoundGuys", descEn: "Audio product specialist reviews & measurements", descKo: "오디오 제품 전문 리뷰 및 측정", countries: "Global" },
     ],
   },
+  {
+    icon: "🧊",
+    labelEn: "Refrigerator · Kitchen Appliance",
+    labelKo: "냉장고 · 주방 가전",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "InstaView, French Door, Side-by-Side reviews", descKo: "InstaView, French Door, Side-by-Side 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
+      { platform: "Amazon", descEn: "Refrigerator, Range, Microwave, Dishwasher reviews", descKo: "냉장고, 레인지, 전자레인지, 식기세척기 리뷰", countries: "US, UK, DE, IN" },
+      { platform: "Consumer Reports", descEn: "Reliability ratings & lab test reviews", descKo: "신뢰성 평가 및 랩 테스트 리뷰", countries: "US" },
+      { platform: "This Old House", descEn: "Top Pick & comparison reviews", descKo: "Top Pick 및 비교 리뷰", countries: "US" },
+      { platform: "Designer Appliances", descEn: "Expert in-depth blog reviews", descKo: "전문가 심층 블로그 리뷰", countries: "US" },
+      { platform: "ConsumerAffairs", descEn: "Consumer complaint & review platform", descKo: "소비자 불만 및 리뷰 플랫폼", countries: "US" },
+      { platform: "Houzz", descEn: "Home improvement community reviews", descKo: "홈 인테리어 커뮤니티 리뷰", countries: "US" },
+    ],
+  },
+  {
+    icon: "🧺",
+    labelEn: "Washer · Dryer · Laundry",
+    labelKo: "세탁기 · 건조기 · 세탁",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "WashTower, TurboWash, Heat Pump Dryer reviews", descKo: "WashTower, TurboWash, 히트펌프 건조기 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
+      { platform: "Reddit", descEn: "r/Appliances, r/BuyItForLife", descKo: "r/Appliances, r/BuyItForLife", countries: "US, Global" },
+      { platform: "Consumer Reports", descEn: "Washer/Dryer reliability & lab tests", descKo: "세탁기/건조기 신뢰성 및 랩 테스트", countries: "US" },
+      { platform: "Wirecutter (NYT)", descEn: "Expert recommendation articles (public only)", descKo: "전문 추천 아티클 (공개 영역만)", countries: "US" },
+      { platform: "Best Buy · Walmart · Target", descEn: "Retail channel VOC (Public API)", descKo: "유통 채널 VOC (공개 API)", countries: "US" },
+      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "SG, MY, PH, TH, ID, VN" },
+    ],
+  },
+  {
+    icon: "❄️",
+    labelEn: "Air Conditioner · Air Purifier",
+    labelKo: "에어컨 · 공기청정기",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "Artcool, Dual Inverter, PuriCare reviews", descKo: "Artcool, Dual Inverter, PuriCare 리뷰", countries: "US, UK, IN, DE, AU, TH, TW, JP" },
+      { platform: "Reddit", descEn: "r/Appliances, r/HVAC, r/AirPurifiers", descKo: "r/Appliances, r/HVAC, r/AirPurifiers", countries: "US, Global" },
+      { platform: "Amazon", descEn: "AC & air purifier Verified Purchase reviews", descKo: "에어컨 및 공기청정기 Verified Purchase 리뷰", countries: "US, UK, IN, DE" },
+      { platform: "Trustpilot", descEn: "Consumer reviews for appliances & services", descKo: "가전·서비스 소비자 직접 리뷰", countries: "Global" },
+    ],
+  },
+  {
+    icon: "💻",
+    labelEn: "Laptop · Monitor · Computing",
+    labelKo: "노트북 · 모니터 · 컴퓨팅",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "LG Gram, UltraGear, MyView, DualUp reviews", descKo: "LG Gram, UltraGear, MyView, DualUp 리뷰", countries: "US, UK, DE, AU, JP" },
+      { platform: "Reddit", descEn: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", descKo: "r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors", countries: "US, Global" },
+      { platform: "Notebookcheck", descEn: "In-depth laptop reviews & performance data", descKo: "노트북 심층 리뷰 및 성능 데이터", countries: "Global" },
+      { platform: "Tom's Hardware", descEn: "Monitor & laptop benchmark reviews", descKo: "모니터 및 노트북 벤치마크 리뷰", countries: "Global" },
+      { platform: "PCMag", descEn: "Professional tech product reviews & ratings", descKo: "전문 테크 제품 리뷰 및 평가", countries: "Global" },
+      { platform: "Trusted Reviews", descEn: "Editor reviews for monitors & laptops (UK)", descKo: "모니터·노트북 에디터 리뷰 (UK 기반)", countries: "UK" },
+    ],
+  },
+  {
+    icon: "🧹",
+    labelEn: "Vacuum · Robot · Small Appliance",
+    labelKo: "청소기 · 로봇 · 소형 가전",
+    channels: [
+      { platform: "LG.com (BV)", descEn: "CordZero, Robot Vacuum reviews", descKo: "CordZero, 로봇청소기 리뷰", countries: "US, UK, DE, AU, TH, TW, JP" },
+      { platform: "Amazon", descEn: "Vacuum & small appliance reviews", descKo: "청소기 및 소형 가전 리뷰", countries: "US, UK, DE, IN, JP" },
+      { platform: "BestReviews", descEn: "Appliance & projector recommendation reviews", descKo: "가전·프로젝터 종합 추천 리뷰", countries: "US" },
+      { platform: "Shopee · Lazada", descEn: "SE Asia e-commerce reviews (Firecrawl)", descKo: "동남아 이커머스 리뷰 (Firecrawl)", countries: "SG, MY, PH, TH, ID, VN" },
+    ],
+  },
+  {
+    icon: "🌐",
+    labelEn: "Cross-Category · Community · Global",
+    labelKo: "크로스 카테고리 · 커뮤니티 · 글로벌",
+    channels: [
+      { platform: "Google Reviews/Maps", descEn: "LG store & service center reviews", descKo: "LG 스토어 및 서비스센터 리뷰", countries: "Global" },
+      { platform: "LG Community", descEn: "Official LG community forum discussions", descKo: "LG 공식 커뮤니티 포럼 토론", countries: "Global" },
+      { platform: "Lemon8", descEn: "Social platform product reviews & lifestyle", descKo: "소셜 플랫폼 제품 리뷰 및 라이프스타일", countries: "Global" },
+      { platform: "Reviews.io", descEn: "Consumer reviews platform", descKo: "소비자 리뷰 플랫폼", countries: "Global, JP, TW, HK" },
+      { platform: "ComplaintsBoard", descEn: "Consumer complaints platform (incl. Middle East)", descKo: "소비자 불만 플랫폼 (중동 포함)", countries: "Global" },
+      { platform: "Quora", descEn: "Product experience Q&A discussions", descKo: "제품 경험 Q&A 토론", countries: "Global" },
+      { platform: "Stack Exchange", descEn: "Technical Q&A for product troubleshooting", descKo: "제품 기술 Q&A", countries: "Global" },
+      { platform: "Costco", descEn: "Member product reviews", descKo: "회원 제품 리뷰", countries: "US" },
+    ],
+  },
+];
+
+const criteria: CriteriaItem[] = [
   {
     icon: Search,
     titleEn: "Expanded Keyword Taxonomy (6 Categories)",
@@ -685,6 +718,51 @@ export const CollectionCriteria = () => {
             </div>
           )}
         </div>
+
+        {/* Collection Channels by Product Category */}
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="h-5 w-5 text-primary" />
+            <h4 className="font-semibold font-heading text-sm">
+              {t("Collection Channels by Product Category", "제품 카테고리별 수집 채널")}
+            </h4>
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {t(`${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} channels · ${CATEGORY_CHANNELS.length} categories`, `${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · ${CATEGORY_CHANNELS.length}개 카테고리`)}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {CATEGORY_CHANNELS.map((cat) => (
+              <div key={cat.labelEn} className="rounded-lg border border-border bg-background/50 p-4">
+                <h5 className="font-semibold text-sm mb-3 flex items-center gap-1.5">
+                  <span>{cat.icon}</span>
+                  <span>{t(cat.labelEn, cat.labelKo)}</span>
+                  <span className="text-[10px] text-muted-foreground font-normal ml-auto">
+                    {cat.channels.length} {t("channels", "채널")}
+                  </span>
+                </h5>
+                <div className="space-y-0 rounded-lg border border-border overflow-hidden">
+                  {/* Header */}
+                  <div className="grid grid-cols-[130px_1fr_110px] text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2.5 py-1.5 border-b border-border">
+                    <span>{t("Platform", "플랫폼")}</span>
+                    <span>{t("Description", "설명")}</span>
+                    <span className="text-right">{t("Countries", "국가")}</span>
+                  </div>
+                  {cat.channels.map((ch, i) => (
+                    <div
+                      key={ch.platform}
+                      className={`grid grid-cols-[130px_1fr_110px] text-[11px] px-2.5 py-1.5 items-center ${i % 2 === 0 ? "bg-background/30" : "bg-muted/20"} ${i < cat.channels.length - 1 ? "border-b border-border/50" : ""}`}
+                    >
+                      <span className="font-medium text-foreground truncate">{ch.platform}</span>
+                      <span className="text-muted-foreground">{t(ch.descEn, ch.descKo)}</span>
+                      <span className="text-[10px] text-muted-foreground text-right">{ch.countries}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {criteria.map((c) => {
             const Icon = c.icon;
