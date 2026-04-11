@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
+import { CategoryPillBar } from "@/components/CategoryPillBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

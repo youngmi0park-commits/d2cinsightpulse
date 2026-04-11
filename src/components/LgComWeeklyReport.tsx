@@ -4,6 +4,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
+import { CategoryPillBar } from "@/components/CategoryPillBar";
 import {
   BarChart3, Loader2, Sparkles, ChevronDown, ChevronUp, Copy, Check,
   FileText, ThumbsUp, ThumbsDown,
