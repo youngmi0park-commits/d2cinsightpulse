@@ -802,6 +802,29 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_bv_priority_products: {
+        Args: { p_limit?: number; p_locale: string }
+        Returns: {
+          category: string | null
+          created_at: string | null
+          id: string
+          is_complete: boolean | null
+          last_offset: number | null
+          last_run_at: string | null
+          locale: string
+          product_id: string
+          product_name: string | null
+          total_available: number | null
+          total_collected: number | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "bv_collection_progress"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_category_counts: {
         Args: never
         Returns: {
