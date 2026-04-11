@@ -25,7 +25,6 @@ const analyticsItems = [
 
 const mktToolItems = [
   { title: "Marketing Asset Studio", url: "/toolkit", icon: Wrench },
-  { title: "Onsite FAQ", url: "/faq-gen", icon: HelpCircle },
 ];
 
 const pipelineItems = [
