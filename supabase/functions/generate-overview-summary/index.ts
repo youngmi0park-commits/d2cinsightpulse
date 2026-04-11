@@ -20,15 +20,16 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const channel: string = body.channel || "lgcom";
 
-    // ── 1) 주간 리뷰 가져오기 (최근 7일) ──
+    // ── 1) 주간 리뷰 가져오기 (published_at 기준 최근 7일) ──
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     let weeklyQuery = sb
       .from("reviews")
-      .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
-      .gte("collected_at", weekAgo.toISOString())
-      .order("collected_at", { ascending: false })
+      .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
+      .not("published_at", "is", null)
+      .gte("published_at", weekAgo.toISOString())
+      .order("published_at", { ascending: false })
       .limit(800);
 
     if (channel === "lgcom") {
@@ -40,9 +41,9 @@ Deno.serve(async (req) => {
     const { data: weeklyReviews, error: weeklyErr } = await weeklyQuery;
     if (weeklyErr) throw weeklyErr;
 
-    // ── 2) 주간 데이터 부족 시 최근 30일로 확장 ──
+    // ── 2) 주간 데이터 부족 시 최근 30일로 확장 (published_at 기준) ──
     let reviews = weeklyReviews || [];
-    let periodLabel = "최근 7일";
+    let periodLabel = "이번 주 작성 리뷰";
 
     if (reviews.length < 30) {
       const monthAgo = new Date();
@@ -50,9 +51,10 @@ Deno.serve(async (req) => {
 
       let fallbackQuery = sb
         .from("reviews")
-        .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
-        .gte("collected_at", monthAgo.toISOString())
-        .order("collected_at", { ascending: false })
+        .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
+        .not("published_at", "is", null)
+        .gte("published_at", monthAgo.toISOString())
+        .order("published_at", { ascending: false })
         .limit(800);
 
       if (channel === "lgcom") {
@@ -64,14 +66,14 @@ Deno.serve(async (req) => {
       const { data: fallbackReviews, error: fbErr } = await fallbackQuery;
       if (fbErr) throw fbErr;
       reviews = fallbackReviews || [];
-      periodLabel = "최근 30일";
+      periodLabel = "최근 30일 작성 리뷰";
 
       // 30일에도 부족하면 전체에서 최신 가져오기
       if (reviews.length < 30) {
         let allQuery = sb
           .from("reviews")
-          .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
-          .order("collected_at", { ascending: false })
+          .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
+          .order("published_at", { ascending: false, nullsFirst: false })
           .limit(800);
 
         if (channel === "lgcom") {
@@ -83,7 +85,7 @@ Deno.serve(async (req) => {
         const { data: allReviews, error: allErr } = await allQuery;
         if (allErr) throw allErr;
         reviews = allReviews || [];
-        periodLabel = "전체 누적";
+        periodLabel = "전체 누적 (작성일 기준)";
       }
     }
 
