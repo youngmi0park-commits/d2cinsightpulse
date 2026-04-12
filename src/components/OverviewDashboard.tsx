@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSourceCounts } from "@/hooks/useProductData";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -207,15 +208,15 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                     <div className="text-xs space-y-1.5">
                       <div className="flex items-start gap-2">
                         <span className="text-success shrink-0">👍</span>
-                        <p className="text-foreground leading-relaxed">{item.positive_msg}</p>
+                        <p className="text-foreground leading-relaxed">{maskCompetitorNames(item.positive_msg)}</p>
                       </div>
                       <div className="flex items-start gap-2">
                         <span className="text-destructive shrink-0">👎</span>
-                        <p className="text-foreground leading-relaxed">{item.negative_msg}</p>
+                        <p className="text-foreground leading-relaxed">{maskCompetitorNames(item.negative_msg)}</p>
                       </div>
                       <div className="flex items-start gap-2 bg-amber-100/50 dark:bg-amber-500/10 rounded-md px-3 py-2">
                         <span className="shrink-0">🎯</span>
-                        <p className="text-foreground font-medium leading-relaxed">{item.marketer_action}</p>
+                        <p className="text-foreground font-medium leading-relaxed">{maskCompetitorNames(item.marketer_action)}</p>
                       </div>
                     </div>
                   </div>
@@ -237,7 +238,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                 <div key={i} className="border border-border/50 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <h4 className="text-sm font-bold text-foreground">
-                      {topic.rank}. {topic.topic}
+                      {topic.rank}. {maskCompetitorNames(topic.topic)}
                     </h4>
                     <div className="flex items-center gap-2 text-[11px]">
                       <span className="text-muted-foreground">언급 {topic.mention_pct}%</span>
@@ -247,7 +248,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                     <CopyBtn text={`${topic.topic}\n언급 ${topic.mention_pct}% | 긍정 ${topic.positive_pct}% | 부정 ${topic.negative_pct}%\n"${topic.representative_comment}"\n관련: ${topic.related_products?.join(", ")}`} />
                   </div>
                   <p className="text-xs text-foreground/80 italic leading-relaxed bg-muted/30 rounded-md px-3 py-2">
-                    "{topic.representative_comment}"
+                    "{maskCompetitorNames(topic.representative_comment)}"
                   </p>
                   <div className="flex flex-wrap gap-1">
                     {(topic.related_products || []).map((p, pi) => (
@@ -273,7 +274,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs font-bold">{issue.rank}</span>
-                      <h4 className="text-sm font-bold text-destructive">{issue.issue}</h4>
+                      <h4 className="text-sm font-bold text-destructive">{maskCompetitorNames(issue.issue)}</h4>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-destructive font-semibold">{issue.mention_pct}%</span>
@@ -312,7 +313,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                       {item.category && (
                         <Badge variant="outline" className="text-[9px] px-1.5 py-0 mb-1 mr-1 border-success/30 text-success">{item.category}{item.product ? ` · ${item.product}` : ""}</Badge>
                       )}
-                      <p className="text-xs text-foreground leading-relaxed">{item.text}</p>
+                      <p className="text-xs text-foreground leading-relaxed">{maskCompetitorNames(item.text)}</p>
                     </div>
                     <CopyBtn text={item.text} />
                   </div>
