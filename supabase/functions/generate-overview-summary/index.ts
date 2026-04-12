@@ -216,25 +216,63 @@ JSON 형태로 응답:
   ]
 }`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    // Retry logic for transient gateway errors (502, 503, 504)
+    const aiRequestBody = JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
     });
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      throw new Error(`AI API error: ${aiResponse.status} - ${errText}`);
+    let aiResponse: Response | null = null;
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${lovableApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: aiRequestBody,
+        });
+
+        if (aiResponse.ok) break;
+
+        const errText = await aiResponse.text();
+        console.error(`AI attempt ${attempt}/${maxRetries} failed: ${aiResponse.status} - ${errText.slice(0, 200)}`);
+
+        // Only retry on gateway errors
+        if (aiResponse.status >= 502 && aiResponse.status <= 504 && attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 2000 * attempt));
+          continue;
+        }
+
+        // Non-retryable error — return graceful response
+        return new Response(
+          JSON.stringify({ overview: null, error: `AI service error: ${aiResponse.status}`, fallback: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (fetchErr) {
+        console.error(`AI attempt ${attempt}/${maxRetries} network error:`, fetchErr);
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 2000 * attempt));
+          continue;
+        }
+        return new Response(
+          JSON.stringify({ overview: null, error: "AI service unreachable", fallback: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    if (!aiResponse || !aiResponse.ok) {
+      return new Response(
+        JSON.stringify({ overview: null, error: "AI service failed after retries", fallback: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const aiData = await aiResponse.json();
