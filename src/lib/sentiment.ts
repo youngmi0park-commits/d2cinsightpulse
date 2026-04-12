@@ -375,9 +375,11 @@ function classifyIssueCategory(text: string, productCategory?: string): string {
  */
 function classifySentenceFCO(sentence: string, productCategory?: string): { function: string; context: string; isPositive: boolean } {
   const lower = sentence.toLowerCase();
+  const excluded = getExcludedCategories(productCategory);
   let bestFunc = "General";
   let bestScore = 0;
   for (const [func, indicators] of Object.entries(FUNCTION_CATEGORIES)) {
+    if (excluded.has(func)) continue;
     let score = 0;
     for (const ind of indicators) {
       if (lower.includes(ind)) score++;
