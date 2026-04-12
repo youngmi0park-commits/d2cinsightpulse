@@ -659,7 +659,7 @@ function analyzeReviewText(text: string, source: string, existingSentiment?: str
         valueSignal: 0,
         sentiment: existingSentiment as any,
         evidencePhrase: extractEvidencePhrase(text),
-        issueCategory: classifyIssueCategory(text),
+        issueCategory: classifyIssueCategory(text, productCategory),
         competitive: null,
         priceFlag: false,
       };
@@ -696,7 +696,7 @@ function analyzeReviewText(text: string, source: string, existingSentiment?: str
     valueSignal,
     sentiment: sentiment === "mixed" ? "neutral" : sentiment,
     evidencePhrase: sentiment === "negative" ? bestNegPhrase : bestPosPhrase,
-    issueCategory: classifyIssueCategory(text),
+    issueCategory: classifyIssueCategory(text, productCategory),
     competitive,
     priceFlag,
   };
