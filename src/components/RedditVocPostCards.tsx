@@ -241,9 +241,14 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30">
-                  <span className="text-[9px] text-muted-foreground">
-                    {(post as any).author || "anonymous"} · {post.source}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] text-muted-foreground">
+                      {(post as any).author || "anonymous"} · {post.source}
+                    </span>
+                    {["stanbyme_mod", "lg_techit"].includes(((post as any).author || "").toLowerCase()) && (
+                      <span className="text-[8px] font-semibold text-primary bg-primary/10 rounded px-1 py-0.5">LG 운영자</span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"

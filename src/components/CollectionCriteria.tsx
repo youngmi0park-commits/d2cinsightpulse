@@ -251,6 +251,8 @@ const CATEGORY_CHANNELS: CategoryChannels[] = [
     labelEn: "Cross-Category · Community · Global",
     labelKo: "크로스 카테고리 · 커뮤니티 · 글로벌",
     channels: [
+      { platform: "Reddit r/LG_UserHub", descEn: "Official LG user hub community (NEW)", descKo: "LG 공식 사용자 허브 커뮤니티 (신규)", countries: "Global" },
+      { platform: "Reddit r/StanbyME", descEn: "StanbyME dedicated community (NEW)", descKo: "StanbyME 전용 커뮤니티 (신규)", countries: "Global" },
       { platform: "Google Reviews/Maps", descEn: "LG store & service center reviews", descKo: "LG 스토어 및 서비스센터 리뷰", countries: "Global" },
       { platform: "LG Community", descEn: "Official LG community forum discussions", descKo: "LG 공식 커뮤니티 포럼 토론", countries: "Global" },
       { platform: "Lemon8", descEn: "Social platform product reviews & lifestyle", descKo: "소셜 플랫폼 제품 리뷰 및 라이프스타일", countries: "Global" },
