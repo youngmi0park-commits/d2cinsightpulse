@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { maskCompetitorNames } from "@/lib/sentiment";
 
 /* ───── Types ───── */
 
@@ -624,8 +625,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                       item.deltaPositive ? "text-green-600" : "text-red-500"
                     )}>{item.delta}</span>
                   </div>
-                  <p className="text-[12px] font-bold mb-1 leading-snug">{item.title}</p>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{item.description}</p>
+                  <p className="text-[12px] font-bold mb-1 leading-snug">{maskCompetitorNames(item.title)}</p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{maskCompetitorNames(item.description)}</p>
                 </div>
               </div>
             ))}
@@ -653,8 +654,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 <span className="text-[10px] font-bold text-primary">{win.label}</span>
                 <span className="ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">{win.country}</span>
               </div>
-              <p className="text-[12px] font-bold leading-snug mb-2 text-foreground">{win.action}</p>
-              <p className="text-[10px] text-muted-foreground leading-relaxed mb-3" style={{ wordBreak: "keep-all" }}>{win.basis}</p>
+              <p className="text-[12px] font-bold leading-snug mb-2 text-foreground">{maskCompetitorNames(win.action)}</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed mb-3" style={{ wordBreak: "keep-all" }}>{maskCompetitorNames(win.basis)}</p>
               <div className="flex flex-wrap gap-1">
                 {win.tags.map(tag => (
                   <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded border bg-muted text-muted-foreground border-border">{tag}</span>
