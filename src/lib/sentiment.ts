@@ -349,12 +349,14 @@ function detectPriceValue(text: string): { score: number; positive: boolean } | 
   return null;
 }
 
-/** Determine dominant issue category from text */
-function classifyIssueCategory(text: string): string {
+/** Determine dominant issue category from text, respecting product-category exclusions */
+function classifyIssueCategory(text: string, productCategory?: string): string {
   const lower = text.toLowerCase();
+  const excluded = getExcludedCategories(productCategory);
   let bestCategory = "General";
   let bestScore = 0;
   for (const [cat, indicators] of Object.entries(ISSUE_CATEGORIES)) {
+    if (excluded.has(cat)) continue;
     let score = 0;
     for (const ind of indicators) {
       if (lower.includes(ind)) score++;
