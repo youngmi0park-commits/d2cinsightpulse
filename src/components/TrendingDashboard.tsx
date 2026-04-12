@@ -32,6 +32,30 @@ interface TrendingDashboardProps {
 
 type SignalFilter = "all" | "rising" | "falling" | "new";
 
+/* ───── Helpers ───── */
+
+/** 제품 디스플레이명 포맷: BV 마케팅명 우선, "LG MODEL" 패턴은 카테고리+모델로 변환 */
+function formatProductDisplayName(displayName: string, modelNumber: string, category: string): string {
+  const trimmed = displayName.trim();
+  // If display_name is just "LG {model}" or matches model_number exactly → enrich
+  const isModelOnly = trimmed === modelNumber
+    || trimmed === `LG ${modelNumber}`
+    || /^LG\s+[A-Z0-9\-]+$/i.test(trimmed);
+
+  if (isModelOnly) {
+    // Use category + model for readability
+    const catLabel = category && category !== "General" ? `${category} ` : "";
+    return `${catLabel}${modelNumber}`;
+  }
+
+  // If display_name is excessively long (BV description leak), truncate
+  if (trimmed.length > 80) {
+    return trimmed.slice(0, 77) + "…";
+  }
+
+  return trimmed;
+}
+
 /* ───── Hooks ───── */
 
 function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
