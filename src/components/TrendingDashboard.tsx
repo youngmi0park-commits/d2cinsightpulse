@@ -32,6 +32,30 @@ interface TrendingDashboardProps {
 
 type SignalFilter = "all" | "rising" | "falling" | "new";
 
+/* ───── Helpers ───── */
+
+/** 제품 디스플레이명 포맷: BV 마케팅명 우선, "LG MODEL" 패턴은 카테고리+모델로 변환 */
+function formatProductDisplayName(displayName: string, modelNumber: string, category: string): string {
+  const trimmed = displayName.trim();
+  // If display_name is just "LG {model}" or matches model_number exactly → enrich
+  const isModelOnly = trimmed === modelNumber
+    || trimmed === `LG ${modelNumber}`
+    || /^LG\s+[A-Z0-9\-]+$/i.test(trimmed);
+
+  if (isModelOnly) {
+    // Use category + model for readability
+    const catLabel = category && category !== "General" ? `${category} ` : "";
+    return `${catLabel}${modelNumber}`;
+  }
+
+  // If display_name is excessively long (BV description leak), truncate
+  if (trimmed.length > 80) {
+    return trimmed.slice(0, 77) + "…";
+  }
+
+  return trimmed;
+}
+
 /* ───── Hooks ───── */
 
 function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
@@ -439,11 +463,11 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     const _allProds = [...lgcomPos, ...lgcomNeg];
     const map: Record<string, { displayName: string; category: string; modelNumber: string; posCount: number; negCount: number }> = {};
     for (const p of lgcomPos) {
-      if (!map[p.product_id]) map[p.product_id] = { displayName: p.display_name, category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
+      if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
       map[p.product_id].posCount += p.count;
     }
     for (const p of lgcomNeg) {
-      if (!map[p.product_id]) map[p.product_id] = { displayName: p.display_name, category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
+      if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
       map[p.product_id].negCount += p.count;
     }
     return Object.values(map)
@@ -788,7 +812,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-semibold truncate">{product.displayName}</p>
-                  <p className="text-[9px] text-muted-foreground">{product.category}</p>
+                  <p className="text-[9px] text-muted-foreground">{product.category} · {product.modelNumber}</p>
                 </div>
                 <div className="w-24 h-2 bg-muted rounded-full overflow-hidden flex flex-shrink-0">
                   <div className="h-full bg-green-600" style={{ width: `${product.positivePct}%` }} />
