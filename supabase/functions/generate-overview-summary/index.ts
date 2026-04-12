@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const sb = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json().catch(() => ({}));
-    const channel: string = body.channel || "lgcom";
+    const channel: string = body.channel || "lgcom"; // lgcom | reddit | other
 
     // ── 1) 주간 리뷰 가져오기 (published_at 기준 최근 7일) ──
     const weekAgo = new Date();
@@ -34,8 +34,13 @@ Deno.serve(async (req) => {
 
     if (channel === "lgcom") {
       weeklyQuery = weeklyQuery.like("source", "lge_com%");
+    } else if (channel === "reddit") {
+      weeklyQuery = weeklyQuery.like("source", "reddit%");
     } else {
-      weeklyQuery = weeklyQuery.eq("source", "reddit");
+      // "other" — everything except lgcom and reddit
+      weeklyQuery = weeklyQuery
+        .not("source", "like", "lge_com%")
+        .not("source", "like", "reddit%");
     }
 
     const { data: weeklyReviews, error: weeklyErr } = await weeklyQuery;
@@ -59,8 +64,12 @@ Deno.serve(async (req) => {
 
       if (channel === "lgcom") {
         fallbackQuery = fallbackQuery.like("source", "lge_com%");
+      } else if (channel === "reddit") {
+        fallbackQuery = fallbackQuery.like("source", "reddit%");
       } else {
-        fallbackQuery = fallbackQuery.eq("source", "reddit");
+        fallbackQuery = fallbackQuery
+          .not("source", "like", "lge_com%")
+          .not("source", "like", "reddit%");
       }
 
       const { data: fallbackReviews, error: fbErr } = await fallbackQuery;
@@ -78,8 +87,12 @@ Deno.serve(async (req) => {
 
         if (channel === "lgcom") {
           allQuery = allQuery.like("source", "lge_com%");
+        } else if (channel === "reddit") {
+          allQuery = allQuery.like("source", "reddit%");
         } else {
-          allQuery = allQuery.eq("source", "reddit");
+          allQuery = allQuery
+            .not("source", "like", "lge_com%")
+            .not("source", "like", "reddit%");
         }
 
         const { data: allReviews, error: allErr } = await allQuery;
@@ -141,7 +154,7 @@ Deno.serve(async (req) => {
       `[${(r.products as any)?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`
     ).filter(Boolean).join("\n");
 
-    const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : "Reddit 커뮤니티";
+    const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 커뮤니티" : "기타 채널 (Amazon, YouTube, Best Buy, Shopee 등)";
 
     // ── 4) AI 분석 요청 ──
     const systemPrompt = `You are an expert consumer insight analyst for LG Electronics. Analyze ${channelLabel} data and provide structured weekly overview in Korean. Be specific with product names and real patterns from the data. Write in a format suitable for marketing team weekly briefing. All analysis must be grounded in the actual review data provided — do not invent or hallucinate information.`;
