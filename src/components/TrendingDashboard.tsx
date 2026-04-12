@@ -129,7 +129,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
   const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
   const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
-  const { data: otherTakeaway = [], isLoading: otherTakeawayL } = useChannelKeyTakeaway("other" as any);
+  const { data: otherTakeaway = [], isLoading: otherTakeawayL } = useChannelKeyTakeaway("other" as "lgcom" | "reddit");
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at ? new Date(lastCollection.completed_at) : null;
@@ -588,7 +588,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         <div className="flex items-center justify-between bg-muted/40 border-b border-border p-3 px-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-extrabold">🎯 마케팅 기회 매트릭스</span>
-            {(lgcomTakeawayL || redditTakeawayL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+            {(lgcomTakeawayL || redditTakeawayL || otherTakeawayL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
           </div>
           <span className="text-[9px] text-muted-foreground">리뷰 인사이트 기반 자동 분류</span>
         </div>
