@@ -812,7 +812,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-semibold truncate">{product.displayName}</p>
-                  <p className="text-[9px] text-muted-foreground">{product.category}</p>
+                  <p className="text-[9px] text-muted-foreground">{product.category} · {product.modelNumber}</p>
                 </div>
                 <div className="w-24 h-2 bg-muted rounded-full overflow-hidden flex flex-shrink-0">
                   <div className="h-full bg-green-600" style={{ width: `${product.positivePct}%` }} />
