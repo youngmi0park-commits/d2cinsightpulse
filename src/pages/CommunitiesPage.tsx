@@ -202,7 +202,7 @@ const CommunitiesPage = () => {
       <PageHeader
         icon={Globe}
         title="🌐 Community Weekly Insights"
-        description="Amazon, YouTube, Best Buy, Shopee, Lazada 등 외부 커뮤니티 리뷰를 AI가 분석하여 채널별 Top 3 제품의 긍정·부정 인사이트 문장과 마케터용 주간 테이크어웨이를 생성합니다."
+        description="Amazon, YouTube, Best Buy, Shopee, Lazada 등 외부 커뮤니티 리뷰를 AI가 분석하여 채널별 Top 3 제품의 긍정·부정 인사이트 문장과 마케터용 Weekly Key Findings를 생성합니다."
       />
 
       <CountryFilterBar selected={selectedCountry} onChange={setSelectedCountry} />
