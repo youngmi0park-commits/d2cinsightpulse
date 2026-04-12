@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
       "5+ FAQ items (mix pdp/geo/seo), 2+ caution items. " +
       "Prioritize countries with most data. Use real numbers.";
 
-    const aiRes = await fetch("https://ai.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
