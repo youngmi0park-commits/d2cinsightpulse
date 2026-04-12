@@ -20,35 +20,32 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const channel: string = body.channel || "lgcom"; // lgcom | reddit | other
 
-    // ── 1) 주간 리뷰 가져오기 (published_at 기준 최근 7일) ──
+    // ── 1) 주간 리뷰 가져오기 (collected_at 기준 최근 7일) ──
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const selectCols = "title, content, sentiment, sentiment_score, rating, source, collected_at, products!inner(display_name, model_number, category, sub_category)";
+
+    function applyChannelFilter(query: any, ch: string) {
+      if (ch === "lgcom") return query.like("source", "lge_com%");
+      if (ch === "reddit") return query.like("source", "reddit%");
+      return query.not("source", "like", "lge_com%").not("source", "like", "reddit%");
+    }
+
     let weeklyQuery = sb
       .from("reviews")
-      .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
-      .not("published_at", "is", null)
-      .gte("published_at", weekAgo.toISOString())
-      .order("published_at", { ascending: false })
-      .limit(800);
-
-    if (channel === "lgcom") {
-      weeklyQuery = weeklyQuery.like("source", "lge_com%");
-    } else if (channel === "reddit") {
-      weeklyQuery = weeklyQuery.like("source", "reddit%");
-    } else {
-      // "other" — everything except lgcom and reddit
-      weeklyQuery = weeklyQuery
-        .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%");
-    }
+      .select(selectCols)
+      .gte("collected_at", weekAgo.toISOString())
+      .order("collected_at", { ascending: false })
+      .limit(500);
+    weeklyQuery = applyChannelFilter(weeklyQuery, channel);
 
     const { data: weeklyReviews, error: weeklyErr } = await weeklyQuery;
     if (weeklyErr) throw weeklyErr;
 
-    // ── 2) 주간 데이터 부족 시 최근 30일로 확장 (published_at 기준) ──
+    // ── 2) 주간 데이터 부족 시 최근 30일로 확장 ──
     let reviews = weeklyReviews || [];
-    let periodLabel = "이번 주 작성 리뷰";
+    let periodLabel = "이번 주 수집 리뷰";
 
     if (reviews.length < 30) {
       const monthAgo = new Date();
@@ -56,52 +53,32 @@ Deno.serve(async (req) => {
 
       let fallbackQuery = sb
         .from("reviews")
-        .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
-        .not("published_at", "is", null)
-        .gte("published_at", monthAgo.toISOString())
-        .order("published_at", { ascending: false })
-        .limit(800);
-
-      if (channel === "lgcom") {
-        fallbackQuery = fallbackQuery.like("source", "lge_com%");
-      } else if (channel === "reddit") {
-        fallbackQuery = fallbackQuery.like("source", "reddit%");
-      } else {
-        fallbackQuery = fallbackQuery
-          .not("source", "like", "lge_com%")
-          .not("source", "like", "reddit%");
-      }
+        .select(selectCols)
+        .gte("collected_at", monthAgo.toISOString())
+        .order("collected_at", { ascending: false })
+        .limit(500);
+      fallbackQuery = applyChannelFilter(fallbackQuery, channel);
 
       const { data: fallbackReviews, error: fbErr } = await fallbackQuery;
       if (fbErr) throw fbErr;
       reviews = fallbackReviews || [];
-      periodLabel = "최근 30일 작성 리뷰";
+      periodLabel = "최근 30일 수집 리뷰";
 
-      // 30일에도 부족하면 전체에서 최신 가져오기
+      // 30일에도 부족하면 최신 500건
       if (reviews.length < 30) {
         let allQuery = sb
           .from("reviews")
-          .select("title, content, sentiment, sentiment_score, rating, source, published_at, products!inner(display_name, model_number, category, sub_category)")
-          .order("published_at", { ascending: false, nullsFirst: false })
-          .limit(800);
-
-        if (channel === "lgcom") {
-          allQuery = allQuery.like("source", "lge_com%");
-        } else if (channel === "reddit") {
-          allQuery = allQuery.like("source", "reddit%");
-        } else {
-          allQuery = allQuery
-            .not("source", "like", "lge_com%")
-            .not("source", "like", "reddit%");
-        }
+          .select(selectCols)
+          .order("collected_at", { ascending: false })
+          .limit(500);
+        allQuery = applyChannelFilter(allQuery, channel);
 
         const { data: allReviews, error: allErr } = await allQuery;
         if (allErr) throw allErr;
         reviews = allReviews || [];
-        periodLabel = "전체 누적 (작성일 기준)";
+        periodLabel = "전체 누적 (수집일 기준)";
       }
     }
-
     if (reviews.length === 0) {
       return new Response(
         JSON.stringify({ overview: null, message: "No reviews found" }),
