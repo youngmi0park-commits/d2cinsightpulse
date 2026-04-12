@@ -439,11 +439,11 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     const _allProds = [...lgcomPos, ...lgcomNeg];
     const map: Record<string, { displayName: string; category: string; modelNumber: string; posCount: number; negCount: number }> = {};
     for (const p of lgcomPos) {
-      if (!map[p.product_id]) map[p.product_id] = { displayName: p.display_name, category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
+      if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
       map[p.product_id].posCount += p.count;
     }
     for (const p of lgcomNeg) {
-      if (!map[p.product_id]) map[p.product_id] = { displayName: p.display_name, category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
+      if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
       map[p.product_id].negCount += p.count;
     }
     return Object.values(map)
