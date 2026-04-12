@@ -172,6 +172,42 @@ export const FUNCTION_CATEGORIES: Record<string, string[]> = {
 // Keep backward compat alias
 const ISSUE_CATEGORIES = FUNCTION_CATEGORIES;
 
+// Categories that should be EXCLUDED for specific product families
+const CATEGORY_EXCLUSIONS: Record<string, string[]> = {
+  // TV / entertainment products should never show appliance-specific topics
+  TV: ["Wash/Clean Quality", "Cooling/Temperature"],
+  "OLED TV": ["Wash/Clean Quality", "Cooling/Temperature"],
+  "QNED TV": ["Wash/Clean Quality", "Cooling/Temperature"],
+  "NanoCell TV": ["Wash/Clean Quality", "Cooling/Temperature"],
+  "4K UHD TV": ["Wash/Clean Quality", "Cooling/Temperature"],
+  "8K TV": ["Wash/Clean Quality", "Cooling/Temperature"],
+  StanbyME: ["Wash/Clean Quality", "Cooling/Temperature"],
+  Soundbar: ["Wash/Clean Quality", "Cooling/Temperature"],
+  "Smart Monitor": ["Wash/Clean Quality", "Cooling/Temperature"],
+  Monitor: ["Wash/Clean Quality", "Cooling/Temperature"],
+  // Appliance products should never show display-specific topics
+  Refrigerator: ["Picture Quality", "Gaming"],
+  Washer: ["Picture Quality", "Gaming"],
+  Dryer: ["Picture Quality", "Gaming"],
+  Dishwasher: ["Picture Quality", "Gaming"],
+  Vacuum: ["Picture Quality", "Gaming"],
+  "Air Conditioner": ["Picture Quality", "Gaming"],
+  "Air Purifier": ["Picture Quality", "Gaming"],
+};
+
+/** Get excluded categories for a product category */
+function getExcludedCategories(productCategory?: string): Set<string> {
+  if (!productCategory) return new Set();
+  const direct = CATEGORY_EXCLUSIONS[productCategory];
+  if (direct) return new Set(direct);
+  // Fuzzy match: check if product category contains a known key
+  const lower = productCategory.toLowerCase();
+  for (const [key, exclusions] of Object.entries(CATEGORY_EXCLUSIONS)) {
+    if (lower.includes(key.toLowerCase())) return new Set(exclusions);
+  }
+  return new Set();
+}
+
 // Price-value expressions
 const PRICE_POSITIVE = ["worth every penny", "great value", "worth the price", "budget-friendly", "good deal", "great deal", "fair price", "bang for the buck", "bang for your buck", "affordable", "reasonably priced"];
 const PRICE_NEGATIVE = ["overpriced", "not worth it", "too expensive", "rip off", "ripoff", "expensive for what you get", "feels cheap", "not worth the money", "waste of money", "highway robbery"];
