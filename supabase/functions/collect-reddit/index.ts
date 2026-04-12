@@ -49,6 +49,11 @@ const REDDIT_QUERIES: Record<string, string[]> = {
   ],
   StanbyME: [
     'site:reddit.com StanbyME OR "Stand by Me" LG review OR recommend OR worth',
+    'site:reddit.com/r/StanbyME LG (review OR discussion OR setup OR tips)',
+  ],
+  LG_UserHub: [
+    'site:reddit.com/r/LG_UserHub LG (review OR discussion OR announcement OR tips)',
+    'site:reddit.com/r/LG_UserHub (product OR firmware OR update OR feature)',
   ],
 };
 
@@ -303,6 +308,11 @@ Deno.serve(async (req) => {
               continue;
             }
 
+            // Check if author is a known LG operator
+            const LG_OPERATORS = ["stanbyme_mod", "lg_techit"];
+            const authorLower = (review.author || "").toLowerCase();
+            const isLgOperator = LG_OPERATORS.includes(authorLower);
+
             const { error: insertErr } = await supabase.from("reviews").insert({
               product_id: productId,
               source: `reddit_${(review.subreddit || category).toLowerCase()}`,
@@ -315,10 +325,10 @@ Deno.serve(async (req) => {
               rating: null,
               published_at: review.published_at || null,
               source_url: null,
-              review_type: "organic",
-              content_type: bucket, // store bucket classification (review/voc/question)
+              review_type: isLgOperator ? "official" : "organic",
+              content_type: bucket,
               platform_type: "community",
-              user_type: "actual_user",
+              user_type: isLgOperator ? "lg_operator" : "actual_user",
             });
 
             if (insertErr) {

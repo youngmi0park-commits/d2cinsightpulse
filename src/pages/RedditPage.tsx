@@ -60,7 +60,7 @@ const SUBREDDIT_GROUPS: {
     label: "StanbyME / Lifestyle",
     labelKo: "스탠바이미·라이프스타일",
     icon: "✨",
-    subreddits: ["reddit_stanbyme"],
+    subreddits: ["reddit_stanbyme", "reddit_r/stanbyme"],
   },
   {
     value: "general",
