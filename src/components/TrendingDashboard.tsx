@@ -129,6 +129,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
   const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
   const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
+  const { data: otherTakeaway = [], isLoading: otherTakeawayL } = useChannelKeyTakeaway("other" as any);
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at ? new Date(lastCollection.completed_at) : null;
@@ -413,8 +414,24 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       });
     }
 
-    return items.slice(0, 5);
-  }, [lgcomTakeaway, redditTakeaway, lgcomPos, lgcomNeg, redditPos, redditNeg, topPosKw, topNegKw]);
+    // Other channels (Amazon, YouTube, Best Buy, Shopee, etc.)
+    for (const item of otherTakeaway.slice(0, 1)) {
+      items.push({
+        tag: "watch",
+        channel: `기타채널 · ${item.category}`,
+        country: "🌐 Multi",
+        title: `${item.product} 외부 채널 인사이트`,
+        description: item.marketer_action || item.positive_msg,
+        count: 0,
+        countLabel: "외부 리뷰",
+        delta: `— 모니터링`,
+        deltaPositive: true,
+        modelNumber: "",
+      });
+    }
+
+    return items.slice(0, 6);
+  }, [lgcomTakeaway, redditTakeaway, otherTakeaway, lgcomPos, lgcomNeg, redditPos, redditNeg, topPosKw, topNegKw]);
 
   // LG.com products for heatmap
   const lgcomProducts = useMemo(() => {
