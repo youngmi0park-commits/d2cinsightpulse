@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Globe, Loader2, ThumbsUp, ThumbsDown, TrendingUp, AlertTriangle, Sparkles, RefreshCw, BarChart3, Lightbulb } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { maskCompetitorNames } from "@/lib/sentiment";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -156,11 +157,11 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
             <div className="space-y-1.5">
               <div className="flex items-start gap-2">
                 <ThumbsUp className="h-3.5 w-3.5 text-success mt-0.5 shrink-0" />
-                <p className="text-xs text-foreground leading-relaxed">{product.positiveInsight}</p>
+                <p className="text-xs text-foreground leading-relaxed">{maskCompetitorNames(product.positiveInsight)}</p>
               </div>
               <div className="flex items-start gap-2">
                 <ThumbsDown className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
-                <p className="text-xs text-foreground leading-relaxed">{product.negativeInsight}</p>
+                <p className="text-xs text-foreground leading-relaxed">{maskCompetitorNames(product.negativeInsight)}</p>
               </div>
             </div>
           </div>
@@ -176,11 +177,11 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
           <div className="space-y-1.5">
             <div className="flex items-start gap-2">
               <TrendingUp className="h-3 w-3 text-success mt-0.5 shrink-0" />
-              <p className="text-[11px] text-foreground leading-relaxed">{insight.takeaway.momentum}</p>
+              <p className="text-[11px] text-foreground leading-relaxed">{maskCompetitorNames(insight.takeaway.momentum)}</p>
             </div>
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
-              <p className="text-[11px] text-foreground leading-relaxed">{insight.takeaway.friction}</p>
+              <p className="text-[11px] text-foreground leading-relaxed">{maskCompetitorNames(insight.takeaway.friction)}</p>
             </div>
           </div>
         </div>
