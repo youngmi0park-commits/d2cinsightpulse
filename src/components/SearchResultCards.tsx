@@ -255,8 +255,8 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
     ? reviews.filter((r) => r.source && sourceLabel(r.source) === selectedChannel)
     : reviews;
 
-  const positiveReviews = filteredReviews.filter((r) => r.sentiment === "positive");
-  const negativeReviews = filteredReviews.filter((r) => r.sentiment === "negative");
+  const positiveReviews = [...filteredReviews.filter((r) => r.sentiment === "positive")].sort((a, b) => ((b as any).helpful_votes ?? 0) - ((a as any).helpful_votes ?? 0));
+  const negativeReviews = [...filteredReviews.filter((r) => r.sentiment === "negative")].sort((a, b) => ((b as any).helpful_votes ?? 0) - ((a as any).helpful_votes ?? 0));
 
   const channelCounts = channels.map((ch) => {
     const chReviews = reviews.filter((r) => r.source && sourceLabel(r.source) === ch);
