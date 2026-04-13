@@ -257,6 +257,20 @@ const NewsletterPage = () => {
         </div>
       )}
 
+      {/* ── HTML Template Preview ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-1 h-5 bg-primary rounded-full" />
+          <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기</h2>
+        </div>
+        <iframe
+          src="/newsletter-template.html"
+          className="w-full border border-border rounded-xl bg-white"
+          style={{ height: "70vh" }}
+          title="Newsletter Preview"
+        />
+      </div>
+
       {/* ── AI Generated Content ── */}
       {hasIssueData && (
         <div className="space-y-4">
@@ -500,19 +514,6 @@ const NewsletterPage = () => {
         </div>
       )}
 
-      {/* ── HTML Template Preview ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 bg-primary rounded-full" />
-          <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기</h2>
-        </div>
-        <iframe
-          src="/newsletter-template.html"
-          className="w-full border border-border rounded-xl bg-white"
-          style={{ height: "70vh" }}
-          title="Newsletter Preview"
-        />
-      </div>
 
       {/* ── Static Archive ── */}
       <div>
