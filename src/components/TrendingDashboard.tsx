@@ -587,15 +587,24 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         };
         const getCountryLabel = (src?: string) => (src && SOURCE_COUNTRY[src]) || "🌐 Global";
         const getChannelLabel = (src?: string) => (src && SOURCE_CHANNEL[src]) || src || "";
+        const CAT_KO: Record<string, string> = {
+          TV: "TV", Monitor: "모니터", Refrigerator: "냉장고", Washer: "세탁기",
+          Dryer: "건조기", Dishwasher: "식세기", Kitchen: "주방가전", Vacuum: "청소기",
+          "Air Conditioner": "에어컨", "Air Care": "공기청정기", "Air Purifier": "공기청정기",
+          Soundbar: "사운드바", Audio: "오디오", Projector: "프로젝터", Laptop: "노트북",
+          Styler: "스타일러", Microwave: "전자레인지", "Range/Oven": "오븐/레인지",
+          Cooktop: "쿡탑", Dehumidifier: "제습기", General: "",
+        };
+        const getCatKo = (cat?: string) => (cat && CAT_KO[cat]) || cat || "";
 
         // Positive keyword context
         const posCountry = getCountryLabel(topPosKw?.source);
         const posChannel = getChannelLabel(topPosKw?.source);
-        // Find which product is most associated with this positive keyword
         const posProductMatch = lgcomPos[0] || redditPos[0];
         const posProductLabel = posProductMatch
           ? formatProductDisplayName(posProductMatch.display_name, posProductMatch.model_number, posProductMatch.category)
           : "";
+        const posCatLabel = getCatKo(posProductMatch?.category);
 
         // Negative keyword context
         const negCountry = getCountryLabel(topNegKw?.source);
@@ -604,6 +613,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         const negProductLabel = negProductMatch
           ? formatProductDisplayName(negProductMatch.display_name, negProductMatch.model_number, negProductMatch.category)
           : "";
+        const negCatLabel = getCatKo(negProductMatch?.category);
 
         // Top product keywords: find keywords associated by same source or trending
         const topProdKws = topProduct
