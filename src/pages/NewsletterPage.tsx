@@ -71,7 +71,7 @@ const NewsletterPage = () => {
   const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
-  const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
+  const { refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
 
   const toggleStaticOpen = (id: number) => {
