@@ -88,7 +88,7 @@ export function ResultsGroupFilter({
     for (const p of products) {
       let key: string;
       if (groupMode === "subcategory") {
-        key = extractSubCategory(p.displayName);
+        key = extractSubCategory(p.displayName, p.category);
       } else if (groupMode === "inch") {
         key = extractInch(p.displayName) || t("Unknown", "미분류");
       } else {
