@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy, AlertTriangle, Swords, DollarSign, Languages } from "lucide-react";
@@ -16,6 +16,11 @@ import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
 import { LgcomReviewSummary } from "@/components/LgcomReviewSummary";
+
+/** Detect Japanese source */
+function isJapaneseSource(source?: string): boolean {
+  return !!source && (source === "lge_com_jp" || source.endsWith("_jp"));
+}
 
 export interface AnalyzedProduct {
   product: ProductData;
