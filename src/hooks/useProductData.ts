@@ -40,6 +40,7 @@ export interface DBTrendingKeyword {
   count: number;
   sentiment: "positive" | "negative" | "neutral";
   change: number;
+  source?: string;
   relatedProducts?: string[];
   relatedCountries?: string[];
 }
@@ -141,6 +142,7 @@ export function useTrendingKeywords(source?: string) {
         count: item.count,
         sentiment: item.sentiment as "positive" | "negative" | "neutral",
         change: Number(item.change_percent) || 0,
+        source: item.source || "",
         relatedProducts: item.related_products || [],
         relatedCountries: item.related_countries || [],
       })) as DBTrendingKeyword[];
