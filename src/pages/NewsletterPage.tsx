@@ -76,6 +76,8 @@ const NewsletterPage = () => {
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [copying, setCopying] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [newsletterHtml, setNewsletterHtml] = useState<string | null>(null);
+  const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
   const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
@@ -96,6 +98,24 @@ const NewsletterPage = () => {
       return next;
     });
   };
+
+  // ── Fetch full newsletter HTML from serve-newsletter ──
+  const fetchNewsletterHtml = useCallback(async () => {
+    setLoadingHtml(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+        body: { format: "json", baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      if (result?.html) {
+        setNewsletterHtml(result.html);
+      }
+    } catch {
+      // silently fail — preview falls back to static template
+    } finally {
+      setLoadingHtml(false);
+    }
+  }, []);
 
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
@@ -125,6 +145,10 @@ const NewsletterPage = () => {
       setActiveId(data.issueId);
       await refetchArchive();
       await refetchIssue();
+
+      // Fetch full HTML for preview and Outlook copy
+      setGenProgress("뉴스레터 HTML 렌더링 중...");
+      await fetchNewsletterHtml();
     } catch (err) {
       toast.error("생성 실패: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
@@ -132,16 +156,23 @@ const NewsletterPage = () => {
       setGenerating(false);
       setGenProgress("");
     }
-  }, [weekStart, weekEnd, refetchArchive, refetchIssue]);
+  }, [weekStart, weekEnd, refetchArchive, refetchIssue, fetchNewsletterHtml]);
 
   // ── Outlook Copy ──
   const handleCopyForOutlook = useCallback(async () => {
     setCopying(true);
     try {
-      const res = await fetch("/newsletter-template.html");
-      const html = await res.text();
-      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      const bodyContent = bodyMatch ? bodyMatch[1] : html;
+      // Use AI-generated HTML if available, otherwise fall back to static template
+      let htmlContent: string;
+      if (newsletterHtml) {
+        htmlContent = newsletterHtml;
+      } else {
+        const res = await fetch("/newsletter-template.html");
+        htmlContent = await res.text();
+      }
+
+      const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent;
       const outlookHtml = `<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta charset="utf-8"></head><body>${bodyContent}</body></html>`;
 
       if (typeof ClipboardItem !== "undefined") {
@@ -173,7 +204,7 @@ const NewsletterPage = () => {
     } finally {
       setCopying(false);
     }
-  }, []);
+  }, [newsletterHtml]);
 
   const hasIssueData = !!currentIssue && !!signals?.length;
 
@@ -240,7 +271,14 @@ const NewsletterPage = () => {
           {copying ? "복사 중..." : "Outlook 복사"}
         </button>
         <button
-          onClick={() => window.open("/newsletter-template.html", "_blank", "noopener,noreferrer")}
+          onClick={() => {
+            if (newsletterHtml) {
+              const win = window.open("", "_blank");
+              if (win) { win.document.write(newsletterHtml); win.document.close(); }
+            } else {
+              window.open("/newsletter-template.html", "_blank", "noopener,noreferrer");
+            }
+          }}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border
                      text-xs font-medium hover:bg-muted/50 transition-all"
         >
@@ -262,9 +300,19 @@ const NewsletterPage = () => {
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기</h2>
+          {newsletterHtml && (
+            <Badge variant="outline" className="text-[10px] text-green-700 border-green-300 bg-green-50">
+              ✅ AI 생성 반영됨
+            </Badge>
+          )}
+          {loadingHtml && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> HTML 렌더링 중...
+            </span>
+          )}
         </div>
         <iframe
-          src="/newsletter-template.html"
+          {...(newsletterHtml ? { srcDoc: newsletterHtml } : { src: "/newsletter-template.html" })}
           className="w-full border border-border rounded-xl bg-white"
           style={{ height: "70vh" }}
           title="Newsletter Preview"
