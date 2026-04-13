@@ -76,6 +76,8 @@ const NewsletterPage = () => {
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [copying, setCopying] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [newsletterHtml, setNewsletterHtml] = useState<string | null>(null);
+  const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
   const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
