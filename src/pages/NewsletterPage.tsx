@@ -2,22 +2,14 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
-import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy, Archive } from "lucide-react";
+import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   useNewsletterArchive,
   useNewsletterIssue,
-  useCountrySignals,
-  useChannelActions,
-  useFaqItems,
-  useCautionItems,
-  useCollectionStats,
-  useMatrixRows,
 } from "@/hooks/useNewsletterData";
-import { getLge, SIGNAL_TAG_COLOR, MATRIX_CELL_STYLE } from "@/constants/lgeSubsidiaries";
-import type { SignalTag, MatrixCell } from "@/constants/lgeSubsidiaries";
 
 /* ── Past Newsletters Archive (static fallback) ── */
 const staticNewsletters = [
@@ -82,13 +74,6 @@ const NewsletterPage = () => {
   // Data hooks
   const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
-  const issueId = currentIssue?.id;
-  const { data: signals } = useCountrySignals(issueId);
-  const { data: actions } = useChannelActions(issueId);
-  const { data: faqItems } = useFaqItems(issueId);
-  const { data: cautions } = useCautionItems(issueId);
-  const { data: stats } = useCollectionStats(issueId);
-  const { data: matrix } = useMatrixRows(issueId);
 
   const toggleStaticOpen = (id: number) => {
     setStaticOpenIds((prev) => {
@@ -206,7 +191,7 @@ const NewsletterPage = () => {
     }
   }, [newsletterHtml]);
 
-  const hasIssueData = !!currentIssue && !!signals?.length;
+  
 
   return (
     <div className="p-6 space-y-5 max-w-[1100px] mx-auto overflow-y-auto h-[calc(100vh-2rem)]">
