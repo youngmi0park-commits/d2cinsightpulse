@@ -35,7 +35,7 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are a professional translator. Translate the given English text to natural Korean. Return ONLY the translated text, no explanations or extra formatting.",
+              "You are a professional translator. Translate the given text (which may be in English, Japanese, or any other language) into natural Korean. Return ONLY the translated Korean text, no explanations or extra formatting.",
           },
           { role: "user", content: text },
         ],

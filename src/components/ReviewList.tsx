@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import type { Review } from "@/data/dummyData";
 import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { subDays, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+
+/** Detect if source is Japanese */
+function isJapaneseSource(source: string): boolean {
+  return source === "lge_com_jp" || source.endsWith("_jp");
+}
 
 interface ReviewListProps {
   reviews: Review[];
