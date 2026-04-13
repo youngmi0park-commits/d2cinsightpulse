@@ -218,7 +218,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
       const allVisible = [...reviews.filter(r => r.sentiment === "positive").slice(0, 8),
                           ...reviews.filter(r => r.sentiment === "negative").slice(0, 8)];
       const jpItems = allVisible
-        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating), isJP: isJapaneseSource(r.source) }))
+        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating, r.pros, r.cons), isJP: isJapaneseSource(r.source) }))
         .filter((item) => item.isJP);
 
       if (jpItems.length === 0) return;
@@ -277,7 +277,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
       [...positiveReviews.slice(0, 8), ...negativeReviews.slice(0, 8)].forEach((r, i) => {
         const key = `${r.sentiment}-${i}`;
         if (!translations[key]) {
-          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source, undefined, r.title, r.rating) });
+          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source, undefined, r.title, r.rating, r.pros, r.cons) });
         }
       });
 
@@ -414,7 +414,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating)}"
+                        "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating, r.pros, r.cons)}"
                       </span>
                     </div>
                   </div>
@@ -463,7 +463,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating)}"
+                        "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating, r.pros, r.cons)}"
                       </span>
                     </div>
                   </div>
