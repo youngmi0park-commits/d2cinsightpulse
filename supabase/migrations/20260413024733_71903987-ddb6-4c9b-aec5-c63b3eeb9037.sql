@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_reviews_collected_at ON reviews (collected_at DESC);

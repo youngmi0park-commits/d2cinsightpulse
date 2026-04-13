@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -42,36 +42,38 @@ Deno.serve(async (req) => {
     if (!weekStart || !weekEnd)
       return json({ error: "weekStart and weekEnd required" }, 400);
 
+    const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // ── 1. Fetch weekly reviews ──
-    const allReviews: Array<Record<string, unknown>> = [];
-    let from = 0;
-    const PAGE = 1000;
-    while (true) {
-      const { data: batch, error } = await supabase
-        .from("reviews")
-        .select("source, product_id, rating, sentiment, sentiment_score, title, content, collected_at")
-        .gte("collected_at", weekStart + "T00:00:00")
-        .lte("collected_at", weekEnd + "T23:59:59")
-        .range(from, from + PAGE - 1);
-      if (error) throw error;
-      if (!batch || batch.length === 0) break;
-      allReviews.push(...batch);
-      if (batch.length < PAGE) break;
-      from += PAGE;
+    // ── 1. Aggregate reviews directly via SQL for speed ──
+    console.log("[newsletter] Running direct SQL aggregation...");
+    const { Pool } = await import("https://deno.land/x/postgres@v0.19.3/mod.ts");
+    const pool = new Pool(dbUrl, 1, true);
+    const conn = await pool.connect();
+    try {
+      await conn.queryArray("SET statement_timeout = '90s'");
+      const result = await conn.queryObject<{source: string; product_id: string; sentiment: string; cnt: number}>(
+        `SELECT source, product_id::text, sentiment, COUNT(*)::int as cnt
+         FROM reviews
+         WHERE collected_at >= $1 AND collected_at <= $2
+         GROUP BY source, product_id, sentiment`,
+        [weekStart + "T00:00:00+00", weekEnd + "T23:59:59+00"]
+      );
+      var agg = result.rows;
+      console.log("[newsletter] SQL done, rows:", agg.length);
+    } finally {
+      conn.release();
+      await pool.end();
     }
 
-    if (allReviews.length === 0)
+    if (!agg || agg.length === 0)
       return json({ error: "No reviews found for this period" }, 404);
 
-    const totalReviews = allReviews.length;
-
     // ── 2. Fetch product info for category mapping ──
-    const productIds = [...new Set(allReviews.map(r => r.product_id as string))];
+    const productIds = [...new Set(agg.map((r: any) => r.product_id as string))];
     const productMap: Record<string, { category: string; display_name: string }> = {};
     for (let i = 0; i < productIds.length; i += 500) {
       const chunk = productIds.slice(i, i + 500);
@@ -84,7 +86,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 3. Country aggregation ──
+    // ── 3. Country & source aggregation from pre-aggregated data ──
     type CountryStats = {
       total: number; positive: number; negative: number; neutral: number;
       categories: Record<string, number>;
@@ -92,48 +94,45 @@ Deno.serve(async (req) => {
     };
 
     const byCountry: Record<string, CountryStats> = {};
+    const bySource: Record<string, number> = {};
+    let totalReviews = 0;
+    let overallPositive = 0;
 
-    for (const rv of allReviews) {
-      const source = (rv.source as string) ?? "";
+    for (const row of agg) {
+      const source = (row.source as string) ?? "";
+      const count = Number(row.cnt);
+      totalReviews += count;
+      if (row.sentiment === "positive") overallPositive += count;
+
+      // Source aggregation
+      let group = source;
+      if (source.startsWith("lge_com")) group = "lgcom";
+      else if (source.startsWith("reddit")) group = "reddit";
+      else if (source.startsWith("youtube")) group = "youtube";
+      bySource[group] = (bySource[group] ?? 0) + count;
+
+      // Country aggregation
       const code = SOURCE_TO_LGE[source];
-      if (!code) continue; // skip non-LGE sources for country signals
+      if (!code) continue;
 
       if (!byCountry[code]) {
-        byCountry[code] = {
-          total: 0, positive: 0, negative: 0, neutral: 0,
-          categories: {}, products: {},
-        };
+        byCountry[code] = { total: 0, positive: 0, negative: 0, neutral: 0, categories: {}, products: {} };
       }
       const c = byCountry[code];
-      c.total++;
-      if (rv.sentiment === "positive") c.positive++;
-      else if (rv.sentiment === "negative") c.negative++;
-      else c.neutral++;
+      c.total += count;
+      if (row.sentiment === "positive") c.positive += count;
+      else if (row.sentiment === "negative") c.negative += count;
+      else c.neutral += count;
 
-      const prod = productMap[rv.product_id as string];
+      const prod = productMap[row.product_id as string];
       const cat = prod?.category ?? "General";
-      c.categories[cat] = (c.categories[cat] ?? 0) + 1;
-
+      c.categories[cat] = (c.categories[cat] ?? 0) + count;
       if (prod?.display_name) {
-        c.products[prod.display_name] = (c.products[prod.display_name] ?? 0) + 1;
+        c.products[prod.display_name] = (c.products[prod.display_name] ?? 0) + count;
       }
     }
 
-    // ── 4. Source aggregation ──
-    const bySource: Record<string, number> = {};
-    for (const rv of allReviews) {
-      const s = (rv.source as string) ?? "unknown";
-      // Normalize source groups
-      let group = s;
-      if (s.startsWith("lge_com")) group = "lgcom";
-      else if (s.startsWith("reddit")) group = "reddit";
-      else if (s.startsWith("youtube")) group = "youtube";
-      bySource[group] = (bySource[group] ?? 0) + 1;
-    }
-
-    // ── 5. Overall sentiment ──
-    const overallPositive = allReviews.filter(r => r.sentiment === "positive").length;
-    const avgSentiment = Math.round((overallPositive / totalReviews) * 100);
+    const avgSentiment = totalReviews > 0 ? Math.round((overallPositive / totalReviews) * 100) : 0;
 
     // ── 6. Auto-classify country signals ──
     const autoClassify = (stats: CountryStats): string[] => {
@@ -400,11 +399,9 @@ Deno.serve(async (req) => {
       avgSentiment,
     });
 
-  } catch (err) {
-    console.error(err);
-    return json({
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    }, 500);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : JSON.stringify(err);
+    console.error("generate-newsletter error:", msg);
+    return json({ success: false, error: msg }, 500);
   }
 });
