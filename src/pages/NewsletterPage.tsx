@@ -271,7 +271,14 @@ const NewsletterPage = () => {
           {copying ? "복사 중..." : "Outlook 복사"}
         </button>
         <button
-          onClick={() => window.open("/newsletter-template.html", "_blank", "noopener,noreferrer")}
+          onClick={() => {
+            if (newsletterHtml) {
+              const win = window.open("", "_blank");
+              if (win) { win.document.write(newsletterHtml); win.document.close(); }
+            } else {
+              window.open("/newsletter-template.html", "_blank", "noopener,noreferrer");
+            }
+          }}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border
                      text-xs font-medium hover:bg-muted/50 transition-all"
         >
