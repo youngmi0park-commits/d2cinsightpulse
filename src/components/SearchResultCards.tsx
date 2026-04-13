@@ -442,13 +442,20 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                 const ko = translations[key];
                 return (
                   <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-destructive/5 border border-destructive/10">
-                    {r.source && (
-                      <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-destructive/20">
-                        {sourceLabel(r.source)}
-                      </Badge>
-                    )}
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      {r.source && (
+                        <Badge variant="outline" className="text-[8px] h-4 px-1.5 border-destructive/20">
+                          {sourceLabel(r.source)}
+                        </Badge>
+                      )}
+                      {isJapaneseSource(r.source) && (
+                        <Badge variant="outline" className="text-[7px] h-3.5 px-1 border-amber-500/30 text-amber-600">
+                          🇯🇵 일본어
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex-1 leading-relaxed space-y-0.5">
-                      {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
+                      {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
                         "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating)}"
                       </span>
