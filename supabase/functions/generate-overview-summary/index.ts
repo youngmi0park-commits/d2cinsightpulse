@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
+import { z } from "npm:zod@3.25.76";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,70 +7,82 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const REVIEW_SQL = `
-  SELECT id::text, title, content, sentiment, sentiment_score, rating, source, collected_at, product_id::text
-  FROM reviews
-  /**WHERE**/
-  ORDER BY collected_at DESC
-  LIMIT $1
-`;
+const RequestSchema = z.object({
+  channel: z.enum(["lgcom", "reddit", "other"]).default("lgcom"),
+});
 
-function matchesChannel(source: string, channel: string) {
-  if (channel === "lgcom") return source.startsWith("lge_com");
-  if (channel === "reddit") return source.startsWith("reddit");
-  return !source.startsWith("lge_com") && !source.startsWith("reddit");
+type ReviewRow = {
+  id: string;
+  title: string | null;
+  content: string | null;
+  sentiment: string | null;
+  sentiment_score: number | null;
+  rating: number | null;
+  source: string | null;
+  collected_at: string | null;
+  product_id: string | null;
+};
+
+const REVIEW_SELECT = "id,title,content,sentiment,sentiment_score,rating,source,collected_at,product_id";
+
+function matchesChannel(source: string | null | undefined, channel: string) {
+  const normalized = String(source ?? "");
+  if (channel === "lgcom") return normalized.startsWith("lge_com");
+  if (channel === "reddit") return normalized.startsWith("reddit");
+  return !normalized.startsWith("lge_com") && !normalized.startsWith("reddit");
 }
 
-async function fetchSampledReviews(channel: string) {
-  const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;
-  const { Pool } = await import("https://deno.land/x/postgres@v0.19.3/mod.ts");
-  const pool = new Pool(dbUrl, 1, true);
-  const conn = await pool.connect();
+function applyChannelFilter(query: any, channel: string) {
+  if (channel === "lgcom") return query.ilike("source", "lge_com%");
+  if (channel === "reddit") return query.ilike("source", "reddit%");
+  return query;
+}
 
-  try {
-    await conn.queryArray("SET statement_timeout = '20s'");
+async function fetchSampledReviews(sb: ReturnType<typeof createClient>, channel: string) {
+  const windows = [
+    { label: "이번 주 수집 리뷰", days: 7, limit: 300 },
+    { label: "최근 30일 수집 리뷰", days: 30, limit: 900 },
+    { label: "전체 누적 (수집일 기준)", days: null, limit: 1500 },
+  ];
 
-    const windows = [
-      { label: "이번 주 수집 리뷰", days: 7, limit: 1500 },
-      { label: "최근 30일 수집 리뷰", days: 30, limit: 3000 },
-      { label: "전체 누적 (수집일 기준)", days: null, limit: 5000 },
-    ];
+  for (const window of windows) {
+    let query = sb
+      .from("reviews")
+      .select(REVIEW_SELECT)
+      .order("collected_at", { ascending: false })
+      .limit(window.limit);
 
-    for (const window of windows) {
-      const values: unknown[] = [window.limit];
-      const whereParts: string[] = [];
-
-      if (window.days !== null) {
-        const since = new Date();
-        since.setDate(since.getDate() - window.days);
-        values.push(since.toISOString());
-        whereParts.push(`collected_at >= $${values.length}`);
-      }
-
-      const sql = REVIEW_SQL.replace(
-        "/**WHERE**/",
-        whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "",
-      );
-
-      const result = await conn.queryObject<{ id: string; title: string | null; content: string | null; sentiment: string | null; sentiment_score: number | null; rating: number | null; source: string; collected_at: string; product_id: string | null }>(sql, values);
-      const filtered = result.rows.filter((row) =>
-        matchesChannel(String(row.source || ""), channel),
-      );
-      console.log(`[generate-overview-summary] ${channel} ${window.label}: fetched=${result.rows.length}, filtered=${filtered.length}`);
-
-      if (filtered.length >= 30 || window.days === null) {
-        return {
-          periodLabel: window.label,
-          reviews: filtered.slice(0, 300),
-        };
-      }
+    if (window.days !== null) {
+      const since = new Date();
+      since.setDate(since.getDate() - window.days);
+      query = query.gte("collected_at", since.toISOString());
     }
 
-    return { periodLabel: "전체 누적 (수집일 기준)", reviews: [] };
-  } finally {
-    conn.release();
-    await pool.end();
+    query = applyChannelFilter(query, channel);
+
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(`Failed to fetch reviews: ${error.message}`);
+    }
+
+    const rows = (data ?? []) as ReviewRow[];
+    const filtered = channel === "other"
+      ? rows.filter((row) => matchesChannel(row.source, channel))
+      : rows;
+
+    console.log(
+      `[generate-overview-summary] ${channel} ${window.label}: fetched=${rows.length}, filtered=${filtered.length}`,
+    );
+
+    if (filtered.length >= 30 || window.days === null) {
+      return {
+        periodLabel: window.label,
+        reviews: filtered.slice(0, 300),
+      };
+    }
   }
+
+  return { periodLabel: "전체 누적 (수집일 기준)", reviews: [] as ReviewRow[] };
 }
 
 Deno.serve(async (req) => {
@@ -83,10 +96,18 @@ Deno.serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    const body = await req.json().catch(() => ({}));
-    const channel: string = body.channel || "lgcom";
+    const rawBody = await req.json().catch(() => ({}));
+    const parsed = RequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    const { reviews, periodLabel } = await fetchSampledReviews(channel);
+    const { channel } = parsed.data;
+
+    const { reviews, periodLabel } = await fetchSampledReviews(sb, channel);
 
     if (reviews.length === 0) {
       return new Response(
