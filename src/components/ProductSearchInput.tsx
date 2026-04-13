@@ -9,6 +9,7 @@ interface Product {
   display_name: string;
   model_number: string;
   category: string;
+  review_count?: number;
 }
 
 interface ProductSearchInputProps {
@@ -25,15 +26,20 @@ export function ProductSearchInput({ onSelect, placeholder, className = "" }: Pr
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["products-search-list"],
+    queryKey: ["products-search-list-with-counts"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, display_name, model_number, category")
-        .eq("is_active", true)
-        .order("display_name");
+        .select("id, display_name, model_number, category, reviews(count)")
+        .eq("is_active", true);
       if (error) throw error;
-      return (data || []) as Product[];
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        display_name: p.display_name,
+        model_number: p.model_number,
+        category: p.category,
+        review_count: p.reviews?.[0]?.count ?? 0,
+      })).sort((a: Product, b: Product) => (b.review_count ?? 0) - (a.review_count ?? 0)) as Product[];
     },
     staleTime: 60_000 * 30,
   });
@@ -112,7 +118,7 @@ export function ProductSearchInput({ onSelect, placeholder, className = "" }: Pr
                 className="w-full text-left px-3 py-2 text-xs hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
               >
                 <div className="font-medium text-foreground truncate">{p.display_name}</div>
-                <div className="text-[10px] text-muted-foreground">{p.model_number} · {p.category}</div>
+                <div className="text-[10px] text-muted-foreground">{p.model_number} · {p.category}{p.review_count ? ` · ${p.review_count}건` : ""}</div>
               </button>
             ))
           )}
