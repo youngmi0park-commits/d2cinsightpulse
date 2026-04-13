@@ -1,0 +1,2 @@
+ALTER TABLE newsletter_country_signals DROP CONSTRAINT valid_lge_code;
+ALTER TABLE newsletter_country_signals ADD CONSTRAINT valid_lge_code CHECK (subsidiary_code = ANY (ARRAY['LGEUS','LGECI','LGESP','LGEMS','LGEUK','LGEDE','LGEFS','LGEBN','LGEIL','LGEAP','LGEJP','LGETT','LGEHK','LGESL','LGEML','LGEIN','LGETH','LGEPH','LGEVN']));
