@@ -566,10 +566,56 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
       {/* ═══ [C] KPI PULSE ROW ═══ */}
       {(() => {
-        const posMetaParts = [topPosKw?.count ? `${topPosKw.count}건` : null, topPosKw?.relatedProducts?.[0], topPosKw?.relatedCountries?.[0]].filter(Boolean);
-        const negMetaParts = [topNegKw?.count ? `${topNegKw.count}건` : null, topNegKw?.relatedProducts?.[0], topNegKw?.relatedCountries?.[0], "FAQ 대응 권고"].filter(Boolean);
-        const topProdKws = topProduct ? allKeywords.filter(k => k.relatedProducts?.some(p => p.toLowerCase().includes(topProduct.modelNumber.toLowerCase()))).slice(0, 2).map(k => k.keyword) : [];
-        const topProdParts = [topProduct ? `${topProduct.mentions}건 · 1위` : null, ...topProdKws].filter(Boolean);
+        // Source → country/channel label helper
+        const SOURCE_COUNTRY: Record<string, string> = {
+          consumer_reports: "🇺🇸 US", bestreviews: "🇺🇸 US", consumeraffairs: "🇺🇸 US",
+          bestbuy: "🇺🇸 US", walmart: "🇺🇸 US", costco: "🇺🇸 US", target: "🇺🇸 US",
+          trustpilot: "🌐 Global", reviews_io: "🌐 Global", complaintsboard: "🌐 Global",
+          pcmag: "🌐 Global", rtings: "🌐 Global", techradar: "🌐 Global",
+          soundguys: "🌐 Global", cnet: "🌐 Global", houzz: "🌐 Global",
+          reddit: "🌐 Reddit", lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK",
+          lge_com_de: "🇩🇪 DE", lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN",
+          lge_com_jp: "🇯🇵 JP", lge_com_tw: "🇹🇼 TW", lge_com_th: "🇹🇭 TH",
+        };
+        const SOURCE_CHANNEL: Record<string, string> = {
+          consumer_reports: "Consumer Reports", bestreviews: "BestReviews",
+          consumeraffairs: "ConsumerAffairs", trustpilot: "Trustpilot",
+          reviews_io: "Reviews.io", complaintsboard: "ComplaintsBoard",
+          bestbuy: "Best Buy", walmart: "Walmart", reddit: "Reddit",
+          pcmag: "PCMag", rtings: "RTINGS", techradar: "TechRadar",
+          soundguys: "SoundGuys", lge_com_us: "LG.com US", lge_com_uk: "LG.com UK",
+        };
+        const getCountryLabel = (src?: string) => (src && SOURCE_COUNTRY[src]) || "🌐 Global";
+        const getChannelLabel = (src?: string) => (src && SOURCE_CHANNEL[src]) || src || "";
+
+        // Positive keyword context
+        const posCountry = getCountryLabel(topPosKw?.source);
+        const posChannel = getChannelLabel(topPosKw?.source);
+        // Find which product is most associated with this positive keyword
+        const posProductMatch = lgcomPos[0] || redditPos[0];
+        const posProductLabel = posProductMatch
+          ? formatProductDisplayName(posProductMatch.display_name, posProductMatch.model_number, posProductMatch.category)
+          : "";
+
+        // Negative keyword context
+        const negCountry = getCountryLabel(topNegKw?.source);
+        const negChannel = getChannelLabel(topNegKw?.source);
+        const negProductMatch = lgcomNeg[0] || redditNeg[0];
+        const negProductLabel = negProductMatch
+          ? formatProductDisplayName(negProductMatch.display_name, negProductMatch.model_number, negProductMatch.category)
+          : "";
+
+        // Top product keywords: find keywords associated by same source or trending
+        const topProdKws = topProduct
+          ? allKeywords
+              .filter(k => k.sentiment === "positive")
+              .slice(0, 3)
+              .map(k => `"${k.keyword}"`)
+          : [];
+        const topProdSource = topProduct
+          ? (allTrendingProducts.find(p => p.modelNumber === topProduct.modelNumber) ? "trustpilot" : "")
+          : "";
+        const topProdCountry = getCountryLabel(topProdSource);
 
         return (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -590,19 +636,46 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-green-600" />
               <p className="text-[10px] text-muted-foreground font-medium mb-1">긍정 TOP 키워드</p>
               <p className="text-sm font-extrabold tracking-tight leading-tight">{topPosKw ? `"${topPosKw.keyword}"` : "—"}</p>
-              <p className="text-[10px] font-semibold mt-1 text-green-700">{posMetaParts.length > 0 ? posMetaParts.join(" · ") : "데이터 없음"}</p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-[10px] font-semibold text-green-700">
+                  {topPosKw ? `${topPosKw.count}건 · ${posCountry}` : "데이터 없음"}
+                </p>
+                {(posChannel || posProductLabel) && (
+                  <p className="text-[9px] text-muted-foreground truncate">
+                    {[posChannel, posProductLabel].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-destructive" />
               <p className="text-[10px] text-muted-foreground font-medium mb-1">부정 TOP 키워드</p>
               <p className="text-sm font-extrabold tracking-tight leading-tight">{topNegKw ? `"${topNegKw.keyword}"` : "—"}</p>
-              <p className="text-[10px] font-semibold mt-1 text-destructive">{negMetaParts.length > 0 ? negMetaParts.join(" · ") : "데이터 없음"}</p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-[10px] font-semibold text-destructive">
+                  {topNegKw ? `${topNegKw.count}건 · ${negCountry} · FAQ 대응 권고` : "데이터 없음"}
+                </p>
+                {(negChannel || negProductLabel) && (
+                  <p className="text-[9px] text-muted-foreground truncate">
+                    {[negChannel, negProductLabel].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="bg-background border border-border rounded-xl p-3.5 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-teal-600" />
               <p className="text-[10px] text-muted-foreground font-medium mb-1">주간 언급 TOP</p>
               <p className="text-[13px] font-extrabold tracking-tight leading-tight truncate">{topProduct?.displayName || "—"}</p>
-              <p className="text-[10px] font-semibold mt-1 text-teal-700">{topProdParts.length > 0 ? topProdParts.join(" · ") : "데이터 없음"}</p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-[10px] font-semibold text-teal-700">
+                  {topProduct ? `${topProduct.mentions}건 · 1위 · ${topProduct.category}` : "데이터 없음"}
+                </p>
+                {topProdKws.length > 0 && (
+                  <p className="text-[9px] text-muted-foreground truncate">
+                    🔑 {topProdKws.join(" · ")}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         );
