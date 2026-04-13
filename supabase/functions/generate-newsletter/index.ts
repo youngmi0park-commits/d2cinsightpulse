@@ -401,11 +401,9 @@ Deno.serve(async (req) => {
       avgSentiment,
     });
 
-  } catch (err) {
-    console.error(err);
-    return json({
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    }, 500);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : JSON.stringify(err);
+    console.error("generate-newsletter error:", msg);
+    return json({ success: false, error: msg }, 500);
   }
 });
