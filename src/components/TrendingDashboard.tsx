@@ -665,9 +665,9 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 <p className="text-[10px] font-semibold text-destructive">
                   {topNegKw ? `${topNegKw.count}건 · ${negCountry} · FAQ 대응 권고` : "데이터 없음"}
                 </p>
-                {(negChannel || negProductLabel) && (
+                {(negChannel || negProductLabel || negCatLabel) && (
                   <p className="text-[9px] text-muted-foreground truncate">
-                    {[negChannel, negProductLabel].filter(Boolean).join(" · ")}
+                    {[negChannel, negCatLabel ? `📦 ${negCatLabel}` : "", negProductLabel].filter(Boolean).join(" · ")}
                   </p>
                 )}
               </div>
