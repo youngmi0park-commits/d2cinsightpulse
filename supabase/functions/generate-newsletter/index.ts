@@ -117,21 +117,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 4. Source aggregation ──
-    const bySource: Record<string, number> = {};
-    for (const rv of allReviews) {
-      const s = (rv.source as string) ?? "unknown";
-      // Normalize source groups
-      let group = s;
-      if (s.startsWith("lge_com")) group = "lgcom";
-      else if (s.startsWith("reddit")) group = "reddit";
-      else if (s.startsWith("youtube")) group = "youtube";
-      bySource[group] = (bySource[group] ?? 0) + 1;
-    }
-
-    // ── 5. Overall sentiment ──
-    const overallPositive = allReviews.filter(r => r.sentiment === "positive").length;
-    const avgSentiment = Math.round((overallPositive / totalReviews) * 100);
+    const avgSentiment = totalReviews > 0 ? Math.round((overallPositive / totalReviews) * 100) : 0;
 
     // ── 6. Auto-classify country signals ──
     const autoClassify = (stats: CountryStats): string[] => {
