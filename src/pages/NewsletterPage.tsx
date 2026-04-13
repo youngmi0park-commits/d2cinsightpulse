@@ -400,7 +400,7 @@ const NewsletterPage = () => {
           })}
         </div>
       </div>
-
+    </div>
   );
 };
 
