@@ -47,18 +47,19 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // ── 1. Fetch weekly reviews ──
+    // ── 1. Fetch weekly reviews (lightweight columns only) ──
     const allReviews: Array<Record<string, unknown>> = [];
     let from = 0;
     const PAGE = 1000;
     while (true) {
       const { data: batch, error } = await supabase
         .from("reviews")
-        .select("source, product_id, rating, sentiment, sentiment_score, title, content, collected_at")
+        .select("source, product_id, sentiment, sentiment_score")
         .gte("collected_at", weekStart + "T00:00:00")
         .lte("collected_at", weekEnd + "T23:59:59")
+        .order("collected_at", { ascending: false })
         .range(from, from + PAGE - 1);
-      if (error) throw error;
+      if (error) throw new Error(error.message || JSON.stringify(error));
       if (!batch || batch.length === 0) break;
       allReviews.push(...batch);
       if (batch.length < PAGE) break;
