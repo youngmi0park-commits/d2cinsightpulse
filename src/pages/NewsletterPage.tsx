@@ -99,6 +99,24 @@ const NewsletterPage = () => {
     });
   };
 
+  // ── Fetch full newsletter HTML from serve-newsletter ──
+  const fetchNewsletterHtml = useCallback(async () => {
+    setLoadingHtml(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+        body: { format: "json", baseUrl: window.location.origin },
+      });
+      if (error) throw error;
+      if (result?.html) {
+        setNewsletterHtml(result.html);
+      }
+    } catch {
+      // silently fail — preview falls back to static template
+    } finally {
+      setLoadingHtml(false);
+    }
+  }, []);
+
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
     setGenerating(true);
@@ -127,6 +145,10 @@ const NewsletterPage = () => {
       setActiveId(data.issueId);
       await refetchArchive();
       await refetchIssue();
+
+      // Fetch full HTML for preview and Outlook copy
+      setGenProgress("뉴스레터 HTML 렌더링 중...");
+      await fetchNewsletterHtml();
     } catch (err) {
       toast.error("생성 실패: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
@@ -134,7 +156,7 @@ const NewsletterPage = () => {
       setGenerating(false);
       setGenProgress("");
     }
-  }, [weekStart, weekEnd, refetchArchive, refetchIssue]);
+  }, [weekStart, weekEnd, refetchArchive, refetchIssue, fetchNewsletterHtml]);
 
   // ── Outlook Copy ──
   const handleCopyForOutlook = useCallback(async () => {
