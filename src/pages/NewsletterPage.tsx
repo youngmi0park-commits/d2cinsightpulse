@@ -2,22 +2,14 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
-import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy, Archive } from "lucide-react";
+import { Mail, Calendar, ChevronDown, ChevronUp, FileText, Loader2, Sparkles, ExternalLink, Copy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   useNewsletterArchive,
   useNewsletterIssue,
-  useCountrySignals,
-  useChannelActions,
-  useFaqItems,
-  useCautionItems,
-  useCollectionStats,
-  useMatrixRows,
 } from "@/hooks/useNewsletterData";
-import { getLge, SIGNAL_TAG_COLOR, MATRIX_CELL_STYLE } from "@/constants/lgeSubsidiaries";
-import type { SignalTag, MatrixCell } from "@/constants/lgeSubsidiaries";
 
 /* ── Past Newsletters Archive (static fallback) ── */
 const staticNewsletters = [
@@ -72,7 +64,6 @@ const NewsletterPage = () => {
   const [weekStart, setWeekStart] = useState(defaults.start);
   const [weekEnd, setWeekEnd] = useState(defaults.end);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [archiveOpen, setArchiveOpen] = useState(false);
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [copying, setCopying] = useState(false);
   const [showTip, setShowTip] = useState(false);
@@ -80,15 +71,8 @@ const NewsletterPage = () => {
   const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
-  const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
+  const { refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
-  const issueId = currentIssue?.id;
-  const { data: signals } = useCountrySignals(issueId);
-  const { data: actions } = useChannelActions(issueId);
-  const { data: faqItems } = useFaqItems(issueId);
-  const { data: cautions } = useCautionItems(issueId);
-  const { data: stats } = useCollectionStats(issueId);
-  const { data: matrix } = useMatrixRows(issueId);
 
   const toggleStaticOpen = (id: number) => {
     setStaticOpenIds((prev) => {
@@ -206,7 +190,7 @@ const NewsletterPage = () => {
     }
   }, [newsletterHtml]);
 
-  const hasIssueData = !!currentIssue && !!signals?.length;
+  
 
   return (
     <div className="p-6 space-y-5 max-w-[1100px] mx-auto overflow-y-auto h-[calc(100vh-2rem)]">
@@ -255,12 +239,6 @@ const NewsletterPage = () => {
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <button
-          onClick={() => setArchiveOpen(true)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Archive className="h-3.5 w-3.5" /> 아카이브
-        </button>
         <button
           onClick={handleCopyForOutlook}
           disabled={copying}
@@ -318,250 +296,6 @@ const NewsletterPage = () => {
           title="Newsletter Preview"
         />
       </div>
-
-      {/* ── AI Generated Content ── */}
-      {hasIssueData && (
-        <div className="space-y-4">
-          {/* Issue summary */}
-          <Card className="border-[#C8102E]/20 bg-gradient-to-r from-[#C8102E]/5 to-transparent">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-[#C8102E] flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm">{currentIssue.title}</h3>
-                  <p className="text-[10px] text-muted-foreground">
-                    {currentIssue.week_start} ~ {currentIssue.week_end} · {currentIssue.total_reviews?.toLocaleString()}건 · {currentIssue.countries_count}개국 · 감성 {currentIssue.avg_sentiment}점
-                  </p>
-                </div>
-                <Badge variant="outline" className="ml-auto text-[10px]">
-                  {currentIssue.status === "published" ? "✅ 발행됨" : "📝 초안"}
-                </Badge>
-              </div>
-
-              {/* Collection stats pills */}
-              {stats?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {stats.map((s: any) => (
-                    <span
-                      key={s.id}
-                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted font-medium"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.dot_color }} />
-                      {s.display_name} {s.review_count?.toLocaleString()}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Country Signals */}
-          {signals?.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 bg-[#C8102E] rounded-full" />
-                <h2 className="text-sm font-bold tracking-widest uppercase">🌍 국가별 마케팅 시그널</h2>
-                <Badge variant="outline" className="text-[10px]">{signals.length}개국</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {signals.map((sig: any) => {
-                  const meta = sig.meta;
-                  const scoreColor = sig.sentiment_score >= 80 ? "text-green-600" : sig.sentiment_score >= 65 ? "text-amber-600" : "text-red-600";
-                  return (
-                    <Card key={sig.id} className="border-border hover:shadow-sm transition-shadow">
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">{meta?.flag ?? "🌐"}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold">{sig.subsidiary_code}</p>
-                            <p className="text-[10px] text-muted-foreground truncate">{meta?.country ?? sig.subsidiary_code}</p>
-                          </div>
-                          <span className={`text-sm font-bold ${scoreColor}`}>{sig.sentiment_score}점</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2">
-                          <span>📊 {sig.total_reviews}건</span>
-                          <span className="text-green-600">+{sig.positive_count}</span>
-                          <span className="text-red-600">-{sig.negative_count}</span>
-                          <span>🏷 {sig.top_category}</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mb-2">{sig.top_insight_ko}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {(sig.signal_tags ?? []).map((tag: string, i: number) => {
-                            const color = SIGNAL_TAG_COLOR[tag as SignalTag] ?? "amber";
-                            const bgClass = color === "green" ? "bg-green-100 text-green-700"
-                              : color === "red" ? "bg-red-100 text-red-700"
-                              : "bg-amber-100 text-amber-700";
-                            return (
-                              <span key={i} className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${bgClass}`}>
-                                {tag}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Matrix */}
-          {matrix?.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 bg-[#C8102E] rounded-full" />
-                <h2 className="text-sm font-bold tracking-widest uppercase">📊 카테고리 × 국가 매트릭스</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[10px] border-collapse">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      <th className="text-left p-2 font-bold border border-border">카테고리</th>
-                      {signals?.slice(0, 8).map((s: any) => (
-                        <th key={s.subsidiary_code} className="p-2 font-bold border border-border text-center">
-                          {s.meta?.flag} {s.subsidiary_code.replace("LGE", "")}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matrix.map((row: any) => (
-                      <tr key={row.id}>
-                        <td className="p-2 font-medium border border-border">{row.category_name_en ?? row.category_name}</td>
-                        {signals?.slice(0, 8).map((s: any) => {
-                          const cell = (row.cells as Record<string, string>)?.[s.subsidiary_code] as MatrixCell ?? "NONE";
-                          const style = MATRIX_CELL_STYLE[cell] ?? MATRIX_CELL_STYLE.NONE;
-                          return (
-                            <td
-                              key={s.subsidiary_code}
-                              className="p-1.5 text-center border border-border font-bold"
-                              style={{ backgroundColor: style.bg, color: style.text }}
-                            >
-                              {style.labelEn}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Channel Actions */}
-          {actions?.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 bg-[#C8102E] rounded-full" />
-                <h2 className="text-sm font-bold tracking-widest uppercase">📢 채널 광고 액션</h2>
-                <Badge variant="outline" className="text-[10px]">{actions.length}건</Badge>
-              </div>
-              <div className="space-y-2">
-                {actions.map((a: any) => (
-                  <Card key={a.id} className="border-border">
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2 mb-2">
-                        <Badge className="text-[9px] bg-[#C8102E] text-white shrink-0">{a.channel_type?.toUpperCase()}</Badge>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold">{a.action_title_ko}</p>
-                          <p className="text-[10px] text-muted-foreground">{a.action_title_en}</p>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          {(a.target_codes ?? []).map((c: string) => {
-                            const m = getLge(c);
-                            return <span key={c} className="text-[10px]" title={c}>{m?.flag ?? c}</span>;
-                          })}
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground mb-1">📋 {a.basis_ko}</p>
-                      {a.copy_headline_ko && (
-                        <p className="text-[10px] font-medium bg-muted/50 rounded px-2 py-1 mt-1">
-                          💬 "{a.copy_headline_ko}"
-                        </p>
-                      )}
-                      {a.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {a.tags.map((t: string, i: number) => (
-                            <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{t}</span>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* FAQ Items */}
-          {faqItems?.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 bg-[#C8102E] rounded-full" />
-                <h2 className="text-sm font-bold tracking-widest uppercase">❓ FAQ 우선순위</h2>
-                <Badge variant="outline" className="text-[10px]">{faqItems.length}건</Badge>
-              </div>
-              <div className="space-y-2">
-                {faqItems.map((f: any) => {
-                  const priorityColor = f.priority === "p0" ? "bg-red-100 text-red-700"
-                    : f.priority === "p1" ? "bg-amber-100 text-amber-700"
-                    : "bg-muted text-muted-foreground";
-                  return (
-                    <Card key={f.id} className="border-border">
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={`text-[9px] ${priorityColor}`}>
-                            {f.priority?.toUpperCase()} · CIS {f.cis_score}
-                          </Badge>
-                          <Badge variant="outline" className="text-[9px]">{f.faq_type}</Badge>
-                        </div>
-                        <p className="text-xs font-bold mb-1">{f.question_ko}</p>
-                        <p className="text-[10px] text-muted-foreground">{f.answer_ko}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Caution Items */}
-          {cautions?.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 bg-red-500 rounded-full" />
-                <h2 className="text-sm font-bold tracking-widest uppercase">⚠️ 집행 주의</h2>
-              </div>
-              <div className="space-y-2">
-                {cautions.map((c: any) => (
-                  <Card key={c.id} className="border-red-200 bg-red-50/30">
-                    <CardContent className="p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge className={`text-[9px] ${c.severity === "urgent" ? "bg-red-600 text-white" : "bg-amber-100 text-amber-700"}`}>
-                          {c.severity === "urgent" ? "🚨 긴급" : "⚠️ 주의"}
-                        </Badge>
-                        <div className="flex gap-1">
-                          {(c.target_codes ?? []).map((code: string) => {
-                            const m = getLge(code);
-                            return <span key={code} className="text-[10px]">{m?.flag ?? code}</span>;
-                          })}
-                        </div>
-                      </div>
-                      <p className="text-xs font-bold">{c.title_ko}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">{c.body_ko}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
 
       {/* ── Static Archive ── */}
       <div>
@@ -666,52 +400,6 @@ const NewsletterPage = () => {
           })}
         </div>
       </div>
-
-      {/* ── Archive Slide-over ── */}
-      {archiveOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40 cursor-pointer" onClick={() => setArchiveOpen(false)} />
-          <div className="w-[340px] bg-background h-full shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <div>
-                <h3 className="font-bold text-sm">📂 뉴스레터 아카이브</h3>
-                <p className="text-[10px] text-muted-foreground mt-0.5">최근 30호 · AI 생성 리포트</p>
-              </div>
-              <button onClick={() => setArchiveOpen(false)} className="text-muted-foreground hover:text-foreground text-xl">×</button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              <div
-                onClick={() => { setActiveId(null); setArchiveOpen(false); }}
-                className={`p-3 border rounded-lg cursor-pointer transition-all hover:bg-muted/30 ${!activeId ? "border-[#C8102E] bg-red-50/30" : "border-border"}`}
-              >
-                <Badge className="text-[9px] bg-[#C8102E] text-white mb-1">최신호</Badge>
-                <p className="text-xs font-bold">현재 뉴스레터 (template)</p>
-              </div>
-              {!issues?.length && (
-                <div className="text-center py-10 text-muted-foreground">
-                  <p className="text-2xl mb-2">📊</p>
-                  <p className="text-sm font-medium">생성된 리포트 없음</p>
-                  <p className="text-xs mt-1">날짜 선택 후 ⚡ AI 생성을 눌러주세요.</p>
-                </div>
-              )}
-              {issues?.map((issue: any) => (
-                <div
-                  key={issue.id}
-                  onClick={() => { setActiveId(issue.id); setArchiveOpen(false); }}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all hover:bg-muted/30 ${activeId === issue.id ? "border-[#C8102E] bg-red-50/30" : "border-border"}`}
-                >
-                  <p className="text-xs font-bold">{issue.title ?? "Weekly Report"}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{issue.week_start} ~ {issue.week_end}</p>
-                  <div className="flex gap-1.5 mt-2">
-                    <Badge variant="outline" className="text-[9px]">{issue.total_reviews?.toLocaleString()}건</Badge>
-                    <Badge variant="outline" className="text-[9px]">{issue.countries_count}개국</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
