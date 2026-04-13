@@ -201,7 +201,7 @@ function summaryExcerpt(text: string, source?: string, sentimentType?: string, t
 }
 
 /** Evidence & Signals section in expanded view */
-function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string; title?: string; rating?: number }[] }) {
+function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string; title?: string; rating?: number; pros?: string[]; cons?: string[] }[] }) {
   const { t } = useLang();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
