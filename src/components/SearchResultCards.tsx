@@ -202,6 +202,47 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
   const [signalTranslations, setSignalTranslations] = useState<Record<number, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // Auto-translate Japanese reviews on mount
+  useEffect(() => {
+    const jpReviews = reviews.filter((r) => isJapaneseSource(r.source));
+    if (jpReviews.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      const allVisible = [...reviews.filter(r => r.sentiment === "positive").slice(0, 8),
+                          ...reviews.filter(r => r.sentiment === "negative").slice(0, 8)];
+      const jpItems = allVisible
+        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating), isJP: isJapaneseSource(r.source) }))
+        .filter((item) => item.isJP);
+
+      if (jpItems.length === 0) return;
+
+      const batchSize = 5;
+      for (let i = 0; i < jpItems.length; i += batchSize) {
+        if (cancelled) break;
+        const batch = jpItems.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const { data } = await supabase.functions.invoke("translate-review", {
+                body: { text: item.text },
+              });
+              return { key: item.key, translated: data?.translated || item.text };
+            } catch {
+              return { key: item.key, translated: item.text };
+            }
+          })
+        );
+        if (!cancelled) {
+          const newTrans: Record<string, string> = {};
+          for (const r of results) newTrans[r.key] = r.translated;
+          setTranslations((prev) => ({ ...prev, ...newTrans }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [reviews]);
+
   const channels = getChannelLabels(reviews);
 
   const filteredReviews = selectedChannel
