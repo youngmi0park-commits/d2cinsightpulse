@@ -174,16 +174,22 @@ function isPlaceholder(text: string): boolean {
 }
 
 /** Display-ready excerpt — uses title fallback for placeholder reviews; LG.com shows sentiment summary only */
-function summaryExcerpt(text: string, source?: string, sentimentType?: string, title?: string, rating?: number): string {
+function summaryExcerpt(text: string, source?: string, sentimentType?: string, title?: string, rating?: number, pros?: string[], cons?: string[]): string {
   const isLgCom = source?.startsWith("lge_com");
 
   if (isLgCom || isPlaceholder(text)) {
-    // 2차 가공물만 표시 — 별점 제외, 긍부정 요약만
+    // Use structured pros/cons for privacy-safe summary when available
+    if (sentimentType === "positive" && pros && pros.length > 0) {
+      return `👍 ${pros.slice(0, 3).join(", ")}${title ? ` — ${title}` : ""}`;
+    }
+    if (sentimentType === "negative" && cons && cons.length > 0) {
+      return `👎 ${cons.slice(0, 3).join(", ")}${title ? ` — ${title}` : ""}`;
+    }
+    // Fallback to sentiment label
     const sentLabel = sentimentType === "positive" ? "👍 긍정적 사용 경험 확인"
       : sentimentType === "negative" ? "👎 불만 또는 개선 요청 확인"
       : "➖ 중립적 의견";
     if (title) return `${sentLabel} — ${title}`;
-    // fallback from placeholder text
     const match = text.match(/감성:\s*(\w+),\s*점수:\s*(\d+)점/);
     if (match) {
       const label = match[1] === "positive" ? "👍 긍정" : match[1] === "negative" ? "👎 부정" : "➖ 중립";
