@@ -54,10 +54,41 @@ function inferCategoryFromModel(model: string): string | null {
   return null;
 }
 
-function normalizeCategory(bvCatId: string | null, modelNumber: string): string {
+// ── Display-name based inference (for MD* BV IDs where model_number is useless) ──
+function inferCategoryFromDisplayName(displayName: string): string | null {
+  const upper = displayName.toUpperCase();
+  // Washer/Dryer display names start with model codes
+  if (/^WM\d/.test(displayName) || /^WT\d/.test(displayName) || /^WD\d/.test(displayName)) return "Washer";
+  if (/^DLE\d/.test(displayName) || /^DLG\d/.test(displayName) || /^DLEX/.test(displayName) || /^DLGX/.test(displayName)) return "Dryer";
+  if (upper.includes("SMART TV") && !upper.includes("MONITOR")) return "TV";
+  if (/OLED\s*EVO/i.test(displayName) && !upper.includes("MONITOR")) return "TV";
+  if (/^OLED\d+C\d/i.test(displayName)) return "TV";
+  if (upper.includes("WASHER") || upper.includes("WASHING MACHINE") || upper.includes("WASHTOWER")) return "Washer";
+  if (upper.includes("DRYER") && !upper.includes("COMBO")) return "Dryer";
+  if (/^LREL|^LRGL|^LSE\d|^LRE\d/.test(displayName)) return "Range/Oven";
+  if (/^LRFX|^LRYX|^LRDC|^LRMV|^LRFG|^LFDS/.test(displayName)) return "Refrigerator";
+  return null;
+}
+
+// ── Infer monitor sub_category from display name ──
+function inferMonitorSubCategory(displayName: string): string {
+  const upper = displayName.toUpperCase();
+  if (upper.includes("ULTRAGEAR") || /\d+G[XSPQN]\d/.test(displayName)) return "UltraGear";
+  if (upper.includes("ULTRAFINE")) return "UltraFine";
+  if (upper.includes("ULTRAWIDE") || upper.includes("21:9")) return "UltraWide";
+  if (upper.includes("SMART MONITOR") || upper.includes("SMART SWING") || upper.includes("MYVIEW")) return "Smart Monitor";
+  if (upper.includes("GRAM") || upper.includes("+VIEW") || upper.includes("PORTABLE MONITOR")) return "gram +view";
+  if (upper.includes("DUALUP")) return "DualUp";
+  if (upper.includes("OLED") || upper.includes("WOLED")) return "OLED Monitor";
+  return "General Monitor";
+}
+
+function normalizeCategory(bvCatId: string | null, modelNumber: string, displayName = ""): string {
   if (bvCatId && CATEGORY_NORM[bvCatId]) return CATEGORY_NORM[bvCatId];
   const inferred = inferCategoryFromModel(modelNumber);
   if (inferred) return inferred;
+  const fromName = inferCategoryFromDisplayName(displayName);
+  if (fromName) return fromName;
   return "General";
 }
 
@@ -101,11 +132,16 @@ Deno.serve(async (req) => {
   let bvResolved = 0;
   let stillGeneral = 0;
 
-  // 2. First pass: try model-number inference (no API calls needed)
+  // 2. First pass: try model-number + display-name inference (no API calls needed)
   for (const prod of generalProducts) {
-    const inferred = inferCategoryFromModel(prod.model_number);
+    const inferred = inferCategoryFromModel(prod.model_number)
+      || inferCategoryFromDisplayName(prod.display_name);
     if (inferred) {
-      await supabase.from("products").update({ category: inferred }).eq("id", prod.id);
+      const subCat = inferred === "Monitor" ? inferMonitorSubCategory(prod.display_name) : null;
+      await supabase.from("products").update({
+        category: inferred,
+        ...(subCat ? { sub_category: subCat } : {}),
+      }).eq("id", prod.id);
       modelInferred++;
       updated++;
     }
@@ -154,11 +190,12 @@ Deno.serve(async (req) => {
 
         // Try to get a better display name
         const betterName = bvProd.Name || dbProd.display_name;
-        const resolved = normalizeCategory(catId, dbProd.model_number);
+        const resolved = normalizeCategory(catId, dbProd.model_number, betterName);
 
         if (resolved !== "General") {
+          const subCat = resolved === "Monitor" ? inferMonitorSubCategory(betterName) : null;
           await supabase.from("products")
-            .update({ category: resolved, display_name: betterName })
+            .update({ category: resolved, display_name: betterName, ...(subCat ? { sub_category: subCat } : {}) })
             .eq("id", dbProd.id);
           bvResolved++;
           updated++;

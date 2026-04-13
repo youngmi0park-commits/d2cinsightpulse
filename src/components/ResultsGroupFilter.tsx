@@ -14,8 +14,22 @@ interface ResultsGroupFilterProps {
 }
 
 // Extract sub-category from display name (OLED, QNED, NanoCell, UHD, StanbyME, UltraGear, etc.)
-export function extractSubCategory(displayName: string): string {
+export function extractSubCategory(displayName: string, category?: string): string {
   const upper = displayName.toUpperCase();
+
+  // ── Monitor-specific subcategories ──
+  if (category === "Monitor") {
+    if (upper.includes("ULTRAGEAR") || /\d+G[XSPQN]\d/.test(displayName)) return "UltraGear";
+    if (upper.includes("ULTRAFINE")) return "UltraFine";
+    if (upper.includes("ULTRAWIDE") || upper.includes("21:9")) return "UltraWide";
+    if (upper.includes("SMART MONITOR") || upper.includes("SMART SWING") || upper.includes("MYVIEW")) return "Smart Monitor";
+    if (upper.includes("GRAM") || upper.includes("+VIEW") || upper.includes("PORTABLE")) return "gram +view";
+    if (upper.includes("DUALUP")) return "DualUp";
+    if (upper.includes("OLED") || upper.includes("WOLED")) return "OLED Monitor";
+    return "General Monitor";
+  }
+
+  // ── TV / Entertainment ──
   if (upper.includes("STANBYME") || upper.includes("STAND BY ME") || upper.includes("STANBY ME")) return "StanbyME";
   if (upper.includes("OLED")) return "OLED";
   if (upper.includes("QNED")) return "QNED";
@@ -74,7 +88,7 @@ export function ResultsGroupFilter({
     for (const p of products) {
       let key: string;
       if (groupMode === "subcategory") {
-        key = extractSubCategory(p.displayName);
+        key = extractSubCategory(p.displayName, p.category);
       } else if (groupMode === "inch") {
         key = extractInch(p.displayName) || t("Unknown", "미분류");
       } else {

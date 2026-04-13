@@ -1,0 +1,2 @@
+UPDATE products SET sub_category = 'UltraGear' WHERE sub_category = 'UltraGear™ OLED Gaming';
+UPDATE products SET category = 'Washer' WHERE category = 'General' AND (display_name ~ '^WM\d' OR display_name ~ '^WT\d');
