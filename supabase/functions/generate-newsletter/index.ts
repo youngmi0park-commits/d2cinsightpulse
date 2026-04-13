@@ -49,10 +49,12 @@ Deno.serve(async (req) => {
     );
 
     // ── 1. Fetch aggregated review data via DB function ──
+    console.log("[newsletter] Starting RPC call...");
     const { data: agg, error: aggErr } = await supabase.rpc("get_newsletter_aggregates", {
       p_start: weekStart + "T00:00:00+00",
       p_end: weekEnd + "T23:59:59+00",
     });
+    console.log("[newsletter] RPC done, rows:", agg?.length ?? 0);
     if (aggErr) throw new Error(aggErr.message || JSON.stringify(aggErr));
     if (!agg || agg.length === 0)
       return json({ error: "No reviews found for this period" }, 404);
