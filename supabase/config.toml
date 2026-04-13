@@ -32,3 +32,5 @@ verify_jwt = false
 
 [functions.generate-newsletter]
 verify_jwt = false
+[functions.generate-overview-summary]
+verify_jwt = false
