@@ -190,11 +190,12 @@ Deno.serve(async (req) => {
 
         // Try to get a better display name
         const betterName = bvProd.Name || dbProd.display_name;
-        const resolved = normalizeCategory(catId, dbProd.model_number);
+        const resolved = normalizeCategory(catId, dbProd.model_number, betterName);
 
         if (resolved !== "General") {
+          const subCat = resolved === "Monitor" ? inferMonitorSubCategory(betterName) : null;
           await supabase.from("products")
-            .update({ category: resolved, display_name: betterName })
+            .update({ category: resolved, display_name: betterName, ...(subCat ? { sub_category: subCat } : {}) })
             .eq("id", dbProd.id);
           bvResolved++;
           updated++;
