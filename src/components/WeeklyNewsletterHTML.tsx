@@ -66,6 +66,36 @@ function useNewsletterData() {
         topChannels.push({ name: `+${otherChannelCount}개 채널`, count: otherCount, color: "#999" });
       }
 
+      // Category Korean labels
+      const CAT_KO: Record<string, string> = {
+        TV: "TV", Monitor: "모니터", Refrigerator: "냉장고", Washer: "세탁기",
+        Dryer: "건조기", Dishwasher: "식세기", Kitchen: "주방가전", Vacuum: "청소기",
+        "Air Conditioner": "에어컨", "Air Care": "공기청정기", "Air Purifier": "공기청정기",
+        Soundbar: "사운드바", Audio: "오디오", Projector: "프로젝터", Laptop: "노트북",
+        Styler: "스타일러", Microwave: "전자레인지", "Range/Oven": "오븐/레인지",
+        Cooktop: "쿡탑", Dehumidifier: "제습기",
+      };
+
+      // Fetch product categories for keyword-related products
+      const allRelatedProducts = new Set<string>();
+      (keywordsRes.data || []).forEach(k => {
+        ((k.related_products as string[] | null) || []).forEach((p: string) => allRelatedProducts.add(p));
+      });
+      const productCatMap: Record<string, string> = {};
+      if (allRelatedProducts.size > 0) {
+        const { data: prodCats } = await supabase
+          .from("products")
+          .select("model_number, category")
+          .in("model_number", Array.from(allRelatedProducts).slice(0, 50));
+        (prodCats || []).forEach((p: any) => { productCatMap[p.model_number] = p.category; });
+      }
+
+      const getKwCatLabel = (kw: any) => {
+        const relProd = ((kw?.related_products as string[] | null) || [])[0];
+        const cat = relProd ? productCatMap[relProd] : undefined;
+        return cat ? (CAT_KO[cat] || cat) : "";
+      };
+
       // Keywords
       const kws = keywordsRes.data || [];
       const posKws = kws.filter(k => k.sentiment === "positive").sort((a, b) => b.count - a.count);
@@ -73,11 +103,13 @@ function useNewsletterData() {
       const topPosKw = posKws[0];
       const topPositiveKeyword = topPosKw?.keyword || "—";
       const topPositiveCount = topPosKw?.count || 0;
-      const topPositiveMeta = topPosKw ? `${(topPosKw.related_products as string[] | null)?.[0] || ""} ${(topPosKw.related_countries as string[] | null)?.[0] ? `· ${(topPosKw.related_countries as string[])[0]}` : ""}`.trim() : "";
+      const posCatLabel = getKwCatLabel(topPosKw);
+      const topPositiveMeta = topPosKw ? [posCatLabel ? `📦 ${posCatLabel}` : "", (topPosKw.related_products as string[] | null)?.[0] || "", (topPosKw.related_countries as string[] | null)?.[0] || ""].filter(Boolean).join(" · ") : "";
       const topNegKw = negKws[0];
       const topNegativeKeyword = topNegKw?.keyword || "—";
       const topNegativeCount = topNegKw?.count || 0;
-      const topNegativeMeta = topNegKw ? `${(topNegKw.related_products as string[] | null)?.[0] || ""} ${(topNegKw.related_countries as string[] | null)?.[0] ? `· ${(topNegKw.related_countries as string[])[0]}` : ""}`.trim() : "";
+      const negCatLabel = getKwCatLabel(topNegKw);
+      const topNegativeMeta = topNegKw ? [negCatLabel ? `📦 ${negCatLabel}` : "", (topNegKw.related_products as string[] | null)?.[0] || "", (topNegKw.related_countries as string[] | null)?.[0] || ""].filter(Boolean).join(" · ") : "";
 
       // Top product
       const trendProds = trendingRes.data || [];
