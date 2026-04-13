@@ -65,7 +65,6 @@ const NewsletterPage = () => {
   const [weekEnd, setWeekEnd] = useState(defaults.end);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
-  const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [copying, setCopying] = useState(false);
   const [showTip, setShowTip] = useState(false);
   const [newsletterHtml, setNewsletterHtml] = useState<string | null>(null);
@@ -402,52 +401,6 @@ const NewsletterPage = () => {
         </div>
       </div>
 
-      {/* ── Archive Slide-over ── */}
-      {archiveOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1 bg-black/40 cursor-pointer" onClick={() => setArchiveOpen(false)} />
-          <div className="w-[340px] bg-background h-full shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <div>
-                <h3 className="font-bold text-sm">📂 뉴스레터 아카이브</h3>
-                <p className="text-[10px] text-muted-foreground mt-0.5">최근 30호 · AI 생성 리포트</p>
-              </div>
-              <button onClick={() => setArchiveOpen(false)} className="text-muted-foreground hover:text-foreground text-xl">×</button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              <div
-                onClick={() => { setActiveId(null); setArchiveOpen(false); }}
-                className={`p-3 border rounded-lg cursor-pointer transition-all hover:bg-muted/30 ${!activeId ? "border-[#C8102E] bg-red-50/30" : "border-border"}`}
-              >
-                <Badge className="text-[9px] bg-[#C8102E] text-white mb-1">최신호</Badge>
-                <p className="text-xs font-bold">현재 뉴스레터 (template)</p>
-              </div>
-              {!issues?.length && (
-                <div className="text-center py-10 text-muted-foreground">
-                  <p className="text-2xl mb-2">📊</p>
-                  <p className="text-sm font-medium">생성된 리포트 없음</p>
-                  <p className="text-xs mt-1">날짜 선택 후 ⚡ AI 생성을 눌러주세요.</p>
-                </div>
-              )}
-              {issues?.map((issue: any) => (
-                <div
-                  key={issue.id}
-                  onClick={() => { setActiveId(issue.id); setArchiveOpen(false); }}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all hover:bg-muted/30 ${activeId === issue.id ? "border-[#C8102E] bg-red-50/30" : "border-border"}`}
-                >
-                  <p className="text-xs font-bold">{issue.title ?? "Weekly Report"}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{issue.week_start} ~ {issue.week_end}</p>
-                  <div className="flex gap-1.5 mt-2">
-                    <Badge variant="outline" className="text-[9px]">{issue.total_reviews?.toLocaleString()}건</Badge>
-                    <Badge variant="outline" className="text-[9px]">{issue.countries_count}개국</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };
 
