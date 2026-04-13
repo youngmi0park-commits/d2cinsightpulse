@@ -45,8 +45,34 @@ const sourceStyle = (s: string) => {
 
 function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string) => string }) {
   const [translated, setTranslated] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+
+  const isJP = isJapaneseSource(review.source);
+
+  // Auto-translate Japanese review title on mount
+  useEffect(() => {
+    if (!isJP) return;
+    const title = (review as any).title as string | undefined;
+    const textToTranslate = title || review.text;
+    if (!textToTranslate) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke("translate-review", {
+          body: { text: textToTranslate },
+        });
+        if (!cancelled && data?.translated) {
+          setTranslatedTitle(data.translated);
+        }
+      } catch (e) {
+        console.error("JP auto-translate error:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isJP, review.text]);
 
   const handleTranslate = async () => {
     if (translated) {
