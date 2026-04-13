@@ -6,6 +6,71 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const REVIEW_SQL = `
+  SELECT id::text, title, content, sentiment, sentiment_score, rating, source, collected_at, product_id::text
+  FROM reviews
+  /**WHERE**/
+  ORDER BY collected_at DESC
+  LIMIT $1
+`;
+
+function matchesChannel(source: string, channel: string) {
+  if (channel === "lgcom") return source.startsWith("lge_com");
+  if (channel === "reddit") return source.startsWith("reddit");
+  return !source.startsWith("lge_com") && !source.startsWith("reddit");
+}
+
+async function fetchSampledReviews(channel: string) {
+  const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;
+  const { Pool } = await import("https://deno.land/x/postgres@v0.19.3/mod.ts");
+  const pool = new Pool(dbUrl, 1, true);
+  const conn = await pool.connect();
+
+  try {
+    await conn.queryArray("SET statement_timeout = '20s'");
+
+    const windows = [
+      { label: "이번 주 수집 리뷰", days: 7, limit: 1500 },
+      { label: "최근 30일 수집 리뷰", days: 30, limit: 3000 },
+      { label: "전체 누적 (수집일 기준)", days: null, limit: 5000 },
+    ];
+
+    for (const window of windows) {
+      const values: unknown[] = [window.limit];
+      const whereParts: string[] = [];
+
+      if (window.days !== null) {
+        const since = new Date();
+        since.setDate(since.getDate() - window.days);
+        values.push(since.toISOString());
+        whereParts.push(`collected_at >= $${values.length}`);
+      }
+
+      const sql = REVIEW_SQL.replace(
+        "/**WHERE**/",
+        whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "",
+      );
+
+      const result = await conn.queryObject<Record<string, unknown>>(sql, values);
+      const filtered = result.rows.filter((row) =>
+        matchesChannel(String(row.source || ""), channel),
+      );
+
+      if (filtered.length >= 30 || window.days === null) {
+        return {
+          periodLabel: window.label,
+          reviews: filtered.slice(0, 300),
+        };
+      }
+    }
+
+    return { periodLabel: "전체 누적 (수집일 기준)", reviews: [] };
+  } finally {
+    conn.release();
+    await pool.end();
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,54 +85,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const channel: string = body.channel || "lgcom";
 
-    // ── 1) Fetch reviews WITHOUT join (avoids timeout) ──
-    const reviewCols = "id, title, content, sentiment, sentiment_score, rating, source, collected_at, product_id";
-
-    function applyChannelFilter(query: any, ch: string) {
-      if (ch === "lgcom") return query.like("source", "lge_com%");
-      if (ch === "reddit") return query.like("source", "reddit%");
-      return query.not("source", "like", "lge_com%").not("source", "like", "reddit%");
-    }
-
-    let reviews: any[] = [];
-    let periodLabel = "이번 주 수집 리뷰";
-
-    // Try 7 days first
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    let q = sb.from("reviews").select(reviewCols)
-      .gte("collected_at", weekAgo.toISOString())
-      .order("collected_at", { ascending: false }).limit(300);
-    q = applyChannelFilter(q, channel);
-    const { data: d1, error: e1 } = await q;
-    if (e1) throw e1;
-    reviews = d1 || [];
-
-    // Fallback to 30 days
-    if (reviews.length < 30) {
-      const monthAgo = new Date();
-      monthAgo.setDate(monthAgo.getDate() - 30);
-      let q2 = sb.from("reviews").select(reviewCols)
-        .gte("collected_at", monthAgo.toISOString())
-        .order("collected_at", { ascending: false }).limit(300);
-      q2 = applyChannelFilter(q2, channel);
-      const { data: d2, error: e2 } = await q2;
-      if (e2) throw e2;
-      reviews = d2 || [];
-      periodLabel = "최근 30일 수집 리뷰";
-    }
-
-    // Fallback to all-time
-    if (reviews.length < 30) {
-      let q3 = sb.from("reviews").select(reviewCols)
-        .order("collected_at", { ascending: false }).limit(300);
-      q3 = applyChannelFilter(q3, channel);
-      const { data: d3, error: e3 } = await q3;
-      if (e3) throw e3;
-      reviews = d3 || [];
-      periodLabel = "전체 누적 (수집일 기준)";
-    }
+    const { reviews, periodLabel } = await fetchSampledReviews(channel);
 
     if (reviews.length === 0) {
       return new Response(
