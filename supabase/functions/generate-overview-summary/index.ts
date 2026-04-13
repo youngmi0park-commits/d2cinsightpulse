@@ -18,13 +18,10 @@ Deno.serve(async (req) => {
     const sb = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json().catch(() => ({}));
-    const channel: string = body.channel || "lgcom"; // lgcom | reddit | other
+    const channel: string = body.channel || "lgcom";
 
-    // ── 1) 주간 리뷰 가져오기 (collected_at 기준 최근 7일) ──
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-
-    const selectCols = "title, content, sentiment, sentiment_score, rating, source, collected_at, products!inner(display_name, model_number, category, sub_category)";
+    // ── 1) Fetch reviews WITHOUT join (avoids timeout) ──
+    const reviewCols = "id, title, content, sentiment, sentiment_score, rating, source, collected_at, product_id";
 
     function applyChannelFilter(query: any, ch: string) {
       if (ch === "lgcom") return query.like("source", "lge_com%");
@@ -32,53 +29,46 @@ Deno.serve(async (req) => {
       return query.not("source", "like", "lge_com%").not("source", "like", "reddit%");
     }
 
-    let weeklyQuery = sb
-      .from("reviews")
-      .select(selectCols)
-      .gte("collected_at", weekAgo.toISOString())
-      .order("collected_at", { ascending: false })
-      .limit(500);
-    weeklyQuery = applyChannelFilter(weeklyQuery, channel);
-
-    const { data: weeklyReviews, error: weeklyErr } = await weeklyQuery;
-    if (weeklyErr) throw weeklyErr;
-
-    // ── 2) 주간 데이터 부족 시 최근 30일로 확장 ──
-    let reviews = weeklyReviews || [];
+    let reviews: any[] = [];
     let periodLabel = "이번 주 수집 리뷰";
 
+    // Try 7 days first
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    let q = sb.from("reviews").select(reviewCols)
+      .gte("collected_at", weekAgo.toISOString())
+      .order("collected_at", { ascending: false }).limit(300);
+    q = applyChannelFilter(q, channel);
+    const { data: d1, error: e1 } = await q;
+    if (e1) throw e1;
+    reviews = d1 || [];
+
+    // Fallback to 30 days
     if (reviews.length < 30) {
       const monthAgo = new Date();
       monthAgo.setDate(monthAgo.getDate() - 30);
-
-      let fallbackQuery = sb
-        .from("reviews")
-        .select(selectCols)
+      let q2 = sb.from("reviews").select(reviewCols)
         .gte("collected_at", monthAgo.toISOString())
-        .order("collected_at", { ascending: false })
-        .limit(500);
-      fallbackQuery = applyChannelFilter(fallbackQuery, channel);
-
-      const { data: fallbackReviews, error: fbErr } = await fallbackQuery;
-      if (fbErr) throw fbErr;
-      reviews = fallbackReviews || [];
+        .order("collected_at", { ascending: false }).limit(300);
+      q2 = applyChannelFilter(q2, channel);
+      const { data: d2, error: e2 } = await q2;
+      if (e2) throw e2;
+      reviews = d2 || [];
       periodLabel = "최근 30일 수집 리뷰";
-
-      // 30일에도 부족하면 최신 500건
-      if (reviews.length < 30) {
-        let allQuery = sb
-          .from("reviews")
-          .select(selectCols)
-          .order("collected_at", { ascending: false })
-          .limit(500);
-        allQuery = applyChannelFilter(allQuery, channel);
-
-        const { data: allReviews, error: allErr } = await allQuery;
-        if (allErr) throw allErr;
-        reviews = allReviews || [];
-        periodLabel = "전체 누적 (수집일 기준)";
-      }
     }
+
+    // Fallback to all-time
+    if (reviews.length < 30) {
+      let q3 = sb.from("reviews").select(reviewCols)
+        .order("collected_at", { ascending: false }).limit(300);
+      q3 = applyChannelFilter(q3, channel);
+      const { data: d3, error: e3 } = await q3;
+      if (e3) throw e3;
+      reviews = d3 || [];
+      periodLabel = "전체 누적 (수집일 기준)";
+    }
+
     if (reviews.length === 0) {
       return new Response(
         JSON.stringify({ overview: null, message: "No reviews found" }),
@@ -86,35 +76,49 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ── 3) 데이터 분석 ──
+    // ── 2) Batch-fetch product info for unique product_ids ──
+    const productIds = [...new Set(reviews.map((r: any) => r.product_id).filter(Boolean))];
+    const productMap: Record<string, any> = {};
+
+    // Fetch in chunks of 50 to avoid URL length issues
+    for (let i = 0; i < productIds.length; i += 50) {
+      const chunk = productIds.slice(i, i + 50);
+      const { data: prods } = await sb.from("products")
+        .select("id, display_name, model_number, category, sub_category")
+        .in("id", chunk);
+      if (prods) {
+        for (const p of prods) productMap[p.id] = p;
+      }
+    }
+
+    // ── 3) Analyze ──
     const posReviews = reviews.filter((r: any) => r.sentiment === "positive");
     const negReviews = reviews.filter((r: any) => r.sentiment === "negative");
 
-    // 제품별 집계
-    const productMap: Record<string, {
+    const aggMap: Record<string, {
       name: string; model: string; category: string; subCategory: string;
       pos: number; neg: number; titles: string[]; snippets: string[];
     }> = {};
 
     for (const r of reviews as any[]) {
-      const pName = r.products?.display_name || "Unknown";
-      if (!productMap[pName]) {
-        productMap[pName] = {
-          name: pName, model: r.products?.model_number || "",
-          category: r.products?.category || "", subCategory: r.products?.sub_category || "",
+      const prod = productMap[r.product_id];
+      const pName = prod?.display_name || "Unknown";
+      if (!aggMap[pName]) {
+        aggMap[pName] = {
+          name: pName, model: prod?.model_number || "",
+          category: prod?.category || "", subCategory: prod?.sub_category || "",
           pos: 0, neg: 0, titles: [], snippets: [],
         };
       }
-      if (r.sentiment === "positive") productMap[pName].pos++;
-      if (r.sentiment === "negative") productMap[pName].neg++;
-      if (r.title && productMap[pName].titles.length < 10) productMap[pName].titles.push(r.title);
-      // 리뷰 본문 스니펫 추가 (최대 5개, 150자 제한)
-      if (r.content && productMap[pName].snippets.length < 5) {
-        productMap[pName].snippets.push(r.content.slice(0, 150));
+      if (r.sentiment === "positive") aggMap[pName].pos++;
+      if (r.sentiment === "negative") aggMap[pName].neg++;
+      if (r.title && aggMap[pName].titles.length < 10) aggMap[pName].titles.push(r.title);
+      if (r.content && aggMap[pName].snippets.length < 5) {
+        aggMap[pName].snippets.push(r.content.slice(0, 150));
       }
     }
 
-    const topProducts = Object.values(productMap)
+    const topProducts = Object.values(aggMap)
       .sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg))
       .slice(0, 15);
 
@@ -122,18 +126,19 @@ Deno.serve(async (req) => {
       `${p.name} (${p.model}, ${p.category}${p.subCategory ? ` > ${p.subCategory}` : ""}): 긍정 ${p.pos}건, 부정 ${p.neg}건\n  키워드: ${p.titles.slice(0, 5).join(", ")}\n  대표 리뷰: ${p.snippets.slice(0, 2).join(" | ")}`
     ).join("\n\n");
 
-    // 긍정/부정 리뷰 본문 샘플
-    const posSnippets = posReviews.slice(0, 30).map((r: any) =>
-      `[${(r.products as any)?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`
-    ).filter(Boolean).join("\n");
+    const posSnippets = posReviews.slice(0, 30).map((r: any) => {
+      const prod = productMap[r.product_id];
+      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`;
+    }).filter(Boolean).join("\n");
 
-    const negSnippets = negReviews.slice(0, 30).map((r: any) =>
-      `[${(r.products as any)?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`
-    ).filter(Boolean).join("\n");
+    const negSnippets = negReviews.slice(0, 30).map((r: any) => {
+      const prod = productMap[r.product_id];
+      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`;
+    }).filter(Boolean).join("\n");
 
     const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 커뮤니티" : "기타 채널 (Amazon, YouTube, Best Buy, Shopee 등)";
 
-    // ── 4) AI 분석 요청 ──
+    // ── 4) AI request ──
     const systemPrompt = `You are an expert consumer insight analyst for LG Electronics. Analyze ${channelLabel} data and provide structured weekly overview in Korean. Be specific with product names and real patterns from the data. Write in a format suitable for marketing team weekly briefing. All analysis must be grounded in the actual review data provided — do not invent or hallucinate information.`;
 
     const userPrompt = `다음은 ${channelLabel}의 ${periodLabel} 수집된 리뷰 데이터입니다:
@@ -175,37 +180,27 @@ ${negSnippets.slice(0, 2000)}
 
 ## 3. 반복 칭찬 포인트 (Recurring Praise Points)
 - 5개 항목, 각각 제품명과 카테고리를 포함한 객체 형태
-- 예: { "text": "OLED TV의 압도적인 화질 (선명함, 색감, 명암비)", "product": "LG OLED evo G5", "category": "TV" }
 
 ## 4. "비교 없이" 칭찬하는 포인트 (Unmatched Praise)
 - 고객이 경쟁사 대비가 아닌 절대적으로 칭찬하는 포인트 4~5개
-- 각각 고객 말투를 살린 한 줄 코멘트 (큰따옴표)
 
 ## 5. Key Takeaway (마케터용 핵심 인사이트)
 - key_takeaway: 객체 배열 (3개)
-- 각 항목은 주로 언급된 제품명, 긍/부정 핵심 메시지, 마케터가 바로 활용할 수 있는 액션 제안을 포함
-- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄", "negative_msg": "부정 핵심 한 줄", "marketer_action": "마케터 액션 제안 한 줄" }
 
 JSON 형태로 응답:
 {
   "top_topics": [
     {
-      "rank": 1,
-      "topic": "주제명",
-      "mention_pct": 40,
-      "positive_pct": 95,
-      "negative_pct": 5,
+      "rank": 1, "topic": "주제명", "mention_pct": 40,
+      "positive_pct": 95, "negative_pct": 5,
       "representative_comment": "대표 코멘트",
       "related_products": ["모델명1", "모델명2"]
     }
   ],
   "urgent_issues": [
     {
-      "rank": 1,
-      "issue": "이슈명",
-      "mention_pct": 70,
-      "pattern": "패턴 설명",
-      "cause": "원인 설명",
+      "rank": 1, "issue": "이슈명", "mention_pct": 70,
+      "pattern": "패턴 설명", "cause": "원인 설명",
       "related_products": ["모델명1"]
     }
   ],
@@ -216,7 +211,6 @@ JSON 형태로 응답:
   ]
 }`;
 
-    // Retry logic for transient gateway errors (502, 503, 504)
     const aiRequestBody = JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
@@ -238,19 +232,13 @@ JSON 형태로 응답:
           },
           body: aiRequestBody,
         });
-
         if (aiResponse.ok) break;
-
         const errText = await aiResponse.text();
         console.error(`AI attempt ${attempt}/${maxRetries} failed: ${aiResponse.status} - ${errText.slice(0, 200)}`);
-
-        // Only retry on gateway errors
         if (aiResponse.status >= 502 && aiResponse.status <= 504 && attempt < maxRetries) {
           await new Promise(r => setTimeout(r, 2000 * attempt));
           continue;
         }
-
-        // Non-retryable error — return graceful response
         return new Response(
           JSON.stringify({ overview: null, error: `AI service error: ${aiResponse.status}`, fallback: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -278,11 +266,7 @@ JSON 형태로 응답:
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "{}";
     let overview;
-    try {
-      overview = JSON.parse(content);
-    } catch {
-      overview = { raw: content };
-    }
+    try { overview = JSON.parse(content); } catch { overview = { raw: content }; }
 
     return new Response(
       JSON.stringify({
