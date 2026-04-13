@@ -650,9 +650,9 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                 <p className="text-[10px] font-semibold text-green-700">
                   {topPosKw ? `${topPosKw.count}건 · ${posCountry}` : "데이터 없음"}
                 </p>
-                {(posChannel || posProductLabel) && (
+                {(posChannel || posProductLabel || posCatLabel) && (
                   <p className="text-[9px] text-muted-foreground truncate">
-                    {[posChannel, posProductLabel].filter(Boolean).join(" · ")}
+                    {[posChannel, posCatLabel ? `📦 ${posCatLabel}` : "", posProductLabel].filter(Boolean).join(" · ")}
                   </p>
                 )}
               </div>
