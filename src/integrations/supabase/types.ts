@@ -868,6 +868,15 @@ export type Database = {
           review_count: number
         }[]
       }
+      get_newsletter_aggregates: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          cnt: number
+          product_id: string
+          sentiment: string
+          source: string
+        }[]
+      }
       get_source_counts: {
         Args: never
         Returns: {
