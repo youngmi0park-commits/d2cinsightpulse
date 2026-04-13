@@ -51,7 +51,7 @@ async function fetchSampledReviews(channel: string) {
         whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "",
       );
 
-      const result = await conn.queryObject<Record<string, unknown>>(sql, values);
+      const result = await conn.queryObject<{ id: string; title: string | null; content: string | null; sentiment: string | null; sentiment_score: number | null; rating: number | null; source: string; collected_at: string; product_id: string | null }>(sql, values);
       const filtered = result.rows.filter((row) =>
         matchesChannel(String(row.source || ""), channel),
       );
