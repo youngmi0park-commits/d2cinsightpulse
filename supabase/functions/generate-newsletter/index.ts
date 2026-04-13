@@ -48,33 +48,17 @@ Deno.serve(async (req) => {
       { db: { schema: "public" }, global: { headers: { "x-statement-timeout": "60000" } } }
     );
 
-    // ── 1. Fetch weekly reviews (lightweight, capped at 5000) ──
-    const allReviews: Array<Record<string, unknown>> = [];
-    const MAX_REVIEWS = 5000;
-    let from = 0;
-    const PAGE = 1000;
-    while (allReviews.length < MAX_REVIEWS) {
-      const { data: batch, error } = await supabase
-        .from("reviews")
-        .select("source, product_id, sentiment")
-        .gte("collected_at", weekStart + "T00:00:00")
-        .lte("collected_at", weekEnd + "T23:59:59")
-        .order("collected_at", { ascending: false })
-        .range(from, from + PAGE - 1);
-      if (error) throw new Error(error.message || JSON.stringify(error));
-      if (!batch || batch.length === 0) break;
-      allReviews.push(...batch);
-      if (batch.length < PAGE) break;
-      from += PAGE;
-    }
-
-    if (allReviews.length === 0)
+    // ── 1. Fetch aggregated review data via DB function ──
+    const { data: agg, error: aggErr } = await supabase.rpc("get_newsletter_aggregates", {
+      p_start: weekStart + "T00:00:00+00",
+      p_end: weekEnd + "T23:59:59+00",
+    });
+    if (aggErr) throw new Error(aggErr.message || JSON.stringify(aggErr));
+    if (!agg || agg.length === 0)
       return json({ error: "No reviews found for this period" }, 404);
 
-    const totalReviews = allReviews.length;
-
     // ── 2. Fetch product info for category mapping ──
-    const productIds = [...new Set(allReviews.map(r => r.product_id as string))];
+    const productIds = [...new Set(agg.map((r: any) => r.product_id as string))];
     const productMap: Record<string, { category: string; display_name: string }> = {};
     for (let i = 0; i < productIds.length; i += 500) {
       const chunk = productIds.slice(i, i + 500);
@@ -87,7 +71,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 3. Country aggregation ──
+    // ── 3. Country & source aggregation from pre-aggregated data ──
     type CountryStats = {
       total: number; positive: number; negative: number; neutral: number;
       categories: Record<string, number>;
@@ -95,30 +79,41 @@ Deno.serve(async (req) => {
     };
 
     const byCountry: Record<string, CountryStats> = {};
+    const bySource: Record<string, number> = {};
+    let totalReviews = 0;
+    let overallPositive = 0;
 
-    for (const rv of allReviews) {
-      const source = (rv.source as string) ?? "";
+    for (const row of agg) {
+      const source = (row.source as string) ?? "";
+      const count = Number(row.cnt);
+      totalReviews += count;
+      if (row.sentiment === "positive") overallPositive += count;
+
+      // Source aggregation
+      let group = source;
+      if (source.startsWith("lge_com")) group = "lgcom";
+      else if (source.startsWith("reddit")) group = "reddit";
+      else if (source.startsWith("youtube")) group = "youtube";
+      bySource[group] = (bySource[group] ?? 0) + count;
+
+      // Country aggregation
       const code = SOURCE_TO_LGE[source];
-      if (!code) continue; // skip non-LGE sources for country signals
+      if (!code) continue;
 
       if (!byCountry[code]) {
-        byCountry[code] = {
-          total: 0, positive: 0, negative: 0, neutral: 0,
-          categories: {}, products: {},
-        };
+        byCountry[code] = { total: 0, positive: 0, negative: 0, neutral: 0, categories: {}, products: {} };
       }
       const c = byCountry[code];
-      c.total++;
-      if (rv.sentiment === "positive") c.positive++;
-      else if (rv.sentiment === "negative") c.negative++;
-      else c.neutral++;
+      c.total += count;
+      if (row.sentiment === "positive") c.positive += count;
+      else if (row.sentiment === "negative") c.negative += count;
+      else c.neutral += count;
 
-      const prod = productMap[rv.product_id as string];
+      const prod = productMap[row.product_id as string];
       const cat = prod?.category ?? "General";
-      c.categories[cat] = (c.categories[cat] ?? 0) + 1;
-
+      c.categories[cat] = (c.categories[cat] ?? 0) + count;
       if (prod?.display_name) {
-        c.products[prod.display_name] = (c.products[prod.display_name] ?? 0) + 1;
+        c.products[prod.display_name] = (c.products[prod.display_name] ?? 0) + count;
       }
     }
 
