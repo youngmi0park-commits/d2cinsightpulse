@@ -293,9 +293,19 @@ const NewsletterPage = () => {
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기</h2>
+          {newsletterHtml && (
+            <Badge variant="outline" className="text-[10px] text-green-700 border-green-300 bg-green-50">
+              ✅ AI 생성 반영됨
+            </Badge>
+          )}
+          {loadingHtml && (
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> HTML 렌더링 중...
+            </span>
+          )}
         </div>
         <iframe
-          src="/newsletter-template.html"
+          {...(newsletterHtml ? { srcDoc: newsletterHtml } : { src: "/newsletter-template.html" })}
           className="w-full border border-border rounded-xl bg-white"
           style={{ height: "70vh" }}
           title="Newsletter Preview"
