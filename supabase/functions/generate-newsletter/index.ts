@@ -42,20 +42,33 @@ Deno.serve(async (req) => {
     if (!weekStart || !weekEnd)
       return json({ error: "weekStart and weekEnd required" }, 400);
 
+    const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { db: { schema: "public" }, global: { headers: { "x-statement-timeout": "60000" } } }
     );
 
-    // ── 1. Fetch aggregated review data via DB function ──
-    console.log("[newsletter] Starting RPC call...");
-    const { data: agg, error: aggErr } = await supabase.rpc("get_newsletter_aggregates", {
-      p_start: weekStart + "T00:00:00+00",
-      p_end: weekEnd + "T23:59:59+00",
-    });
-    console.log("[newsletter] RPC done, rows:", agg?.length ?? 0);
-    if (aggErr) throw new Error(aggErr.message || JSON.stringify(aggErr));
+    // ── 1. Aggregate reviews directly via SQL for speed ──
+    console.log("[newsletter] Running direct SQL aggregation...");
+    const { Pool } = await import("https://deno.land/x/postgres@v0.19.3/mod.ts");
+    const pool = new Pool(dbUrl, 1, true);
+    const conn = await pool.connect();
+    try {
+      await conn.queryArray("SET statement_timeout = '90s'");
+      const result = await conn.queryObject<{source: string; product_id: string; sentiment: string; cnt: number}>(
+        `SELECT source, product_id::text, sentiment, COUNT(*)::int as cnt
+         FROM reviews
+         WHERE collected_at >= $1 AND collected_at <= $2
+         GROUP BY source, product_id, sentiment`,
+        [weekStart + "T00:00:00+00", weekEnd + "T23:59:59+00"]
+      );
+      var agg = result.rows;
+      console.log("[newsletter] SQL done, rows:", agg.length);
+    } finally {
+      conn.release();
+      await pool.end();
+    }
+
     if (!agg || agg.length === 0)
       return json({ error: "No reviews found for this period" }, 404);
 
