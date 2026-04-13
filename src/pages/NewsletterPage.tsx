@@ -162,10 +162,17 @@ const NewsletterPage = () => {
   const handleCopyForOutlook = useCallback(async () => {
     setCopying(true);
     try {
-      const res = await fetch("/newsletter-template.html");
-      const html = await res.text();
-      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      const bodyContent = bodyMatch ? bodyMatch[1] : html;
+      // Use AI-generated HTML if available, otherwise fall back to static template
+      let htmlContent: string;
+      if (newsletterHtml) {
+        htmlContent = newsletterHtml;
+      } else {
+        const res = await fetch("/newsletter-template.html");
+        htmlContent = await res.text();
+      }
+
+      const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent;
       const outlookHtml = `<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta charset="utf-8"></head><body>${bodyContent}</body></html>`;
 
       if (typeof ClipboardItem !== "undefined") {
@@ -197,7 +204,7 @@ const NewsletterPage = () => {
     } finally {
       setCopying(false);
     }
-  }, []);
+  }, [newsletterHtml]);
 
   const hasIssueData = !!currentIssue && !!signals?.length;
 
