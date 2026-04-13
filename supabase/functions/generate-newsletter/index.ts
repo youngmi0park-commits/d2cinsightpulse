@@ -44,7 +44,8 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { db: { schema: "public" }, global: { headers: { "x-statement-timeout": "60000" } } }
     );
 
     // ── 1. Fetch weekly reviews (lightweight, capped at 5000) ──
