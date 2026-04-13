@@ -55,6 +55,7 @@ async function fetchSampledReviews(channel: string) {
       const filtered = result.rows.filter((row) =>
         matchesChannel(String(row.source || ""), channel),
       );
+      console.log(`[generate-overview-summary] ${channel} ${window.label}: fetched=${result.rows.length}, filtered=${filtered.length}`);
 
       if (filtered.length >= 30 || window.days === null) {
         return {
