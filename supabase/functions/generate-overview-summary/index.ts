@@ -23,7 +23,8 @@ type ReviewRow = {
   product_id: string | null;
 };
 
-const REVIEW_SELECT = "id,title,content,sentiment,sentiment_score,rating,source,collected_at,product_id";
+const REVIEW_SELECT =
+  "id,title,content,sentiment,sentiment_score,rating,source,collected_at,product_id";
 
 function matchesChannel(source: string | null | undefined, channel: string) {
   const normalized = String(source ?? "");
@@ -38,7 +39,10 @@ function applyChannelFilter(query: any, channel: string) {
   return query;
 }
 
-async function fetchSampledReviews(sb: ReturnType<typeof createClient>, channel: string) {
+async function fetchSampledReviews(
+  sb: ReturnType<typeof createClient>,
+  channel: string,
+) {
   const windows = [
     { label: "이번 주 수집 리뷰", days: 7, limit: 300 },
     { label: "최근 30일 수집 리뷰", days: 30, limit: 900 },
@@ -101,7 +105,10 @@ Deno.serve(async (req) => {
     if (!parsed.success) {
       return new Response(
         JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -112,12 +119,14 @@ Deno.serve(async (req) => {
     if (reviews.length === 0) {
       return new Response(
         JSON.stringify({ overview: null, message: "No reviews found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // ── 2) Batch-fetch product info for unique product_ids ──
-    const productIds = [...new Set(reviews.map((r: any) => r.product_id).filter(Boolean))];
+    const productIds = [
+      ...new Set(reviews.map((r: any) => r.product_id).filter(Boolean)),
+    ];
     const productMap: Record<string, any> = {};
 
     // Fetch in chunks of 50 to avoid URL length issues
@@ -136,8 +145,14 @@ Deno.serve(async (req) => {
     const negReviews = reviews.filter((r: any) => r.sentiment === "negative");
 
     const aggMap: Record<string, {
-      name: string; model: string; category: string; subCategory: string;
-      pos: number; neg: number; titles: string[]; snippets: string[];
+      name: string;
+      model: string;
+      category: string;
+      subCategory: string;
+      pos: number;
+      neg: number;
+      titles: string[];
+      snippets: string[];
     }> = {};
 
     for (const r of reviews as any[]) {
@@ -145,14 +160,21 @@ Deno.serve(async (req) => {
       const pName = prod?.display_name || "Unknown";
       if (!aggMap[pName]) {
         aggMap[pName] = {
-          name: pName, model: prod?.model_number || "",
-          category: prod?.category || "", subCategory: prod?.sub_category || "",
-          pos: 0, neg: 0, titles: [], snippets: [],
+          name: pName,
+          model: prod?.model_number || "",
+          category: prod?.category || "",
+          subCategory: prod?.sub_category || "",
+          pos: 0,
+          neg: 0,
+          titles: [],
+          snippets: [],
         };
       }
       if (r.sentiment === "positive") aggMap[pName].pos++;
       if (r.sentiment === "negative") aggMap[pName].neg++;
-      if (r.title && aggMap[pName].titles.length < 10) aggMap[pName].titles.push(r.title);
+      if (r.title && aggMap[pName].titles.length < 10) {
+        aggMap[pName].titles.push(r.title);
+      }
       if (r.content && aggMap[pName].snippets.length < 5) {
         aggMap[pName].snippets.push(r.content.slice(0, 150));
       }
@@ -162,26 +184,40 @@ Deno.serve(async (req) => {
       .sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg))
       .slice(0, 15);
 
-    const productSummary = topProducts.map(p =>
-      `${p.name} (${p.model}, ${p.category}${p.subCategory ? ` > ${p.subCategory}` : ""}): 긍정 ${p.pos}건, 부정 ${p.neg}건\n  키워드: ${p.titles.slice(0, 5).join(", ")}\n  대표 리뷰: ${p.snippets.slice(0, 2).join(" | ")}`
+    const productSummary = topProducts.map((p) =>
+      `${p.name} (${p.model}, ${p.category}${
+        p.subCategory ? ` > ${p.subCategory}` : ""
+      }): 긍정 ${p.pos}건, 부정 ${p.neg}건\n  키워드: ${
+        p.titles.slice(0, 5).join(", ")
+      }\n  대표 리뷰: ${p.snippets.slice(0, 2).join(" | ")}`
     ).join("\n\n");
 
     const posSnippets = posReviews.slice(0, 30).map((r: any) => {
       const prod = productMap[r.product_id];
-      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`;
+      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${
+        (r.content || "").slice(0, 120)
+      }`;
     }).filter(Boolean).join("\n");
 
     const negSnippets = negReviews.slice(0, 30).map((r: any) => {
       const prod = productMap[r.product_id];
-      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${(r.content || "").slice(0, 120)}`;
+      return `[${prod?.display_name || "?"}] ${r.title || ""}: ${
+        (r.content || "").slice(0, 120)
+      }`;
     }).filter(Boolean).join("\n");
 
-    const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 커뮤니티" : "기타 채널 (Amazon, YouTube, Best Buy, Shopee 등)";
+    const channelLabel = channel === "lgcom"
+      ? "LG.com 공식 리뷰"
+      : channel === "reddit"
+      ? "Reddit 커뮤니티"
+      : "기타 채널 (Amazon, YouTube, Best Buy, Shopee 등)";
 
     // ── 4) AI request ──
-    const systemPrompt = `You are an expert consumer insight analyst for LG Electronics. Analyze ${channelLabel} data and provide structured weekly overview in Korean. Be specific with product names and real patterns from the data. Write in a format suitable for marketing team weekly briefing. All analysis must be grounded in the actual review data provided — do not invent or hallucinate information.`;
+    const systemPrompt =
+      `You are an expert consumer insight analyst for LG Electronics. Analyze ${channelLabel} data and provide structured weekly overview in Korean. Be specific with product names and real patterns from the data. Write in a format suitable for marketing team weekly briefing. All analysis must be grounded in the actual review data provided — do not invent or hallucinate information.`;
 
-    const userPrompt = `다음은 ${channelLabel}의 ${periodLabel} 수집된 리뷰 데이터입니다:
+    const userPrompt =
+      `다음은 ${channelLabel}의 ${periodLabel} 수집된 리뷰 데이터입니다:
 
 총 리뷰: ${reviews.length}건 (긍정 ${posReviews.length}건, 부정 ${negReviews.length}건)
 분석 기간: ${periodLabel}
@@ -264,49 +300,78 @@ JSON 형태로 응답:
     const maxRetries = 3;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
+        aiResponse = await fetch(
+          "https://ai.gateway.lovable.dev/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${lovableApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: aiRequestBody,
           },
-          body: aiRequestBody,
-        });
+        );
         if (aiResponse.ok) break;
         const errText = await aiResponse.text();
-        console.error(`AI attempt ${attempt}/${maxRetries} failed: ${aiResponse.status} - ${errText.slice(0, 200)}`);
-        if (aiResponse.status >= 502 && aiResponse.status <= 504 && attempt < maxRetries) {
-          await new Promise(r => setTimeout(r, 2000 * attempt));
+        console.error(
+          `AI attempt ${attempt}/${maxRetries} failed: ${aiResponse.status} - ${
+            errText.slice(0, 200)
+          }`,
+        );
+        if (
+          aiResponse.status >= 502 && aiResponse.status <= 504 &&
+          attempt < maxRetries
+        ) {
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
           continue;
         }
         return new Response(
-          JSON.stringify({ overview: null, error: `AI service error: ${aiResponse.status}`, fallback: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            overview: null,
+            error: `AI service error: ${aiResponse.status}`,
+            fallback: true,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       } catch (fetchErr) {
-        console.error(`AI attempt ${attempt}/${maxRetries} network error:`, fetchErr);
+        console.error(
+          `AI attempt ${attempt}/${maxRetries} network error:`,
+          fetchErr,
+        );
         if (attempt < maxRetries) {
-          await new Promise(r => setTimeout(r, 2000 * attempt));
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
           continue;
         }
         return new Response(
-          JSON.stringify({ overview: null, error: "AI service unreachable", fallback: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            overview: null,
+            error: "AI service unreachable",
+            fallback: true,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
     }
 
     if (!aiResponse || !aiResponse.ok) {
       return new Response(
-        JSON.stringify({ overview: null, error: "AI service failed after retries", fallback: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          overview: null,
+          error: "AI service failed after retries",
+          fallback: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "{}";
     let overview;
-    try { overview = JSON.parse(content); } catch { overview = { raw: content }; }
+    try {
+      overview = JSON.parse(content);
+    } catch {
+      overview = { raw: content };
+    }
 
     return new Response(
       JSON.stringify({
@@ -320,13 +385,16 @@ JSON 형태로 응답:
           generated_at: new Date().toISOString(),
         },
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({ error: (error as Error).message || "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
