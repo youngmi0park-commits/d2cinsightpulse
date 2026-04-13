@@ -64,7 +64,7 @@ const NewsletterPage = () => {
   const [weekStart, setWeekStart] = useState(defaults.start);
   const [weekEnd, setWeekEnd] = useState(defaults.end);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [staticOpenIds, setStaticOpenIds] = useState<Set<number>>(new Set());
   const [copying, setCopying] = useState(false);
   const [showTip, setShowTip] = useState(false);
@@ -240,12 +240,6 @@ const NewsletterPage = () => {
         <div className="flex-1" />
 
         {/* Action buttons */}
-        <button
-          onClick={() => setArchiveOpen(true)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Archive className="h-3.5 w-3.5" /> 아카이브
-        </button>
         <button
           onClick={handleCopyForOutlook}
           disabled={copying}
