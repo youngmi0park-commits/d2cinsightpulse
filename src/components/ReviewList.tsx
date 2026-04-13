@@ -123,13 +123,14 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
   /** 2차 가공 요약 — 원문 대신 긍부정 코멘트 요약만 표시 */
   const lgComSummary = () => {
     const title = (review as any).title as string | undefined;
-    if (review.sentiment === "positive") {
-      return title ? `긍정 반응 — ${title}` : "긍정적 사용 경험이 확인된 리뷰입니다.";
-    }
-    if (review.sentiment === "negative") {
-      return title ? `부정 반응 — ${title}` : "불만 또는 개선 요청이 확인된 리뷰입니다.";
-    }
-    return title ? `중립 반응 — ${title}` : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+    // For JP source, use translated title if available
+    const displayTitle = isJP && translatedTitle ? translatedTitle : title;
+    const sentPrefix = review.sentiment === "positive" ? "긍정 반응"
+      : review.sentiment === "negative" ? "부정 반응" : "중립 반응";
+    const fallback = review.sentiment === "positive" ? "긍정적 사용 경험이 확인된 리뷰입니다."
+      : review.sentiment === "negative" ? "불만 또는 개선 요청이 확인된 리뷰입니다."
+      : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+    return displayTitle ? `${sentPrefix} — ${displayTitle}` : fallback;
   };
 
   return (
@@ -142,6 +143,11 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
           {isLgCom && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
               2차 가공 요약
+            </Badge>
+          )}
+          {isJP && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600">
+              🇯🇵 원문: 일본어
             </Badge>
           )}
           {!isLgCom && <span className="text-sm text-muted-foreground">{review.author}</span>}
@@ -160,7 +166,15 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
       </div>
 
       {isLgCom ? (
-        <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+        <>
+          <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+          {/* JP: show original Japanese title as small reference */}
+          {isJP && translatedTitle && (review as any).title && (
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+              (原文: {(review as any).title})
+            </p>
+          )}
+        </>
       ) : (
         <p className="text-sm leading-relaxed">{maskCompetitorNames(review.text)}</p>
       )}
