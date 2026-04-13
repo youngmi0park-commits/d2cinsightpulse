@@ -174,16 +174,22 @@ function isPlaceholder(text: string): boolean {
 }
 
 /** Display-ready excerpt — uses title fallback for placeholder reviews; LG.com shows sentiment summary only */
-function summaryExcerpt(text: string, source?: string, sentimentType?: string, title?: string, rating?: number): string {
+function summaryExcerpt(text: string, source?: string, sentimentType?: string, title?: string, rating?: number, pros?: string[], cons?: string[]): string {
   const isLgCom = source?.startsWith("lge_com");
 
   if (isLgCom || isPlaceholder(text)) {
-    // 2차 가공물만 표시 — 별점 제외, 긍부정 요약만
+    // Use structured pros/cons for privacy-safe summary when available
+    if (sentimentType === "positive" && pros && pros.length > 0) {
+      return `👍 ${pros.slice(0, 3).join(", ")}${title ? ` — ${title}` : ""}`;
+    }
+    if (sentimentType === "negative" && cons && cons.length > 0) {
+      return `👎 ${cons.slice(0, 3).join(", ")}${title ? ` — ${title}` : ""}`;
+    }
+    // Fallback to sentiment label
     const sentLabel = sentimentType === "positive" ? "👍 긍정적 사용 경험 확인"
       : sentimentType === "negative" ? "👎 불만 또는 개선 요청 확인"
       : "➖ 중립적 의견";
     if (title) return `${sentLabel} — ${title}`;
-    // fallback from placeholder text
     const match = text.match(/감성:\s*(\w+),\s*점수:\s*(\d+)점/);
     if (match) {
       const label = match[1] === "positive" ? "👍 긍정" : match[1] === "negative" ? "👎 부정" : "➖ 중립";
@@ -195,7 +201,7 @@ function summaryExcerpt(text: string, source?: string, sentimentType?: string, t
 }
 
 /** Evidence & Signals section in expanded view */
-function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string; title?: string; rating?: number }[] }) {
+function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentResult; reviews: { text: string; sentiment?: string; source?: string; title?: string; rating?: number; pros?: string[]; cons?: string[] }[] }) {
   const { t } = useLang();
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null);
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -212,7 +218,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
       const allVisible = [...reviews.filter(r => r.sentiment === "positive").slice(0, 8),
                           ...reviews.filter(r => r.sentiment === "negative").slice(0, 8)];
       const jpItems = allVisible
-        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating), isJP: isJapaneseSource(r.source) }))
+        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating, r.pros, r.cons), isJP: isJapaneseSource(r.source) }))
         .filter((item) => item.isJP);
 
       if (jpItems.length === 0) return;
@@ -249,8 +255,8 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
     ? reviews.filter((r) => r.source && sourceLabel(r.source) === selectedChannel)
     : reviews;
 
-  const positiveReviews = filteredReviews.filter((r) => r.sentiment === "positive");
-  const negativeReviews = filteredReviews.filter((r) => r.sentiment === "negative");
+  const positiveReviews = [...filteredReviews.filter((r) => r.sentiment === "positive")].sort((a, b) => ((b as any).helpful_votes ?? 0) - ((a as any).helpful_votes ?? 0));
+  const negativeReviews = [...filteredReviews.filter((r) => r.sentiment === "negative")].sort((a, b) => ((b as any).helpful_votes ?? 0) - ((a as any).helpful_votes ?? 0));
 
   const channelCounts = channels.map((ch) => {
     const chReviews = reviews.filter((r) => r.source && sourceLabel(r.source) === ch);
@@ -271,7 +277,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
       [...positiveReviews.slice(0, 8), ...negativeReviews.slice(0, 8)].forEach((r, i) => {
         const key = `${r.sentiment}-${i}`;
         if (!translations[key]) {
-          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source, undefined, r.title, r.rating) });
+          excerptTexts.push({ key, text: summaryExcerpt(r.text, r.source, undefined, r.title, r.rating, r.pros, r.cons) });
         }
       });
 
@@ -408,7 +414,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating)}"
+                        "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating, r.pros, r.cons)}"
                       </span>
                     </div>
                   </div>
@@ -457,7 +463,7 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                     <div className="flex-1 leading-relaxed space-y-0.5">
                       {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
-                        "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating)}"
+                        "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating, r.pros, r.cons)}"
                       </span>
                     </div>
                   </div>

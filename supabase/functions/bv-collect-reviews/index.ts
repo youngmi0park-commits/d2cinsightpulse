@@ -224,6 +224,22 @@ Deno.serve(async (req) => {
             let reviewType = "organic";
             if (rv.IsSyndicated === true || rv.SyndicationSource) reviewType = "syndication";
 
+            // Extract structured pros/cons (privacy-safe: these are user-selected tags, not free text)
+            const pros: string[] = (rv.Pros as string[] | undefined)?.slice(0, 10) ?? [];
+            const cons: string[] = (rv.Cons as string[] | undefined)?.slice(0, 10) ?? [];
+            const isRecommended: boolean | null = rv.IsRecommended ?? null;
+            const helpfulVotes = Number(rv.TotalPositiveFeedbackCount) || 0;
+
+            // Extract secondary ratings (e.g., Design: 4, Durability: 5)
+            let secondaryRatings: Record<string, number> | null = null;
+            if (rv.SecondaryRatings && typeof rv.SecondaryRatings === "object") {
+              secondaryRatings = {};
+              for (const [key, val] of Object.entries(rv.SecondaryRatings as Record<string, any>)) {
+                if (val?.Value != null) secondaryRatings[key] = Number(val.Value);
+              }
+              if (Object.keys(secondaryRatings).length === 0) secondaryRatings = null;
+            }
+
             rows.push({
               product_id: dbProductId,
               source: "lge_com_" + region,
@@ -242,6 +258,11 @@ Deno.serve(async (req) => {
               content_type: "review",
               platform_type: "retailer",
               review_type: reviewType,
+              pros,
+              cons,
+              is_recommended: isRecommended,
+              helpful_votes: helpfulVotes,
+              secondary_ratings: secondaryRatings,
             });
           }
 
