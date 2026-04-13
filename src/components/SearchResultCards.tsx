@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, MessageSquare, TrendingUp, TrendingDown, Minus, Copy, AlertTriangle, Swords, DollarSign, Languages } from "lucide-react";
@@ -16,6 +16,11 @@ import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
 import { LgcomReviewSummary } from "@/components/LgcomReviewSummary";
+
+/** Detect Japanese source */
+function isJapaneseSource(source?: string): boolean {
+  return !!source && (source === "lge_com_jp" || source.endsWith("_jp"));
+}
 
 export interface AnalyzedProduct {
   product: ProductData;
@@ -197,6 +202,47 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
   const [signalTranslations, setSignalTranslations] = useState<Record<number, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
 
+  // Auto-translate Japanese reviews on mount
+  useEffect(() => {
+    const jpReviews = reviews.filter((r) => isJapaneseSource(r.source));
+    if (jpReviews.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      const allVisible = [...reviews.filter(r => r.sentiment === "positive").slice(0, 8),
+                          ...reviews.filter(r => r.sentiment === "negative").slice(0, 8)];
+      const jpItems = allVisible
+        .map((r, i) => ({ key: `${r.sentiment}-${i % 8}`, text: summaryExcerpt(r.text, r.source, r.sentiment, r.title, r.rating), isJP: isJapaneseSource(r.source) }))
+        .filter((item) => item.isJP);
+
+      if (jpItems.length === 0) return;
+
+      const batchSize = 5;
+      for (let i = 0; i < jpItems.length; i += batchSize) {
+        if (cancelled) break;
+        const batch = jpItems.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const { data } = await supabase.functions.invoke("translate-review", {
+                body: { text: item.text },
+              });
+              return { key: item.key, translated: data?.translated || item.text };
+            } catch {
+              return { key: item.key, translated: item.text };
+            }
+          })
+        );
+        if (!cancelled) {
+          const newTrans: Record<string, string> = {};
+          for (const r of results) newTrans[r.key] = r.translated;
+          setTranslations((prev) => ({ ...prev, ...newTrans }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [reviews]);
+
   const channels = getChannelLabels(reviews);
 
   const filteredReviews = selectedChannel
@@ -347,13 +393,20 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                 const ko = translations[key];
                 return (
                   <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-[#006600]/5 border border-[#006600]/10">
-                    {r.source && (
-                      <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-[#006600]/20">
-                        {sourceLabel(r.source)}
-                      </Badge>
-                    )}
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      {r.source && (
+                        <Badge variant="outline" className="text-[8px] h-4 px-1.5 border-[#006600]/20">
+                          {sourceLabel(r.source)}
+                        </Badge>
+                      )}
+                      {isJapaneseSource(r.source) && (
+                        <Badge variant="outline" className="text-[7px] h-3.5 px-1 border-amber-500/30 text-amber-600">
+                          🇯🇵 일본어
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex-1 leading-relaxed space-y-0.5">
-                      {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
+                      {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
                         "{summaryExcerpt(r.text, r.source, "positive", r.title, r.rating)}"
                       </span>
@@ -389,13 +442,20 @@ function EvidenceSignalsSection({ sentiment, reviews }: { sentiment: SentimentRe
                 const ko = translations[key];
                 return (
                   <div key={i} className="flex items-start gap-2 text-[11px] p-2 rounded bg-destructive/5 border border-destructive/10">
-                    {r.source && (
-                      <Badge variant="outline" className="text-[8px] shrink-0 h-4 px-1.5 border-destructive/20">
-                        {sourceLabel(r.source)}
-                      </Badge>
-                    )}
+                    <div className="flex flex-col gap-0.5 shrink-0">
+                      {r.source && (
+                        <Badge variant="outline" className="text-[8px] h-4 px-1.5 border-destructive/20">
+                          {sourceLabel(r.source)}
+                        </Badge>
+                      )}
+                      {isJapaneseSource(r.source) && (
+                        <Badge variant="outline" className="text-[7px] h-3.5 px-1 border-amber-500/30 text-amber-600">
+                          🇯🇵 일본어
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex-1 leading-relaxed space-y-0.5">
-                      {ko && <span className="text-foreground font-medium block">"{ko}"</span>}
+                      {ko && <span className="text-foreground font-medium block">🇰🇷 "{ko}"</span>}
                       <span className={`text-foreground block ${ko ? "text-[10px] text-muted-foreground" : ""}`}>
                         "{summaryExcerpt(r.text, r.source, "negative", r.title, r.rating)}"
                       </span>

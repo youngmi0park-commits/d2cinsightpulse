@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import type { Review } from "@/data/dummyData";
 import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { subDays, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+
+/** Detect if source is Japanese */
+function isJapaneseSource(source: string): boolean {
+  return source === "lge_com_jp" || source.endsWith("_jp");
+}
 
 interface ReviewListProps {
   reviews: Review[];
@@ -40,8 +45,34 @@ const sourceStyle = (s: string) => {
 
 function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string) => string }) {
   const [translated, setTranslated] = useState<string | null>(null);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+
+  const isJP = isJapaneseSource(review.source);
+
+  // Auto-translate Japanese review title on mount
+  useEffect(() => {
+    if (!isJP) return;
+    const title = (review as any).title as string | undefined;
+    const textToTranslate = title || review.text;
+    if (!textToTranslate) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke("translate-review", {
+          body: { text: textToTranslate },
+        });
+        if (!cancelled && data?.translated) {
+          setTranslatedTitle(data.translated);
+        }
+      } catch (e) {
+        console.error("JP auto-translate error:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isJP, review.text]);
 
   const handleTranslate = async () => {
     if (translated) {
@@ -92,13 +123,14 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
   /** 2차 가공 요약 — 원문 대신 긍부정 코멘트 요약만 표시 */
   const lgComSummary = () => {
     const title = (review as any).title as string | undefined;
-    if (review.sentiment === "positive") {
-      return title ? `긍정 반응 — ${title}` : "긍정적 사용 경험이 확인된 리뷰입니다.";
-    }
-    if (review.sentiment === "negative") {
-      return title ? `부정 반응 — ${title}` : "불만 또는 개선 요청이 확인된 리뷰입니다.";
-    }
-    return title ? `중립 반응 — ${title}` : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+    // For JP source, use translated title if available
+    const displayTitle = isJP && translatedTitle ? translatedTitle : title;
+    const sentPrefix = review.sentiment === "positive" ? "긍정 반응"
+      : review.sentiment === "negative" ? "부정 반응" : "중립 반응";
+    const fallback = review.sentiment === "positive" ? "긍정적 사용 경험이 확인된 리뷰입니다."
+      : review.sentiment === "negative" ? "불만 또는 개선 요청이 확인된 리뷰입니다."
+      : "특별한 긍부정 없이 기능을 언급한 리뷰입니다.";
+    return displayTitle ? `${sentPrefix} — ${displayTitle}` : fallback;
   };
 
   return (
@@ -111,6 +143,11 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
           {isLgCom && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
               2차 가공 요약
+            </Badge>
+          )}
+          {isJP && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600">
+              🇯🇵 원문: 일본어
             </Badge>
           )}
           {!isLgCom && <span className="text-sm text-muted-foreground">{review.author}</span>}
@@ -129,7 +166,15 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
       </div>
 
       {isLgCom ? (
-        <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+        <>
+          <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+          {/* JP: show original Japanese title as small reference */}
+          {isJP && translatedTitle && (review as any).title && (
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+              (原文: {(review as any).title})
+            </p>
+          )}
+        </>
       ) : (
         <p className="text-sm leading-relaxed">{maskCompetitorNames(review.text)}</p>
       )}
