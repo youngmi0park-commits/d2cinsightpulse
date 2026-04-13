@@ -132,11 +132,16 @@ Deno.serve(async (req) => {
   let bvResolved = 0;
   let stillGeneral = 0;
 
-  // 2. First pass: try model-number inference (no API calls needed)
+  // 2. First pass: try model-number + display-name inference (no API calls needed)
   for (const prod of generalProducts) {
-    const inferred = inferCategoryFromModel(prod.model_number);
+    const inferred = inferCategoryFromModel(prod.model_number)
+      || inferCategoryFromDisplayName(prod.display_name);
     if (inferred) {
-      await supabase.from("products").update({ category: inferred }).eq("id", prod.id);
+      const subCat = inferred === "Monitor" ? inferMonitorSubCategory(prod.display_name) : null;
+      await supabase.from("products").update({
+        category: inferred,
+        ...(subCat ? { sub_category: subCat } : {}),
+      }).eq("id", prod.id);
       modelInferred++;
       updated++;
     }
