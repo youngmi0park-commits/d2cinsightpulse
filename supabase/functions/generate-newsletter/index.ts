@@ -280,17 +280,15 @@ Deno.serve(async (req) => {
     if (issueErr) throw issueErr;
     const issueId = issue.id;
 
-    // Delete existing data on regenerate
-    if (forceRegenerate) {
-      await Promise.all([
-        supabase.from("newsletter_country_signals").delete().eq("issue_id", issueId),
-        supabase.from("newsletter_matrix_rows").delete().eq("issue_id", issueId),
-        supabase.from("newsletter_channel_actions").delete().eq("issue_id", issueId),
-        supabase.from("newsletter_faq_items").delete().eq("issue_id", issueId),
-        supabase.from("newsletter_caution_items").delete().eq("issue_id", issueId),
-        supabase.from("newsletter_collection_stats").delete().eq("issue_id", issueId),
-      ]);
-    }
+    // Always clean existing child data to prevent duplicates
+    await Promise.all([
+      supabase.from("newsletter_country_signals").delete().eq("issue_id", issueId),
+      supabase.from("newsletter_matrix_rows").delete().eq("issue_id", issueId),
+      supabase.from("newsletter_channel_actions").delete().eq("issue_id", issueId),
+      supabase.from("newsletter_faq_items").delete().eq("issue_id", issueId),
+      supabase.from("newsletter_caution_items").delete().eq("issue_id", issueId),
+      supabase.from("newsletter_collection_stats").delete().eq("issue_id", issueId),
+    ]);
 
     // Country signals
     const signalRows = Object.entries(byCountry)
@@ -314,7 +312,8 @@ Deno.serve(async (req) => {
         };
       });
     if (signalRows.length > 0) {
-      await supabase.from("newsletter_country_signals").insert(signalRows);
+      const { error: sigErr } = await supabase.from("newsletter_country_signals").insert(signalRows);
+      if (sigErr) console.error("Signal insert error:", sigErr.message);
     }
 
     // Matrix rows
