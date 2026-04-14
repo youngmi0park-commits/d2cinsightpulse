@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import { CategoryPillBar } from "@/components/CategoryPillBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -122,12 +122,9 @@ function ProductTag({ name }: { name: string }) {
 
 export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const [region, setRegion] = useState(country === "all" ? "all" : country);
+  const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
 
-  useEffect(() => {
-    setRegion(country === "all" ? "all" : country);
-  }, [country]);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<"category" | "product">("category");
@@ -159,6 +156,10 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
 
   const ins = result?.insights;
 
+  const regionLabel = region === "all" ? t("All", "전체") : `${
+    { US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺", IN: "🇮🇳", TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭" }[region] || ""
+  } ${region}`;
+
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
@@ -168,50 +169,24 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
             <CardTitle className="text-lg font-heading">
               {t("Strategic Deep-Dive: Main User · JTBD", "전략 심층분석: Main User · JTBD")}
             </CardTitle>
+            <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5 flex-wrap">
-              {[
-                { value: "all", label: t("All", "전체") },
-                { value: "US", label: "🇺🇸 US" },
-                { value: "UK", label: "🇬🇧 UK" },
-                { value: "DE", label: "🇩🇪 DE" },
-                { value: "AU", label: "🇦🇺 AU" },
-                { value: "IN", label: "🇮🇳 IN" },
-                { value: "TW", label: "🇹🇼 TW" },
-                { value: "JP", label: "🇯🇵 JP" },
-                { value: "TH", label: "🇹🇭 TH" },
-              ].map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => setRegion(r.value)}
-                  className={`px-2 py-1 rounded-full text-[10px] font-medium transition-colors ${
-                    region === r.value
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => runAnalysis()}
-              disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {isLoading ? (
-                <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("Analyzing...", "분석 중...")}</>
-              ) : (
-                <><Sparkles className="h-3.5 w-3.5" />{t("Run Analysis", "인사이트 분석")}</>
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => runAnalysis()}
+            disabled={isLoading}
+            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {isLoading ? (
+              <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("Analyzing...", "분석 중...")}</>
+            ) : (
+              <><Sparkles className="h-3.5 w-3.5" />{t("Run Analysis", "인사이트 분석")}</>
+            )}
+          </button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered deep analysis based on all collected reviews across strategic frameworks",
-            "수집된 전체 리뷰 기반 AI 전략 프레임워크 분석"
+            "AI-powered deep analysis — uses country filter above",
+            "AI 전략 프레임워크 분석 · 상단 국가 필터와 연동"
           )}
         </p>
       </CardHeader>
