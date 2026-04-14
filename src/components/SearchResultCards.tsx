@@ -276,6 +276,14 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                 </p>
               </div>
             ) : null}
+            {/* Tagline — 솔직한 리뷰로 확인하세요 */}
+            {item.marketing.tagline && (
+              <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center gap-2">
+                <span className="text-primary text-base">📊</span>
+                <p className="text-xs font-medium text-foreground/90">{item.marketing.tagline}</p>
+              </div>
+            )}
+
             <div className="rounded-2xl bg-gradient-to-br from-secondary/30 via-muted/40 to-secondary/20 border border-border/60 p-5 space-y-4 mt-2">
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-1 h-5 rounded-full bg-muted-foreground/50" />
