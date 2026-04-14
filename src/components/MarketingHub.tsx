@@ -78,13 +78,13 @@ const SEO_GEO_TYPES = [
 
 /* ── Image asset specs ── */
 const IMAGE_ASSETS = [
-  { size: "1920×600", platform: "LG.com Hero Banner", prompt: "크리에이티브 방향 텍스트 (배경·카피 오버레이·컬러)", tool: "LG Crew" },
+  { size: "1920×600", platform: "LG.com Hero Banner", prompt: "크리에이티브 방향 텍스트 (배경·카피 오버레이·컬러)", tool: "LG Twin Crew" },
   { size: "1080×1080", platform: "Meta Feed", prompt: "Midjourney /imagine 문법", tool: "Midjourney · Firefly" },
   { size: "1080×1920", platform: "Meta Stories/Reels", prompt: "Midjourney /imagine 문법", tool: "Midjourney · Firefly" },
   { size: "1280×720", platform: "YouTube Thumbnail", prompt: "Midjourney /imagine 문법", tool: "Midjourney · Firefly" },
-  { size: "300×250", platform: "Google Display/GDN", prompt: "Midjourney /imagine 문법", tool: "LG Crew" },
-  { size: "728×90", platform: "Leaderboard Banner", prompt: "크리에이티브 방향 텍스트", tool: "LG Crew" },
-  { size: "320×50", platform: "Mobile Banner", prompt: "크리에이티브 방향 텍스트", tool: "LG Crew" },
+  { size: "300×250", platform: "Google Display/GDN", prompt: "Midjourney /imagine 문법", tool: "LG Twin Crew" },
+  { size: "728×90", platform: "Leaderboard Banner", prompt: "크리에이티브 방향 텍스트", tool: "LG Twin Crew" },
+  { size: "320×50", platform: "Mobile Banner", prompt: "크리에이티브 방향 텍스트", tool: "LG Twin Crew" },
 ];
 
 /* ── AI tool prompts ── */
@@ -713,7 +713,7 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
-        {/* ═══ LG Crew Anita + 미디어 에셋 ═══ */}
+        {/* ═══ LG Twin Crew Anita + 미디어 에셋 ═══ */}
         <ContentCreationActions productName={productName} displayName={displayName} />
       </div>
     </div>
