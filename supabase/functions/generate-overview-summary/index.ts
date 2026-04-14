@@ -26,6 +26,16 @@ type ReviewRow = {
 const REVIEW_SELECT =
   "id,title,content,sentiment,sentiment_score,rating,source,collected_at,product_id";
 
+const MIN_REQUIRED_REVIEWS = 30;
+const TARGET_SAMPLE_SIZE = 180;
+const REVIEW_PAGE_SIZE = 200;
+
+const REVIEW_WINDOWS = [
+  { label: "이번 주 수집 리뷰", days: 7, maxScanRows: 800 },
+  { label: "최근 30일 수집 리뷰", days: 30, maxScanRows: 1200 },
+  { label: "전체 누적 (수집일 기준)", days: null, maxScanRows: 1600 },
+] as const;
+
 function matchesChannel(source: string | null | undefined, channel: string) {
   const normalized = String(source ?? "");
   if (channel === "lgcom") return normalized.startsWith("lge_com");
@@ -33,52 +43,88 @@ function matchesChannel(source: string | null | undefined, channel: string) {
   return !normalized.startsWith("lge_com") && !normalized.startsWith("reddit");
 }
 
-function applyChannelFilter(query: any, channel: string) {
-  if (channel === "lgcom") return query.ilike("source", "lge_com%");
-  if (channel === "reddit") return query.ilike("source", "reddit%");
-  return query;
+function getSinceIso(days: number | null) {
+  if (days === null) return null;
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  return since.toISOString();
+}
+
+function sanitizeFetchError(message: string) {
+  if (message.includes("<!DOCTYPE html>")) {
+    return "review query timed out upstream";
+  }
+  return message;
+}
+
+async function fetchReviewPage(
+  sb: any,
+  sinceIso: string | null,
+  offset: number,
+  limit: number,
+) {
+  let query = sb
+    .from("reviews")
+    .select(REVIEW_SELECT)
+    .order("collected_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (sinceIso) {
+    query = query.gte("collected_at", sinceIso);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(
+      `Failed to fetch reviews: ${sanitizeFetchError(error.message)}`,
+    );
+  }
+
+  return (data ?? []) as ReviewRow[];
+}
+
+async function fetchWindowSample(
+  sb: any,
+  channel: string,
+  window: (typeof REVIEW_WINDOWS)[number],
+) {
+  const reviews: ReviewRow[] = [];
+  const sinceIso = getSinceIso(window.days);
+
+  for (
+    let offset = 0;
+    offset < window.maxScanRows && reviews.length < TARGET_SAMPLE_SIZE;
+    offset += REVIEW_PAGE_SIZE
+  ) {
+    const page = await fetchReviewPage(sb, sinceIso, offset, REVIEW_PAGE_SIZE);
+    const matched = page.filter((row) => matchesChannel(row.source, channel));
+
+    if (matched.length > 0) {
+      reviews.push(
+        ...matched.slice(0, TARGET_SAMPLE_SIZE - reviews.length),
+      );
+    }
+
+    console.log(
+      `[generate-overview-summary] ${channel} ${window.label}: pageOffset=${offset}, fetched=${page.length}, matched=${matched.length}, accumulated=${reviews.length}`,
+    );
+
+    if (page.length < REVIEW_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return reviews;
 }
 
 async function fetchSampledReviews(sb: any, channel: string) {
-  const windows = [
-    { label: "이번 주 수집 리뷰", days: 7, limit: 300 },
-    { label: "최근 30일 수집 리뷰", days: 30, limit: 900 },
-    { label: "전체 누적 (수집일 기준)", days: null, limit: 1500 },
-  ];
+  for (const window of REVIEW_WINDOWS) {
+    const filtered = await fetchWindowSample(sb, channel, window);
 
-  for (const window of windows) {
-    let query = sb
-      .from("reviews")
-      .select(REVIEW_SELECT)
-      .order("collected_at", { ascending: false })
-      .limit(window.limit);
-
-    if (window.days !== null) {
-      const since = new Date();
-      since.setDate(since.getDate() - window.days);
-      query = query.gte("collected_at", since.toISOString());
-    }
-
-    query = applyChannelFilter(query, channel);
-
-    const { data, error } = await query;
-    if (error) {
-      throw new Error(`Failed to fetch reviews: ${error.message}`);
-    }
-
-    const rows = (data ?? []) as ReviewRow[];
-    const filtered = channel === "other"
-      ? rows.filter((row) => matchesChannel(row.source, channel))
-      : rows;
-
-    console.log(
-      `[generate-overview-summary] ${channel} ${window.label}: fetched=${rows.length}, filtered=${filtered.length}`,
-    );
-
-    if (filtered.length >= 30 || window.days === null) {
+    if (filtered.length >= MIN_REQUIRED_REVIEWS || window.days === null) {
       return {
         periodLabel: window.label,
-        reviews: filtered.slice(0, 300),
+        reviews: filtered,
       };
     }
   }
