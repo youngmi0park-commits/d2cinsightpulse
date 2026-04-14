@@ -487,16 +487,29 @@ export function MarketingHub({
                 </div>
               </div>
 
-              {/* 소스 리뷰 원문 */}
+              {/* 소스 리뷰 (국문 번역) */}
               <div className="rounded-lg bg-card border border-border p-3">
-                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">📝 카피 소스 (실사용자 리뷰)</p>
+                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">
+                  📝 카피 소스 (실사용자 리뷰)
+                  {isTranslating && <span className="ml-1 text-primary animate-pulse">번역 중…</span>}
+                </p>
                 {funnelInsight.sourceQuotes.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {funnelInsight.sourceQuotes.map((q, i) => (
-                      <p key={i} className="text-[10px] text-foreground/80 italic border-l-2 border-primary/30 pl-2 line-clamp-2">
-                        "{q}"
-                      </p>
-                    ))}
+                  <div className="space-y-2">
+                    {funnelInsight.sourceQuotes.map((q, i) => {
+                      const ko = translatedQuotes[q];
+                      return (
+                        <div key={i} className="border-l-2 border-primary/30 pl-2 space-y-0.5">
+                          <p className="text-[10px] font-medium text-foreground/90">
+                            🇰🇷 {ko || q}
+                          </p>
+                          {ko && ko !== q && (
+                            <p className="text-[9px] text-muted-foreground italic line-clamp-1">
+                              원문: "{q}"
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-[10px] text-muted-foreground">LG.com 리뷰는 개인정보 보호 정책에 따라 원문 비공개 — 감성 키워드 기반 활용</p>
