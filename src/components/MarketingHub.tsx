@@ -367,6 +367,40 @@ export function MarketingHub({
     return buildFunnelInsight(selectedFunnel, sentiment, reviews, pName);
   }, [selectedFunnel, sentiment, reviews, pName]);
 
+  /* Auto-translate funnel source quotes to Korean */
+  const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  useEffect(() => {
+    if (!funnelInsight.sourceQuotes.length) return;
+    const toTranslate = funnelInsight.sourceQuotes.filter(q => !translatedQuotes[q]);
+    if (!toTranslate.length) return;
+
+    let cancelled = false;
+    setIsTranslating(true);
+
+    Promise.all(
+      toTranslate.map(async (q) => {
+        try {
+          const { data } = await supabase.functions.invoke("translate-review", { body: { text: q } });
+          return { original: q, translated: data?.translated || q };
+        } catch {
+          return { original: q, translated: q };
+        }
+      })
+    ).then((results) => {
+      if (cancelled) return;
+      setTranslatedQuotes((prev) => {
+        const next = { ...prev };
+        for (const r of results) next[r.original] = r.translated;
+        return next;
+      });
+      setIsTranslating(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [funnelInsight.sourceQuotes]);
+
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
