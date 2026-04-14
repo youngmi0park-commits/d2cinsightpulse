@@ -258,6 +258,29 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
         {/* Report content */}
         {report && !isLoading && (
           <div className="space-y-4">
+            {/* View mode toggle */}
+            <div className="flex items-center gap-2">
+              <div className="flex gap-0.5 bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("overview")}
+                  className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                    viewMode === "overview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <BarChart3 className="h-3 w-3" />
+                  {t("Overall / Weekly", "전체 / 주간별")}
+                </button>
+                <button
+                  onClick={() => setViewMode("product")}
+                  className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                    viewMode === "product" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Target className="h-3 w-3" />
+                  {t("Per-Product Detail", "제품별 상세")}
+                </button>
+              </div>
+            </div>
             {/* Analyzed products bar */}
             {meta?.analyzed_products && (
               <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border">
