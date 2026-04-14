@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const analyticsItems = [
-  { title: "Overview", url: "/", icon: LayoutDashboard },
   { title: "LG.com Insights", url: "/lgcom", icon: Store },
   { title: "Reddit Intelligence", url: "/reddit", icon: MessageSquare },
   { title: "Other Communities", url: "/communities", icon: Globe },
