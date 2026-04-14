@@ -675,27 +675,13 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
             <div className="space-y-4">
               <h4 className="text-sm font-bold pb-2 border-b border-border">📊 리뷰 인사이트</h4>
 
-              {/* LG.com-only: show processed summary instead of raw quote-style evidence */}
-              {allPrivacyRestricted ? (
-                <LgcomInsightPanel
-                  sentiment={item.sentiment}
-                  productName={item.product.name}
-                  reviews={item.product.reviews}
-                />
-              ) : (
-                <>
-                  {/* 주요 긍/부정 키워드 & 주제별 요약 */}
-                  <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={false} />
-                </>
-              )}
-
-              {/* 2) 감성 분석 결과 그래프 */}
-              <SentimentChart sentiment={item.sentiment} />
-
-              {/* 3) 핵심 근거 & 시그널 */}
-              {!allPrivacyRestricted && (
-                <EvidenceSignalsSection sentiment={item.sentiment} reviews={item.product.reviews} />
-              )}
+              {/* Unified insight panel for all products */}
+              <UnifiedInsightPanel
+                sentiment={item.sentiment}
+                productName={item.product.name}
+                reviews={item.product.reviews}
+                privacyMode={allPrivacyRestricted}
+              />
 
 
               {item.product.reviews.length > 0 && (
