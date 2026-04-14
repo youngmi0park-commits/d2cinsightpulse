@@ -361,6 +361,11 @@ export function MarketingHub({
     }));
   }, [funnelChannels, pName, sentiment]);
 
+  /* Funnel VOC insight */
+  const funnelInsight = useMemo(() => {
+    return buildFunnelInsight(selectedFunnel, sentiment, reviews, pName);
+  }, [selectedFunnel, sentiment, reviews, pName]);
+
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
