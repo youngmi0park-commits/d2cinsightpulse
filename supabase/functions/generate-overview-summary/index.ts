@@ -39,10 +39,7 @@ function applyChannelFilter(query: any, channel: string) {
   return query;
 }
 
-async function fetchSampledReviews(
-  sb: ReturnType<typeof createClient>,
-  channel: string,
-) {
+async function fetchSampledReviews(sb: any, channel: string) {
   const windows = [
     { label: "이번 주 수집 리뷰", days: 7, limit: 300 },
     { label: "최근 30일 수집 리뷰", days: 30, limit: 900 },
