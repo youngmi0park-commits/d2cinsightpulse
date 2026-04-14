@@ -638,6 +638,7 @@ interface CollectionRow {
   flag: string;
   lgeCode: string;
   channel: string;
+  dataSource: string;
   method: string;
   schedule: string;
   status: "active" | "planned" | "partial";
