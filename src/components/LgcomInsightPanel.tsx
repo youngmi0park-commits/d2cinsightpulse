@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { getPrivacySafeThemeLabels } from "@/lib/reviewUtils";
 import type { SentimentResult, SentimentSignal } from "@/lib/sentiment";
 
@@ -71,7 +70,7 @@ export function LgcomInsightPanel({ sentiment, productName, reviews }: Props) {
 
   const { pros, cons } = getProConsTags(reviews);
   const topicBreakdown = groupSignalsByCategory(sentiment.signals);
-  const hasProsCons = pros.length > 0 || cons.length > 0;
+  
 
   return (
     <div className="gradient-card rounded-xl border border-border p-4 space-y-4">
