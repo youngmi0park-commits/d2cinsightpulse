@@ -67,7 +67,7 @@ export function SentimentChart({ sentiment }: SentimentChartProps) {
               <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                 <div className={`h-full ${item.color} rounded-full transition-all duration-700`} style={{ width: `${item.pct}%` }} />
               </div>
-              <span className="text-sm font-mono font-medium w-16 text-right">{item.value}{t(" ", "건 ")}({item.pct}%)</span>
+              <span className="text-sm font-sans font-medium w-16 text-right">{item.value}{t(" ", "건 ")}({item.pct}%)</span>
             </div>
           ))}
           <div className="pt-2 border-t border-border">
