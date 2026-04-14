@@ -12,10 +12,6 @@ import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
 import { UnifiedInsightPanel } from "@/components/UnifiedInsightPanel";
 
-/** Detect Japanese source */
-function isJapaneseSource(source?: string): boolean {
-  return !!source && (source === "lge_com_jp" || source.endsWith("_jp"));
-}
 
 export interface AnalyzedProduct {
   product: ProductData;
