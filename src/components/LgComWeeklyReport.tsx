@@ -346,6 +346,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
               </div>
             )}
 
+            {viewMode === "overview" && (<>
             {/* ── All sections stacked (no tabs) ── */}
 
             {/* Top 5 Themes + Negative Priority */}
@@ -427,9 +428,10 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
                 </SectionCard>
               </>
             )}
+            </>)}
 
-            {/* Per-Product Insights */}
-            <SectionCard icon={Target} title={t("Per-Product Insights", "제품별 인사이트")} color="border-border bg-card">
+            {/* Per-Product Insights — shown in both modes but expanded in product mode */}
+            <SectionCard icon={Target} title={t("Per-Product Insights", "제품별 인사이트")} color={viewMode === "product" ? "border-primary/30 bg-primary/5" : "border-border bg-card"}>
               {(report.product_insights || []).map((pi, i) => (
                 <div key={i} className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
