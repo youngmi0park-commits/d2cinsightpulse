@@ -33,7 +33,7 @@ function matchesChannel(source: string | null | undefined, channel: string) {
   return !normalized.startsWith("lge_com") && !normalized.startsWith("reddit");
 }
 
-function applyChannelFilter(query: ReturnType<ReturnType<typeof createClient>["from"]>["select"], channel: string) {
+function applyChannelFilter(query: any, channel: string) {
   if (channel === "lgcom") return query.ilike("source", "lge_com%");
   if (channel === "reddit") return query.ilike("source", "reddit%");
   return query;
