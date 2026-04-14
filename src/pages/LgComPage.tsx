@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Store, Globe, Search, Wrench } from "lucide-react";
+import { Store, Globe, Search, Wrench, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
@@ -8,7 +8,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { SearchBar } from "@/components/SearchBar";
 import { CategorySearchResults } from "@/components/CategorySearchResults";
 import { useLang } from "@/contexts/LanguageContext";
-
 import { analyzeSentiment } from "@/lib/sentiment";
 import { generateMarketingMessage, generateGeoMarketingMessages } from "@/lib/formatMessage";
 import { toReviewFormat } from "@/hooks/useProductData";
@@ -38,8 +37,14 @@ const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
   TH: ["lge_com_th"],
 };
 
-/* Compact inline summary — total + country split */
-function CompactDataBar() {
+/* ── Country Stats Cards ── */
+function CountryStatsGrid({
+  selectedCountry,
+  onSelect,
+}: {
+  selectedCountry: string;
+  onSelect: (v: string) => void;
+}) {
   const { t } = useLang();
   const { data, isLoading } = useQuery({
     queryKey: ["lgcom-country-counts"],
@@ -52,27 +57,62 @@ function CompactDataBar() {
   });
 
   const total = data?.reduce((s, c) => s + Number(c.count), 0) || 0;
-  const FLAG: Record<string, string> = {
-    US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺",
-    IN: "🇮🇳", TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭",
-  };
+  const countryMeta: Record<string, { flag: string; label: string; labelEn: string }> = {};
+  for (const c of BV_COUNTRIES) {
+    if (c.value !== "all") countryMeta[c.value] = { flag: c.flag, label: c.label, labelEn: c.labelEn };
+  }
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div key={i} className="h-20 rounded-xl bg-secondary/50 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  const countMap = new Map(data?.map((c) => [c.country, Number(c.count)]) || []);
 
   return (
-    <div className="flex items-center gap-3 text-xs text-muted-foreground px-1 flex-wrap">
-      <div className="flex items-center gap-1.5">
-        <Store className="h-3.5 w-3.5 text-primary" />
-        <span className="font-medium text-foreground">{total.toLocaleString()}</span>
-        <span>{t("reviews collected", "건 수집")}</span>
-      </div>
-      <span className="text-border">|</span>
-      {data?.map((c) => (
-        <span key={c.country} className="flex items-center gap-1">
-          {FLAG[c.country] || "🌐"} {c.country}{" "}
-          <span className="font-medium text-foreground">{Number(c.count).toLocaleString()}</span>
-        </span>
-      ))}
+    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+      {/* All card */}
+      <button
+        onClick={() => onSelect("all")}
+        className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 transition-all hover:shadow-md ${
+          selectedCountry === "all"
+            ? "border-primary bg-primary/5 shadow-sm"
+            : "border-border bg-card hover:border-primary/40"
+        }`}
+      >
+        <span className="text-xl">🌐</span>
+        <span className="text-[11px] font-semibold text-foreground">{t("All", "전체")}</span>
+        <span className="text-sm font-bold font-sans text-primary">{total.toLocaleString()}</span>
+        <span className="text-[9px] text-muted-foreground">{t("reviews", "건")}</span>
+      </button>
+
+      {/* Per-country cards */}
+      {BV_COUNTRIES.filter((c) => c.value !== "all").map((c) => {
+        const cnt = countMap.get(c.value) || 0;
+        const isActive = selectedCountry === c.value;
+        const pct = total > 0 ? ((cnt / total) * 100).toFixed(1) : "0";
+        return (
+          <button
+            key={c.value}
+            onClick={() => onSelect(c.value)}
+            className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 transition-all hover:shadow-md ${
+              isActive
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-border bg-card hover:border-primary/40"
+            }`}
+          >
+            <span className="text-xl">{c.flag}</span>
+            <span className="text-[11px] font-semibold text-foreground">{t(c.labelEn, c.label)}</span>
+            <span className="text-sm font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
+            <span className="text-[9px] text-muted-foreground">{pct}%</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -80,12 +120,15 @@ function CompactDataBar() {
 const LgComPage = () => {
   const { t, lang } = useLang();
   const [selectedCountry, setSelectedCountry] = useState("all");
-
-  // Product search state
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<AnalyzedProduct[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  const handleCountrySelect = (country: string) => {
+    setSelectedCountry(country);
+    if (searchQuery) setTimeout(() => handleSearch(searchQuery), 0);
+  };
 
   const handleSearch = async (query: string) => {
     setIsSearching(true);
@@ -107,7 +150,6 @@ const LgComPage = () => {
         return;
       }
 
-      // LG.com source filter
       const sourcesFilter = selectedCountry === "all"
         ? Object.values(COUNTRY_SOURCE_MAP).flat()
         : COUNTRY_SOURCE_MAP[selectedCountry] || [];
@@ -127,7 +169,7 @@ const LgComPage = () => {
       const analyzed: AnalyzedProduct[] = [];
       for (const [, products] of productGroups) {
         const allProductIds = products.map((p) => p.id);
-        let reviewQuery = supabase
+        const reviewQuery = supabase
           .from("reviews")
           .select("*")
           .in("product_id", allProductIds)
@@ -182,68 +224,63 @@ const LgComPage = () => {
   };
 
   const hasResults = results.length > 0;
+  const countryLabel = selectedCountry === "all"
+    ? t("All Countries", "전체 국가")
+    : BV_COUNTRIES.find((c) => c.value === selectedCountry)?.flag + " " +
+      t(
+        BV_COUNTRIES.find((c) => c.value === selectedCountry)?.labelEn || "",
+        BV_COUNTRIES.find((c) => c.value === selectedCountry)?.label || ""
+      );
 
   return (
-    <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
+    <div className="p-4 sm:p-6 space-y-4 max-w-[1400px] mx-auto">
+      {/* Header */}
       <PageHeader
         icon={Store}
-        title="🏬 LG.com Insights"
-        description="LG.com 리뷰에서 어떤 제품이 긍정/부정 언급되고 있는지, 핵심 키워드는 무엇인지 확인하고 마케팅 콘텐츠로 활용하세요."
+        title="🏬 LG.com Review Studio"
+        description={t(
+          "Analyze customer reviews from 8 LG.com regions. Select a country, search products, and generate marketing assets.",
+          "LG.com 8개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
+        )}
       />
 
-      {/* LG.com 전용 국가 필터 (BV 8개국) */}
-      <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Globe className="h-3.5 w-3.5 text-primary" />
-          <span className="text-[11px] font-semibold text-foreground">
-            {t("LG.com Country Filter", "LG.com 국가별 보기")}
-          </span>
-          <span className="text-[10px] text-muted-foreground ml-1">
-            {t("(Bazaarvoice 8 regions)", "(바자보이스 8개국)")}
+      {/* 1️⃣ Country Stats — always visible at top */}
+      <section className="space-y-2">
+        <div className="flex items-center gap-2 px-1">
+          <Globe className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">
+            {t("Collection by Country", "국가별 수집 현황")}
+          </h2>
+          <span className="text-[10px] text-muted-foreground">
+            {t("Click to filter", "클릭하여 필터링")}
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-1">
-          {BV_COUNTRIES.map((c) => (
-            <button
-              key={c.value}
-              onClick={() => {
-                setSelectedCountry(c.value);
-                if (searchQuery) setTimeout(() => handleSearch(searchQuery), 0);
-              }}
-              className={`px-2.5 py-1.5 text-[11px] font-medium rounded-lg transition-all flex items-center gap-1 ${
-                selectedCountry === c.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-              }`}
-            >
-              {c.flag} {t(c.labelEn, c.label)}
-            </button>
-          ))}
-        </div>
-      </div>
+        <CountryStatsGrid
+          selectedCountry={selectedCountry}
+          onSelect={handleCountrySelect}
+        />
+      </section>
 
-      <CompactDataBar />
-
-      {/* Inline Product Search */}
-      <div className="bg-card/60 border border-border rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
+      {/* 2️⃣ Product Search — with country context */}
+      <section className="bg-card/60 border border-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
           <Search className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">
-            {t("Product Search — LG.com Reviews", "제품 검색 — LG.com 리뷰 분석")}
+            {t("Product Search", "제품 검색")}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            — {countryLabel} {t("LG.com Reviews", "LG.com 리뷰")}
           </span>
           <a
             href="/toolkit"
             className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20 transition-colors"
           >
             <Wrench className="h-3 w-3" />
-            {t("Go to Asset Studio", "에셋 스튜디오로 이동")}
+            {t("Asset Studio", "에셋 스튜디오")}
           </a>
         </div>
-        <SearchBar
-          onSearch={handleSearch}
-          isLoading={isSearching}
-        />
-      </div>
+        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+      </section>
 
       {/* Search Error */}
       {searchError && (
@@ -264,13 +301,10 @@ const LgComPage = () => {
         </div>
       )}
 
-      {/* Weekly Reports (show when no search results) */}
+      {/* Weekly Reports (when no search) */}
       {!hasResults && !searchError && (
         <>
-          {/* 1. AI 주간 인사이트 리포트 */}
           <LgComWeeklyReport country={selectedCountry} />
-
-          {/* 2. 전략 심층분석: 사용자군/JTBD */}
           <WeeklyInsightsPanel country={selectedCountry} />
         </>
       )}
