@@ -87,6 +87,7 @@ function SentimentMiniBar({ sentiment }: { sentiment: SentimentResult }) {
   );
 }
 
+export function SearchResultCards({ results }: SearchResultCardsProps) {
   const [expandedProduct, setExpandedProduct] = useState<string | null>(null);
   const { t } = useLang();
 
