@@ -742,7 +742,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
         ? "bg-yellow-500/15 text-yellow-700 border-yellow-500/20"
         : "bg-muted text-muted-foreground border-border";
     const label = s === "active" ? "✅ 수집 중" : s === "partial" ? "⚠️ 일부" : "📋 예정";
-    return <span className={`inline-flex items-center text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${cls}`}>{label}</span>;
+    return <span className={`inline-flex items-center whitespace-nowrap text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${cls}`}>{label}</span>;
   };
 
   return (
