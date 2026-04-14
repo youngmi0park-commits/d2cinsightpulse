@@ -4,7 +4,7 @@ import { ContentCreationActions } from "@/components/ContentCreationActions";
 import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
-  TrendingUp, Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
+  Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
   ExternalLink, Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -537,12 +537,6 @@ export function MarketingHub({
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-        {/* Tagline */}
-        <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary shrink-0" />
-          <p className="text-xs font-medium text-foreground/90">{marketing.tagline}</p>
-        </div>
 
         {/* ═══ LG Crew Anita + 미디어 에셋 ═══ */}
         <ContentCreationActions productName={productName} displayName={displayName} />
