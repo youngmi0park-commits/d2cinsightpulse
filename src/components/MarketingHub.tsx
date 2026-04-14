@@ -5,7 +5,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
   TrendingUp, Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
-  ExternalLink,
+  ExternalLink, Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
