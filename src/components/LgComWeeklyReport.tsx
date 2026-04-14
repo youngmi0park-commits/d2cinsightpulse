@@ -108,6 +108,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
   const [meta, setMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<"category" | "product">("category");
+  const [viewMode, setViewMode] = useState<"overview" | "product">("overview");
 
   const runReport = async (cat?: string, productId?: string) => {
     const target = cat ?? category;
@@ -257,6 +258,29 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
         {/* Report content */}
         {report && !isLoading && (
           <div className="space-y-4">
+            {/* View mode toggle */}
+            <div className="flex items-center gap-2">
+              <div className="flex gap-0.5 bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("overview")}
+                  className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                    viewMode === "overview" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <BarChart3 className="h-3 w-3" />
+                  {t("Overall / Weekly", "전체 / 주간별")}
+                </button>
+                <button
+                  onClick={() => setViewMode("product")}
+                  className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-colors flex items-center gap-1 ${
+                    viewMode === "product" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Target className="h-3 w-3" />
+                  {t("Per-Product Detail", "제품별 상세")}
+                </button>
+              </div>
+            </div>
             {/* Analyzed products bar */}
             {meta?.analyzed_products && (
               <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border">
@@ -322,6 +346,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
               </div>
             )}
 
+            {viewMode === "overview" && (<>
             {/* ── All sections stacked (no tabs) ── */}
 
             {/* Top 5 Themes + Negative Priority */}
@@ -403,9 +428,10 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
                 </SectionCard>
               </>
             )}
+            </>)}
 
-            {/* Per-Product Insights */}
-            <SectionCard icon={Target} title={t("Per-Product Insights", "제품별 인사이트")} color="border-border bg-card">
+            {/* Per-Product Insights — shown in both modes but expanded in product mode */}
+            <SectionCard icon={Target} title={t("Per-Product Insights", "제품별 인사이트")} color={viewMode === "product" ? "border-primary/30 bg-primary/5" : "border-border bg-card"}>
               {(report.product_insights || []).map((pi, i) => (
                 <div key={i} className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
