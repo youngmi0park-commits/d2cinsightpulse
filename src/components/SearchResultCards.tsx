@@ -10,12 +10,10 @@ import { maskCompetitorNames } from "@/lib/sentiment";
 import type { MarketingOutput } from "@/lib/formatMessage";
 import type { GeoMessage } from "@/lib/formatMessage";
 import type { ProductData } from "@/data/dummyData";
-import { SentimentChart } from "./SentimentChart";
-import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
-import { LgcomInsightPanel } from "@/components/LgcomInsightPanel";
+import { UnifiedInsightPanel } from "@/components/UnifiedInsightPanel";
 
 /** Detect Japanese source */
 function isJapaneseSource(source?: string): boolean {
