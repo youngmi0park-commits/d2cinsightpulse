@@ -303,6 +303,18 @@ export function MarketingHub({
           </h2>
           <Badge variant="secondary" className="text-[10px] ml-2">{totalReviews}건 리뷰 기반</Badge>
           <Badge variant="outline" className="text-[9px] ml-1 border-primary/30 text-primary">36+ 에셋</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto h-7 text-[10px] gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => {
+              exportMarketingAssets(productName, pName, sentiment);
+              toast.success("마케팅 에셋 XLSX 다운로드 완료!");
+            }}
+          >
+            <Download className="h-3.5 w-3.5" />
+            전체 내보내기 (XLSX)
+          </Button>
         </div>
         <p className="text-xs text-muted-foreground">
           {pName}의 실제 리뷰 기반 — 15개 광고 포맷 + FAQ 4종 + SEO/GEO 2종 + 이미지 7사이즈 + AI툴 8종
