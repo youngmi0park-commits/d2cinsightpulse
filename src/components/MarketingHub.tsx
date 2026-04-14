@@ -4,7 +4,7 @@ import { ContentCreationActions } from "@/components/ContentCreationActions";
 import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
-  TrendingUp, Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
+  Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
   ExternalLink, Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
