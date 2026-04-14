@@ -57,8 +57,16 @@ function sanitizeFetchError(message: string) {
   return message;
 }
 
+function applyChannelFilter(query: any, channel: string) {
+  if (channel === "lgcom") return query.like("source", "lge_com%");
+  if (channel === "reddit") return query.like("source", "reddit%");
+  // "other": exclude lgcom and reddit — fetch all, filter in-memory
+  return query;
+}
+
 async function fetchReviewPage(
   sb: any,
+  channel: string,
   sinceIso: string | null,
   offset: number,
   limit: number,
@@ -72,6 +80,8 @@ async function fetchReviewPage(
   if (sinceIso) {
     query = query.gte("collected_at", sinceIso);
   }
+
+  query = applyChannelFilter(query, channel);
 
   const { data, error } = await query;
   if (error) {
@@ -96,8 +106,11 @@ async function fetchWindowSample(
     offset < window.maxScanRows && reviews.length < TARGET_SAMPLE_SIZE;
     offset += REVIEW_PAGE_SIZE
   ) {
-    const page = await fetchReviewPage(sb, sinceIso, offset, REVIEW_PAGE_SIZE);
-    const matched = page.filter((row) => matchesChannel(row.source, channel));
+    const page = await fetchReviewPage(sb, channel, sinceIso, offset, REVIEW_PAGE_SIZE);
+    // For "other" channel, we still need in-memory filtering
+    const matched = channel === "other"
+      ? page.filter((row) => matchesChannel(row.source, channel))
+      : page;
 
     if (matched.length > 0) {
       reviews.push(
