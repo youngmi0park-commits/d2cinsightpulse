@@ -721,9 +721,153 @@ const COLLECTION_DETAIL: CollectionRow[] = [
   { country: "Global", flag: "🌐", lgeCode: "Global", channel: "ComplaintsBoard", dataSource: "소비자 불만 게시글 · CS 이슈 (중동 포함)", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
 ];
 
+// Map channel names in the detail table → collection_logs source keys or BV locale
+const CHANNEL_SOURCE_MAP: Record<string, string> = {
+  "LG.com (Bazaarvoice)": "lge_reviews",
+  "LG.com (BV) US": "lge_reviews",
+  "LG.com (BV) UK": "bazaarvoice_uk",
+  "Reddit": "reddit_collector_v2",
+  "YouTube US": "youtube_comments",
+  "YouTube UK": "youtube_comments",
+  "YouTube Global": "youtube_comments",
+  "YouTube IN": "youtube_comments",
+  "YouTube AU": "youtube_comments",
+  "YouTube TH": "youtube_comments",
+  "YouTube JP": "youtube_comments",
+  "YouTube SG": "youtube_comments",
+  "YouTube MY": "youtube_comments",
+  "YouTube ID": "youtube_comments",
+  "YouTube HK": "youtube_comments",
+  "Amazon US": "firecrawl-all",
+  "Amazon UK": "firecrawl-all",
+  "Amazon DE": "firecrawl-all",
+  "Amazon JP": "firecrawl-all",
+  "Amazon IN": "firecrawl-all",
+  "Shopee SG": "asian_reviews",
+  "Shopee TH": "asian_reviews",
+  "Shopee MY": "asian_reviews",
+  "Shopee PH": "asian_reviews",
+  "Shopee ID": "asian_reviews",
+  "Lazada SG": "asian_reviews",
+  "Lazada TH": "asian_reviews",
+  "Lazada MY": "asian_reviews",
+  "Lazada PH": "asian_reviews",
+  "Lazada ID": "asian_reviews",
+};
+
+// Hook: latest collection log per source + BV runs
+function useCollectionLogs() {
+  const [logs, setLogs] = useState<Record<string, { lastAt: string; count: number; status: string }>>({});
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const map: Record<string, { lastAt: string; count: number; status: string }> = {};
+      // collection_logs: latest per source
+      const { data: clData } = await supabase
+        .from("collection_logs")
+        .select("source, started_at, completed_at, items_collected, status")
+        .order("started_at", { ascending: false })
+        .limit(500);
+      if (clData) {
+        const seen = new Set<string>();
+        for (const row of clData) {
+          if (!seen.has(row.source)) {
+            seen.add(row.source);
+            map[row.source] = {
+              lastAt: row.completed_at || row.started_at,
+              count: row.items_collected || 0,
+              status: row.status,
+            };
+          }
+        }
+      }
+      // bv_collection_runs: latest per locale → map to source
+      const { data: bvData } = await supabase
+        .from("bv_collection_runs")
+        .select("locale, started_at, completed_at, reviews_inserted, status")
+        .order("started_at", { ascending: false })
+        .limit(100);
+      if (bvData) {
+        const localeToSource: Record<string, string> = {
+          en_US: "bv_us", en_GB: "bv_uk", en_IN: "bv_in", zh_TW: "bv_tw",
+          ja_JP: "bv_jp", th_TH: "bv_th", de_DE: "bv_de", en_AU: "bv_au",
+        };
+        const seen = new Set<string>();
+        for (const row of bvData) {
+          const key = localeToSource[row.locale] || `bv_${row.locale}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            map[key] = {
+              lastAt: row.completed_at || row.started_at,
+              count: row.reviews_inserted || 0,
+              status: row.status || "unknown",
+            };
+          }
+        }
+      }
+      setLogs(map);
+    };
+    fetchLogs();
+    const interval = setInterval(fetchLogs, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+  return logs;
+}
+
+// Resolve channel → log entry
+function resolveChannelLog(
+  channel: string,
+  country: string,
+  logs: Record<string, { lastAt: string; count: number; status: string }>
+): { lastAt: string; count: number; status: string } | null {
+  // BV channels first
+  if (channel.includes("BV") || channel.includes("Bazaarvoice")) {
+    const countryToBv: Record<string, string> = {
+      US: "bv_us", UK: "bv_uk", IN: "bv_in", TW: "bv_tw",
+      JP: "bv_jp", TH: "bv_th", DE: "bv_de", AU: "bv_au",
+    };
+    const key = countryToBv[country];
+    if (key && logs[key]) return logs[key];
+  }
+  // Direct map
+  const fullKey = `${channel} ${country}`;
+  if (CHANNEL_SOURCE_MAP[fullKey] && logs[CHANNEL_SOURCE_MAP[fullKey]]) {
+    return logs[CHANNEL_SOURCE_MAP[fullKey]];
+  }
+  if (CHANNEL_SOURCE_MAP[channel] && logs[CHANNEL_SOURCE_MAP[channel]]) {
+    return logs[CHANNEL_SOURCE_MAP[channel]];
+  }
+  // YouTube match
+  if (channel.startsWith("YouTube") && logs["youtube_comments"]) return logs["youtube_comments"];
+  // Reddit match
+  if (channel.startsWith("Reddit") && logs["reddit_collector_v2"]) return logs["reddit_collector_v2"];
+  // Firecrawl sources
+  if (logs["firecrawl-all"] && (
+    channel.includes("Amazon") || channel.includes("RTINGS") || channel.includes("CNET") ||
+    channel.includes("TechRadar") || channel.includes("PCMag") || channel.includes("Trustpilot") ||
+    channel.includes("Notebookcheck") || channel.includes("Consumer") || channel.includes("Best Buy") ||
+    channel.includes("Walmart") || channel.includes("Target") || channel.includes("Reviews.io") ||
+    channel.includes("ComplaintsBoard")
+  )) return logs["firecrawl-all"];
+  // Asian
+  if (logs["asian_reviews"] && (channel.includes("Shopee") || channel.includes("Lazada"))) return logs["asian_reviews"];
+  return null;
+}
+
+function formatTimeAgo(isoStr: string): string {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "방금";
+  if (mins < 60) return `${mins}분 전`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}시간 전`;
+  const days = Math.floor(hrs / 24);
+  return `${days}일 전`;
+}
+
 function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
+  const collectionLogs = useCollectionLogs();
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
@@ -800,12 +944,16 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Last Collected", "마지막 수집")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Count", "수집 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(grouped).map(([country, rows]) =>
-                  rows.map((row, ri) => (
+                  rows.map((row, ri) => {
+                    const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
+                    return (
                     <tr
                       key={`${country}-${ri}`}
                       className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${
@@ -823,9 +971,27 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       <td className="px-2 py-1.5 text-muted-foreground/80 italic">{row.dataSource}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
+                        {logEntry ? (
+                          <span className={`${logEntry.status === "running" ? "text-yellow-600" : "text-foreground"}`}>
+                            {logEntry.status === "running" ? "🔄 " : ""}
+                            {formatTimeAgo(logEntry.lastAt)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
+                        {logEntry && logEntry.count > 0 ? (
+                          <span className="font-bold text-foreground">{logEntry.count.toLocaleString()}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
                       <td className="px-2 py-1.5 text-center">{statusBadge(row.status)}</td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
