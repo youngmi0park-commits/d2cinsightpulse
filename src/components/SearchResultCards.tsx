@@ -15,7 +15,7 @@ import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
-import { LgcomReviewSummary } from "@/components/LgcomReviewSummary";
+import { LgcomInsightPanel } from "@/components/LgcomInsightPanel";
 
 /** Detect Japanese source */
 function isJapaneseSource(source?: string): boolean {
@@ -652,7 +652,6 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
         if (!item) return null;
         const cs = item.sentiment.compositeScore;
         const allPrivacyRestricted = isAllPrivacyRestricted(item.product.reviews);
-        const totalSentiment = Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1);
         return (
           <div className="animate-slide-up border border-primary/20 rounded-xl bg-card p-5 space-y-5">
             {/* Header */}
@@ -680,23 +679,17 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
 
               {/* LG.com-only: show processed summary instead of raw quote-style evidence */}
               {allPrivacyRestricted ? (
-                <LgcomReviewSummary
-                  positivePct={Math.round((item.sentiment.positive / totalSentiment) * 100)}
-                  negativePct={Math.round((item.sentiment.negative / totalSentiment) * 100)}
-                  neutralPct={Math.round((item.sentiment.neutral / totalSentiment) * 100)}
-                  positiveCount={item.sentiment.positive}
-                  negativeCount={item.sentiment.negative}
-                  total={item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral}
-                  score={item.sentiment.compositeScore}
-                  positiveKeywords={item.sentiment.keywords.positive}
-                  negativeKeywords={item.sentiment.keywords.negative}
-                  dominantIssueCategory={item.sentiment.dominantIssueCategory}
+                <LgcomInsightPanel
+                  sentiment={item.sentiment}
                   productName={item.product.name}
+                  reviews={item.product.reviews}
                 />
-              ) : null}
-
-              {/* 1) 주요 긍/부정 키워드 & 주제별 요약 (맨 위) */}
-              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={allPrivacyRestricted} />
+              ) : (
+                <>
+                  {/* 주요 긍/부정 키워드 & 주제별 요약 */}
+                  <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={false} />
+                </>
+              )}
 
               {/* 2) 감성 분석 결과 그래프 */}
               <SentimentChart sentiment={item.sentiment} />
