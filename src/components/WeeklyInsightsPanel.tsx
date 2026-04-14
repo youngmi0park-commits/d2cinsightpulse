@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import { CategoryPillBar } from "@/components/CategoryPillBar";
 import { supabase } from "@/integrations/supabase/client";
