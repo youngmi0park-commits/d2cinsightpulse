@@ -418,6 +418,59 @@ export function MarketingHub({
           </div>
         </div>
 
+        {/* ═══ 1-b. 퍼널별 VOC 인사이트 ═══ */}
+        {funnelInsight.message && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">💡</span>
+              <h4 className="text-xs font-bold text-foreground">
+                {AD_FUNNELS.find(f => f.key === selectedFunnel)?.labelKo} — VOC 기반 메시지 전략
+              </h4>
+            </div>
+
+            {/* 핵심 메시지 */}
+            <div className="rounded-lg bg-card border border-border p-3">
+              <p className="text-[10px] text-muted-foreground mb-1 font-semibold">📌 핵심 메시지</p>
+              <p className="text-xs font-bold text-foreground">{funnelInsight.message}</p>
+            </div>
+
+            {/* 전략 */}
+            <div className="rounded-lg bg-card border border-border p-3">
+              <p className="text-[10px] text-muted-foreground mb-1 font-semibold">🎯 실행 전략</p>
+              <p className="text-xs text-foreground/90">{funnelInsight.strategy}</p>
+            </div>
+
+            {/* 키워드 + 소스 리뷰 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* 활용 키워드 */}
+              <div className="rounded-lg bg-card border border-border p-3">
+                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">🏷️ 카피 활용 키워드</p>
+                <div className="flex flex-wrap gap-1">
+                  {funnelInsight.keywords.map((kw, i) => (
+                    <Badge key={i} variant="secondary" className="text-[10px]">{kw}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* 소스 리뷰 원문 */}
+              <div className="rounded-lg bg-card border border-border p-3">
+                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">📝 카피 소스 (실사용자 리뷰)</p>
+                {funnelInsight.sourceQuotes.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {funnelInsight.sourceQuotes.map((q, i) => (
+                      <p key={i} className="text-[10px] text-foreground/80 italic border-l-2 border-primary/30 pl-2 line-clamp-2">
+                        "{q}"
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground">LG.com 리뷰는 개인정보 보호 정책에 따라 원문 비공개 — 감성 키워드 기반 활용</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ═══ 2. ⚡ 광고 카피 (Ad Copy) — 채널별 ═══ */}
         <Collapsible open={openSections.adcopy} onOpenChange={() => toggleSection("adcopy")}>
           <CollapsibleTrigger className="w-full">
