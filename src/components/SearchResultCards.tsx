@@ -652,7 +652,6 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
         if (!item) return null;
         const cs = item.sentiment.compositeScore;
         const allPrivacyRestricted = isAllPrivacyRestricted(item.product.reviews);
-        const totalSentiment = Math.max(item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral, 1);
         return (
           <div className="animate-slide-up border border-primary/20 rounded-xl bg-card p-5 space-y-5">
             {/* Header */}
