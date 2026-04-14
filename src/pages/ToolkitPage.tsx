@@ -230,7 +230,7 @@ export default function ToolkitPage() {
           </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-base font-bold text-foreground">🎨 LG CreW Anita — AI Creative Studio</h3>
+              <h3 className="text-base font-bold text-foreground">🎨 LG Twin Crew Anita — AI Creative Studio</h3>
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
             <p className="text-[11.5px] text-muted-foreground leading-relaxed">

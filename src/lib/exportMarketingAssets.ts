@@ -170,13 +170,13 @@ export function exportMarketingAssets(
 
   // ── Sheet 4: Image Prompts ──
   const imageAssets = [
-    { size: "1920×600", platform: "LG.com Hero Banner", tool: "LG Crew" },
+    { size: "1920×600", platform: "LG.com Hero Banner", tool: "LG Twin Crew" },
     { size: "1080×1080", platform: "Meta Feed", tool: "Midjourney · Firefly" },
     { size: "1080×1920", platform: "Meta Stories/Reels", tool: "Midjourney · Firefly" },
     { size: "1280×720", platform: "YouTube Thumbnail", tool: "Midjourney · Firefly" },
-    { size: "300×250", platform: "Google Display/GDN", tool: "LG Crew" },
-    { size: "728×90", platform: "Leaderboard Banner", tool: "LG Crew" },
-    { size: "320×50", platform: "Mobile Banner", tool: "LG Crew" },
+    { size: "300×250", platform: "Google Display/GDN", tool: "LG Twin Crew" },
+    { size: "728×90", platform: "Leaderboard Banner", tool: "LG Twin Crew" },
+    { size: "320×50", platform: "Mobile Banner", tool: "LG Twin Crew" },
   ];
   const s1 = sentiment.keywords.positive?.[0] || "quality";
   const scene = sentiment.usageScenes?.[0] || "modern living space";
