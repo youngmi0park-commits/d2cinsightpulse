@@ -15,7 +15,7 @@ import { KeywordCloud } from "./KeywordCloud";
 import { MarketingHub } from "./MarketingHub";
 import { ReviewList } from "./ReviewList";
 import { isAllPrivacyRestricted, isPrivacyRestricted } from "@/lib/reviewUtils";
-import { LgcomReviewSummary } from "@/components/LgcomReviewSummary";
+import { LgcomInsightPanel } from "@/components/LgcomInsightPanel";
 
 /** Detect Japanese source */
 function isJapaneseSource(source?: string): boolean {
