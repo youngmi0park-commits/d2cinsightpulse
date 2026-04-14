@@ -867,7 +867,7 @@ export const CollectionCriteria = () => {
             <Calendar className="h-4 w-4 text-primary" />
             <h4 className="font-semibold text-sm">{t("Collection Method & Schedule", "수집 방식 및 주기")}</h4>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {priorityCriteria.map((c) => {
               const Icon = c.icon;
               const title = t(c.titleEn, c.titleKo);
@@ -890,6 +890,9 @@ export const CollectionCriteria = () => {
               );
             })}
           </div>
+
+          {/* ─── 국가×채널 상세 수집 현황 테이블 ─── */}
+          <CollectionDetailTable t={t} />
         </section>
 
         {/* ─── 4. 나머지 기준 (접기/펼치기) ─── */}
