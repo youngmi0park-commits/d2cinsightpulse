@@ -632,6 +632,217 @@ const criteria: CriteriaItem[] = [
   },
 ];
 
+/* ─── 국가 × 채널 상세 수집 현황 테이블 ─── */
+interface CollectionRow {
+  country: string;
+  flag: string;
+  lgeCode: string;
+  channel: string;
+  method: string;
+  schedule: string;
+  status: "active" | "planned" | "partial";
+}
+
+const COLLECTION_DETAIL: CollectionRow[] = [
+  // ── 🇺🇸 US ──
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Reddit (r/OLED, r/hometheater 등 15+)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Amazon US", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Best Buy", method: "Public API / 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "YouTube (리뷰 영상 댓글)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Walmart", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Consumer Reports", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "RTINGS", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Costco", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "ConsumerAffairs", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Houzz", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "BestReviews", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  // ── 🇬🇧 UK ──
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Amazon UK", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "YouTube UK", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Trusted Reviews", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  // ── 🇩🇪 DE ──
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "Amazon DE", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "YouTube DE", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇦🇺 AU ──
+  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "YouTube AU", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇮🇳 IN ──
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "Amazon IN", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "YouTube IN", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇯🇵 JP ──
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Amazon JP", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "YouTube JP", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Web Review (Kakaku 등)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
+  // ── 🇹🇼 TW ──
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "YouTube TW", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "Web Review (PTT 등)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
+  // ── 🇹🇭 TH ──
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Shopee TH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Lazada TH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "YouTube TH", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇸🇬 SG ──
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Shopee SG", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Lazada SG", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "YouTube SG", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Amazon SG", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  // ── 🇻🇳 VN ──
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Shopee VN", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Lazada VN", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "YouTube VN", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇮🇩 ID ──
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Shopee ID", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Lazada ID", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "YouTube ID", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇭🇰 HK ──
+  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "Reviews.io", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "YouTube HK", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🇵🇭 PH ──
+  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Shopee PH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Lazada PH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  // ── 🇲🇾 MY ──
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Shopee MY", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Lazada MY", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "YouTube MY", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  // ── 🌐 Global ──
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Trustpilot", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "CNET", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "TechRadar", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "PCMag", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Notebookcheck", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Lemon8", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "ComplaintsBoard", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+];
+
+function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
+  const [expanded, setExpanded] = useState(true);
+  const [filterCountry, setFilterCountry] = useState<string>("all");
+
+  const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
+  const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
+
+  // Group by country for display
+  const grouped = filtered.reduce<Record<string, CollectionRow[]>>((acc, row) => {
+    if (!acc[row.country]) acc[row.country] = [];
+    acc[row.country].push(row);
+    return acc;
+  }, {});
+
+  const statusBadge = (s: CollectionRow["status"]) => {
+    const cls = s === "active"
+      ? "bg-success/15 text-success border-success/20"
+      : s === "partial"
+        ? "bg-yellow-500/15 text-yellow-700 border-yellow-500/20"
+        : "bg-muted text-muted-foreground border-border";
+    const label = s === "active" ? "✅ 수집 중" : s === "partial" ? "⚠️ 일부" : "📋 예정";
+    return <span className={`inline-flex items-center text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${cls}`}>{label}</span>;
+  };
+
+  return (
+    <div className="rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-2 px-4 py-2.5 bg-primary/10 border-b border-primary/20 hover:bg-primary/15 transition-colors"
+      >
+        <Database className="h-4 w-4 text-primary" />
+        <span className="font-bold text-sm flex-1 text-left">
+          {t("Country × Channel Detail Table", "국가 × 채널 상세 수집 현황표")}
+        </span>
+        <span className="text-[10px] text-muted-foreground mr-2">
+          {COLLECTION_DETAIL.length}{t(" channels across ", "개 채널 · ")}{countries.length}{t(" countries/regions", "개국")}
+        </span>
+        <span className={`transition-transform text-xs ${expanded ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      {expanded && (
+        <div className="p-3 space-y-3">
+          {/* Country filter pills */}
+          <div className="flex flex-wrap gap-1">
+            <button
+              onClick={() => setFilterCountry("all")}
+              className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                filterCountry === "all" ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("All", "전체")}
+            </button>
+            {countries.map(c => {
+              const row = COLLECTION_DETAIL.find(r => r.country === c)!;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setFilterCountry(c)}
+                  className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                    filterCountry === c ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {row.flag} {c}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-[10px] border-collapse">
+              <thead>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Country", "국가")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("LGE Code", "법인코드")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Channel", "채널")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
+                  <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(grouped).map(([country, rows]) =>
+                  rows.map((row, ri) => (
+                    <tr
+                      key={`${country}-${ri}`}
+                      className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${
+                        ri === 0 ? "border-t border-border" : ""
+                      }`}
+                    >
+                      {ri === 0 ? (
+                        <td rowSpan={rows.length} className="px-2 py-1.5 font-bold text-foreground align-top border-r border-border/30">
+                          <span className="text-sm">{row.flag}</span> {country}
+                          <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{rows.length}개 채널</div>
+                        </td>
+                      ) : null}
+                      <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
+                      <td className="px-2 py-1.5 font-semibold text-foreground">{row.channel}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
+                      <td className="px-2 py-1.5 text-center">{statusBadge(row.status)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Summary footer */}
+          <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
+            <span>✅ 수집 중: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "active").length}</span>개</span>
+            <span>📋 예정: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "planned").length}</span>개</span>
+            <span className="ml-auto">
+              ⏰ BV: Sweep(02:00 UTC) → Collect(6h마다) → Sync(06:00 UTC) |
+              📦 기타: Reddit/Amazon 07:00 KST → YouTube 07:05 KST → 아시아 07:10 KST
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const CollectionCriteria = () => {
   const { t } = useLang();
   const lgComCounts = useLgComCounts();
@@ -867,7 +1078,7 @@ export const CollectionCriteria = () => {
             <Calendar className="h-4 w-4 text-primary" />
             <h4 className="font-semibold text-sm">{t("Collection Method & Schedule", "수집 방식 및 주기")}</h4>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {priorityCriteria.map((c) => {
               const Icon = c.icon;
               const title = t(c.titleEn, c.titleKo);
@@ -890,6 +1101,9 @@ export const CollectionCriteria = () => {
               );
             })}
           </div>
+
+          {/* ─── 국가×채널 상세 수집 현황 테이블 ─── */}
+          <CollectionDetailTable t={t} />
         </section>
 
         {/* ─── 4. 나머지 기준 (접기/펼치기) ─── */}
