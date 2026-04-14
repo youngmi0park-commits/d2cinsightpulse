@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import type { GeoMessage, MarketingOutput } from "@/lib/formatMessage";
+import { exportMarketingAssets } from "@/lib/exportMarketingAssets";
 import type { SentimentResult } from "@/lib/sentiment";
 
 interface MarketingHubProps {
