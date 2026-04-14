@@ -108,6 +108,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
   const [meta, setMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<"category" | "product">("category");
+  const [viewMode, setViewMode] = useState<"overview" | "product">("overview");
 
   const runReport = async (cat?: string, productId?: string) => {
     const target = cat ?? category;
