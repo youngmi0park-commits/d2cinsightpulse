@@ -944,12 +944,16 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Last Collected", "마지막 수집")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Count", "수집 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(grouped).map(([country, rows]) =>
-                  rows.map((row, ri) => (
+                  rows.map((row, ri) => {
+                    const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
+                    return (
                     <tr
                       key={`${country}-${ri}`}
                       className={`border-b border-border/50 hover:bg-muted/20 transition-colors ${
@@ -967,9 +971,27 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       <td className="px-2 py-1.5 text-muted-foreground/80 italic">{row.dataSource}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
+                        {logEntry ? (
+                          <span className={`${logEntry.status === "running" ? "text-yellow-600" : "text-foreground"}`}>
+                            {logEntry.status === "running" ? "🔄 " : ""}
+                            {formatTimeAgo(logEntry.lastAt)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
+                        {logEntry && logEntry.count > 0 ? (
+                          <span className="font-bold text-foreground">{logEntry.count.toLocaleString()}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
                       <td className="px-2 py-1.5 text-center">{statusBadge(row.status)}</td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
