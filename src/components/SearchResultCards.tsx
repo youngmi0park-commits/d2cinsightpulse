@@ -680,23 +680,17 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
 
               {/* LG.com-only: show processed summary instead of raw quote-style evidence */}
               {allPrivacyRestricted ? (
-                <LgcomReviewSummary
-                  positivePct={Math.round((item.sentiment.positive / totalSentiment) * 100)}
-                  negativePct={Math.round((item.sentiment.negative / totalSentiment) * 100)}
-                  neutralPct={Math.round((item.sentiment.neutral / totalSentiment) * 100)}
-                  positiveCount={item.sentiment.positive}
-                  negativeCount={item.sentiment.negative}
-                  total={item.sentiment.positive + item.sentiment.negative + item.sentiment.neutral}
-                  score={item.sentiment.compositeScore}
-                  positiveKeywords={item.sentiment.keywords.positive}
-                  negativeKeywords={item.sentiment.keywords.negative}
-                  dominantIssueCategory={item.sentiment.dominantIssueCategory}
+                <LgcomInsightPanel
+                  sentiment={item.sentiment}
                   productName={item.product.name}
+                  reviews={item.product.reviews}
                 />
-              ) : null}
-
-              {/* 1) 주요 긍/부정 키워드 & 주제별 요약 (맨 위) */}
-              <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={allPrivacyRestricted} />
+              ) : (
+                <>
+                  {/* 주요 긍/부정 키워드 & 주제별 요약 */}
+                  <KeywordCloud keywords={item.sentiment.keywords} signals={item.sentiment.signals} privacyMode={false} />
+                </>
+              )}
 
               {/* 2) 감성 분석 결과 그래프 */}
               <SentimentChart sentiment={item.sentiment} />
