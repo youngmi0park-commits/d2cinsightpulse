@@ -638,6 +638,7 @@ interface CollectionRow {
   flag: string;
   lgeCode: string;
   channel: string;
+  dataSource: string;
   method: string;
   schedule: string;
   status: "active" | "planned" | "partial";
@@ -645,79 +646,79 @@ interface CollectionRow {
 
 const COLLECTION_DETAIL: CollectionRow[] = [
   // ── 🇺🇸 US ──
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Reddit (r/OLED, r/hometheater 등 15+)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Amazon US", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Best Buy", method: "Public API / 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "YouTube (리뷰 영상 댓글)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Walmart", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Consumer Reports", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "RTINGS", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Costco", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "ConsumerAffairs", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Houzz", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "BestReviews", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 · Pros/Cons 태그", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Reddit (r/OLED, r/hometheater 등 15+)", dataSource: "서브레딧 포스트 본문 · 댓글 · 업보트 수", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Amazon US", dataSource: "Verified Purchase 리뷰 · 평점 · Helpful 투표 수", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Best Buy", dataSource: "제품 리뷰 · 평점 · 구매 인증 배지", method: "Public API / 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "YouTube (리뷰 영상 댓글)", dataSource: "리뷰/언박싱 영상 댓글 · 좋아요 수", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Walmart", dataSource: "제품 리뷰 · 평점 · 구매 인증 리뷰", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Consumer Reports", dataSource: "전문가 테스트 결과 · 신뢰성 등급 · 추천 점수", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "RTINGS", dataSource: "랩 측정 데이터 · 전문 테스트 점수 · 비교표", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Costco", dataSource: "회원 제품 리뷰 · 평점", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "ConsumerAffairs", dataSource: "소비자 불만/칭찬 리뷰 · 평점", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "Houzz", dataSource: "홈 인테리어 커뮤니티 제품 리뷰 · 토론", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "US", flag: "🇺🇸", lgeCode: "LGEUS", channel: "BestReviews", dataSource: "에디터 추천 리뷰 · 제품 비교 아티클", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
   // ── 🇬🇧 UK ──
-  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Amazon UK", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "YouTube UK", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
-  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Trusted Reviews", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 · Pros/Cons 태그", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Amazon UK", dataSource: "Verified Purchase 리뷰 · 평점 · Helpful 투표 수", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "YouTube UK", dataSource: "리뷰/언박싱 영상 댓글 · 좋아요 수", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "UK", flag: "🇬🇧", lgeCode: "LGEUK", channel: "Trusted Reviews", dataSource: "에디터 심층 리뷰 · 전문 평가 점수", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
   // ── 🇩🇪 DE ──
-  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "Amazon DE", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "YouTube DE", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 · Pros/Cons 태그", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "Amazon DE", dataSource: "Verified Purchase 리뷰 · 평점 (독일어)", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "DE", flag: "🇩🇪", lgeCode: "LGEDE", channel: "YouTube DE", dataSource: "리뷰/언박싱 영상 댓글 (독일어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇦🇺 AU ──
-  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "YouTube AU", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 · Pros/Cons 태그", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "AU", flag: "🇦🇺", lgeCode: "LGEAP", channel: "YouTube AU", dataSource: "리뷰/언박싱 영상 댓글 · 좋아요 수", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇮🇳 IN ──
-  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "Amazon IN", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "YouTube IN", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 · Pros/Cons 태그", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "Amazon IN", dataSource: "Verified Purchase 리뷰 · 평점 (힌디어/영어)", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "IN", flag: "🇮🇳", lgeCode: "LGEIL", channel: "YouTube IN", dataSource: "리뷰/언박싱 영상 댓글 (힌디어/영어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇯🇵 JP ──
-  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Amazon JP", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "YouTube JP", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
-  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Web Review (Kakaku 등)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 (일본어)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Amazon JP", dataSource: "Verified Purchase 리뷰 · 평점 (일본어)", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "YouTube JP", dataSource: "리뷰/언박싱 영상 댓글 (일본어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "JP", flag: "🇯🇵", lgeCode: "LGEJP", channel: "Web Review (Kakaku 등)", dataSource: "가격비교 사이트 사용자 리뷰 · 평점 (일본어)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
   // ── 🇹🇼 TW ──
-  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "YouTube TW", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
-  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "Web Review (PTT 등)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 (번체 중국어)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "YouTube TW", dataSource: "리뷰/언박싱 영상 댓글 (번체 중국어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "TW", flag: "🇹🇼", lgeCode: "LGETT", channel: "Web Review (PTT 등)", dataSource: "PTT 게시판 제품 토론 · 사용기 (번체 중국어)", method: "Firecrawl + Gemini AI", schedule: "매일 07:10 KST", status: "active" },
   // ── 🇹🇭 TH ──
-  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "LG.com (Bazaarvoice)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
-  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Shopee TH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Lazada TH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "YouTube TH", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "LG.com (Bazaarvoice)", dataSource: "제품 상세 페이지 고객 리뷰 · 평점 (태국어)", method: "Bazaarvoice API (공식)", schedule: "Sweep 매일 02:00 UTC · Collect 6시간마다 · Sync 매일 06:00 UTC", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Shopee TH", dataSource: "이커머스 구매자 리뷰 · 평점 · 사진 리뷰 (태국어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "Lazada TH", dataSource: "이커머스 구매자 리뷰 · 평점 (태국어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "TH", flag: "🇹🇭", lgeCode: "LGETH", channel: "YouTube TH", dataSource: "리뷰/언박싱 영상 댓글 (태국어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇸🇬 SG ──
-  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Shopee SG", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Lazada SG", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "YouTube SG", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
-  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Amazon SG", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Shopee SG", dataSource: "이커머스 구매자 리뷰 · 평점 · 사진 리뷰", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Lazada SG", dataSource: "이커머스 구매자 리뷰 · 평점", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "YouTube SG", dataSource: "리뷰/언박싱 영상 댓글 · 좋아요 수", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "SG", flag: "🇸🇬", lgeCode: "LGESL", channel: "Amazon SG", dataSource: "Verified Purchase 리뷰 · 평점", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
   // ── 🇻🇳 VN ──
-  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Shopee VN", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Lazada VN", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "YouTube VN", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Shopee VN", dataSource: "이커머스 구매자 리뷰 · 평점 (베트남어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "Lazada VN", dataSource: "이커머스 구매자 리뷰 · 평점 (베트남어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "VN", flag: "🇻🇳", lgeCode: "LGEVN", channel: "YouTube VN", dataSource: "리뷰/언박싱 영상 댓글 (베트남어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇮🇩 ID ──
-  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Shopee ID", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Lazada ID", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
-  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "YouTube ID", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Shopee ID", dataSource: "이커머스 구매자 리뷰 · 평점 (인도네시아어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "Lazada ID", dataSource: "이커머스 구매자 리뷰 · 평점 (인도네시아어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "active" },
+  { country: "ID", flag: "🇮🇩", lgeCode: "LGEIN", channel: "YouTube ID", dataSource: "리뷰/언박싱 영상 댓글 (인도네시아어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇭🇰 HK ──
-  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "Reviews.io", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
-  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "YouTube HK", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "Reviews.io", dataSource: "소비자 리뷰 · 평점 (광둥어/영어)", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+  { country: "HK", flag: "🇭🇰", lgeCode: "LGEHK", channel: "YouTube HK", dataSource: "리뷰/언박싱 영상 댓글 (광둥어/영어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🇵🇭 PH ──
-  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Shopee PH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
-  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Lazada PH", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Shopee PH", dataSource: "이커머스 구매자 리뷰 · 평점 (필리핀어/영어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "PH", flag: "🇵🇭", lgeCode: "LGEPH", channel: "Lazada PH", dataSource: "이커머스 구매자 리뷰 · 평점 (필리핀어/영어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
   // ── 🇲🇾 MY ──
-  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Shopee MY", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
-  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Lazada MY", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
-  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "YouTube MY", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Shopee MY", dataSource: "이커머스 구매자 리뷰 · 평점 (말레이어/영어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "Lazada MY", dataSource: "이커머스 구매자 리뷰 · 평점 (말레이어/영어)", method: "Firecrawl + Gemini AI 추출", schedule: "매일 07:10 KST", status: "planned" },
+  { country: "MY", flag: "🇲🇾", lgeCode: "LGEML", channel: "YouTube MY", dataSource: "리뷰/언박싱 영상 댓글 (말레이어/영어)", method: "YouTube Data API v3", schedule: "매일 07:05 KST", status: "active" },
   // ── 🌐 Global ──
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Trustpilot", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "CNET", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "TechRadar", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "PCMag", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Notebookcheck", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Lemon8", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
-  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "ComplaintsBoard", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Trustpilot", dataSource: "소비자 직접 리뷰 · 평점 · 서비스 평가", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "CNET", dataSource: "에디터 리뷰 · Editor's Choice 평가 · 비교 아티클", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "TechRadar", dataSource: "에디터 리뷰 · 전문 평가 점수 · 비교 아티클", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "PCMag", dataSource: "전문 리뷰 · 벤치마크 점수 · Editor's Choice", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Notebookcheck", dataSource: "노트북/모니터 심층 테스트 · 성능 데이터", method: "Firecrawl 스크래핑", schedule: "매일 07:00 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "Lemon8", dataSource: "소셜 플랫폼 제품 후기 · 라이프스타일 콘텐츠", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
+  { country: "Global", flag: "🌐", lgeCode: "Global", channel: "ComplaintsBoard", dataSource: "소비자 불만 게시글 · CS 이슈 (중동 포함)", method: "Firecrawl 스크래핑", schedule: "매일 07:10 KST", status: "active" },
 ];
 
 function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
@@ -796,6 +797,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Country", "국가")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("LGE Code", "법인코드")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Channel", "채널")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
@@ -818,6 +820,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       ) : null}
                       <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
                       <td className="px-2 py-1.5 font-semibold text-foreground">{row.channel}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground/80 italic">{row.dataSource}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
                       <td className="px-2 py-1.5 text-center">{statusBadge(row.status)}</td>
