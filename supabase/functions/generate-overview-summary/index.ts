@@ -33,16 +33,13 @@ function matchesChannel(source: string | null | undefined, channel: string) {
   return !normalized.startsWith("lge_com") && !normalized.startsWith("reddit");
 }
 
-function applyChannelFilter(query: ReturnType<ReturnType<typeof createClient>["from"]>["select"], channel: string) {
+function applyChannelFilter(query: any, channel: string) {
   if (channel === "lgcom") return query.ilike("source", "lge_com%");
   if (channel === "reddit") return query.ilike("source", "reddit%");
   return query;
 }
 
-async function fetchSampledReviews(
-  sb: ReturnType<typeof createClient>,
-  channel: string,
-) {
+async function fetchSampledReviews(sb: any, channel: string) {
   const windows = [
     { label: "이번 주 수집 리뷰", days: 7, limit: 300 },
     { label: "최근 30일 수집 리뷰", days: 30, limit: 900 },
