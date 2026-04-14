@@ -98,6 +98,75 @@ const AI_TOOLS = [
   { key: "heygen", label: "HeyGen", desc: "AI 아바타 광고 영상 스크립트", url: "https://heygen.com", icon: "🎬" },
 ];
 
+/* ── Funnel VOC insight generator ── */
+interface FunnelVocInsight {
+  message: string;
+  sourceQuotes: string[];
+  keywords: string[];
+  strategy: string;
+}
+
+function buildFunnelInsight(
+  funnel: string,
+  sentiment: SentimentResult,
+  reviews: { text: string; sentiment?: string; source?: string }[],
+  pName: string,
+): FunnelVocInsight {
+  const posKw = sentiment.keywords.positive || [];
+  const negKw = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+
+  // Extract real review snippets (non-privacy) as evidence
+  const openReviews = reviews.filter(r => !r.source?.startsWith("lge_com"));
+  const posReviews = openReviews.filter(r => r.sentiment === "positive");
+  const negReviews = openReviews.filter(r => r.sentiment === "negative");
+
+  const pickQuotes = (arr: typeof reviews, n: number) =>
+    arr.slice(0, n).map(r => {
+      const t = r.text.length > 100 ? r.text.slice(0, 97) + "…" : r.text;
+      return t;
+    });
+
+  switch (funnel) {
+    case "awareness":
+      return {
+        message: `"${posKw[0] || "품질"}" 중심 브랜드 인지 메시지 — 긍정 ${posPct}% 기반 신뢰 소구`,
+        sourceQuotes: pickQuotes(posReviews, 2),
+        keywords: posKw.slice(0, 4),
+        strategy: `${pName}의 핵심 강점(${posKw.slice(0, 2).join(", ")})을 짧은 노출형 채널(YouTube Bumper, GDN)에서 반복 노출하여 브랜드 연상 강화`,
+      };
+    case "consideration":
+      return {
+        message: `실사용자 ${posPct}% 만족 — "${posKw[0] || "성능"}" + "${scenes[0] || "일상"}" 활용 장면으로 상세 탐색 유도`,
+        sourceQuotes: pickQuotes(posReviews, 2),
+        keywords: [...posKw.slice(0, 2), ...(scenes.length ? [scenes[0]] : [])],
+        strategy: negKw[0]
+          ? `경쟁사 대비 "${negKw[0]}" 우려를 선제 해소하는 비교형 콘텐츠 + 리뷰 기반 소셜프루프로 PDP 체류 시간 확대`
+          : `리뷰 기반 소셜프루프와 사용 장면(${scenes[0] || "일상"}) 영상으로 PDP 방문 유도`,
+      };
+    case "conversion":
+      return {
+        message: negKw[0]
+          ? `"${negKw[0]}" 우려 해소 + "${posKw[0] || "만족도"}" 강조 → 구매 결정 지원`
+          : `"${posKw[0] || "품질"}" 검증 완료 — 리뷰 ${total}건 기반 확신 부여`,
+        sourceQuotes: [...pickQuotes(posReviews, 1), ...pickQuotes(negReviews, 1)],
+        keywords: [...posKw.slice(0, 2), ...(negKw[0] ? [negKw[0]] : [])],
+        strategy: `장바구니 이탈 방지를 위해 실사용자 만족 데이터(${posPct}% 긍정)와 ${negKw[0] ? `"${negKw[0]}" 해소 메시지` : "핵심 강점 재확인"}을 PDP·리타겟팅 배너에 배치`,
+      };
+    case "retention":
+      return {
+        message: `기존 고객 "${posKw[0] || "만족"}" 경험 활용 — 크로스셀·업셀 메시지`,
+        sourceQuotes: pickQuotes(posReviews.length ? posReviews : openReviews, 2),
+        keywords: posKw.slice(0, 3),
+        strategy: `높은 만족도(${posPct}%)를 활용한 리퍼럴 프로그램 + 동일 카테고리 신제품 이메일 CRM 캠페인`,
+      };
+    default:
+      return { message: "", sourceQuotes: [], keywords: [], strategy: "" };
+  }
+}
+
 /* ── Helpers ── */
 function truncate(text: string, max: number): string {
   return text.length <= max ? text : text.slice(0, max - 1) + "…";
