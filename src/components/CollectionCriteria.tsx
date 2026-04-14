@@ -797,6 +797,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Country", "국가")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("LGE Code", "법인코드")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Channel", "채널")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
@@ -819,6 +820,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       ) : null}
                       <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
                       <td className="px-2 py-1.5 font-semibold text-foreground">{row.channel}</td>
+                      <td className="px-2 py-1.5 text-muted-foreground/80 italic">{row.dataSource}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
                       <td className="px-2 py-1.5 text-center">{statusBadge(row.status)}</td>
