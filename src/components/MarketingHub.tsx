@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { FaqPanel } from "@/components/FaqPanel";
 import { ContentCreationActions } from "@/components/ContentCreationActions";
 import { useLang } from "@/contexts/LanguageContext";
@@ -366,6 +367,40 @@ export function MarketingHub({
     return buildFunnelInsight(selectedFunnel, sentiment, reviews, pName);
   }, [selectedFunnel, sentiment, reviews, pName]);
 
+  /* Auto-translate funnel source quotes to Korean */
+  const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  useEffect(() => {
+    if (!funnelInsight.sourceQuotes.length) return;
+    const toTranslate = funnelInsight.sourceQuotes.filter(q => !translatedQuotes[q]);
+    if (!toTranslate.length) return;
+
+    let cancelled = false;
+    setIsTranslating(true);
+
+    Promise.all(
+      toTranslate.map(async (q) => {
+        try {
+          const { data } = await supabase.functions.invoke("translate-review", { body: { text: q } });
+          return { original: q, translated: data?.translated || q };
+        } catch {
+          return { original: q, translated: q };
+        }
+      })
+    ).then((results) => {
+      if (cancelled) return;
+      setTranslatedQuotes((prev) => {
+        const next = { ...prev };
+        for (const r of results) next[r.original] = r.translated;
+        return next;
+      });
+      setIsTranslating(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [funnelInsight.sourceQuotes]);
+
   return (
     <div className="gradient-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
@@ -452,16 +487,29 @@ export function MarketingHub({
                 </div>
               </div>
 
-              {/* 소스 리뷰 원문 */}
+              {/* 소스 리뷰 (국문 번역) */}
               <div className="rounded-lg bg-card border border-border p-3">
-                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">📝 카피 소스 (실사용자 리뷰)</p>
+                <p className="text-[10px] text-muted-foreground mb-1.5 font-semibold">
+                  📝 카피 소스 (실사용자 리뷰)
+                  {isTranslating && <span className="ml-1 text-primary animate-pulse">번역 중…</span>}
+                </p>
                 {funnelInsight.sourceQuotes.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {funnelInsight.sourceQuotes.map((q, i) => (
-                      <p key={i} className="text-[10px] text-foreground/80 italic border-l-2 border-primary/30 pl-2 line-clamp-2">
-                        "{q}"
-                      </p>
-                    ))}
+                  <div className="space-y-2">
+                    {funnelInsight.sourceQuotes.map((q, i) => {
+                      const ko = translatedQuotes[q];
+                      return (
+                        <div key={i} className="border-l-2 border-primary/30 pl-2 space-y-0.5">
+                          <p className="text-[10px] font-medium text-foreground/90">
+                            🇰🇷 {ko || q}
+                          </p>
+                          {ko && ko !== q && (
+                            <p className="text-[9px] text-muted-foreground italic line-clamp-1">
+                              원문: "{q}"
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-[10px] text-muted-foreground">LG.com 리뷰는 개인정보 보호 정책에 따라 원문 비공개 — 감성 키워드 기반 활용</p>
