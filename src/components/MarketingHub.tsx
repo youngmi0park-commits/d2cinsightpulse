@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { FaqPanel } from "@/components/FaqPanel";
 import { ContentCreationActions } from "@/components/ContentCreationActions";
 import { useLang } from "@/contexts/LanguageContext";
