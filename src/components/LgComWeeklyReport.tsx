@@ -98,12 +98,9 @@ function SectionCard({ icon: Icon, title, children, color = "border-border bg-ca
 /* ── main component ── */
 export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const [region, setRegion] = useState(country === "all" ? "all" : country);
+  const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
 
-  useEffect(() => {
-    setRegion(country === "all" ? "all" : country);
-  }, [country]);
   const [report, setReport] = useState<ReportData | null>(null);
   const [meta, setMeta] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -138,9 +135,13 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
 
   useEffect(() => {
     runReport("all");
-  }, []);
+  }, [region]);
 
   const es = report?.executive_summary;
+
+  const regionLabel = region === "all" ? t("All", "전체") : `${
+    { US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺", IN: "🇮🇳", TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭" }[region] || ""
+  } ${region}`;
 
   return (
     <Card className="gradient-card border-border">
@@ -151,47 +152,23 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             <CardTitle className="text-lg font-heading">
               {t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트")}
             </CardTitle>
+            <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5 flex-wrap">
-              {[
-                { value: "all", label: t("All", "전체") },
-                { value: "US", label: "🇺🇸 US" },
-                { value: "UK", label: "🇬🇧 UK" },
-                { value: "DE", label: "🇩🇪 DE" },
-                { value: "AU", label: "🇦🇺 AU" },
-                { value: "IN", label: "🇮🇳 IN" },
-                { value: "TW", label: "🇹🇼 TW" },
-                { value: "JP", label: "🇯🇵 JP" },
-                { value: "TH", label: "🇹🇭 TH" },
-              ].map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => setRegion(r.value)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                    region === r.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => runReport()}
-              disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {isLoading
-                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("Generating...", "생성 중...")}</>
-                : <><Sparkles className="h-3.5 w-3.5" />{t("Generate Report", "리포트 생성")}</>
-              }
-            </button>
-          </div>
+          <button
+            onClick={() => runReport()}
+            disabled={isLoading}
+            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {isLoading
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("Generating...", "생성 중...")}</>
+              : <><Sparkles className="h-3.5 w-3.5" />{t("Generate Report", "리포트 생성")}</>
+            }
+          </button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered weekly insight report with country & product filters",
-            "AI 기반 주간 인사이트 리포트 · 국가별/제품별 필터 지원"
+            "AI-powered weekly insight report — uses country filter above",
+            "AI 기반 주간 인사이트 리포트 · 상단 국가 필터와 연동"
           )}
         </p>
       </CardHeader>
