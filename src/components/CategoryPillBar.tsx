@@ -19,14 +19,18 @@ const CATEGORY_ITEMS = [
   { cat: "Microwave", label: "Microwave", emoji: "📡" },
 ];
 
-function useCategoryCounts() {
+
+function useCategoryCounts(country?: string) {
+  const region = country || "all";
   return useQuery({
-    queryKey: ["category-counts-for-pills"],
+    queryKey: ["category-counts-for-pills", region],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_category_counts");
+      const { data, error } = await supabase.rpc("get_category_counts_by_country", {
+        p_country: region,
+      });
       if (error) throw error;
       const map: Record<string, number> = {};
-      for (const row of data || []) {
+      for (const row of (data || []) as { category: string; count: number }[]) {
         map[row.category] = Number(row.count);
       }
       return map;
@@ -40,10 +44,11 @@ interface CategoryPillBarProps {
   onSelect: (cat: string) => void;
   isLoading?: boolean;
   hasResult?: boolean;
+  country?: string;
 }
 
-export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false }: CategoryPillBarProps) {
-  const { data: counts } = useCategoryCounts();
+export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false, country }: CategoryPillBarProps) {
+  const { data: counts } = useCategoryCounts(country);
 
   // Sort by review count (descending), keep "all" first
   const sorted = [...CATEGORY_ITEMS].sort((a, b) => {
