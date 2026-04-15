@@ -169,11 +169,13 @@ function generatePreviewHTML(d: NewsletterData): string {
   const INTER = "Inter,'Segoe UI',Arial,sans-serif";
   const WIDTH = 780;
   const BG = "#FFFFFF";
-  const CARD_BG = "#F5F1EA";
+  const CARD_BG = "#FFFFFF";
   const RED = "#EA1917";
   const DARK_RED = "#A50034";
   const BORDER = "#E0DBD3";
-  const WARM_BG = "#EDE9E1";
+  const WARM_BG = "#EFECE5";
+  const BOX_BG = "#EFECE5";
+  const RADIUS = "border-radius:12px;overflow:hidden;";
 
   const channelBadges = d.channels.map(ch => {
     return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};background:${WARM_BG};padding:5px 14px;font-size:12px;color:#555;font-weight:600;font-family:${FONT};border-radius:20px;mso-border-alt:solid ${BORDER} 1px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} <strong style="color:#333;">${ch.count.toLocaleString()}</strong></td></tr></table></td>`;
@@ -239,7 +241,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 
 <!-- Data Bar -->
 <tr><td style="padding:20px 40px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BORDER};background:#FFFFFF;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BORDER};background:${BOX_BG};${RADIUS}">
     <tr><td style="padding:14px 20px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:13px;font-weight:700;color:#333;font-family:${FONT};">📊 데이터 수집 현황</td>
@@ -261,9 +263,9 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td width="25%" style="padding:0 4px 0 0;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
           <tr><td style="height:3px;background:${RED};font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
+          <tr><td style="padding:14px 12px;text-align:center;height:90px;vertical-align:middle;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">총 리뷰 수집</div>
             <div style="font-size:22px;font-weight:800;color:#1a1a1a;line-height:28px;margin-top:4px;">${d.totalReviews.toLocaleString()}</div>
             <div style="font-size:10px;color:${d.wow >= 0 ? '#16a34a' : '#dc2626'};font-weight:600;margin-top:2px;">${d.wow > 0 ? '▲' : d.wow < 0 ? '▼' : ''}${d.wow > 0 ? '+' : ''}${d.wow}% vs 전주</div>
@@ -271,9 +273,9 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
         </table>
       </td>
       <td width="25%" style="padding:0 4px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
           <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
+          <tr><td style="padding:14px 12px;text-align:center;height:90px;vertical-align:middle;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">긍정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#16a34a;line-height:20px;margin-top:6px;">"${d.topPositiveKeyword}"</div>
             <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 · ${d.topPositiveMeta || '언급 1위'}</div>
@@ -281,9 +283,9 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
         </table>
       </td>
       <td width="25%" style="padding:0 4px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
           <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
+          <tr><td style="padding:14px 12px;text-align:center;height:90px;vertical-align:middle;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">부정 TOP 키워드</div>
             <div style="font-size:14px;font-weight:800;color:#dc2626;line-height:20px;margin-top:6px;">"${d.topNegativeKeyword}"</div>
             <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · ${d.topNegativeMeta || 'FAQ 대응 권고'}</div>
@@ -291,9 +293,9 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
         </table>
       </td>
       <td width="25%" style="padding:0 0 0 4px;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
           <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td style="padding:14px 12px;text-align:center;font-family:${INTER};">
+          <tr><td style="padding:14px 12px;text-align:center;height:90px;vertical-align:middle;font-family:${INTER};">
             <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:14px;">주간 언급 TOP</div>
             <div style="font-size:13px;font-weight:800;color:#1a1a1a;line-height:18px;margin-top:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.topProduct}</div>
             <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위${d.topProductKws ? ` · ${d.topProductKws}` : ''}</div>
@@ -306,7 +308,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 
 <!-- Marketing Opportunity Matrix -->
 ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
     <tr><td style="padding:12px 16px;border-bottom:1px solid ${BORDER};background:${WARM_BG};">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
@@ -344,7 +346,7 @@ ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
 
 <!-- Trending Signals -->
 ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
     <tr><td style="padding:12px 16px;border-bottom:1px solid ${BORDER};background:${WARM_BG};">
       <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
     </td></tr>
@@ -406,7 +408,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
 
 <!-- Placeholder for AI insights -->
 <tr><td style="padding:24px 40px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:2px dashed ${BORDER};background:${WARM_BG};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:2px dashed ${BORDER};background:${BOX_BG};${RADIUS}">
     <tr><td style="text-align:center;padding:48px 24px;color:#999;font-size:14px;font-family:${FONT};">
       🚀 <strong style="color:#555;">원클릭 생성</strong> 버튼을 눌러 AI 기반 주간 인사이트를 생성하세요
     </td></tr>
@@ -415,7 +417,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
 
 <!-- CTA Banner -->
 <tr><td style="padding:0 40px 28px;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid ${BORDER};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
     <tr><td colspan="3" style="height:4px;background:${RED};font-size:0;line-height:0;">&nbsp;</td></tr>
     <tr>
       <td width="200" style="padding:24px 20px;vertical-align:middle;">
