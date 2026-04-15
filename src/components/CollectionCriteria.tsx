@@ -1122,11 +1122,11 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                               {row.flag} {COUNTRY_KO_NAME[country] || country}
                             </span>
                             <span className="text-[9px] text-muted-foreground font-normal" style={{ wordBreak: "keep-all" }}>
-                              ({country}) · {rows.length}개 채널
+                              ({country})
                             </span>
                             {expandedCountry === country && (
-                              <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in">
-                                📊 {countryTotalCumulative(country, rows).toLocaleString()}건
+                              <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in whitespace-nowrap">
+                                📊 {rows.length}개 채널, 누적 {countryTotalCumulative(country, rows).toLocaleString()}건 수집
                               </span>
                             )}
                           </div>
