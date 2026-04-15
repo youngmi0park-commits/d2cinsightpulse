@@ -111,119 +111,12 @@ function CountryStatsGrid({
 }
 
 const LgComPage = () => {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [results, setResults] = useState<AnalyzedProduct[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
 
   const handleCountrySelect = (country: string) => {
     setSelectedCountry(country);
-    if (searchQuery) setTimeout(() => handleSearch(searchQuery), 0);
   };
-
-  const handleSearch = async (query: string) => {
-    setIsSearching(true);
-    setSearchError(null);
-    setSearchQuery(query);
-
-    try {
-      const { data: dbProducts, error: dbError } = await supabase
-        .from("products")
-        .select("*")
-        .or(`model_number.ilike.%${query}%,display_name.ilike.%${query}%,category.ilike.%${query}%,sub_category.ilike.%${query}%`)
-        .eq("is_active", true);
-
-      if (dbError) throw dbError;
-      if (!dbProducts || dbProducts.length === 0) {
-        setSearchError(t(`No data found for "${query}".`, `"${query}"에 대한 데이터를 찾을 수 없습니다.`));
-        setResults([]);
-        setIsSearching(false);
-        return;
-      }
-
-      const sourcesFilter = selectedCountry === "all"
-        ? Object.values(COUNTRY_SOURCE_MAP).flat()
-        : COUNTRY_SOURCE_MAP[selectedCountry] || [];
-
-      const productGroups = new Map<string, typeof dbProducts>();
-      for (const product of dbProducts) {
-        const normName = product.display_name
-          .replace(/^\d+["″]?\s*/i, "")
-          .replace(/^\d+\s*inch\s*/i, "")
-          .replace(/\s*\(.*?\)\s*$/, "")
-          .trim();
-        const key = normName || product.display_name;
-        if (!productGroups.has(key)) productGroups.set(key, []);
-        productGroups.get(key)!.push(product);
-      }
-
-      const analyzed: AnalyzedProduct[] = [];
-      for (const [, products] of productGroups) {
-        const allProductIds = products.map((p) => p.id);
-        const reviewQuery = supabase
-          .from("reviews")
-          .select("*")
-          .in("product_id", allProductIds)
-          .in("source", sourcesFilter)
-          .order("collected_at", { ascending: false })
-          .limit(200);
-
-        const { data: reviews } = await reviewQuery;
-        const formattedReviews = (reviews || []).map(toReviewFormat);
-        if (formattedReviews.length === 0) continue;
-
-        const sortedProducts = [...products].sort((a, b) => {
-          const aScore = a.model_number.startsWith("MD") ? 0 : 1;
-          const bScore = b.model_number.startsWith("MD") ? 0 : 1;
-          return bScore - aScore || b.display_name.length - a.display_name.length;
-        });
-        const bestProduct = sortedProducts[0];
-        const sentiment = analyzeSentiment(formattedReviews, bestProduct.category);
-        const marketing = generateMarketingMessage(bestProduct.display_name, sentiment, lang);
-        const geoMessages = generateGeoMarketingMessages(bestProduct.display_name, sentiment);
-
-        analyzed.push({
-          product: {
-            name: bestProduct.model_number,
-            displayName: bestProduct.display_name,
-            category: bestProduct.category as any,
-            subCategory: (bestProduct as any).sub_category || undefined,
-            reviews: formattedReviews,
-          },
-          sentiment,
-          marketing,
-          geoMessages,
-        });
-      }
-
-      analyzed.sort((a, b) => b.product.reviews.length - a.product.reviews.length);
-      if (analyzed.length === 0) {
-        setSearchError(t(
-          `Products found but no LG.com reviews collected yet${selectedCountry !== "all" ? ` for ${selectedCountry}` : ""}.`,
-          `제품은 있지만 ${selectedCountry !== "all" ? `${selectedCountry} 지역의 ` : ""}LG.com 리뷰가 아직 수집되지 않았습니다.`
-        ));
-        setResults([]);
-      } else {
-        setResults(analyzed);
-      }
-    } catch (e) {
-      console.error("Search error:", e);
-      setSearchError(t("An error occurred while searching.", "검색 중 오류가 발생했습니다."));
-      setResults([]);
-    }
-    setIsSearching(false);
-  };
-
-  const hasResults = results.length > 0;
-  const countryLabel = selectedCountry === "all"
-    ? t("All Countries", "전체 국가")
-    : BV_COUNTRIES.find((c) => c.value === selectedCountry)?.flag + " " +
-      t(
-        BV_COUNTRIES.find((c) => c.value === selectedCountry)?.labelEn || "",
-        BV_COUNTRIES.find((c) => c.value === selectedCountry)?.label || ""
-      );
 
   return (
     <div className="p-4 sm:p-6 space-y-4 max-w-[1400px] mx-auto">
