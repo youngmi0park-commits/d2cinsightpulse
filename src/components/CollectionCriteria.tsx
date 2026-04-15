@@ -1088,7 +1088,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Country", "국가")}</th>
-                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("LGE Code", "법인코드")}</th>
+                  
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Channel", "채널")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
