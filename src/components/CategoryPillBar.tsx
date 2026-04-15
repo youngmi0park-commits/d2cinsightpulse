@@ -19,15 +19,48 @@ const CATEGORY_ITEMS = [
   { cat: "Microwave", label: "Microwave", emoji: "📡" },
 ];
 
-function useCategoryCounts() {
+const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
+  US: ["lge_com_us"],
+  UK: ["lge_com_uk"],
+  DE: ["lge_com_de"],
+  AU: ["lge_com_au"],
+  IN: ["lge_com_in"],
+  TW: ["lge_com_tw"],
+  JP: ["lge_com_jp"],
+  TH: ["lge_com_th"],
+};
+
+function useCategoryCounts(country?: string) {
   return useQuery({
-    queryKey: ["category-counts-for-pills"],
+    queryKey: ["category-counts-for-pills", country || "global"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_category_counts");
+      if (!country || country === "all") {
+        // Use existing RPC for global counts
+        const { data, error } = await supabase.rpc("get_category_counts");
+        if (error) throw error;
+        const map: Record<string, number> = {};
+        for (const row of data || []) {
+          map[row.category] = Number(row.count);
+        }
+        return map;
+      }
+
+      // Country-filtered: query reviews joined with products, filtered by source
+      const sources = COUNTRY_SOURCE_MAP[country] || [];
+      if (sources.length === 0) return {};
+
+      // Get all reviews for this country's sources, join with product category
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("product_id, products!inner(category)")
+        .in("source", sources);
+
       if (error) throw error;
+
       const map: Record<string, number> = {};
       for (const row of data || []) {
-        map[row.category] = Number(row.count);
+        const cat = (row as any).products?.category;
+        if (cat) map[cat] = (map[cat] || 0) + 1;
       }
       return map;
     },
@@ -40,10 +73,11 @@ interface CategoryPillBarProps {
   onSelect: (cat: string) => void;
   isLoading?: boolean;
   hasResult?: boolean;
+  country?: string;
 }
 
-export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false }: CategoryPillBarProps) {
-  const { data: counts } = useCategoryCounts();
+export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false, country }: CategoryPillBarProps) {
+  const { data: counts } = useCategoryCounts(country);
 
   // Sort by review count (descending), keep "all" first
   const sorted = [...CATEGORY_ITEMS].sort((a, b) => {
