@@ -37,6 +37,10 @@ export interface SentimentResult {
   // Privacy-aware flags
   hasTextData: boolean;
   ratingOnlyMode: boolean;
+  // Subject-bound FCO fields
+  primarySubject: string;
+  hasCrossProductMention: boolean;
+  confidence: number; // 0–1, lower when cross-product comparisons detected
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -194,6 +198,49 @@ const CATEGORY_EXCLUSIONS: Record<string, string[]> = {
   "Air Conditioner": ["Picture Quality", "Gaming"],
   "Air Purifier": ["Picture Quality", "Gaming"],
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// CROSS-PRODUCT COMPARISON DETECTION
+// ═══════════════════════════════════════════════════════════════════
+
+const CROSS_PRODUCT_KEYWORDS: Record<string, string[]> = {
+  "TV":             ["tv","oled","qled","screen","display","picture","remote","webos","hdmi","화면","티비"],
+  "Refrigerator":   ["fridge","refrigerator","freezer","ice maker","냉장고","냉동","냉각"],
+  "Washer":         ["washer","washing machine","laundry","세탁기","세탁","탈수","드럼"],
+  "Dryer":          ["dryer","drying","건조기","건조"],
+  "Dishwasher":     ["dishwasher","dishes","식기세척기","세척"],
+  "Vacuum":         ["vacuum","suction","cordzero","청소기","흡입력"],
+  "Air Conditioner":["ac","air conditioner","에어컨","냉방","dual inverter"],
+  "Air Purifier":   ["air purifier","purifier","공기청정기","필터"],
+  "Monitor":        ["monitor","모니터","refresh rate"],
+  "Laptop":         ["laptop","notebook","노트북","gram"],
+  "Audio":          ["soundbar","speaker","audio","사운드바"],
+  "Range":          ["range","oven","레인지","오븐"],
+  "Microwave":      ["microwave","전자레인지"],
+  "Cooktop":        ["cooktop","쿡탑","induction"],
+};
+
+const COMPARISON_PATTERNS: RegExp[] = [
+  /보다\s/gi, /에\s*비해/gi, /대비/gi,
+  /than\s+/gi, /compared\s+to/gi, /unlike\s+/gi, /vs\.?\s+/gi,
+  /better\s+than/gi, /worse\s+than/gi,
+];
+
+/**
+ * Detect if review text contains cross-product comparisons
+ * e.g. "냉장고가 세탁기보다 좋다" → true when targetCategory is Washer
+ */
+function detectCrossProductComparison(text: string, targetCategory: string): boolean {
+  const lower = text.toLowerCase();
+  const hasComparison = COMPARISON_PATTERNS.some(p => { p.lastIndex = 0; return p.test(lower); });
+  if (!hasComparison) return false;
+
+  // Check if other category keywords appear in the comparison text
+  const otherKws = Object.entries(CROSS_PRODUCT_KEYWORDS)
+    .filter(([cat]) => cat !== targetCategory)
+    .flatMap(([, kws]) => kws);
+  return otherKws.some(kw => lower.includes(kw.toLowerCase()));
+}
 
 /** Get excluded categories for a product category */
 function getExcludedCategories(productCategory?: string): Set<string> {
@@ -840,6 +887,7 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
   let priceNegCount = 0;
   const issueCounts = new Map<string, number>();
   const signals: SentimentSignal[] = [];
+  let crossProductMentionCount = 0;
 
   // Track best evidence phrases
   let bestPosEvidence = { phrase: "", score: -Infinity };
@@ -849,6 +897,12 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     // Use _analysisText (real content) for analysis if available, otherwise use text
     const analysisText = (review as any)._analysisText || review.text;
     
+    // ── Subject-bound FCO: detect cross-product comparisons ──
+    if (analysisText && productCategory) {
+      const hasCross = detectCrossProductComparison(analysisText, productCategory);
+      if (hasCross) crossProductMentionCount++;
+    }
+
     // Check if this review has real (non-placeholder) text
     const isRealText = analysisText && !/개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(analysisText) && analysisText.length > 20;
     if (isRealText) hasRealText = true;
@@ -985,6 +1039,11 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
   // Sort signals by absolute score for display
   signals.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
 
+  const reviewCount = reviews.length;
+  const avgConfidence = reviewCount > 0
+    ? Math.max(0, 1 - (crossProductMentionCount / reviewCount) * 0.5)
+    : 1;
+
   return {
     positive,
     negative,
@@ -1005,5 +1064,8 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     signals: signals.slice(0, 20),
     hasTextData: hasRealText,
     ratingOnlyMode: !hasRealText,
+    primarySubject: productCategory || "Unknown",
+    hasCrossProductMention: crossProductMentionCount > 0,
+    confidence: avgConfidence,
   };
 }
