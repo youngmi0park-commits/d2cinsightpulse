@@ -148,9 +148,47 @@ const LgComPage = () => {
         />
       </section>
 
-      {/* Weekly Reports & Strategic Analysis */}
-      <LgComWeeklyReport country={selectedCountry} />
-      <WeeklyInsightsPanel country={selectedCountry} />
+      {/* LG.com 리뷰 분석 결과 */}
+      <section className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-5 py-4 border-b border-border bg-primary/5">
+          <h2 className="text-base font-bold font-heading">
+            📊 {t("LG.com Review Analysis Results", "LG.com 리뷰 분석 결과")}
+          </h2>
+          <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
+            <span>{t("Country", "국가")}: <span className="font-semibold text-foreground">{
+              selectedCountry === "all"
+                ? t("All", "전체")
+                : `${BV_COUNTRIES.find(c => c.value === selectedCountry)?.flag || ""} ${t(
+                    BV_COUNTRIES.find(c => c.value === selectedCountry)?.labelEn || "",
+                    BV_COUNTRIES.find(c => c.value === selectedCountry)?.label || ""
+                  )}`
+            }</span></span>
+            <span className="text-border">|</span>
+            <span>{t("Period", "기간")}: <span className="font-semibold text-foreground">{t("Weekly", "주간")}</span></span>
+            <span className="text-border">|</span>
+            <span>{t("Basis", "기준")}: <span className="font-semibold text-foreground">{t("By Product", "제품별")}</span></span>
+          </div>
+        </div>
+
+        <Tabs defaultValue="weekly" className="w-full">
+          <TabsList className="w-full justify-start rounded-none border-b border-border bg-muted/30 px-4 h-auto py-0">
+            <TabsTrigger value="weekly" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-2.5 px-4 text-xs font-semibold">
+              <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
+              {t("Weekly Insight Report", "주간 인사이트 리포트")}
+            </TabsTrigger>
+            <TabsTrigger value="strategic" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-2.5 px-4 text-xs font-semibold">
+              <Brain className="h-3.5 w-3.5 mr-1.5" />
+              {t("Strategic Deep-Dive", "전략 심층분석")}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="weekly" className="p-4 mt-0">
+            <LgComWeeklyReport country={selectedCountry} />
+          </TabsContent>
+          <TabsContent value="strategic" className="p-4 mt-0">
+            <WeeklyInsightsPanel country={selectedCountry} />
+          </TabsContent>
+        </Tabs>
+      </section>
     </div>
   );
 };
