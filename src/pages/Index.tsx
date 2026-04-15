@@ -130,6 +130,19 @@ const Index = () => {
         productGroups.get(key)!.push(product);
       }
 
+      // ── 그룹 내 카테고리 다수결 — 오염 방지 ──
+      for (const [key, prods] of productGroups) {
+        const catCounts = prods.reduce<Record<string, number>>((acc, p) => {
+          acc[p.category] = (acc[p.category] ?? 0) + 1;
+          return acc;
+        }, {});
+        const dominantCat = Object.entries(catCounts)
+          .sort((a, b) => b[1] - a[1])[0]?.[0];
+        if (dominantCat) {
+          productGroups.set(key, prods.filter(p => p.category === dominantCat));
+        }
+      }
+
       const analyzed: AnalyzedProduct[] = [];
 
       for (const [, products] of productGroups) {

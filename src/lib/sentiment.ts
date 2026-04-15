@@ -199,6 +199,49 @@ const CATEGORY_EXCLUSIONS: Record<string, string[]> = {
   "Air Purifier": ["Picture Quality", "Gaming"],
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// CROSS-PRODUCT COMPARISON DETECTION
+// ═══════════════════════════════════════════════════════════════════
+
+const CROSS_PRODUCT_KEYWORDS: Record<string, string[]> = {
+  "TV":             ["tv","oled","qled","screen","display","picture","remote","webos","hdmi","화면","티비"],
+  "Refrigerator":   ["fridge","refrigerator","freezer","ice maker","냉장고","냉동","냉각"],
+  "Washer":         ["washer","washing machine","laundry","세탁기","세탁","탈수","드럼"],
+  "Dryer":          ["dryer","drying","건조기","건조"],
+  "Dishwasher":     ["dishwasher","dishes","식기세척기","세척"],
+  "Vacuum":         ["vacuum","suction","cordzero","청소기","흡입력"],
+  "Air Conditioner":["ac","air conditioner","에어컨","냉방","dual inverter"],
+  "Air Purifier":   ["air purifier","purifier","공기청정기","필터"],
+  "Monitor":        ["monitor","모니터","refresh rate"],
+  "Laptop":         ["laptop","notebook","노트북","gram"],
+  "Audio":          ["soundbar","speaker","audio","사운드바"],
+  "Range":          ["range","oven","레인지","오븐"],
+  "Microwave":      ["microwave","전자레인지"],
+  "Cooktop":        ["cooktop","쿡탑","induction"],
+};
+
+const COMPARISON_PATTERNS: RegExp[] = [
+  /보다\s/gi, /에\s*비해/gi, /대비/gi,
+  /than\s+/gi, /compared\s+to/gi, /unlike\s+/gi, /vs\.?\s+/gi,
+  /better\s+than/gi, /worse\s+than/gi,
+];
+
+/**
+ * Detect if review text contains cross-product comparisons
+ * e.g. "냉장고가 세탁기보다 좋다" → true when targetCategory is Washer
+ */
+function detectCrossProductComparison(text: string, targetCategory: string): boolean {
+  const lower = text.toLowerCase();
+  const hasComparison = COMPARISON_PATTERNS.some(p => { p.lastIndex = 0; return p.test(lower); });
+  if (!hasComparison) return false;
+
+  // Check if other category keywords appear in the comparison text
+  const otherKws = Object.entries(CROSS_PRODUCT_KEYWORDS)
+    .filter(([cat]) => cat !== targetCategory)
+    .flatMap(([, kws]) => kws);
+  return otherKws.some(kw => lower.includes(kw.toLowerCase()));
+}
+
 /** Get excluded categories for a product category */
 function getExcludedCategories(productCategory?: string): Set<string> {
   if (!productCategory) return new Set();
@@ -996,9 +1039,9 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
   // Sort signals by absolute score for display
   signals.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
 
-  const total = reviews.length;
-  const avgConfidence = total > 0
-    ? Math.max(0, 1 - (crossProductMentionCount / total) * 0.5)
+  const reviewCount = reviews.length;
+  const avgConfidence = reviewCount > 0
+    ? Math.max(0, 1 - (crossProductMentionCount / reviewCount) * 0.5)
     : 1;
 
   return {

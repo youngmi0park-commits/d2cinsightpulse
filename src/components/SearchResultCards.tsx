@@ -174,6 +174,23 @@ export function SearchResultCards({ results }: SearchResultCardsProps) {
                   </p>
                 )}
 
+                {/* 비교 구문 감지 경고 */}
+                {item.sentiment.hasCrossProductMention && (
+                  <div className="flex items-center gap-1.5 mt-1 px-2 py-1
+                                  rounded-md bg-amber-50 border border-amber-200
+                                  text-[10px] text-amber-700 font-medium">
+                    ⚡ 타 제품 비교 언급 포함 — 신뢰도 {Math.round(item.sentiment.confidence * 100)}%
+                  </div>
+                )}
+                {/* 신뢰도 낮음 경고 */}
+                {!item.sentiment.hasCrossProductMention && item.sentiment.confidence < 0.6 && (
+                  <div className="flex items-center gap-1.5 mt-1 px-2 py-1
+                                  rounded-md bg-muted border border-border
+                                  text-[10px] text-muted-foreground font-medium">
+                    ⚠️ 감성 분석 신뢰도 낮음 — 원본 리뷰 직접 확인 권고
+                  </div>
+                )}
+
                 {/* Flags: Price Sensitivity + Competitive */}
                 <div className="flex flex-wrap gap-1">
                   {item.sentiment.priceSensitivityFlag && (
