@@ -990,9 +990,18 @@ function formatTimeAgo(isoStr: string): string {
   return `${days}일 전`;
 }
 
+const COUNTRY_KO_NAME: Record<string, string> = {
+  US: "미국", UK: "영국", DE: "독일", AU: "호주", IN: "인도",
+  JP: "일본", TW: "대만", TH: "태국", SG: "싱가포르", VN: "베트남",
+  ID: "인도네시아", HK: "홍콩", PH: "필리핀", MY: "말레이시아",
+  CA: "캐나다", BR: "브라질", MX: "멕시코", FR: "프랑스",
+  Global: "글로벌", Other: "기타",
+};
+
 function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
+  const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
   const collectionLogs = useCollectionLogs();
   const sourceCounts = useCumulativeSourceCounts();
 
@@ -1005,6 +1014,19 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
     acc[row.country].push(row);
     return acc;
   }, {});
+
+  // Calculate cumulative count per country
+  const countryTotalCumulative = (country: string, rows: CollectionRow[]): number => {
+    const seen = new Set<string>();
+    let total = 0;
+    for (const row of rows) {
+      const key = `${row.channel}|${row.country}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      total += resolveCumulativeCount(row.channel, row.country, sourceCounts);
+    }
+    return total;
+  };
 
   const statusBadge = (s: CollectionRow["status"]) => {
     const cls = s === "active"
@@ -1054,7 +1076,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                     filterCountry === c ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {row.flag} {c}
+                  {row.flag} {COUNTRY_KO_NAME[c] || c}
                 </button>
               );
             })}
@@ -1090,9 +1112,24 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       }`}
                     >
                       {ri === 0 ? (
-                        <td rowSpan={rows.length} className="px-2 py-1.5 font-bold text-foreground align-top border-r border-border/30">
-                          <span className="text-sm">{row.flag}</span> {country}
-                          <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{rows.length}개 채널</div>
+                        <td
+                          rowSpan={rows.length}
+                          className="px-2 py-1.5 font-bold text-foreground align-top border-r border-border/30 cursor-pointer select-none"
+                          onClick={() => setExpandedCountry(expandedCountry === country ? null : country)}
+                        >
+                          <div className="flex flex-col items-start gap-0.5">
+                            <span className="text-sm leading-tight">
+                              {row.flag} {COUNTRY_KO_NAME[country] || country}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground font-normal" style={{ wordBreak: "keep-all" }}>
+                              ({country}) · {rows.length}개 채널
+                            </span>
+                            {expandedCountry === country && (
+                              <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in">
+                                📊 {countryTotalCumulative(country, rows).toLocaleString()}건
+                              </span>
+                            )}
+                          </div>
                         </td>
                       ) : null}
                       <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
