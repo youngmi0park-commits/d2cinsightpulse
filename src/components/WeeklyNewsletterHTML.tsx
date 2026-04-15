@@ -239,8 +239,8 @@ function generatePreviewHTML(d: NewsletterData): string {
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "Inter,'Segoe UI',Arial,sans-serif";
   const WIDTH = 780;
-  const BG = "#FFFFFF";
-  const CARD_BG = "#FFFFFF";
+  const BG = "#EFECE5";
+  const CARD_BG = "#EFECE5";
   const RED = "#EA1917";
   const DARK_RED = "#A50034";
   const BORDER = "#E0DBD3";
