@@ -47,24 +47,29 @@ Deno.serve(async (req) => {
   // ── Locale rotation: 가장 오래 수집되지 않은 로캘을 먼저 처리 ──
   let sortedLocales = [...activeLocales];
   if (mode === "collect" || mode === "full") {
+    // 로캘별 가장 최근 수집 시점(MAX)을 기준으로 정렬 — 오래 미수집된 로캘 우선
     const { data: progressByLocale } = await supabase
       .from("bv_collection_progress")
       .select("locale, last_run_at")
       .in("locale", activeLocales.map(l => l.locale))
       .eq("is_complete", false)
-      .order("last_run_at", { ascending: true, nullsFirst: true })
-      .limit(1000);
+      .order("last_run_at", { ascending: false, nullsFirst: false })
+      .limit(5000);
 
     if (progressByLocale?.length) {
-      const localeLastRun = new Map<string, string>();
+      // MAX(last_run_at) per locale
+      const localeMaxRun = new Map<string, string>();
       for (const row of progressByLocale) {
-        if (!localeLastRun.has(row.locale)) {
-          localeLastRun.set(row.locale, row.last_run_at ?? "1970-01-01");
+        const ts = row.last_run_at ?? "1970-01-01";
+        const current = localeMaxRun.get(row.locale);
+        if (!current || ts > current) {
+          localeMaxRun.set(row.locale, ts);
         }
       }
+      // 가장 오래된(MAX가 작은) 로캘 먼저
       sortedLocales.sort((a, b) => {
-        const aTime = localeLastRun.get(a.locale) ?? "1970-01-01";
-        const bTime = localeLastRun.get(b.locale) ?? "1970-01-01";
+        const aTime = localeMaxRun.get(a.locale) ?? "1970-01-01";
+        const bTime = localeMaxRun.get(b.locale) ?? "1970-01-01";
         return aTime.localeCompare(bTime);
       });
     }
