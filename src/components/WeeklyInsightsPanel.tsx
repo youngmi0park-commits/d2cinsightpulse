@@ -253,20 +253,26 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
           <div className="space-y-4">
             {/* Analyzed products summary */}
             {result?.metadata?.analyzed_products && (
-              <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border items-center">
-                <span className="text-[10px] text-muted-foreground mr-1">{t("Analyzed:", "분석 대상:")}</span>
-                {(result.metadata as any).total_reviews_analyzed && (
-                  <Badge variant="secondary" className="text-[10px] gap-1 bg-primary/10 text-primary border-primary/20 mr-1">
-                    {t("Total", "총")} {(result.metadata as any).total_reviews_analyzed.toLocaleString()}{t(" reviews", "건")}
-                  </Badge>
-                )}
-                {result.metadata.analyzed_products.map((p, i) => (
-                  <Badge key={i} variant="outline" className="text-[10px] gap-1">
-                    {p.display_name || p.model_number}
-                    <span className="text-muted-foreground">({((p as any).total_count || p.positive_count + p.negative_count)}건)</span>
-                  </Badge>
-                ))}
-              </div>
+              <details className="group border border-border rounded-lg">
+                <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <span className="font-medium">{t("Analyzed Products", "분석 대상 제품")}</span>
+                  {(result.metadata as any).total_reviews_analyzed && (
+                    <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                      {t("Total", "총")} {(result.metadata as any).total_reviews_analyzed.toLocaleString()}{t(" reviews", "건")}
+                    </Badge>
+                  )}
+                  <Badge variant="secondary" className="text-[10px]">{result.metadata.analyzed_products.length}{t(" products", "개")}</Badge>
+                  <ChevronDown className="h-3 w-3 ml-auto group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="px-3 pb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
+                  {result.metadata.analyzed_products.map((p, i) => (
+                    <div key={i} className="flex items-center justify-between text-[11px] bg-muted/30 rounded px-2 py-1.5">
+                      <span className="text-foreground truncate">{p.display_name || p.model_number}</span>
+                      <span className="text-muted-foreground shrink-0 ml-2">{((p as any).total_count || p.positive_count + p.negative_count).toLocaleString()}{t(" reviews", "건")}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
             )}
 
             {/* Summary */}

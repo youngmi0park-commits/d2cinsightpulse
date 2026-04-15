@@ -259,17 +259,23 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
                 </button>
               </div>
             </div>
-            {/* Analyzed products bar */}
+            {/* Analyzed products summary */}
             {meta?.analyzed_products && (
-              <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border">
-                <span className="text-[10px] text-muted-foreground mr-1">{t("Analyzed:", "분석 대상:")}</span>
-                {meta.analyzed_products.map((p: any, i: number) => (
-                  <Badge key={i} variant="outline" className="text-[10px] gap-1">
-                    {p.display_name || p.model_number}
-                    <span className="text-muted-foreground">({p.positive_count + p.negative_count + (p.neutral_count || 0)}{t(" reviews", "건")})</span>
-                  </Badge>
-                ))}
-              </div>
+              <details className="group border border-border rounded-lg">
+                <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <span className="font-medium">{t("Analyzed Products", "분석 대상 제품")}</span>
+                  <Badge variant="secondary" className="text-[10px]">{meta.analyzed_products.length}{t(" products", "개")}</Badge>
+                  <ChevronDown className="h-3 w-3 ml-auto group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="px-3 pb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
+                  {meta.analyzed_products.map((p: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between text-[11px] bg-muted/30 rounded px-2 py-1.5">
+                      <span className="text-foreground truncate">{p.display_name || p.model_number}</span>
+                      <span className="text-muted-foreground shrink-0 ml-2">{(p.positive_count + p.negative_count + (p.neutral_count || 0)).toLocaleString()}{t(" reviews", "건")}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
             )}
 
             {/* Executive Summary */}
