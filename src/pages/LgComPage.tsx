@@ -124,7 +124,7 @@ const LgComPage = () => {
       {/* Header */}
       <PageHeader
         icon={Store}
-        title="🏬 LG.com Review Studio"
+        title="🏬 LG.com Insights"
         description={t(
           "Analyze customer reviews from 8 LG.com regions. Select a country, search products, and generate marketing assets.",
           "LG.com 8개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
