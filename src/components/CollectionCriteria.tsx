@@ -1083,12 +1083,26 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
           </div>
 
           {/* Summary line */}
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40 text-[11px] font-medium text-foreground">
-            <span>📊</span>
-            <span>
-              {t("Total", "총")} <span className="font-bold text-primary">{countries.length}</span>{t(" countries", "개국")} · <span className="font-bold text-primary">{COLLECTION_DETAIL.length}</span>{t(" channels", "개 채널")} · {t("Cumulative", "누적")} <span className="font-bold text-primary">{Object.values(sourceCounts).reduce((s, v) => s + v, 0).toLocaleString()}</span>{t(" reviews collected", "건 수집")}
-            </span>
-          </div>
+          {(() => {
+            const filteredRows = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
+            const filteredCountries = [...new Set(filteredRows.map(r => r.country))];
+            const seen = new Set<string>();
+            let filteredCumulative = 0;
+            for (const row of filteredRows) {
+              const key = `${row.channel}|${row.country}`;
+              if (seen.has(key)) continue;
+              seen.add(key);
+              filteredCumulative += resolveCumulativeCount(row.channel, row.country, sourceCounts);
+            }
+            return (
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40 text-[11px] font-medium text-foreground">
+                <span>📊</span>
+                <span>
+                  {filterCountry === "all" ? t("Total", "총") : `${COUNTRY_KO_NAME[filterCountry] || filterCountry}`} <span className="font-bold text-primary">{filteredCountries.length}</span>{t(" countries", "개국")} · <span className="font-bold text-primary">{filteredRows.length}</span>{t(" channels", "개 채널")} · {t("Cumulative", "누적")} <span className="font-bold text-primary">{filteredCumulative.toLocaleString()}</span>{t(" reviews collected", "건 수집")}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Table */}
           <div className="overflow-x-auto">
