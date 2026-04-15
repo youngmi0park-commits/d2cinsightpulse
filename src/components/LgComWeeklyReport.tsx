@@ -212,6 +212,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             onSelect={(cat) => runReport(cat)}
             isLoading={isLoading}
             hasResult={!!report}
+            country={region}
           />
         )}
 
