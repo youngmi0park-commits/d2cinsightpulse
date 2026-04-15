@@ -23,13 +23,16 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const today = new Date().toISOString().split("T")[0];
 
   try {
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    // Use published_at for weekly window (matches BV data pattern)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
     const { data: reviews } = await supabase
       .from("reviews")
       .select("content, source, sentiment, emotion_category, user_type, content_type, product_id, products!inner(model_number, display_name, category)")
-      .gte("collected_at", fourteenDaysAgo)
+      .gte("published_at", sevenDaysAgo)
       .eq("content_type", "review")
       .limit(500);
 
@@ -40,23 +43,81 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Also generate trending_snapshots from the same weekly data
+    const productAgg: Record<string, { product_id: string; source: string; count: number; scores: number[]; sentiments: string[] }> = {};
+    for (const r of reviews) {
+      const key = r.product_id + "|" + r.source;
+      if (!productAgg[key]) {
+        productAgg[key] = { product_id: r.product_id, source: r.source, count: 0, scores: [], sentiments: [] };
+      }
+      productAgg[key].count++;
+      if (r.sentiment) productAgg[key].sentiments.push(r.sentiment);
+    }
+
+    // Insert trending snapshots for today
+    const snapshotRows = Object.values(productAgg)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 50)
+      .map((agg, idx) => {
+        const posCount = agg.sentiments.filter(s => s === "positive").length;
+        const avgScore = agg.sentiments.length > 0 ? posCount / agg.sentiments.length : 0.5;
+        // Normalize source for grouping
+        let normSource = agg.source;
+        if (normSource.startsWith("lge_com")) normSource = "lge_com";
+        if (normSource.startsWith("reddit")) normSource = "reddit";
+        if (normSource.startsWith("youtube")) normSource = "youtube";
+        if (normSource.startsWith("amazon")) normSource = "amazon";
+        return {
+          product_id: agg.product_id,
+          source: normSource,
+          mention_count: agg.count,
+          avg_sentiment_score: Math.round(avgScore * 100) / 100,
+          trend: avgScore > 0.6 ? "up" : avgScore < 0.4 ? "down" : "stable",
+          change_percent: 0,
+          rank: idx + 1,
+          snapshot_date: today,
+        };
+      });
+
+    if (snapshotRows.length > 0) {
+      const { error: snapErr } = await supabase
+        .from("trending_snapshots")
+        .upsert(snapshotRows, { onConflict: "id" });
+      if (snapErr) console.error("Snapshot insert error:", snapErr.message);
+      else console.log("Inserted", snapshotRows.length, "trending snapshots for", today);
+    }
+
+    // Now extract keywords per source
     const bySource: Record<string, any[]> = {};
     for (const r of reviews) {
-      if (!bySource[r.source]) bySource[r.source] = [];
-      bySource[r.source].push(r);
+      let normSrc = r.source;
+      if (normSrc.startsWith("lge_com")) normSrc = "lge_com";
+      if (normSrc.startsWith("reddit")) normSrc = "reddit";
+      if (normSrc.startsWith("youtube")) normSrc = "youtube";
+      if (normSrc.startsWith("amazon")) normSrc = "amazon";
+      if (!bySource[normSrc]) bySource[normSrc] = [];
+      bySource[normSrc].push(r);
     }
 
     let totalKeywords = 0;
 
-    for (const [source, sourceReviews] of Object.entries(bySource)) {
+    // Process top 5 sources to stay within timeout
+    const sortedSources = Object.entries(bySource)
+      .sort((a, b) => b[1].length - a[1].length)
+      .slice(0, 5);
+
+    for (const [source, sourceReviews] of sortedSources) {
       const combinedText = sourceReviews
-        .map((r: any) => `[${r.sentiment}/${r.emotion_category || "unknown"}/${r.user_type || "unknown"}] ${r.content.slice(0, 300)}`)
+        .map((r: any) => {
+          const prod = r.products as any;
+          return "[" + (r.sentiment || "unknown") + "/" + (r.emotion_category || "unknown") + "] " + (prod?.display_name || "") + ": " + r.content.slice(0, 250);
+        })
         .join("\n");
 
       const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: "Bearer " + LOVABLE_API_KEY,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -64,63 +125,17 @@ Deno.serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are a 'Function-Context-Outcome (FCO)' Sentiment Analyst for LG Electronics product reviews.
-
-⚠️ CRITICAL: Do NOT judge sentiment by surface word polarity. You MUST analyze each review SENTENCE by decomposing it into:
-1) Function — which product feature is discussed
-2) Context — the usage situation / environment  
-3) Outcome — did the customer have a positive or negative experience
-
-## FUNCTION CATEGORIES (map every insight to one):
-- Picture Quality: brightness, black level, contrast, color accuracy, upscaling, HDR, Dolby Vision, motion, blur, judder
-- Gaming: input lag, response time, VRR, G-Sync, FreeSync, refresh rate, cloud gaming
-- Sound: volume, clarity, bass, built-in speakers, Dolby Atmos
-- Smart / AI / OS: webOS, speed, app loading, AI features, voice recognition, recommendation, updates, stability
-- Design & Build: thin, bezel, stand, frame, premium, heavy, cheap-looking
-- Installation & Setup: mounting, wall mount, cable management, difficulty, instructions
-- Reliability & Quality: defect, dead pixel, reboot, heat, noise, durability
-- Value & Price: worth the price, expensive, deal, expectation vs reality
-- Wash/Clean Quality, Cooling/Temperature, Energy/Noise (for appliances)
-
-## KEYWORD FORMAT (MANDATORY — meaning-unit, NOT single words):
-❌ FORBIDDEN: "bright", "noise", "install", "cheap", "heavy"
-✅ REQUIRED: "[Function] – [Why customers liked/disliked it]"
-Examples:
-- "Picture Quality – Deep blacks even in bright rooms"  
-- "Gaming – Low input lag with PS5"
-- "Installation – Wall mounting instructions unclear"
-- "Sound – Bass lacks depth for movies"
-- "Reliability – Fan noise during gaming sessions"
-- "Smart OS – webOS slow after firmware update"
-
-## CONTEXT-DEPENDENT EXAMPLES:
-- "bright" → POSITIVE: "High brightness in sunlit room" | NEGATIVE: "Overly bright for night viewing"
-- "quiet" → POSITIVE: "Quiet operation in daily use" | NEGATIVE: "Audio too quiet at max volume"
-- "heavy" → POSITIVE: "Heavy, solid build quality" | NEGATIVE: "Too heavy for wall mounting"
-
-## OUTPUT FORMAT:
-Return a JSON array of objects:
-- keyword: string (MEANING-UNIT format: "[Function] – [insight phrase]", ENGLISH only)
-- count: number (estimated frequency)
-- sentiment: "positive" | "negative" | "neutral" (based on OUTCOME, not the word)
-- keyword_category: "feature_spec" | "emotional" | "comparison" | "problem"  
-- function_category: string (one of the Function categories above)
-- related_products: string[] (model numbers)
-- related_countries: string[] (country codes)
-- context_example: string (paraphrased usage context, 10-25 words — do NOT copy review text verbatim)
-- sentiment_reasoning: string (1 sentence: Function + Context → Outcome explanation)
-
-Return 15-25 meaning-unit keywords per source. ONLY valid JSON, no markdown.`,
+              content: "You are a FCO (Function-Context-Outcome) Sentiment Analyst for LG Electronics product reviews.\n\nExtract 10-15 meaning-unit keywords from the reviews.\n\nKEYWORD FORMAT: \"[Function] - [Why customers liked/disliked it]\"\nExamples: \"Picture Quality - Deep blacks even in bright rooms\", \"Installation - Wall mounting instructions unclear\"\n\nReturn a JSON array with objects:\n- keyword: string (meaning-unit format, ENGLISH only)\n- count: number (estimated frequency)\n- sentiment: \"positive\" | \"negative\"\n- related_products: string[] (model numbers mentioned)\n- related_countries: string[] (country codes: US, UK, DE, AU, IN, TW, JP, TH)\n\nOnly valid JSON, no markdown.",
             },
-            { role: "user", content: `Source: ${source}\n\n${combinedText.slice(0, 12000)}` },
+            { role: "user", content: "Source: " + source + " (" + sourceReviews.length + " reviews)\n\n" + combinedText.slice(0, 10000) },
           ],
           temperature: 0.1,
-          max_tokens: 4000,
+          max_tokens: 3000,
         }),
       });
 
       if (!aiRes.ok) {
-        console.error(`AI failed for source ${source}: ${aiRes.status}`);
+        console.error("AI failed for source " + source + ": " + aiRes.status);
         continue;
       }
 
@@ -132,10 +147,8 @@ Return 15-25 meaning-unit keywords per source. ONLY valid JSON, no markdown.`,
         const keywords = JSON.parse(cleaned);
         if (!Array.isArray(keywords)) continue;
 
-        const excludePatterns = /^(lg|samsung|sony|tv|oled|qled|monitor|refrigerator|washer|dryer|washing machine|smart tv|4k|hdr|hdmi|engineer|customer service|warranty|app|compressor|ice maker|soundbar|laptop|projector|air conditioner|freezer|microwave|dishwasher|alexa|webos|nanocell|qned|ultragear|standbyme|thinq|xboom|puricare)/i;
-
         for (const kw of keywords) {
-          if (!kw.keyword || excludePatterns.test(kw.keyword.trim())) continue;
+          if (!kw.keyword || kw.keyword.length < 5) continue;
 
           await supabase.from("trending_keywords").insert({
             keyword: kw.keyword,
@@ -144,17 +157,24 @@ Return 15-25 meaning-unit keywords per source. ONLY valid JSON, no markdown.`,
             source: source,
             related_products: kw.related_products || [],
             related_countries: kw.related_countries || [],
-            snapshot_date: new Date().toISOString().split("T")[0],
+            snapshot_date: today,
           });
           totalKeywords++;
         }
       } catch {
-        console.error(`Failed to parse keywords for ${source}`);
+        console.error("Failed to parse keywords for " + source);
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, keywords: totalKeywords, sources: Object.keys(bySource).length }),
+      JSON.stringify({
+        success: true,
+        keywords: totalKeywords,
+        snapshots: snapshotRows.length,
+        sources: sortedSources.length,
+        date: today,
+        reviewsAnalyzed: reviews.length,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

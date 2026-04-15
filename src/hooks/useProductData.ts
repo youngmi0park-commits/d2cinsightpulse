@@ -87,17 +87,30 @@ export function useSearchProducts(query: string) {
   });
 }
 
-// Fetch trending products from DB
+// Fetch trending products from DB — latest snapshot_date only
 export function useTrendingProducts(source?: string) {
   return useQuery({
     queryKey: ["trending-products", source],
     queryFn: async () => {
+      // First get the most recent snapshot_date
+      const { data: latestRow } = await supabase
+        .from("trending_snapshots")
+        .select("snapshot_date")
+        .order("snapshot_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      const latestDate = latestRow?.snapshot_date;
+
       let query = supabase
         .from("trending_snapshots")
         .select("*, products!inner(model_number, display_name, category)")
         .order("mention_count", { ascending: false })
         .limit(10);
 
+      if (latestDate) {
+        query = query.eq("snapshot_date", latestDate);
+      }
       if (source) {
         query = query.eq("source", source);
       }
@@ -119,17 +132,30 @@ export function useTrendingProducts(source?: string) {
   });
 }
 
-// Fetch trending keywords from DB
+// Fetch trending keywords from DB — latest snapshot_date only
 export function useTrendingKeywords(source?: string) {
   return useQuery({
     queryKey: ["trending-keywords", source],
     queryFn: async () => {
+      // First get the most recent snapshot_date
+      const { data: latestRow } = await supabase
+        .from("trending_keywords")
+        .select("snapshot_date")
+        .order("snapshot_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      const latestDate = latestRow?.snapshot_date;
+
       let query = supabase
         .from("trending_keywords")
         .select("*")
         .order("count", { ascending: false })
         .limit(30);
 
+      if (latestDate) {
+        query = query.eq("snapshot_date", latestDate);
+      }
       if (source) {
         query = query.eq("source", source);
       }
