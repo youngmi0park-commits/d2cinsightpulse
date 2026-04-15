@@ -1112,9 +1112,24 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       }`}
                     >
                       {ri === 0 ? (
-                        <td rowSpan={rows.length} className="px-2 py-1.5 font-bold text-foreground align-top border-r border-border/30">
-                          <span className="text-sm">{row.flag}</span> {country}
-                          <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{rows.length}개 채널</div>
+                        <td
+                          rowSpan={rows.length}
+                          className="px-2 py-1.5 font-bold text-foreground align-top border-r border-border/30 cursor-pointer select-none"
+                          onClick={() => setExpandedCountry(expandedCountry === country ? null : country)}
+                        >
+                          <div className="flex flex-col items-start gap-0.5">
+                            <span className="text-sm leading-tight">
+                              {row.flag} {COUNTRY_KO_NAME[country] || country}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground font-normal" style={{ wordBreak: "keep-all" }}>
+                              ({country}) · {rows.length}개 채널
+                            </span>
+                            {expandedCountry === country && (
+                              <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in">
+                                📊 {countryTotalCumulative(country, rows).toLocaleString()}건
+                              </span>
+                            )}
+                          </div>
                         </td>
                       ) : null}
                       <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
