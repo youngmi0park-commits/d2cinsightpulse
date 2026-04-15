@@ -150,8 +150,15 @@ Deno.serve(async (req) => {
   // ── PHASE 2: COLLECT (batch collect reviews — 과거 포함 전량 수집) ──
   if (mode === "collect" || mode === "full") {
     const productCache: Record<string, string> = {};
+    const startTime = Date.now();
+    const TIME_BUDGET_MS = 130_000; // 130초 — 150초 타임아웃 전 여유
 
     for (const { locale, region, keyName } of sortedLocales) {
+      // 시간 예산 초과 시 남은 로캘 스킵
+      if (Date.now() - startTime > TIME_BUDGET_MS) {
+        console.log(`[BV-AUTO] Time budget exceeded (${Math.round((Date.now() - startTime)/1000)}s), skipping remaining locales`);
+        break;
+      }
       const passkey = Deno.env.get(keyName)!;
       let totalInserted = 0;
       let totalSkipped = 0;
