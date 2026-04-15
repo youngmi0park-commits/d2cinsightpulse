@@ -994,6 +994,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const collectionLogs = useCollectionLogs();
+  const sourceCounts = useCumulativeSourceCounts();
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
