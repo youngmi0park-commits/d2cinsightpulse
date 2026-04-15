@@ -19,16 +19,6 @@ const CATEGORY_ITEMS = [
   { cat: "Microwave", label: "Microwave", emoji: "📡" },
 ];
 
-const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
-  US: ["lge_com_us"],
-  UK: ["lge_com_uk"],
-  DE: ["lge_com_de"],
-  AU: ["lge_com_au"],
-  IN: ["lge_com_in"],
-  TW: ["lge_com_tw"],
-  JP: ["lge_com_jp"],
-  TH: ["lge_com_th"],
-};
 
 function useCategoryCounts(country?: string) {
   const region = country || "all";
