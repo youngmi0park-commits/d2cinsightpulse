@@ -1072,7 +1072,8 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Last Collected", "마지막 수집")}</th>
-                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Count", "수집 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Last Run", "최근 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Cumulative", "누적 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
               </thead>
