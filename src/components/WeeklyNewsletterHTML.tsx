@@ -183,7 +183,7 @@ function generatePreviewHTML(d: NewsletterData): string {
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="ko">
 <head><meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="x-apple-disable-message-reformatting" /><meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
-<title>D2C Insight Pulse Weekly</title>
+<title>RTA Studio Weekly</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
 <style>table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}td{border-collapse:collapse;mso-line-height-rule:exactly;}</style><![endif]-->
 <style>
@@ -211,8 +211,8 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 <tr><td style="padding:30px 40px 20px;border-bottom:2px solid ${BORDER};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
-      <div style="font-size:26px;font-weight:800;color:${RED};letter-spacing:-0.5px;line-height:32px;">D2C Insight Pulse</div>
-      <div style="font-size:12px;color:#888;margin-top:5px;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+      <div style="font-size:26px;font-weight:800;color:${RED};letter-spacing:-0.5px;line-height:32px;">Review-to-Asset Studio</div>
+      <div style="font-size:12px;color:#888;margin-top:5px;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Turn Real Reviews into Ready-to-Use Marketing Assets.</em></div>
     </td>
     <td width="160" style="text-align:right;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
@@ -231,7 +231,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
     <tr><td style="padding:20px 40px;font-family:${FONT};">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="font-size:13px;font-weight:700;color:#333;padding-bottom:6px;line-height:20px;">🎯 고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-        <tr><td style="font-size:12px;color:#666;line-height:22px;">D2C Insight Pulse는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 메시지를 제공하는 데이터 플랫폼입니다.</td></tr>
+        <tr><td style="font-size:12px;color:#666;line-height:22px;">RTA Studio는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
       </table>
     </td></tr>
   </table>
@@ -442,7 +442,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr><td style="padding:20px 40px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-family:${INTER};"><div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:18px;">D2C Insight Pulse</div><div style="font-size:10px;color:#999;margin-top:3px;line-height:15px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+        <td style="font-family:${INTER};"><div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:18px;">Review-to-Asset Studio</div><div style="font-size:10px;color:#999;margin-top:3px;line-height:15px;">Produced by LG전자 D2C마케팅전략팀</div></td>
         <td style="text-align:right;font-family:${FONT};"><div style="font-size:10px;color:#bbb;line-height:15px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
       </tr></table>
     </td></tr>

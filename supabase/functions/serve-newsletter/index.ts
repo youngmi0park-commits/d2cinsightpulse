@@ -335,7 +335,7 @@ function buildNewsletterHTML(d: {
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="x-apple-disable-message-reformatting" />
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
-<title>D2C Insight Pulse Weekly</title>
+<title>RTA Studio Weekly</title>
 <!--[if mso]>
 <noscript>
 <xml>
@@ -375,8 +375,8 @@ a {text-decoration:none;}
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
-      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">D2C Insight Pulse</div>
-      <div style="font-size:12px;color:#888;margin-top:4px;mso-line-height-rule:exactly;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Feel the Pulse. Gain the Insight.</em></div>
+      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset Studio</div>
+      <div style="font-size:12px;color:#888;margin-top:4px;mso-line-height-rule:exactly;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Turn Real Reviews into Ready-to-Use Marketing Assets.</em></div>
     </td>
     <td width="140" style="text-align:right;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
@@ -393,7 +393,7 @@ a {text-decoration:none;}
 <tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;mso-line-height-rule:exactly;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:11px;color:#888;line-height:20px;">D2C Insight Pulse는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 메시지를 제공하는 데이터 플랫폼입니다.</td></tr>
+    <tr><td style="font-size:11px;color:#888;line-height:20px;">RTA Studio는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
   </table>
 </td></tr>
 
@@ -591,7 +591,7 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 <!-- Footer -->
 <tr><td style="padding:20px 32px;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;mso-line-height-rule:exactly;line-height:16px;">D2C Insight Pulse</div><div style="font-size:9px;color:#999;margin-top:2px;mso-line-height-rule:exactly;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;mso-line-height-rule:exactly;line-height:16px;">Review-to-Asset Studio</div><div style="font-size:9px;color:#999;margin-top:2px;mso-line-height-rule:exactly;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
     <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#ccc;line-height:14px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
   </tr></table>
 </td></tr>

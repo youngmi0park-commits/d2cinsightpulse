@@ -15,7 +15,7 @@ import {
 const staticNewsletters = [
   {
     id: 2,
-    title: "D2C Insight Pulse Weekly #2",
+    title: "RTA Studio Weekly #2",
     date: "2026-03-24",
     summary: "LG OLED evo G6 시리즈 긍정 리뷰 급증, Reddit 커뮤니티 세탁기 VOC 집중 분석",
     content: `📊 주간 하이라이트 (2026.03.18 ~ 03.24)
@@ -30,7 +30,7 @@ const staticNewsletters = [
   },
   {
     id: 1,
-    title: "D2C Insight Pulse Weekly #1",
+    title: "RTA Studio Weekly #1",
     date: "2026-03-17",
     summary: "플랫폼 런칭 첫 주간 리포트 — 초기 데이터 수집 현황 및 베이스라인 설정",
     content: `📊 주간 하이라이트 (2026.03.11 ~ 03.17)
@@ -163,7 +163,7 @@ const NewsletterPage = () => {
         await navigator.clipboard.write([
           new ClipboardItem({
             "text/html": new Blob([outlookHtml], { type: "text/html" }),
-            "text/plain": new Blob(["D2C Insight Pulse 주간 뉴스레터"], { type: "text/plain" }),
+            "text/plain": new Blob(["RTA Studio 주간 뉴스레터"], { type: "text/plain" }),
           }),
         ]);
       } else {

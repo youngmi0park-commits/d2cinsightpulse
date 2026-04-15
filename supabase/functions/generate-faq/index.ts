@@ -249,7 +249,7 @@ function buildSystemPrompt(locale: string) {
     ? "All FAQ questions and answers MUST be written in British English."
     : "All FAQ questions and answers MUST be written in American English.";
 
-  return `You are an expert D2C Insight Pulse FAQ Orchestrator for LG Electronics consumer products.
+  return `You are an expert Review-to-Asset Studio FAQ Orchestrator for LG Electronics consumer products.
 
 ## YOUR MISSION
 Analyze customer reviews and generate **conversion-optimized FAQ cards** for overseas e-commerce purchase conversion.
