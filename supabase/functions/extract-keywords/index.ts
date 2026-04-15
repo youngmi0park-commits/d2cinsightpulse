@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     // Process top 5 sources to stay within timeout
     const sortedSources = Object.entries(bySource)
       .sort((a, b) => b[1].length - a[1].length)
-      .slice(0, 5);
+      .slice(0, 3);
 
     for (const [source, sourceReviews] of sortedSources) {
       const combinedText = sourceReviews
