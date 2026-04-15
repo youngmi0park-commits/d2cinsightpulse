@@ -813,19 +813,29 @@ function useCollectionLogs() {
   return logs;
 }
 
-// Hook: cumulative review counts per source from DB
+// Hook: cumulative review counts per source from DB (includes per-country BV counts)
 function useCumulativeSourceCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await supabase.rpc("get_source_counts");
-      if (data) {
-        const map: Record<string, number> = {};
-        (data as { source: string; count: number }[]).forEach(d => {
+      const [sourceRes, lgcomRes] = await Promise.all([
+        supabase.rpc("get_source_counts"),
+        supabase.rpc("get_lgcom_country_counts"),
+      ]);
+      const map: Record<string, number> = {};
+      if (sourceRes.data) {
+        (sourceRes.data as { source: string; count: number }[]).forEach(d => {
           map[d.source] = Number(d.count || 0);
         });
-        setCounts(map);
       }
+      // Add per-country lge_com_xx counts so BV rows resolve correctly
+      if (lgcomRes.data) {
+        (lgcomRes.data as { country: string; count: number }[]).forEach(d => {
+          const key = `lge_com_${d.country.toLowerCase()}`;
+          map[key] = Number(d.count || 0);
+        });
+      }
+      setCounts(map);
     };
     fetchData();
     const interval = setInterval(fetchData, 30_000);
