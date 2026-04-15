@@ -832,6 +832,13 @@ export type Database = {
           count: number
         }[]
       }
+      get_category_counts_by_country: {
+        Args: { p_country?: string }
+        Returns: {
+          category: string
+          count: number
+        }[]
+      }
       get_country_counts: {
         Args: never
         Returns: {
