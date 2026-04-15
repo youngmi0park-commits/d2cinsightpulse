@@ -813,19 +813,29 @@ function useCollectionLogs() {
   return logs;
 }
 
-// Hook: cumulative review counts per source from DB
+// Hook: cumulative review counts per source from DB (includes per-country BV counts)
 function useCumulativeSourceCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await supabase.rpc("get_source_counts");
-      if (data) {
-        const map: Record<string, number> = {};
-        (data as { source: string; count: number }[]).forEach(d => {
+      const [sourceRes, lgcomRes] = await Promise.all([
+        supabase.rpc("get_source_counts"),
+        supabase.rpc("get_lgcom_country_counts"),
+      ]);
+      const map: Record<string, number> = {};
+      if (sourceRes.data) {
+        (sourceRes.data as { source: string; count: number }[]).forEach(d => {
           map[d.source] = Number(d.count || 0);
         });
-        setCounts(map);
       }
+      // Add per-country lge_com_xx counts so BV rows resolve correctly
+      if (lgcomRes.data) {
+        (lgcomRes.data as { country: string; count: number }[]).forEach(d => {
+          const key = `lge_com_${d.country.toLowerCase()}`;
+          map[key] = Number(d.count || 0);
+        });
+      }
+      setCounts(map);
     };
     fetchData();
     const interval = setInterval(fetchData, 30_000);
@@ -1196,7 +1206,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
           <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
             <span>✅ 수집 중: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "active").length}</span>개</span>
             <span>📋 예정: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "planned").length}</span>개</span>
-            <span>📊 누적 총계: <span className="font-bold text-primary">{Object.values(sourceCounts).reduce((s, v) => s + v, 0).toLocaleString()}</span>건</span>
+            <span>📊 누적 총계: <span className="font-bold text-primary">{Object.entries(sourceCounts).filter(([k]) => k !== "lge_com").reduce((s, [, v]) => s + v, 0).toLocaleString()}</span>건</span>
             <span className="ml-auto">
               ⏰ BV: Sweep(02:00 UTC) → Collect(6h마다) → Sync(06:00 UTC) |
               📦 기타: Reddit/Amazon 07:00 KST → YouTube 07:05 KST → 아시아 07:10 KST
