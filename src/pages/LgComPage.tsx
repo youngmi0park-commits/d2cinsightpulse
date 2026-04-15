@@ -261,53 +261,9 @@ const LgComPage = () => {
         />
       </section>
 
-      {/* 2️⃣ Product Search — with country context */}
-      <section className="bg-card/60 border border-border rounded-xl p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            {t("Product Search", "제품 검색")}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            — {countryLabel} {t("LG.com Reviews", "LG.com 리뷰")}
-          </span>
-          <a
-            href="/toolkit"
-            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-medium hover:bg-primary/20 transition-colors"
-          >
-            <Wrench className="h-3 w-3" />
-            {t("Asset Studio", "에셋 스튜디오")}
-          </a>
-        </div>
-        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
-      </section>
-
-      {/* Search Error */}
-      {searchError && (
-        <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-center flex items-center justify-center gap-2">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-          <p className="text-destructive text-sm">{searchError}</p>
-        </div>
-      )}
-
-      {/* Search Results */}
-      {hasResults && (
-        <div className="animate-slide-up">
-          <CategorySearchResults
-            results={results}
-            searchQuery={searchQuery}
-            selectedCountry={selectedCountry}
-          />
-        </div>
-      )}
-
-      {/* Weekly Reports (when no search) */}
-      {!hasResults && !searchError && (
-        <>
-          <LgComWeeklyReport country={selectedCountry} />
-          <WeeklyInsightsPanel country={selectedCountry} />
-        </>
-      )}
+      {/* Weekly Reports & Strategic Analysis */}
+      <LgComWeeklyReport country={selectedCountry} />
+      <WeeklyInsightsPanel country={selectedCountry} />
     </div>
   );
 };
