@@ -31,38 +31,22 @@ const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
 };
 
 function useCategoryCounts(country?: string) {
+  const region = country || "all";
   return useQuery({
-    queryKey: ["category-counts-for-pills", country || "global"],
+    queryKey: ["category-counts-for-pills", region],
     queryFn: async () => {
-      if (!country || country === "all") {
-        // Use existing RPC for global counts
-        const { data, error } = await supabase.rpc("get_category_counts");
-        if (error) throw error;
-        const map: Record<string, number> = {};
-        for (const row of data || []) {
-          map[row.category] = Number(row.count);
-        }
-        return map;
-      }
-
-      // Country-filtered: query reviews joined with products, filtered by source
-      const sources = COUNTRY_SOURCE_MAP[country] || [];
-      if (sources.length === 0) return {};
-
-      // Get all reviews for this country's sources, join with product category
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("product_id, products!inner(category)")
-        .in("source", sources);
-
+      const { data, error } = await supabase.rpc("get_category_counts_by_country", {
+        p_country: region,
+      });
       if (error) throw error;
-
       const map: Record<string, number> = {};
-      for (const row of data || []) {
-        const cat = (row as any).products?.category;
-        if (cat) map[cat] = (map[cat] || 0) + 1;
+      for (const row of (data || []) as { category: string; count: number }[]) {
+        map[row.category] = Number(row.count);
       }
       return map;
+    },
+    staleTime: 5 * 60_000,
+  });
     },
     staleTime: 5 * 60_000,
   });
