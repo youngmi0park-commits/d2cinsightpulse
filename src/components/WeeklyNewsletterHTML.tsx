@@ -415,6 +415,39 @@ ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
   </table>
 </td></tr>` : ""}
 
+<!-- Quick Wins -->
+${d.quickWins.length > 0 ? `<tr><td style="padding:20px 40px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a1a1a;${RADIUS}">
+    <tr><td style="padding:12px 16px;border-bottom:1px solid #333;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:800;color:#fff;font-family:${INTER};">⚡ 이번 주 마케터 Quick Wins — 즉시 실행 3선</td>
+        <td style="text-align:right;font-size:9px;color:#888;font-family:${FONT};">리뷰 데이터 기반 자동 생성 · ${d.dateRange}</td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        ${d.quickWins.map((qw, i) => {
+          const numBg = i === 0 ? RED : i === 1 ? "#0D9488" : "#6B21A8";
+          return `<td width="33%" style="padding:0 ${i === 1 ? '6px' : '0'};vertical-align:top;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#2a2a2a;border:1px solid #444;${RADIUS}">
+              <tr><td style="padding:12px;font-family:${FONT};">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+                  <td><span style="display:inline-block;width:22px;height:22px;background:${numBg};color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:22px;border-radius:50%;font-family:${INTER};">${i + 1}</span></td>
+                  <td style="padding-left:6px;font-size:10px;font-weight:700;color:${numBg};line-height:14px;">${qw.label.replace(/^[0-9️⃣]+\s*/, '')}</td>
+                  <td style="text-align:right;"><span style="font-size:9px;font-weight:600;padding:2px 5px;background:#333;color:#ddd;border:1px solid #555;border-radius:3px;">${qw.country}</span></td>
+                </tr></table>
+                <div style="font-size:11px;font-weight:700;color:#fff;line-height:16px;margin-top:8px;">${qw.action}</div>
+                <div style="font-size:10px;color:#aaa;line-height:15px;margin-top:4px;">${qw.basis}</div>
+                <div style="margin-top:6px;">${qw.tags.map(t => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:2px 5px;background:#333;color:#ccc;border:1px solid #555;border-radius:3px;margin-right:3px;">${t}</span>`).join("")}</div>
+              </td></tr>
+            </table>
+          </td>`;
+        }).join("")}
+      </tr></table>
+    </td></tr>
+  </table>
+</td></tr>` : ""}
+
 <!-- Trending Signals -->
 ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${BOX_BG};border:1px solid ${BORDER};${RADIUS}">
