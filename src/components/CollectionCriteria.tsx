@@ -813,6 +813,132 @@ function useCollectionLogs() {
   return logs;
 }
 
+// Hook: cumulative review counts per source from DB
+function useCumulativeSourceCounts() {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await supabase.rpc("get_source_counts");
+      if (data) {
+        const map: Record<string, number> = {};
+        (data as { source: string; count: number }[]).forEach(d => {
+          map[d.source] = Number(d.count || 0);
+        });
+        setCounts(map);
+      }
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+  return counts;
+}
+
+// Map channel+country → review source keys for cumulative count
+function resolveCumulativeCount(
+  channel: string,
+  country: string,
+  sourceCounts: Record<string, number>
+): number {
+  // BV channels → lge_com_xx
+  if (channel.includes("BV") || channel.includes("Bazaarvoice")) {
+    const countryToSource: Record<string, string> = {
+      US: "lge_com_us", UK: "lge_com_uk", IN: "lge_com_in", TW: "lge_com_tw",
+      JP: "lge_com_jp", TH: "lge_com_th", DE: "lge_com_de", AU: "lge_com_au",
+    };
+    return sourceCounts[countryToSource[country] || ""] || 0;
+  }
+  // Reddit channels
+  if (channel.startsWith("Reddit")) {
+    // Sum all reddit sources
+    if (channel.includes("r/OLED") || channel.includes("r/hometheater") || channel.includes("15+")) {
+      return Object.entries(sourceCounts)
+        .filter(([k]) => k.startsWith("reddit"))
+        .reduce((s, [, v]) => s + v, 0);
+    }
+    if (channel.includes("r/Appliances")) {
+      return (sourceCounts["reddit_appliances"] || 0) + (sourceCounts["reddit_appliancerepair"] || 0);
+    }
+    if (channel.includes("r/LGgram")) return sourceCounts["reddit_lggram"] || 0;
+    if (channel.includes("r/LG_UserHub")) return sourceCounts["reddit_lg_userhub"] || 0;
+    if (channel.includes("r/StanbyME")) return sourceCounts["reddit_stanbyme"] || 0;
+    if (channel.includes("r/Appliances") || channel.includes("r/HVAC")) {
+      return (sourceCounts["reddit_airconditioners"] || 0) + (sourceCounts["reddit_ac"] || 0);
+    }
+    return Object.entries(sourceCounts)
+      .filter(([k]) => k.startsWith("reddit"))
+      .reduce((s, [, v]) => s + v, 0);
+  }
+  // YouTube
+  if (channel.startsWith("YouTube")) {
+    if (channel.includes("(리뷰 영상 댓글)")) {
+      return Object.entries(sourceCounts)
+        .filter(([k]) => k.startsWith("youtube"))
+        .reduce((s, [, v]) => s + v, 0);
+    }
+    const cMap: Record<string, string[]> = {
+      US: ["youtube", "youtube_LGUSAChannel"],
+      UK: ["youtube"],
+      DE: ["youtube"],
+      AU: ["youtube"],
+      IN: ["youtube"],
+      JP: ["youtube"],
+      TW: ["youtube"],
+      TH: ["youtube"],
+      SG: ["youtube"],
+      VN: ["youtube"],
+      ID: ["youtube_id"],
+      HK: ["youtube"],
+      MY: ["youtube_my"],
+    };
+    const keys = cMap[country] || ["youtube"];
+    return keys.reduce((s, k) => s + (sourceCounts[k] || 0), 0);
+  }
+  // Amazon
+  if (channel.includes("Amazon")) return sourceCounts["amazon"] || 0;
+  // Individual channels
+  const directMap: Record<string, string> = {
+    "Best Buy": "bestbuy",
+    "Walmart": "walmart",
+    "Consumer Reports": "consumer_reports",
+    "RTINGS": "rtings",
+    "Costco": "costco",
+    "ConsumerAffairs": "consumeraffairs",
+    "Houzz": "houzz",
+    "BestReviews": "bestreviews",
+    "Trustpilot": "trustpilot",
+    "CNET": "cnet",
+    "TechRadar": "techradar",
+    "PCMag": "pcmag",
+    "Notebookcheck": "notebookcheck",
+    "Trusted Reviews": "trusted_reviews",
+    "Lemon8": "lemon8",
+  };
+  for (const [key, src] of Object.entries(directMap)) {
+    if (channel.includes(key)) return sourceCounts[src] || 0;
+  }
+  // Shopee/Lazada → web_review_xx
+  if (channel.includes("Shopee") || channel.includes("Lazada")) {
+    const cMap: Record<string, string> = {
+      TH: "web_review_th", SG: "web_review_sg", VN: "web_review_vn",
+      ID: "web_review_id", MY: "web_review", PH: "web_review",
+    };
+    return sourceCounts[cMap[country] || "web_review"] || 0;
+  }
+  // Web Review
+  if (channel.includes("Web Review")) {
+    const cMap: Record<string, string> = {
+      JP: "web_review_jp", TH: "web_review_th", IN: "web_review_in",
+      SG: "web_review_sg", VN: "web_review_vn", ID: "web_review_id",
+      HK: "web_review_hk", TW: "web_review_tw",
+    };
+    return sourceCounts[cMap[country] || "web_review"] || 0;
+  }
+  // Reviews.io
+  if (channel.includes("Reviews.io")) return sourceCounts["web_review_hk"] || 0;
+  return 0;
+}
+
 // Resolve channel → log entry
 function resolveChannelLog(
   channel: string,
@@ -868,6 +994,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const collectionLogs = useCollectionLogs();
+  const sourceCounts = useCumulativeSourceCounts();
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
@@ -945,7 +1072,8 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Last Collected", "마지막 수집")}</th>
-                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Count", "수집 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Last Run", "최근 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Cumulative", "누적 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
               </thead>
@@ -953,6 +1081,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                 {Object.entries(grouped).map(([country, rows]) =>
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
+                    const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
                     return (
                     <tr
                       key={`${country}-${ri}`}
@@ -983,7 +1112,14 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
                         {logEntry && logEntry.count > 0 ? (
-                          <span className="font-bold text-foreground">{logEntry.count.toLocaleString()}</span>
+                          <span className="text-muted-foreground">{logEntry.count.toLocaleString()}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
+                        {cumulative > 0 ? (
+                          <span className="font-bold text-primary">{cumulative.toLocaleString()}</span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
@@ -1001,6 +1137,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
           <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
             <span>✅ 수집 중: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "active").length}</span>개</span>
             <span>📋 예정: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "planned").length}</span>개</span>
+            <span>📊 누적 총계: <span className="font-bold text-primary">{Object.values(sourceCounts).reduce((s, v) => s + v, 0).toLocaleString()}</span>건</span>
             <span className="ml-auto">
               ⏰ BV: Sweep(02:00 UTC) → Collect(6h마다) → Sync(06:00 UTC) |
               📦 기타: Reddit/Amazon 07:00 KST → YouTube 07:05 KST → 아시아 07:10 KST
