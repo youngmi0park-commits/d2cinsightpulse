@@ -1076,7 +1076,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                     filterCountry === c ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {row.flag} {c}
+                  {row.flag} {COUNTRY_KO_NAME[c] || c}
                 </button>
               );
             })}
