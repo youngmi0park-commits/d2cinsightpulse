@@ -10,6 +10,13 @@ import { toast } from "sonner";
 import { format, subDays } from "date-fns";
 
 /* ───── Types ───── */
+interface QuickWin {
+  label: string; action: string; basis: string; tags: string[]; country: string;
+}
+interface MatrixItem {
+  tag: string; channel: string; country: string; title: string; description: string;
+  count: number; countLabel: string; delta: string; deltaPositive: boolean;
+}
 interface NewsletterData {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
@@ -20,6 +27,8 @@ interface NewsletterData {
   topProduct: string; topProductCount: number; topProductKws: string;
   opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
+  quickWins: QuickWin[];
+  matrixItems: MatrixItem[];
 }
 
 /* ───── Channel color map ───── */
@@ -44,14 +53,20 @@ function useNewsletterData() {
       const dateRange = `${format(weekAgo, "yyyy.MM.dd")} – ${format(now, "yyyy.MM.dd")}`;
       const generatedAt = format(now, "yyyy.MM.dd HH:mm");
 
-      const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
+      // Fetch all data including AI takeaway (same as TrendingDashboard)
+      const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes, lgcomTakeawayRes, redditTakeawayRes] = await Promise.all([
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }),
         supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
         supabase.from("trending_keywords").select("keyword, count, sentiment, change_percent, related_countries, related_products").order("count", { ascending: false }).limit(20),
         supabase.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, source, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
+        supabase.functions.invoke("generate-overview-summary", { body: { channel: "lgcom" } }).catch(() => ({ data: null })),
+        supabase.functions.invoke("generate-overview-summary", { body: { channel: "reddit" } }).catch(() => ({ data: null })),
       ]);
+
+      const lgcomTakeaway = (lgcomTakeawayRes?.data?.overview?.key_takeaway || []) as { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
+      const redditTakeaway = (redditTakeawayRes?.data?.overview?.key_takeaway || []) as { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
 
       const wow = (lastWeekRes.count || 0) > 0 ? Math.round((((weeklyRes.count || 0) - (lastWeekRes.count || 0)) / (lastWeekRes.count || 1)) * 100) : 0;
 
@@ -66,7 +81,6 @@ function useNewsletterData() {
         topChannels.push({ name: `+${otherChannelCount}개 채널`, count: otherCount, color: "#999" });
       }
 
-      // Category Korean labels
       const CAT_KO: Record<string, string> = {
         TV: "TV", Monitor: "모니터", Refrigerator: "냉장고", Washer: "세탁기",
         Dryer: "건조기", Dishwasher: "식세기", Kitchen: "주방가전", Vacuum: "청소기",
@@ -76,7 +90,6 @@ function useNewsletterData() {
         Cooktop: "쿡탑", Dehumidifier: "제습기",
       };
 
-      // Fetch product categories for keyword-related products
       const allRelatedProducts = new Set<string>();
       (keywordsRes.data || []).forEach(k => {
         ((k.related_products as string[] | null) || []).forEach((p: string) => allRelatedProducts.add(p));
@@ -96,7 +109,6 @@ function useNewsletterData() {
         return cat ? (CAT_KO[cat] || cat) : "";
       };
 
-      // Keywords
       const kws = keywordsRes.data || [];
       const posKws = kws.filter(k => k.sentiment === "positive").sort((a, b) => b.count - a.count);
       const negKws = kws.filter(k => k.sentiment === "negative").sort((a, b) => b.count - a.count);
@@ -111,7 +123,6 @@ function useNewsletterData() {
       const negCatLabel = getKwCatLabel(topNegKw);
       const topNegativeMeta = topNegKw ? [negCatLabel ? `📦 ${negCatLabel}` : "", (topNegKw.related_products as string[] | null)?.[0] || "", (topNegKw.related_countries as string[] | null)?.[0] || ""].filter(Boolean).join(" · ") : "";
 
-      // Top product
       const trendProds = trendingRes.data || [];
       const topProd = trendProds[0];
       const topProduct = (topProd?.products as any)?.display_name || "—";
@@ -119,26 +130,86 @@ function useNewsletterData() {
       const topProductCount = topProd?.mention_count || 0;
       const topProductKws = kws.filter(k => (k.related_products as string[] | null)?.some((p: string) => p.toLowerCase().includes(topProductModel.toLowerCase()))).slice(0, 2).map(k => k.keyword).join(", ");
 
-      // Opportunities (derived from trending)
-      const opportunities: NewsletterData["opportunities"] = [];
-      for (const tp of trendProds.slice(0, 3)) {
-        const prod = tp.products as any;
-        const chg = Number(tp.change_percent) || 0;
-        const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
-        opportunities.push({
-          tag,
-          title: prod?.display_name || "Unknown",
-          desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
-          count: tp.mention_count,
-          delta: `${chg > 0 ? "+" : ""}${chg}%`,
-          country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 US",
+      // ── Build Matrix Items (same logic as TrendingDashboard) ──
+      const matrixItems: MatrixItem[] = [];
+      for (const item of lgcomTakeaway.slice(0, 2)) {
+        matrixItems.push({
+          tag: "amplify", channel: `LG.com · ${item.category}`, country: "🇺🇸 US",
+          title: `${item.product} "${topPosKw?.keyword || 'excellent'}" 긍정 급증`,
+          description: item.positive_msg, count: topPosKw?.count || 0,
+          countLabel: "긍정 리뷰", delta: `▲ +${Math.round(Number(topPosKw?.change_percent) || 23)}%`, deltaPositive: true,
+        });
+      }
+      for (const item of [...lgcomTakeaway, ...redditTakeaway].filter(t => t.negative_msg).slice(0, 2)) {
+        const isLgcom = lgcomTakeaway.includes(item);
+        matrixItems.push({
+          tag: "fix", channel: `${isLgcom ? "LG.com" : "Reddit"} · ${item.category}`,
+          country: isLgcom ? "🇺🇸 US" : "🌐 Global",
+          title: `${item.product} 부정 리뷰 급증`, description: item.negative_msg,
+          count: topNegKw?.count || 0, countLabel: "부정 리뷰", delta: "▲ 급증", deltaPositive: false,
+        });
+      }
+      for (const item of redditTakeaway.slice(0, 1)) {
+        matrixItems.push({
+          tag: "watch", channel: `Reddit · ${item.category}`, country: "🌐 Global",
+          title: `${item.product} 커뮤니티 언급 증가`, description: item.marketer_action,
+          count: 0, countLabel: "Reddit 언급", delta: "— 유지", deltaPositive: true,
         });
       }
 
-      // Trending signals
+      // ── Build Quick Wins (same logic as TrendingDashboard) ──
+      const quickWins: QuickWin[] = [];
+      const negItem = [...lgcomTakeaway, ...redditTakeaway].find(t => t.negative_msg);
+      if (negItem) {
+        quickWins.push({
+          label: "1️⃣ 긴급 · 오늘 처리",
+          action: `${negItem.product} PDP에 FAQ 즉시 배치`,
+          basis: negItem.negative_msg,
+          tags: ["긴급", "PDP", "CS 연동"],
+          country: lgcomTakeaway.includes(negItem) ? "🇺🇸 US" : "🌐 Global",
+        });
+      }
+      const posItem = lgcomTakeaway.find(t => t.positive_msg);
+      if (posItem) {
+        quickWins.push({
+          label: "2️⃣ 이번 주 · 캠페인 소재",
+          action: `${posItem.product} "excellent" 리뷰 → PMAX 카피 즉시 제작`,
+          basis: posItem.positive_msg,
+          tags: ["소재 준비용", "PMAX", "Affiliate"],
+          country: "🇺🇸 US",
+        });
+      }
+      const redditItem = redditTakeaway[0];
+      if (redditItem) {
+        quickWins.push({
+          label: "3️⃣ 이번 주 · SEO·GEO",
+          action: `${redditItem.product} GEO 답변 스크립트 제작`,
+          basis: redditItem.marketer_action,
+          tags: ["GEO", "SEO", "UGC 활용"],
+          country: "🌐 Global",
+        });
+      }
+
+      // Legacy opportunities (fallback from trending if no AI data)
+      const opportunities: NewsletterData["opportunities"] = matrixItems.length > 0
+        ? matrixItems.slice(0, 6).map(m => ({
+            tag: m.tag, title: m.title, desc: m.description,
+            count: m.count, delta: m.delta, country: m.country,
+          }))
+        : trendProds.slice(0, 3).map(tp => {
+            const prod = tp.products as any;
+            const chg = Number(tp.change_percent) || 0;
+            const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+            return {
+              tag, title: prod?.display_name || "Unknown",
+              desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
+              count: tp.mention_count, delta: `${chg > 0 ? "+" : ""}${chg}%`,
+              country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 US",
+            };
+          });
+
       const trendingSignals: NewsletterData["trendingSignals"] = kws.slice(0, 6).map(k => ({
-        keyword: k.keyword,
-        count: k.count,
+        keyword: k.keyword, count: k.count,
         delta: Number(k.change_percent) || 0,
         type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
         sentiment: k.sentiment,
@@ -154,8 +225,8 @@ function useNewsletterData() {
         topPositiveKeyword, topPositiveCount, topPositiveMeta,
         topNegativeKeyword, topNegativeCount, topNegativeMeta,
         topProduct, topProductCount, topProductKws,
-        opportunities,
-        trendingSignals,
+        opportunities, trendingSignals,
+        quickWins, matrixItems,
       } as NewsletterData;
     },
     staleTime: 60_000,
@@ -341,6 +412,39 @@ ${d.opportunities.length > 0 ? `<tr><td style="padding:20px 40px 0;">
         </table>
       </td></tr>`;
     }).join("")}
+  </table>
+</td></tr>` : ""}
+
+<!-- Quick Wins -->
+${d.quickWins.length > 0 ? `<tr><td style="padding:20px 40px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1a1a1a;${RADIUS}">
+    <tr><td style="padding:12px 16px;border-bottom:1px solid #333;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:12px;font-weight:800;color:#fff;font-family:${INTER};">⚡ 이번 주 마케터 Quick Wins — 즉시 실행 3선</td>
+        <td style="text-align:right;font-size:9px;color:#888;font-family:${FONT};">리뷰 데이터 기반 자동 생성 · ${d.dateRange}</td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        ${d.quickWins.map((qw, i) => {
+          const numBg = i === 0 ? RED : i === 1 ? "#0D9488" : "#6B21A8";
+          return `<td width="33%" style="padding:0 ${i === 1 ? '6px' : '0'};vertical-align:top;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#2a2a2a;border:1px solid #444;${RADIUS}">
+              <tr><td style="padding:12px;font-family:${FONT};">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+                  <td><span style="display:inline-block;width:22px;height:22px;background:${numBg};color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:22px;border-radius:50%;font-family:${INTER};">${i + 1}</span></td>
+                  <td style="padding-left:6px;font-size:10px;font-weight:700;color:${numBg};line-height:14px;">${qw.label.replace(/^[0-9️⃣]+\s*/, '')}</td>
+                  <td style="text-align:right;"><span style="font-size:9px;font-weight:600;padding:2px 5px;background:#333;color:#ddd;border:1px solid #555;border-radius:3px;">${qw.country}</span></td>
+                </tr></table>
+                <div style="font-size:11px;font-weight:700;color:#fff;line-height:16px;margin-top:8px;">${qw.action}</div>
+                <div style="font-size:10px;color:#aaa;line-height:15px;margin-top:4px;">${qw.basis}</div>
+                <div style="margin-top:6px;">${qw.tags.map(t => `<span style="display:inline-block;font-size:8px;font-weight:600;padding:2px 5px;background:#333;color:#ccc;border:1px solid #555;border-radius:3px;margin-right:3px;">${t}</span>`).join("")}</div>
+              </td></tr>
+            </table>
+          </td>`;
+        }).join("")}
+      </tr></table>
+    </td></tr>
   </table>
 </td></tr>` : ""}
 
