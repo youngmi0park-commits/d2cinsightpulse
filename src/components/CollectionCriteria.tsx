@@ -1282,56 +1282,89 @@ export const CollectionCriteria = () => {
 
           <div className="p-3">
             {/* ── 국가별 ── */}
-            {statusTab === "country" && (
-              <div className="space-y-3">
-                {/* BV progress grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                  {Object.entries(BV_AVAILABLE)
-                    .sort(([codeA], [codeB]) => {
-                      const isoA = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeA)?.[0] || "";
-                      const isoB = Object.entries(ISO_TO_LGE).find(([, v]) => v === codeB)?.[0] || "";
-                      return (lgComCounts[isoB] || 0) - (lgComCounts[isoA] || 0);
-                    })
-                    .map(([lgeCode, available]) => {
-                      const isoKey = Object.entries(ISO_TO_LGE).find(([, v]) => v === lgeCode)?.[0] || "";
-                      const collected = lgComCounts[isoKey] || 0;
-                      const pct = available > 0 ? Math.round((collected / available) * 100) : 0;
+            {statusTab === "country" && (() => {
+              // Build per-country data: BV + Community
+              const countryData = activeCountries.map(([iso, totalCount]) => {
+                const lgeCode = ISO_TO_LGE[iso] || iso;
+                const bvCount = lgComCounts[iso] || 0;
+                const communityCount = totalCount - bvCount;
+                return { iso, lgeCode, totalCount, bvCount, communityCount };
+              });
+              const globalTotal = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+              const maxCount = countryData.length > 0 ? Math.max(...countryData.map(d => d.totalCount)) : 1;
+
+              return (
+                <div className="space-y-3">
+                  {/* Stacked bar grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {countryData.map(({ iso, lgeCode, totalCount, bvCount, communityCount }) => {
+                      const bvPct = totalCount > 0 ? (bvCount / totalCount) * 100 : 0;
+                      const commPct = totalCount > 0 ? (communityCount / totalCount) * 100 : 0;
+                      const barW = Math.max((totalCount / maxCount) * 100, 4);
                       return (
-                        <div key={lgeCode} className="rounded border border-border bg-background/60 px-2 py-1.5">
+                        <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-[10px]">{LGE_FLAGS[lgeCode] || "🔹"} {lgeCode}</span>
-                            <span className="text-[9px] text-muted-foreground">{pct}%</span>
+                            <span className="font-semibold text-[10px]">{LGE_FLAGS[lgeCode] || "🔹"} {COUNTRY_KO_NAME[iso] || iso}</span>
+                            <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
-                          <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-0.5">
-                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
+                          {/* Stacked bar: BV (primary) + Community (teal) */}
+                          <div className="w-full h-2 rounded-full bg-muted overflow-hidden my-0.5 flex">
+                            {bvCount > 0 && (
+                              <div
+                                className="h-full bg-primary transition-all"
+                                style={{ width: `${(bvCount / maxCount) * 100}%` }}
+                                title={`BV ${bvCount.toLocaleString()}`}
+                              />
+                            )}
+                            {communityCount > 0 && (
+                              <div
+                                className="h-full bg-teal-500 transition-all"
+                                style={{ width: `${(communityCount / maxCount) * 100}%` }}
+                                title={`커뮤니티 ${communityCount.toLocaleString()}`}
+                              />
+                            )}
                           </div>
-                          <p className="text-[9px] text-muted-foreground">
-                            <span className="font-bold text-foreground">{collected.toLocaleString()}</span> / {available.toLocaleString()}
-                          </p>
+                          <div className="flex items-center gap-1.5 text-[8px] text-muted-foreground">
+                            {bvCount > 0 && (
+                              <span className="flex items-center gap-0.5">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />BV {bvCount.toLocaleString()}
+                              </span>
+                            )}
+                            {communityCount > 0 && (
+                              <span className="flex items-center gap-0.5">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />커뮤니티 {communityCount.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
-                </div>
-                {/* All country badges */}
-                {activeCountries.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {activeCountries.map(([isoCode, count]) => {
-                      const lgeCode = ISO_TO_LGE[isoCode] || isoCode;
-                      return (
-                        <span key={isoCode} className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
-                          {LGE_FLAGS[lgeCode] || "🔹"} {lgeCode} <span className="font-bold text-foreground">{count.toLocaleString()}</span>
-                        </span>
-                      );
-                    })}
-                    {countryCounts["Global"] && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-medium rounded-full px-1.5 py-0.5 bg-card border border-border text-muted-foreground">
-                        🌐 Global <span className="font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
-                      </span>
+                    {/* Global */}
+                    {countryCounts["Global"] && countryCounts["Global"] > 0 && (
+                      <div className="rounded border border-border bg-background/60 px-2 py-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-[10px]">🌐 글로벌</span>
+                          <span className="text-[10px] font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-muted overflow-hidden my-0.5 flex">
+                          <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.max((countryCounts["Global"] / maxCount) * 100, 4)}%` }} />
+                        </div>
+                        <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />커뮤니티 {countryCounts["Global"].toLocaleString()}
+                        </div>
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 text-[9px] text-muted-foreground border-t border-border/50 pt-1.5">
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-primary" /> 바자보이스 (LG.com)</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> 커뮤니티 (Reddit·Amazon·YouTube 등)</span>
+                    <span className="ml-auto font-semibold">누적 총계: <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>건</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ── 카테고리별 (card grid, matching country tab style) ── */}
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
