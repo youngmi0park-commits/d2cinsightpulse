@@ -1081,6 +1081,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                 {Object.entries(grouped).map(([country, rows]) =>
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
+                    const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
                     return (
                     <tr
                       key={`${country}-${ri}`}
@@ -1111,7 +1112,14 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
                         {logEntry && logEntry.count > 0 ? (
-                          <span className="font-bold text-foreground">{logEntry.count.toLocaleString()}</span>
+                          <span className="text-muted-foreground">{logEntry.count.toLocaleString()}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
+                        {cumulative > 0 ? (
+                          <span className="font-bold text-primary">{cumulative.toLocaleString()}</span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
