@@ -38,12 +38,14 @@ Deno.serve(async (req) => {
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
     };
 
-    // Build source filter based on region
+    // Build source filter based on region — all 8 BV countries
+    const ALL_BV_SOURCES = [
+      "lge_com_us", "lge_com_uk", "lge_com_de", "lge_com_au",
+      "lge_com_in", "lge_com_tw", "lge_com_jp", "lge_com_th",
+    ];
     const sourceFilter = region === "all"
-      ? ["lge_com_us", "lge_com_uk"]
-      : region === "US" ? ["lge_com_us"]
-      : region === "UK" ? ["lge_com_uk"]
-      : [`lge_com_${region.toLowerCase()}`];
+      ? ALL_BV_SOURCES
+      : ["lge_com_" + region.toLowerCase()];
 
     // 1. Find top products by total review count (paginated to get ALL)
     const allProductIds = new Set<string>();
