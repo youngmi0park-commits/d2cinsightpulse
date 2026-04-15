@@ -230,6 +230,7 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
             onSelect={(cat) => runAnalysis(cat)}
             isLoading={isLoading}
             hasResult={!!result}
+            country={region}
           />
         )}
 
