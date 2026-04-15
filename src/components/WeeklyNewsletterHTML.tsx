@@ -10,6 +10,13 @@ import { toast } from "sonner";
 import { format, subDays } from "date-fns";
 
 /* ───── Types ───── */
+interface QuickWin {
+  label: string; action: string; basis: string; tags: string[]; country: string;
+}
+interface MatrixItem {
+  tag: string; channel: string; country: string; title: string; description: string;
+  count: number; countLabel: string; delta: string; deltaPositive: boolean;
+}
 interface NewsletterData {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
@@ -20,6 +27,8 @@ interface NewsletterData {
   topProduct: string; topProductCount: number; topProductKws: string;
   opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country?: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string; countries?: string[] }[];
+  quickWins: QuickWin[];
+  matrixItems: MatrixItem[];
 }
 
 /* ───── Channel color map ───── */
