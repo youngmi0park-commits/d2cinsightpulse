@@ -231,6 +231,7 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
             isLoading={isLoading}
             hasResult={!!result}
             country={region}
+            weekly={true}
           />
         )}
 

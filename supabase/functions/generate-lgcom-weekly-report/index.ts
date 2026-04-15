@@ -6,6 +6,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ALL_BV_SOURCES = [
+  "lge_com_us", "lge_com_uk", "lge_com_de", "lge_com_au",
+  "lge_com_in", "lge_com_tw", "lge_com_jp", "lge_com_th",
+];
+
+function getSourceFilter(region: string): string[] {
+  if (region === "all") return ALL_BV_SOURCES;
+  return ["lge_com_" + region.toLowerCase()];
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,13 +31,13 @@ Deno.serve(async (req) => {
     const region = body.region || "all";
     const category = body.category || "all";
     const limit = body.limit || 10;
-    const productId = body.product_id || null; // specific product search
+    const productId = body.product_id || null;
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
       TV_OLED: ["OLED", "evo"],
       TV_Large: ["QNED", "NanoCell", "86", "85", "90", "97", "98", "75"],
-      TV_Lifestyle: ["StanbyME", "Objet", "Easel", "Posé", "ART"],
+      TV_Lifestyle: ["StanbyME", "Objet", "Easel", "Pose", "ART"],
       Refrigerator: ["Refrigerator", "Fridge", "InstaView"],
       Washer: ["Washer", "WashTower", "Laundry"],
       Dryer: ["Dryer"],
@@ -36,19 +46,43 @@ Deno.serve(async (req) => {
       AC: ["Air Conditioner", "Artcool", "DualCool"],
       Audio: ["Soundbar", "Speaker", "XBOOM"],
       Monitor: ["Monitor", "UltraGear", "UltraWide"],
+      Vacuum: ["Vacuum", "CordZero"],
+      "Air Purifier": ["Air Purifier", "PuriCare", "AeroTower"],
+      Laptop: ["Laptop", "Gram", "UltraPC"],
+      Microwave: ["Microwave"],
+      Range: ["Range", "Oven"],
+      Cooktop: ["Cooktop", "Induction"],
     };
 
-    // 1. Fetch top products (or specific product)
+    const sourceFilter = getSourceFilter(region);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // 1. Get actual weekly total count for this country+category from DB
+    let actualWeeklyTotal = 0;
+    {
+      const { data: wcData } = await sb.rpc("get_weekly_category_counts_by_country", {
+        p_country: region,
+      });
+      if (wcData) {
+        if (category === "all") {
+          actualWeeklyTotal = (wcData as any[]).reduce((s: number, r: any) => s + Number(r.count), 0);
+        } else {
+          const match = (wcData as any[]).find((r: any) => r.category === category);
+          actualWeeklyTotal = match ? Number(match.count) : 0;
+        }
+      }
+    }
+
+    // 2. Fetch top products
     let allProductIds = new Set<string>();
     let filteredPos: any[] = [];
     let filteredNeg: any[] = [];
 
     if (productId) {
-      // Specific product search
       allProductIds.add(productId);
       const { data: prodInfo } = await sb.from("products").select("*").eq("id", productId).single();
       if (prodInfo) {
-        filteredPos = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region: region, review_count: 0, avg_score: 0 }];
+        filteredPos = [{ product_id: productId, model_number: prodInfo.model_number, display_name: prodInfo.display_name, category: prodInfo.category, region, review_count: 0, avg_score: 0 }];
       }
     } else {
       const fetchLimit = category === "all" ? limit : 50;
@@ -66,7 +100,7 @@ Deno.serve(async (req) => {
       const matchesCategory = (p: any) => {
         if (category === "all") return true;
         const patterns = categoryPatterns[category] || [category];
-        const catText = `${p.category || ""} ${p.display_name || ""}`.toLowerCase();
+        const catText = (p.category || "") + " " + (p.display_name || "");
         return patterns.some((pat: string) => catText.toLowerCase().includes(pat.toLowerCase()));
       };
 
@@ -80,26 +114,23 @@ Deno.serve(async (req) => {
 
     if (allProductIds.size === 0) {
       return new Response(
-        JSON.stringify({ report: null, message: `No weekly review data for ${category}` }),
+        JSON.stringify({ report: null, message: "No weekly review data for " + category }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // 2. Fetch reviews for these products
+    // 3. Fetch weekly reviews for these products (filtered by published_at)
     const productReviews: Record<string, { product: any; positive: any[]; negative: any[]; neutral: any[] }> = {};
 
     for (const pid of allProductIds) {
       const prodInfo = [...filteredPos, ...filteredNeg].find((p: any) => p.product_id === pid);
-
-      const sourceFilter = region === "all"
-        ? ["lge_com_us", "lge_com_uk"]
-        : [`lge_com_${region.toLowerCase()}`];
 
       const { data: reviews } = await sb
         .from("reviews")
         .select("title, rating, sentiment, sentiment_score, published_at, content, emotion_category")
         .eq("product_id", pid)
         .in("source", sourceFilter)
+        .gte("published_at", weekAgo)
         .order("published_at", { ascending: false })
         .limit(200);
 
@@ -121,138 +152,47 @@ Deno.serve(async (req) => {
       };
     }
 
-    // 3. Build data summary for AI (no raw review text exposed)
+    // 4. Build data summary for AI
     const reviewDataSummary = Object.values(productReviews)
       .map((pr) => {
         const allReviews = [...pr.positive, ...pr.negative, ...pr.neutral];
-        const avgRating = allReviews.filter((r: any) => r.rating).reduce((s: number, r: any) => s + r.rating, 0) / (allReviews.filter((r: any) => r.rating).length || 1);
+        const ratedReviews = allReviews.filter((r: any) => r.rating);
+        const avgRating = ratedReviews.length > 0
+          ? ratedReviews.reduce((s: number, r: any) => s + r.rating, 0) / ratedReviews.length
+          : 0;
         const posTitles = pr.positive.map((r: any) => r.title).filter(Boolean).slice(0, 25);
         const negTitles = pr.negative.map((r: any) => r.title).filter(Boolean).slice(0, 25);
         const emotions = allReviews.map((r: any) => r.emotion_category).filter(Boolean);
         const emotionCounts: Record<string, number> = {};
         for (const e of emotions) { emotionCounts[e] = (emotionCounts[e] || 0) + 1; }
 
-        return `## ${pr.product.display_name} (${pr.product.model_number}) — ${pr.product.category}
-Region: ${pr.product.region}
-Total reviews: ${allReviews.length}건 (Positive: ${pr.positive.length}, Negative: ${pr.negative.length}, Neutral: ${pr.neutral.length})
-Average rating: ${avgRating.toFixed(1)}
-Keywords: ${(pr.product.keywords || []).join(", ")}
-Positive review titles: ${posTitles.join(" | ") || "N/A"}
-Negative review titles: ${negTitles.join(" | ") || "N/A"}
-Emotion distribution: ${Object.entries(emotionCounts).map(([k, v]) => `${k}(${v})`).join(", ") || "N/A"}`;
+        return "## " + pr.product.display_name + " (" + pr.product.model_number + ") - " + pr.product.category + "\nRegion: " + pr.product.region + "\nSampled reviews: " + allReviews.length + " (Positive: " + pr.positive.length + ", Negative: " + pr.negative.length + ", Neutral: " + pr.neutral.length + ")\nAverage rating: " + avgRating.toFixed(1) + "\nKeywords: " + (pr.product.keywords || []).join(", ") + "\nPositive review titles: " + (posTitles.join(" | ") || "N/A") + "\nNegative review titles: " + (negTitles.join(" | ") || "N/A") + "\nEmotion distribution: " + (Object.entries(emotionCounts).map(([k, v]) => k + "(" + v + ")").join(", ") || "N/A");
       })
       .join("\n\n");
 
-    // Compute aggregate stats
+    // Compute sampled aggregate stats
     const allPos = Object.values(productReviews).reduce((s, pr) => s + pr.positive.length, 0);
     const allNeg = Object.values(productReviews).reduce((s, pr) => s + pr.negative.length, 0);
     const allNeutral = Object.values(productReviews).reduce((s, pr) => s + pr.neutral.length, 0);
-    const totalReviews = allPos + allNeg + allNeutral;
+    const sampledTotal = allPos + allNeg + allNeutral;
 
-    const systemPrompt = `You are a global brand strategist and consumer insight analyst for LG Electronics.
-Analyze LG.com review data and produce a structured weekly insight report in Korean.
-Focus on "Why LG?" — what makes customers choose and love LG products.
-Be specific with product names and concrete patterns from the data.
-IMPORTANT: Do NOT expose any original review text. Only use extracted keywords and patterns.
-All consumer quotes must be anonymized and paraphrased.`;
+    // Use actual weekly total from DB
+    const totalReviews = actualWeeklyTotal > 0 ? actualWeeklyTotal : sampledTotal;
+    const posPct = sampledTotal > 0 ? Math.round(allPos / sampledTotal * 100) : 0;
+    const negPct = sampledTotal > 0 ? Math.round(allNeg / sampledTotal * 100) : 0;
+    const neuPct = 100 - posPct - negPct;
 
-    const userPrompt = `다음은 LG.com에서 이번 주 수집된 리뷰 데이터 요약입니다:
+    const systemPrompt = "You are a global brand strategist and consumer insight analyst for LG Electronics.\nAnalyze LG.com review data and produce a structured weekly insight report in Korean.\nFocus on \"Why LG?\" \u2014 what makes customers choose and love LG products.\nBe specific with product names and concrete patterns from the data.\nIMPORTANT: Do NOT expose any original review text. Only use extracted keywords and patterns.\nAll consumer quotes must be anonymized and paraphrased.";
 
-전체 리뷰 수: ${totalReviews}건 (긍정 ${allPos} / 부정 ${allNeg} / 중립 ${allNeutral})
-분석 지역: ${region === "all" ? "전체" : region}
-카테고리: ${category === "all" ? "전체" : category}
+    const userPrompt = "\uB2E4\uC74C\uC740 LG.com\uC5D0\uC11C \uC774\uBC88 \uC8FC \uC218\uC9D1\uB41C \uB9AC\uBDF0 \uB370\uC774\uD130 \uC694\uC57D\uC785\uB2C8\uB2E4:\n\n\uC804\uCCB4 \uC8FC\uAC04 \uB9AC\uBDF0 \uC218: " + totalReviews + "\uAC74 (\uAE0D\uC815 " + posPct + "% / \uBD80\uC815 " + negPct + "% / \uC911\uB9BD " + neuPct + "%)\n\uBD84\uC11D \uC9C0\uC5ED: " + (region === "all" ? "\uC804\uCCB4" : region) + "\n\uCE74\uD14C\uACE0\uB9AC: " + (category === "all" ? "\uC804\uCCB4" : category) + "\n\n" + reviewDataSummary + "\n\n\uC704 \uB370\uC774\uD130\uB97C \uAE30\uBC18\uC73C\uB85C \uC544\uB798 6\uAC1C \uC139\uC158\uC758 \uC8FC\uAC04 \uB9AC\uD3EC\uD2B8\uB97C JSON\uC73C\uB85C \uC0DD\uC131\uD558\uC138\uC694.\n\n{\n  \"executive_summary\": {\n    \"period\": \"\uBD84\uC11D \uAE30\uAC04 (\uCD5C\uADFC 7\uC77C)\",\n    \"total_reviews\": " + totalReviews + ",\n    \"channel_reviews\": " + totalReviews + ",\n    \"avg_rating\": \"\uCC38\uACE0\uC6A9 \uD3C9\uADE0 \uD3C9\uC810\",\n    \"sentiment_ratio\": {\n      \"positive_pct\": " + posPct + ",\n      \"negative_pct\": " + negPct + ",\n      \"neutral_pct\": " + neuPct + "\n    },\n    \"top3_insights\": [\"\uC778\uC0AC\uC774\uD2B81\", \"\uC778\uC0AC\uC774\uD2B82\", \"\uC778\uC0AC\uC774\uD2B83\"]\n  },\n  \"top5_themes\": [{\"theme\": \"\uC8FC\uC81C\uBA85\", \"mention_pct\": \"\uC5B8\uAE09 \uBE44\uC728\", \"positive_pct\": \"\uAE0D\uC815 \uBE44\uC728\", \"negative_pct\": \"\uBD80\uC815 \uBE44\uC728\", \"representative_quote\": \"\uC775\uBA85 \uCC98\uB9AC\uB41C \uB300\uD45C \uB9AC\uBDF0 \uC758\uC5ED\", \"related_products\": [\"\uAD00\uB828 \uC81C\uD488\uAD70\"]}],\n  \"negative_priority_top3\": [{\"issue\": \"\uBD80\uC815 \uC774\uC288\", \"mention_pct\": \"\uBD80\uC815 \uC5B8\uAE09 \uBE44\uC728\", \"recurring_pattern\": \"\uBC18\uBCF5 \uB4F1\uC7A5 \uD328\uD134\", \"root_cause\": \"Why \uC911\uC2EC \uC6D0\uC778 \uBD84\uC11D\", \"related_products\": [\"\uAD00\uB828 \uC81C\uD488\"]}],\n  \"strengths\": {\"repeated_praise\": [\"\uBC18\uBCF5 \uCE6D\uCC2C \uD3EC\uC778\uD2B8\"], \"unconditional_praise\": [\"\uBE44\uAD50 \uC5C6\uC774 \uCE6D\uCC2C\uD558\uB294 \uD3EC\uC778\uD2B8\"], \"competitive_advantage\": [{\"point\": \"\uC6B0\uC704 \uD3EC\uC778\uD2B8\", \"vs_competitor\": \"\uBE44\uAD50 \uB300\uC0C1\", \"evidence\": \"\uB9AC\uBDF0 \uAE30\uBC18 \uADFC\uAC70\"}]},\n  \"action_items\": {\"product_team\": [{\"item\": \"\uAC1C\uC120 \uD56D\uBAA9\", \"priority\": \"\uB192\uC74C/\uC911\uAC04/\uB0AE\uC74C\", \"detail\": \"\uC0C1\uC138 \uC124\uBA85\"}], \"cs_team\": [{\"item\": \"\uB300\uC751 \uD56D\uBAA9\", \"detail\": \"\uC0C1\uC138\"}], \"marketing_team\": [{\"satisfaction_message\": \"\uAC15\uD654 \uD3EC\uC778\uD2B8\", \"copy_suggestion\": \"\uACE0\uAC1D \uD45C\uD604 \uAE30\uBC18 \uCE74\uD53C \uC81C\uC548\"}]},\n  \"product_insights\": [{\"product_name\": \"\uC81C\uD488\uBA85\", \"category\": \"\uCE74\uD14C\uACE0\uB9AC\", \"review_count\": 0, \"positive_pct\": \"\uAE0D\uC815 \uBE44\uC728\", \"negative_pct\": \"\uBD80\uC815 \uBE44\uC728\", \"top_praise_keywords\": [\"\uCE6D\uCC2C \uD0A4\uC6CC\uB4DC\"], \"top_complaint_keywords\": [\"\uBD88\uB9CC \uD0A4\uC6CC\uB4DC\"], \"key_insight\": \"\uD575\uC2EC \uC778\uC0AC\uC774\uD2B8 1\uC904\", \"action_suggestion\": \"\uC561\uC158 \uC81C\uC548 1\uC904\"}],\n  \"deep_insights\": {\"ux_strategy\": {\"pain_flow\": [\"\uACE0\uAC1D\uC774 \uBD88\uD3B8\uC744 \uB290\uB07C\uB294 \uACBD\uD5D8 \uD750\uB984\"], \"stage_issues\": {\"pre_use\": \"\uC0AC\uC6A9 \uC804 \uBB38\uC81C\", \"during_use\": \"\uC0AC\uC6A9 \uC911 \uBB38\uC81C\", \"post_use\": \"\uC0AC\uC6A9 \uD6C4 \uBB38\uC81C\"}, \"high_impact_improvements\": [\"\uAC1C\uC120 \uC2DC \uB9CC\uC871\uB3C4 \uC0C1\uC2B9 \uAC00\uB2A5\uC131 \uB192\uC740 \uD3EC\uC778\uD2B8\"]}, \"product_quality_strategy\": {\"recurring_defects\": [\"\uBC18\uBCF5 \uACB0\uD568/\uC131\uB2A5 \uC774\uC288\"], \"expectation_disappointment\": [\"\uAE30\uB300 \uB300\uBE44 \uC2E4\uB9DD \uD3EC\uC778\uD2B8\"], \"trust_impact_expressions\": [\"\uD488\uC9C8 \uC2E0\uB8B0\uB3C4\uC5D0 \uC601\uD5A5\uC744 \uC8FC\uB294 \uD45C\uD604\"]}, \"marketing_comms_strategy\": {\"organic_praise_sentences\": [\"\uACE0\uAC1D\uC774 \uC790\uBC1C\uC801\uC73C\uB85C \uC0AC\uC6A9\uD558\uB294 \uCE6D\uCC2C \uBB38\uC7A5\"], \"copy_candidates\": [\"\uCE74\uD53C \uD6C4\uBCF4\"], \"avoid_expressions\": [\"\uD53C\uD574\uC57C \uD560 \uD45C\uD604\"]}}\n}";
 
-${reviewDataSummary}
-
-위 데이터를 기반으로 아래 6개 섹션의 주간 리포트를 JSON으로 생성하세요.
-
-{
-  "executive_summary": {
-    "period": "분석 기간 (예: 2024.01.20 ~ 2024.01.26)",
-    "total_reviews": ${totalReviews},
-    "channel_reviews": ${totalReviews},
-    "avg_rating": "참고용 평균 평점",
-    "sentiment_ratio": {
-      "positive_pct": ${totalReviews > 0 ? Math.round(allPos / totalReviews * 100) : 0},
-      "negative_pct": ${totalReviews > 0 ? Math.round(allNeg / totalReviews * 100) : 0},
-      "neutral_pct": ${totalReviews > 0 ? Math.round(allNeutral / totalReviews * 100) : 0}
-    },
-    "top3_insights": ["인사이트1 (의사결정에 바로 활용 가능한 수준)", "인사이트2", "인사이트3"]
-  },
-
-  "top5_themes": [
-    {
-      "theme": "주제명",
-      "mention_pct": "언급 비율 (예: 32%)",
-      "positive_pct": "긍정 비율",
-      "negative_pct": "부정 비율",
-      "representative_quote": "익명 처리된 대표 리뷰 의역 (1~2문장)",
-      "related_products": ["관련 제품군"]
-    }
-  ],
-
-  "negative_priority_top3": [
-    {
-      "issue": "부정 이슈",
-      "mention_pct": "부정 언급 비율",
-      "recurring_pattern": "반복 등장 패턴",
-      "root_cause": "Why 중심 원인 분석",
-      "related_products": ["관련 제품"]
-    }
-  ],
-
-  "strengths": {
-    "repeated_praise": ["반복 칭찬 포인트"],
-    "unconditional_praise": ["비교 없이 칭찬하는 포인트"],
-    "competitive_advantage": [{"point": "우위 포인트", "vs_competitor": "비교 대상", "evidence": "리뷰 기반 근거"}]
-  },
-
-  "action_items": {
-    "product_team": [{"item": "개선 항목", "priority": "높음/중간/낮음", "detail": "상세 설명"}],
-    "cs_team": [{"item": "대응 항목", "detail": "상세 설명"}],
-    "marketing_team": [{"satisfaction_message": "강화 포인트", "copy_suggestion": "고객 표현 기반 카피 제안"}]
-  },
-
-  "product_insights": [
-    {
-      "product_name": "제품명",
-      "category": "카테고리",
-      "review_count": 0,
-      "positive_pct": "긍정 비율",
-      "negative_pct": "부정 비율",
-      "top_praise_keywords": ["칭찬 키워드"],
-      "top_complaint_keywords": ["불만 키워드"],
-      "key_insight": "핵심 인사이트 1줄",
-      "action_suggestion": "액션 제안 1줄"
-    }
-  ],
-
-  "deep_insights": {
-    "ux_strategy": {
-      "pain_flow": ["고객이 불편을 느끼는 경험 흐름"],
-      "stage_issues": {"pre_use": "사용 전 문제", "during_use": "사용 중 문제", "post_use": "사용 후 문제"},
-      "high_impact_improvements": ["개선 시 만족도 상승 가능성 높은 포인트"]
-    },
-    "product_quality_strategy": {
-      "recurring_defects": ["반복 결함/성능 이슈"],
-      "expectation_disappointment": ["기대 대비 실망 포인트"],
-      "trust_impact_expressions": ["품질 신뢰도에 영향을 주는 표현"]
-    },
-    "marketing_comms_strategy": {
-      "organic_praise_sentences": ["고객이 자발적으로 사용하는 칭찬 문장 (익명화)"],
-      "copy_candidates": ["상세페이지/광고 활용 가능 카피 후보"],
-      "avoid_expressions": ["피해야 할 표현 / 오해 소지 포인트"]
-    }
-  }
-}`;
-
-    // 4. Call AI
+    // 5. Call AI
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
+          Authorization: "Bearer " + lovableApiKey,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -268,7 +208,7 @@ ${reviewDataSummary}
 
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
-      throw new Error(`AI API error: ${aiResponse.status} - ${errText}`);
+      throw new Error("AI API error: " + aiResponse.status + " - " + errText);
     }
 
     const aiData = await aiResponse.json();
@@ -278,6 +218,12 @@ ${reviewDataSummary}
       report = JSON.parse(content);
     } catch {
       report = { raw: content };
+    }
+
+    // Ensure executive_summary uses actual total
+    if (report.executive_summary) {
+      report.executive_summary.total_reviews = totalReviews;
+      report.executive_summary.channel_reviews = totalReviews;
     }
 
     const result = {
@@ -294,6 +240,7 @@ ${reviewDataSummary}
         region,
         category,
         total_reviews: totalReviews,
+        weekly_total: actualWeeklyTotal,
         generated_at: new Date().toISOString(),
       },
     };

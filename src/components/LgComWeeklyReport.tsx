@@ -213,6 +213,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
             isLoading={isLoading}
             hasResult={!!report}
             country={region}
+            weekly={true}
           />
         )}
 

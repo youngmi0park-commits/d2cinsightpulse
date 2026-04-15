@@ -20,12 +20,13 @@ const CATEGORY_ITEMS = [
 ];
 
 
-function useCategoryCounts(country?: string) {
+function useCategoryCounts(country?: string, weekly?: boolean) {
   const region = country || "all";
+  const rpcName = weekly ? "get_weekly_category_counts_by_country" : "get_category_counts_by_country";
   return useQuery({
-    queryKey: ["category-counts-for-pills", region],
+    queryKey: ["category-counts-for-pills", region, weekly ? "weekly" : "all"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_category_counts_by_country", {
+      const { data, error } = await supabase.rpc(rpcName, {
         p_country: region,
       });
       if (error) throw error;
@@ -45,10 +46,16 @@ interface CategoryPillBarProps {
   isLoading?: boolean;
   hasResult?: boolean;
   country?: string;
+  weekly?: boolean;
 }
 
-export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false, country }: CategoryPillBarProps) {
-  const { data: counts } = useCategoryCounts(country);
+export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResult = false, country, weekly = false }: CategoryPillBarProps) {
+  const { data: counts } = useCategoryCounts(country, weekly);
+
+  // Compute total for the "All" pill
+  const totalCount = counts
+    ? Object.values(counts).reduce((s, v) => s + v, 0)
+    : undefined;
 
   // Sort by review count (descending), keep "all" first
   const sorted = [...CATEGORY_ITEMS].sort((a, b) => {
@@ -60,7 +67,7 @@ export function CategoryPillBar({ selected, onSelect, isLoading = false, hasResu
   return (
     <div className="flex flex-wrap gap-1.5 mb-4">
       {sorted.map((item) => {
-        const count = item.cat === "all" ? undefined : counts?.[item.cat];
+        const count = item.cat === "all" ? totalCount : counts?.[item.cat];
         const isActive = selected === item.cat && hasResult;
         return (
           <button
