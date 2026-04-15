@@ -1378,6 +1378,12 @@ export const CollectionCriteria = () => {
           </p>
         </section>
 
+
+        {/* ─── 국가×채널 상세 수집 현황 테이블 (수집 방식 위에 배치) ─── */}
+        <section>
+          <CollectionDetailTable t={t} />
+        </section>
+
         {/* ─── 3. 수집 방식 (Schedule + Regions + Logic) ─── */}
         <section>
           <div className="flex items-center gap-2 mb-2">
@@ -1407,9 +1413,6 @@ export const CollectionCriteria = () => {
               );
             })}
           </div>
-
-          {/* ─── 국가×채널 상세 수집 현황 테이블 ─── */}
-          <CollectionDetailTable t={t} />
         </section>
 
         {/* ─── 4. 나머지 기준 (접기/펼치기) ─── */}
