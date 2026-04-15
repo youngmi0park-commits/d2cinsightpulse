@@ -1,18 +1,11 @@
 import { useState } from "react";
-import { Store, Globe, Search, Wrench, TrendingUp } from "lucide-react";
+import { Store, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
-import { SearchBar } from "@/components/SearchBar";
-import { CategorySearchResults } from "@/components/CategorySearchResults";
 import { useLang } from "@/contexts/LanguageContext";
-import { analyzeSentiment } from "@/lib/sentiment";
-import { generateMarketingMessage, generateGeoMarketingMessages } from "@/lib/formatMessage";
-import { toReviewFormat } from "@/hooks/useProductData";
-import { type AnalyzedProduct } from "@/components/SearchResultCards";
-import { AlertCircle } from "lucide-react";
 
 const BV_COUNTRIES = [
   { value: "all", label: "전체", labelEn: "All", flag: "🌐" },
