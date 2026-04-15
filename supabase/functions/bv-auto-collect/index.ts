@@ -174,6 +174,7 @@ Deno.serve(async (req) => {
       }
 
       for (const prog of products) {
+        if (Date.now() - startTime > TIME_BUDGET_MS) break;
         const bvProductId = prog.product_id;
         let offset = prog.last_offset ?? 0;
         let hasMore = true;
