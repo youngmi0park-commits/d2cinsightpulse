@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Store, Globe } from "lucide-react";
+import { Store, Globe, BarChart3, Brain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
 import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BV_COUNTRIES = [
   { value: "all", label: "전체", labelEn: "All", flag: "🌐" },
