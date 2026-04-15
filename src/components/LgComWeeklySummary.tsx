@@ -5,7 +5,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  BarChart3, ThumbsUp, ThumbsDown, FileText, Star, Lightbulb, Users, Loader2
+  BarChart3, ThumbsUp, ThumbsDown, FileText, Star, Lightbulb, Loader2
 } from "lucide-react";
 
 interface TopProduct {
@@ -17,14 +17,36 @@ interface TopProduct {
 export function LgComWeeklySummary() {
   const { t } = useLang();
 
-  const { data: reviews, isLoading } = useQuery({
-    queryKey: ["lgcom-weekly-summary-data"],
+  // Use weekly category counts for accurate totals
+  const { data: weeklyCounts, isLoading: countsLoading } = useQuery({
+    queryKey: ["lgcom-weekly-category-counts-summary"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_weekly_category_counts_by_country", {
+        p_country: "all",
+      });
+      if (error) throw error;
+      return (data || []) as { category: string; count: number }[];
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const weeklyTotal = useMemo(() => {
+    if (!weeklyCounts) return 0;
+    return weeklyCounts.reduce((s, r) => s + Number(r.count), 0);
+  }, [weeklyCounts]);
+
+  // Fetch sampled weekly reviews for sentiment breakdown
+  const weekAgo = useMemo(() => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), []);
+
+  const { data: reviews, isLoading: reviewsLoading } = useQuery({
+    queryKey: ["lgcom-weekly-summary-reviews", weekAgo],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reviews")
         .select("id, sentiment, sentiment_score, rating, product_id, products!inner(display_name, category, is_active)")
         .like("source", "lge_com%")
-        .order("collected_at", { ascending: false })
+        .gte("published_at", weekAgo)
+        .order("published_at", { ascending: false })
         .limit(1000);
       if (error) throw error;
       return (data || []).filter((r: any) => r.products?.is_active);
@@ -35,13 +57,19 @@ export function LgComWeeklySummary() {
   const stats = useMemo(() => {
     if (!reviews || reviews.length === 0) return null;
 
-    const total = reviews.length;
+    const sampled = reviews.length;
     const pos = reviews.filter((r: any) => r.sentiment === "positive").length;
     const neg = reviews.filter((r: any) => r.sentiment === "negative").length;
-    const neutral = total - pos - neg;
+    const neutral = sampled - pos - neg;
 
     const ratings = reviews.filter((r: any) => r.rating != null).map((r: any) => r.rating as number);
     const avgRating = ratings.length > 0 ? (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1) : "–";
+
+    // Use actual weekly total from RPC
+    const total = weeklyTotal > 0 ? weeklyTotal : sampled;
+    const posPct = sampled > 0 ? Math.round(pos / sampled * 100) : 0;
+    const negPct = sampled > 0 ? Math.round(neg / sampled * 100) : 0;
+    const neuPct = 100 - posPct - negPct;
 
     // Top products by positive/negative
     const prodMap: Record<string, { name: string; category: string; pos: number; neg: number; total: number }> = {};
@@ -58,8 +86,10 @@ export function LgComWeeklySummary() {
     const topNeg = Object.values(prodMap).sort((a, b) => b.neg - a.neg).slice(0, 3);
     const topMentioned = Object.values(prodMap).sort((a, b) => b.total - a.total).slice(0, 3);
 
-    return { total, pos, neg, neutral, avgRating, topPos, topNeg, topMentioned };
-  }, [reviews]);
+    return { total, posPct, negPct, neuPct, avgRating, topPos, topNeg, topMentioned };
+  }, [reviews, weeklyTotal]);
+
+  const isLoading = countsLoading || reviewsLoading;
 
   if (isLoading) {
     return (
@@ -83,7 +113,7 @@ export function LgComWeeklySummary() {
             {t("LG.com Weekly Insight Summary", "LG.com 주간 인사이트 요약")}
           </CardTitle>
           <Badge variant="secondary" className="text-[10px] ml-auto">
-            {stats.total.toLocaleString()}{t(" reviews analyzed", "건 분석 완료")}
+            {t("Weekly", "주간")} {stats.total.toLocaleString()}{t(" reviews", "건")}
           </Badge>
         </div>
       </CardHeader>
@@ -93,7 +123,7 @@ export function LgComWeeklySummary() {
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <FileText className="h-4 w-4 mx-auto mb-1 text-primary" />
             <div className="text-lg font-bold text-foreground">{stats.total.toLocaleString()}</div>
-            <div className="text-[10px] text-muted-foreground">{t("Total Reviews", "전체 리뷰")}</div>
+            <div className="text-[10px] text-muted-foreground">{t("Weekly Reviews", "주간 리뷰")}</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <Star className="h-4 w-4 mx-auto mb-1 text-primary" />
@@ -102,12 +132,12 @@ export function LgComWeeklySummary() {
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <ThumbsUp className="h-4 w-4 mx-auto mb-1 text-success" />
-            <div className="text-lg font-bold text-success">{Math.round(stats.pos / stats.total * 100)}%</div>
+            <div className="text-lg font-bold text-success">{stats.posPct}%</div>
             <div className="text-[10px] text-muted-foreground">{t("Positive", "긍정")}</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <ThumbsDown className="h-4 w-4 mx-auto mb-1 text-destructive" />
-            <div className="text-lg font-bold text-destructive">{Math.round(stats.neg / stats.total * 100)}%</div>
+            <div className="text-lg font-bold text-destructive">{stats.negPct}%</div>
             <div className="text-[10px] text-muted-foreground">{t("Negative", "부정")}</div>
           </div>
         </div>
@@ -116,14 +146,14 @@ export function LgComWeeklySummary() {
         <div className="rounded-lg border border-border p-3">
           <div className="text-xs font-semibold mb-2">{t("Sentiment Distribution", "감성 비율")}</div>
           <div className="flex h-4 rounded-full overflow-hidden">
-            <div className="bg-success/70 transition-all" style={{ width: `${Math.round(stats.pos / stats.total * 100)}%` }} />
-            <div className="bg-muted transition-all" style={{ width: `${Math.round(stats.neutral / stats.total * 100)}%` }} />
-            <div className="bg-destructive/70 transition-all" style={{ width: `${Math.round(stats.neg / stats.total * 100)}%` }} />
+            <div className="bg-success/70 transition-all" style={{ width: `${stats.posPct}%` }} />
+            <div className="bg-muted transition-all" style={{ width: `${stats.neuPct}%` }} />
+            <div className="bg-destructive/70 transition-all" style={{ width: `${stats.negPct}%` }} />
           </div>
           <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-            <span>✅ {t("Positive", "긍정")} {Math.round(stats.pos / stats.total * 100)}%</span>
-            <span>⚪ {t("Neutral", "중립")} {Math.round(stats.neutral / stats.total * 100)}%</span>
-            <span>🔴 {t("Negative", "부정")} {Math.round(stats.neg / stats.total * 100)}%</span>
+            <span>✅ {t("Positive", "긍정")} {stats.posPct}%</span>
+            <span>⚪ {t("Neutral", "중립")} {stats.neuPct}%</span>
+            <span>🔴 {t("Negative", "부정")} {stats.negPct}%</span>
           </div>
         </div>
 
@@ -150,8 +180,8 @@ export function LgComWeeklySummary() {
               <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <p className="text-xs text-foreground leading-relaxed">
                 {t(
-                  `Most reviewed: ${stats.topMentioned[0].name} (${stats.topMentioned[0].total} reviews). ${stats.topPos[0]?.name || "–"} leads positive sentiment, while ${stats.topNeg[0]?.name || "–"} has the most negative feedback. Use the AI report below for detailed strategic analysis.`,
-                  `가장 많은 리뷰: ${stats.topMentioned[0].name} (${stats.topMentioned[0].total}건). ${stats.topPos[0]?.name || "–"}이(가) 긍정 1위, ${stats.topNeg[0]?.name || "–"}이(가) 부정 1위입니다. 아래 AI 리포트에서 상세 전략 분석을 확인하세요.`
+                  `This week: ${stats.topMentioned[0].name} most reviewed (${stats.topMentioned[0].total} reviews). ${stats.topPos[0]?.name || "\u2013"} leads positive, ${stats.topNeg[0]?.name || "\u2013"} has most negative feedback.`,
+                  `\uC774\uBC88 \uC8FC: ${stats.topMentioned[0].name} \uCD5C\uB2E4 \uB9AC\uBDF0 (${stats.topMentioned[0].total}\uAC74). ${stats.topPos[0]?.name || "\u2013"}\uC774(\uAC00) \uAE0D\uC815 1\uC704, ${stats.topNeg[0]?.name || "\u2013"}\uC774(\uAC00) \uBD80\uC815 1\uC704\uC785\uB2C8\uB2E4.`
                 )}
               </p>
             </div>
