@@ -44,7 +44,33 @@ Deno.serve(async (req) => {
   const results: Record<string, any> = {};
   const activeLocales = ALL_LOCALES.filter(l => !!Deno.env.get(l.keyName));
 
-  console.log(`[BV-AUTO] Starting mode=${mode}, ${activeLocales.length} locales active`);
+  // ── Locale rotation: 가장 오래 수집되지 않은 로캘을 먼저 처리 ──
+  let sortedLocales = [...activeLocales];
+  if (mode === "collect" || mode === "full") {
+    const { data: progressByLocale } = await supabase
+      .from("bv_collection_progress")
+      .select("locale, last_run_at")
+      .in("locale", activeLocales.map(l => l.locale))
+      .eq("is_complete", false)
+      .order("last_run_at", { ascending: true, nullsFirst: true })
+      .limit(1000);
+
+    if (progressByLocale?.length) {
+      const localeLastRun = new Map<string, string>();
+      for (const row of progressByLocale) {
+        if (!localeLastRun.has(row.locale)) {
+          localeLastRun.set(row.locale, row.last_run_at ?? "1970-01-01");
+        }
+      }
+      sortedLocales.sort((a, b) => {
+        const aTime = localeLastRun.get(a.locale) ?? "1970-01-01";
+        const bTime = localeLastRun.get(b.locale) ?? "1970-01-01";
+        return aTime.localeCompare(bTime);
+      });
+    }
+  }
+
+  console.log(`[BV-AUTO] Starting mode=${mode}, ${sortedLocales.length} locales active, order: ${sortedLocales.map(l => l.locale).join(", ")}`);
 
   // ── PHASE 1: SWEEP (register products) ──
   if (mode === "sweep" || mode === "full") {
