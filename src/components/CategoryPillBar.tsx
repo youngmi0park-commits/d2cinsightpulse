@@ -46,7 +46,7 @@ function useCategoryCounts(country?: string) {
       return map;
     },
     staleTime: 5 * 60_000,
-}
+  });
 }
 
 interface CategoryPillBarProps {
