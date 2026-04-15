@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
   // ── PHASE 1: SWEEP (register products) ──
   if (mode === "sweep" || mode === "full") {
-    for (const { locale, keyName } of activeLocales) {
+    for (const { locale, keyName } of sortedLocales) {
       const passkey = Deno.env.get(keyName)!;
       let page = 1;
       let hasMore = true;
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
   if (mode === "collect" || mode === "full") {
     const productCache: Record<string, string> = {};
 
-    for (const { locale, region, keyName } of activeLocales) {
+    for (const { locale, region, keyName } of sortedLocales) {
       const passkey = Deno.env.get(keyName)!;
       let totalInserted = 0;
       let totalSkipped = 0;
@@ -291,7 +291,7 @@ Deno.serve(async (req) => {
     const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString().split("T")[0];
     const productCache: Record<string, string> = {};
 
-    for (const { locale, region, keyName } of activeLocales) {
+    for (const { locale, region, keyName } of sortedLocales) {
       const passkey = Deno.env.get(keyName)!;
       let totalInserted = 0;
       let offset = 0;
