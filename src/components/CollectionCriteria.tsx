@@ -1298,9 +1298,6 @@ export const CollectionCriteria = () => {
                   {/* Stacked bar grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                     {countryData.map(({ iso, lgeCode, totalCount, bvCount, communityCount }) => {
-                      const bvPct = totalCount > 0 ? (bvCount / totalCount) * 100 : 0;
-                      const commPct = totalCount > 0 ? (communityCount / totalCount) * 100 : 0;
-                      const barW = Math.max((totalCount / maxCount) * 100, 4);
                       return (
                         <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
