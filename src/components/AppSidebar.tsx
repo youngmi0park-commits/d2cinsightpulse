@@ -95,9 +95,8 @@ export function AppSidebar() {
           {!collapsed && (
             <div>
               <h1 className="text-sm font-bold tracking-tight">
-                <span className="text-white">D2C </span>
-                <span className="text-[hsl(4,58%,44%)]">Insight</span>
-                <span className="text-white"> Pulse</span>
+                <span className="text-white">RTA </span>
+                <span className="text-[hsl(4,58%,44%)]">Studio</span>
               </h1>
               <div className="flex items-center gap-1.5 mt-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
@@ -126,7 +125,7 @@ export function AppSidebar() {
             {lang === "ko" ? "English" : "한국어"}
           </button>
           <p className="text-[9px] text-[hsl(0,0%,35%)] text-center leading-relaxed mt-1">
-            D2C Marketing Strategy Team
+            Review-to-Asset Studio
           </p>
         </SidebarFooter>
       )}

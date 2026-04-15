@@ -266,7 +266,7 @@ Deno.serve(async (req) => {
         week_start: weekStart,
         week_end: weekEnd,
         issue_date: weekStart,
-        title: "D2C Insight Pulse — " + weekStart + " ~ " + weekEnd,
+        title: "RTA Studio Weekly \u2014 " + weekStart + " ~ " + weekEnd,
         total_reviews: totalReviews,
         countries_count: Object.keys(byCountry).length,
         channels_count: Object.keys(bySource).length,

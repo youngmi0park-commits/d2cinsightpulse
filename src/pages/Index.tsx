@@ -221,14 +221,14 @@ const Index = () => {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Activity className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="text-4xl md:text-5xl font-bold font-heading">
-                <span className="text-primary">D2C Insight Pulse</span>
+                <span className="text-primary">Review-to-Asset Studio</span>
               </h1>
             </div>
             <p className="text-sm md:text-base text-muted-foreground/70 italic mb-4">
-              Feel the Pulse. Gain the Insight.
+              Turn Real Reviews into Ready-to-Use Marketing Assets.
             </p>
             <p className="text-[11px] md:text-xs max-w-2xl mx-auto leading-relaxed whitespace-pre-line" style={{ color: '#6B6B6B' }}>
-              <strong className="text-foreground">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong>{"\n"}D2C Insight Pulse는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여{"\n"}숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 메시지를 제공하는 데이터 플랫폼입니다.
+              <strong className="text-foreground">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong>{"\n"}RTA Studio는 14개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여{"\n"}숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.
             </p>
             {stats && (
               <div className="flex items-center justify-center gap-2 mt-5">
@@ -281,10 +281,10 @@ const Index = () => {
       {/* Footer */}
       <footer className="mt-12 py-8 text-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          고객의 진짜 목소리에서 출발해, 브랜드의 다음 움직임을 이끄는 인사이트 플랫폼 — D2C Insight Pulse
+          고객의 진짜 목소리에서 출발해, 브랜드의 다음 움직임을 이끄는 인사이트 플랫폼 — Review-to-Asset Studio
         </p>
         <p className="text-xs text-muted-foreground">
-          Presented by LG전자 D2C마케팅전략팀
+          Produced by LG전자 D2C마케팅전략팀
         </p>
       </footer>
     </div>
