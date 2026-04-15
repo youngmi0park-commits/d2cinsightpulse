@@ -1132,7 +1132,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                           </div>
                         </td>
                       ) : null}
-                      <td className="px-2 py-1.5 text-muted-foreground font-mono">{row.lgeCode}</td>
+                      
                       <td className="px-2 py-1.5 font-semibold text-foreground">{row.channel}</td>
                       <td className="px-2 py-1.5 text-muted-foreground/80 italic">{row.dataSource}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">{row.method}</td>
