@@ -1082,6 +1082,14 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
             })}
           </div>
 
+          {/* Summary line */}
+          <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40 text-[11px] font-medium text-foreground">
+            <span>📊</span>
+            <span>
+              {t("Total", "총")} <span className="font-bold text-primary">{countries.length}</span>{t(" countries", "개국")} · <span className="font-bold text-primary">{COLLECTION_DETAIL.length}</span>{t(" channels", "개 채널")} · {t("Cumulative", "누적")} <span className="font-bold text-primary">{Object.values(sourceCounts).reduce((s, v) => s + v, 0).toLocaleString()}</span>{t(" reviews collected", "건 수집")}
+            </span>
+          </div>
+
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-[10px] border-collapse">
