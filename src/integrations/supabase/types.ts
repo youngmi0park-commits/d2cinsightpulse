@@ -891,6 +891,13 @@ export type Database = {
           source: string
         }[]
       }
+      get_weekly_category_counts_by_country: {
+        Args: { p_country?: string }
+        Returns: {
+          category: string
+          count: number
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
