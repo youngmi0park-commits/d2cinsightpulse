@@ -37,6 +37,10 @@ export interface SentimentResult {
   // Privacy-aware flags
   hasTextData: boolean;
   ratingOnlyMode: boolean;
+  // Subject-bound FCO fields
+  primarySubject: string;
+  hasCrossProductMention: boolean;
+  confidence: number; // 0–1, lower when cross-product comparisons detected
 }
 
 // ═══════════════════════════════════════════════════════════════════

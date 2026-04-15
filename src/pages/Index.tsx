@@ -54,24 +54,54 @@ const Index = () => {
 
       // If query matches a category exactly, filter out products from other categories
       const categoryKeywords: Record<string, string[]> = {
-        tv: ["TV"],
-        laptop: ["Laptop"],
-        monitor: ["Monitor"],
-        refrigerator: ["Refrigerator"],
-        fridge: ["Refrigerator"],
-        washer: ["Washer"],
-        dryer: ["Dryer"],
-        dishwasher: ["Dishwasher"],
-        vacuum: ["Vacuum"],
-        cordzero: ["Vacuum"],
-        soundbar: ["Soundbar", "Audio"],
-        "air purifier": ["Air Purifier"],
-        puricare: ["Air Purifier"],
-        aerotower: ["Air Purifier"],
-        range: ["Range"],
-        oven: ["Range"],
-        cooktop: ["Cooktop"],
-        microwave: ["Microwave"],
+        // TV
+        "tv":              ["TV"],
+        "oled":            ["TV"],
+        "qled":            ["TV"],
+        "4k tv":           ["TV"],
+        "standbyme":       ["TV"],
+        "lg tv":           ["TV"],
+        "monitor":         ["Monitor"],
+        "모니터":          ["Monitor"],
+        // 냉장고
+        "refrigerator":    ["Refrigerator"],
+        "fridge":          ["Refrigerator"],
+        "ice maker":       ["Refrigerator"],
+        "french door":     ["Refrigerator"],
+        "냉장고":          ["Refrigerator"],
+        // 세탁기·건조기
+        "washer":          ["Washer"],
+        "washing machine": ["Washer"],
+        "세탁기":          ["Washer"],
+        "dryer":           ["Dryer"],
+        "건조기":          ["Dryer"],
+        // 식기세척기
+        "dishwasher":      ["Dishwasher"],
+        "식기세척기":      ["Dishwasher"],
+        // 청소기
+        "vacuum":          ["Vacuum"],
+        "cordzero":        ["Vacuum"],
+        "청소기":          ["Vacuum"],
+        // 에어컨·공기청정기
+        "air conditioner": ["Air Conditioner"],
+        "ac":              ["Air Conditioner"],
+        "에어컨":          ["Air Conditioner"],
+        "dual inverter":   ["Air Conditioner"],
+        "air purifier":    ["Air Purifier"],
+        "puricare":        ["Air Purifier"],
+        "aerotower":       ["Air Purifier"],
+        "공기청정기":      ["Air Purifier"],
+        // 기타
+        "soundbar":        ["Soundbar", "Audio"],
+        "사운드바":        ["Soundbar", "Audio"],
+        "laptop":          ["Laptop"],
+        "gram":            ["Laptop"],
+        "노트북":          ["Laptop"],
+        "range":           ["Range"],
+        "oven":            ["Range"],
+        "cooktop":         ["Cooktop"],
+        "microwave":       ["Microwave"],
+        "전자레인지":      ["Microwave"],
       };
       const qLower = query.toLowerCase().trim();
       const matchedCategories = categoryKeywords[qLower];
