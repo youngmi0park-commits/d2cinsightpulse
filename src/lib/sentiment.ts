@@ -844,6 +844,7 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
   let priceNegCount = 0;
   const issueCounts = new Map<string, number>();
   const signals: SentimentSignal[] = [];
+  let crossProductMentionCount = 0;
 
   // Track best evidence phrases
   let bestPosEvidence = { phrase: "", score: -Infinity };
