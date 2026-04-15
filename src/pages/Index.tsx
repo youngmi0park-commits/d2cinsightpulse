@@ -113,21 +113,6 @@ const Index = () => {
         if (catFiltered.length > 0) filteredProducts = catFiltered;
       }
 
-      // ── 그룹 내 카테고리 다수결 — 오염 방지 ──
-      for (const [key, products] of productGroups) {
-        const catCounts = products.reduce<Record<string, number>>((acc, p) => {
-          acc[p.category] = (acc[p.category] ?? 0) + 1;
-          return acc;
-        }, {});
-        const dominantCat = Object.entries(catCounts)
-          .sort((a, b) => b[1] - a[1])[0]?.[0];
-        if (dominantCat) {
-          productGroups.set(
-            key,
-            products.filter(p => p.category === dominantCat)
-          );
-        }
-      }
 
       const sourcesFilter = countryToSourceFilter(selectedCountry);
 

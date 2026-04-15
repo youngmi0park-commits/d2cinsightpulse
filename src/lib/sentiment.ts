@@ -854,6 +854,12 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     // Use _analysisText (real content) for analysis if available, otherwise use text
     const analysisText = (review as any)._analysisText || review.text;
     
+    // ── Subject-bound FCO: detect cross-product comparisons ──
+    if (analysisText && productCategory) {
+      const hasCross = detectCrossProductComparison(analysisText, productCategory);
+      if (hasCross) crossProductMentionCount++;
+    }
+
     // Check if this review has real (non-placeholder) text
     const isRealText = analysisText && !/개인정보 보호 정책|LG 리뷰 — 감성|긍정적 사용 경험|불만 또는 개선|중립적 의견/.test(analysisText) && analysisText.length > 20;
     if (isRealText) hasRealText = true;
@@ -990,6 +996,11 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
   // Sort signals by absolute score for display
   signals.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
 
+  const total = reviews.length;
+  const avgConfidence = total > 0
+    ? Math.max(0, 1 - (crossProductMentionCount / total) * 0.5)
+    : 1;
+
   return {
     positive,
     negative,
@@ -1010,5 +1021,8 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     signals: signals.slice(0, 20),
     hasTextData: hasRealText,
     ratingOnlyMode: !hasRealText,
+    primarySubject: productCategory || "Unknown",
+    hasCrossProductMention: crossProductMentionCount > 0,
+    confidence: avgConfidence,
   };
 }
