@@ -44,11 +44,31 @@ Deno.serve(async (req) => {
   const results: Record<string, any> = {};
   const activeLocales = ALL_LOCALES.filter(l => !!Deno.env.get(l.keyName));
 
-  console.log(`[BV-AUTO] Starting mode=${mode}, ${activeLocales.length} locales active`);
+  // ── Locale rotation: 가장 오래 수집되지 않은 로캘을 먼저 처리 ──
+  let sortedLocales = [...activeLocales];
+  if (mode === "collect" || mode === "full") {
+    // bv_collection_summary 뷰에서 로캘별 마지막 수집 시점 조회 → 오래된 로캘 우선
+    const { data: summary } = await supabase
+      .from("bv_collection_summary")
+      .select("locale, last_run_at")
+      .order("last_run_at", { ascending: true, nullsFirst: true });
+
+    if (summary?.length) {
+      const localeOrder = new Map<string, number>();
+      summary.forEach((row: any, idx: number) => localeOrder.set(row.locale, idx));
+      sortedLocales.sort((a, b) => {
+        const aIdx = localeOrder.get(a.locale) ?? 999;
+        const bIdx = localeOrder.get(b.locale) ?? 999;
+        return aIdx - bIdx;
+      });
+    }
+  }
+
+  console.log(`[BV-AUTO] Starting mode=${mode}, ${sortedLocales.length} locales active, order: ${sortedLocales.map(l => l.locale).join(", ")}`);
 
   // ── PHASE 1: SWEEP (register products) ──
   if (mode === "sweep" || mode === "full") {
-    for (const { locale, keyName } of activeLocales) {
+    for (const { locale, keyName } of sortedLocales) {
       const passkey = Deno.env.get(keyName)!;
       let page = 1;
       let hasMore = true;
@@ -124,8 +144,15 @@ Deno.serve(async (req) => {
   // ── PHASE 2: COLLECT (batch collect reviews — 과거 포함 전량 수집) ──
   if (mode === "collect" || mode === "full") {
     const productCache: Record<string, string> = {};
+    const startTime = Date.now();
+    const TIME_BUDGET_MS = 130_000; // 130초 — 150초 타임아웃 전 여유
 
-    for (const { locale, region, keyName } of activeLocales) {
+    for (const { locale, region, keyName } of sortedLocales) {
+      // 시간 예산 초과 시 남은 로캘 스킵
+      if (Date.now() - startTime > TIME_BUDGET_MS) {
+        console.log(`[BV-AUTO] Time budget exceeded (${Math.round((Date.now() - startTime)/1000)}s), skipping remaining locales`);
+        break;
+      }
       const passkey = Deno.env.get(keyName)!;
       let totalInserted = 0;
       let totalSkipped = 0;
@@ -141,6 +168,7 @@ Deno.serve(async (req) => {
       }
 
       for (const prog of products) {
+        if (Date.now() - startTime > TIME_BUDGET_MS) break;
         const bvProductId = prog.product_id;
         let offset = prog.last_offset ?? 0;
         let hasMore = true;
@@ -265,7 +293,7 @@ Deno.serve(async (req) => {
     const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString().split("T")[0];
     const productCache: Record<string, string> = {};
 
-    for (const { locale, region, keyName } of activeLocales) {
+    for (const { locale, region, keyName } of sortedLocales) {
       const passkey = Deno.env.get(keyName)!;
       let totalInserted = 0;
       let offset = 0;
