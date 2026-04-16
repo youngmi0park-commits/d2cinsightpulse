@@ -805,29 +805,39 @@ function useCollectionLogs() {
         }
       }
 
-      // Fetch latest published_at per lge_com source for BV rows
+      // Fetch latest collected_at & published_at per lge_com source for BV rows
       const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au"];
       const bvSourceToBvKey: Record<string, string> = {
         lge_com_us: "bv_us", lge_com_uk: "bv_uk", lge_com_in: "bv_in", lge_com_tw: "bv_tw",
         lge_com_jp: "bv_jp", lge_com_th: "bv_th", lge_com_de: "bv_de", lge_com_au: "bv_au",
       };
-      // Get latest review per BV source
+      // Get latest review per BV source (by collected_at = actual sync time)
       const latestPromises = bvSources.map(src =>
         supabase
           .from("reviews")
-          .select("source, published_at")
+          .select("source, collected_at, published_at")
           .eq("source", src)
-          .not("published_at", "is", null)
-          .order("published_at", { ascending: false })
+          .order("collected_at", { ascending: false })
           .limit(1)
           .maybeSingle()
       );
       const latestResults = await Promise.all(latestPromises);
       for (const res of latestResults) {
-        if (res.data?.source && res.data?.published_at) {
+        if (res.data?.source) {
           const bvKey = bvSourceToBvKey[res.data.source];
-          if (bvKey && map[bvKey]) {
-            map[bvKey].latestReviewAt = res.data.published_at;
+          if (bvKey) {
+            // Use actual collected_at as lastAt (most recent sync time)
+            if (res.data.collected_at) {
+              if (!map[bvKey]) {
+                map[bvKey] = { lastAt: res.data.collected_at, count: 0, status: "done" };
+              } else {
+                map[bvKey].lastAt = res.data.collected_at;
+                map[bvKey].status = "done";
+              }
+            }
+            if (res.data.published_at) {
+              if (map[bvKey]) map[bvKey].latestReviewAt = res.data.published_at;
+            }
           }
         }
       }
