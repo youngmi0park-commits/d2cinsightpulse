@@ -246,7 +246,7 @@ function generatePreviewHTML(d: NewsletterData): string {
   const BORDER = "#E0DBD3";
   const WARM_BG = "#EFECE5";
   const BOX_BG = "#EFECE5";
-  const RADIUS = "border-radius:12px;overflow:hidden;";
+  const RADIUS = "overflow:hidden;";
 
   const channelBadges = d.channels.map(ch => {
     return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};background:${WARM_BG};padding:5px 14px;font-size:12px;color:#555;font-weight:600;font-family:${FONT};border-radius:20px;mso-border-alt:solid ${BORDER} 1px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} <strong style="color:#333;">${ch.count.toLocaleString()}</strong></td></tr></table></td>`;
@@ -278,7 +278,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 </table>
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" align="center" style="width:${WIDTH}px;background-color:${CARD_BG};"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;background:${CARD_BG};overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.07);">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;background-color:${CARD_BG};overflow:hidden;">
 
 <!-- Header -->
 <tr><td style="padding:30px 40px 20px;border-bottom:2px solid ${BORDER};">

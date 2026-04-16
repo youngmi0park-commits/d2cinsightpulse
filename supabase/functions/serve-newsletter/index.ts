@@ -214,7 +214,7 @@ function buildNewsletterHTML(d: {
     <tr><td style="padding:24px 32px 0;font-family:${FONT};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};">${icon} ${label}</td></tr>
-        <tr><td style="text-align:center;padding:24px;color:#999;font-size:12px;border:1px solid #E0DBD3;background:#F7F4EF;">데이터 없음</td></tr>
+        <tr><td style="text-align:center;padding:24px;color:#999;font-size:12px;border:1px solid #E0DBD3;background:#EFECE5;">데이터 없음</td></tr>
       </table>
     </td></tr>`;
 
@@ -253,7 +253,7 @@ function buildNewsletterHTML(d: {
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
               <tr><td style="padding-top:6px;font-family:${FONT};">
-                ${p.praise_points.map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:2px 3px 2px 0;"><tr><td style="background:#F7F4EF;border:1px solid #E0DBD3;padding:2px 8px;font-size:10px;color:#555;">✅ ${pp}</td></tr></table>`).join("")}
+                ${p.praise_points.map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:2px 3px 2px 0;"><tr><td style="background:#EFECE5;border:1px solid #E0DBD3;padding:2px 8px;font-size:10px;color:#555;">✅ ${pp}</td></tr></table>`).join("")}
               </td></tr>` : ""}
             </table>
           </td>
@@ -266,7 +266,7 @@ function buildNewsletterHTML(d: {
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr><td style="font-weight:600;font-size:12px;color:#1a1a1a;padding-bottom:3px;">${t.rank}. ${t.topic}</td></tr>
           <tr><td style="font-size:10px;color:#888;padding-bottom:4px;"><span style="color:#006600;font-weight:600;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · 언급 ${String(t.mention_pct).replace(/%/g, "")}%</td></tr>
-          <tr><td style="font-size:10px;color:#555;font-style:italic;background:#F7F4EF;padding:5px 8px;">"${t.representative_comment}"</td></tr>
+          <tr><td style="font-size:10px;color:#555;font-style:italic;background:#EFECE5;padding:5px 8px;">"${t.representative_comment}"</td></tr>
         </table>
       </td></tr>`).join("");
 
@@ -362,14 +362,14 @@ a {text-decoration:none;}
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#FFFFFF;font-family:${FONT};word-spacing:normal;">
+<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;"><tr><td align="center"><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
 <tr><td align="center" style="padding:24px 0;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FFFFFF;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#EFECE5;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#EFECE5;overflow:hidden;">
 
 <!-- Header -->
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
@@ -399,7 +399,7 @@ a {text-decoration:none;}
 
 <!-- Data Bar -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#FAFAF7;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;">
     <tr><td style="padding:12px 16px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
@@ -419,7 +419,7 @@ a {text-decoration:none;}
 <tr><td style="padding:20px 32px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
         <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
@@ -429,7 +429,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
         <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
@@ -439,7 +439,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
         <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
@@ -449,7 +449,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
         <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
@@ -463,8 +463,8 @@ a {text-decoration:none;}
 
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;border-radius:12px 12px 0 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
         <td style="text-align:right;font-size:9px;color:#999;font-family:${FONT};">리뷰 기반 자동 분류</td>
@@ -496,8 +496,8 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 
 ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;border-radius:12px 12px 0 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
     </td></tr>
     <tr><td style="padding:12px 14px;">
@@ -541,7 +541,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
     <tr><td style="border-left:4px solid #0066CC;padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">🌐 전채널 종합</td></tr>
     <tr><td>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#F7F7F2;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;">
         <tr><td style="padding:14px 16px;font-size:12px;color:#1a1a1a;line-height:20px;font-family:${FONT};">${allChannel.key_takeaway}</td></tr>
       </table>
     </td></tr>
@@ -566,14 +566,14 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:12px;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
     <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
     <tr>
       <td width="180" style="padding:20px 16px;vertical-align:middle;">
         <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
-          <td width="54" height="48" style="background:#F7F4EF;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
+          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
+          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
         </tr></table>
       </td>
       <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
