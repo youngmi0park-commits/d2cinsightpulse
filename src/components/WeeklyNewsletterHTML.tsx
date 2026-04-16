@@ -246,7 +246,7 @@ function generatePreviewHTML(d: NewsletterData): string {
   const BORDER = "#E0DBD3";
   const WARM_BG = "#EFECE5";
   const BOX_BG = "#EFECE5";
-  const RADIUS = "border-radius:12px;overflow:hidden;";
+  const RADIUS = "overflow:hidden;";
 
   const channelBadges = d.channels.map(ch => {
     return `<td style="padding:0 4px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid ${BORDER};background:${WARM_BG};padding:5px 14px;font-size:12px;color:#555;font-weight:600;font-family:${FONT};border-radius:20px;mso-border-alt:solid ${BORDER} 1px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span>${ch.name} <strong style="color:#333;">${ch.count.toLocaleString()}</strong></td></tr></table></td>`;
