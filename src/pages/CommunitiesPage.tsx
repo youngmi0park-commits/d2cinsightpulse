@@ -203,7 +203,8 @@ function useCommunityCountryCounts() {
         .from("reviews")
         .select("source")
         .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%");
+        .not("source", "like", "reddit%")
+        .limit(5000);
       if (error) throw error;
 
       const SOURCE_COUNTRY: Record<string, string> = {
