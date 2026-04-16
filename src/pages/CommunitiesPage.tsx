@@ -62,12 +62,14 @@ function useBasicStats(country: string) {
   return useQuery({
     queryKey: ["community-basic-stats", country],
     queryFn: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("source, sentiment", { count: "exact" })
         .not("source", "like", "lge_com%")
         .not("source", "like", "reddit%")
-        .limit(1000);
+        .gte("published_at", weekAgo)
+        .limit(2000);
       if (sourcesFilter && sourcesFilter.length > 0) {
         query = query.in("source", sourcesFilter);
       }

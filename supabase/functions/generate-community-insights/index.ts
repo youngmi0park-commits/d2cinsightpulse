@@ -23,8 +23,8 @@ Deno.serve(async (req) => {
       .select("source, sentiment, content, product_id, products!inner(display_name, category)")
       .not("source", "like", "lge_com%")
       .not("source", "like", "reddit%")
-      .gte("collected_at", new Date(Date.now() - 7 * 86400000).toISOString())
-      .limit(800);
+      .gte("published_at", new Date(Date.now() - 7 * 86400000).toISOString())
+      .limit(2000);
 
     // Apply country filter if specified
     if (country && country !== "all") {
