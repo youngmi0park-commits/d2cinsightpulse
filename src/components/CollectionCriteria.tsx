@@ -1519,7 +1519,7 @@ export const CollectionCriteria = () => {
           </div>
 
           <p className="text-[9px] text-muted-foreground px-3 pb-2">
-            {t("Source: Bazaarvoice API (Prod) · 8 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음")}
+            {t("Source: Bazaarvoice API (Prod) · 9 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 9개국 · 전 카테고리 · 작성시점 제한 없음")}
           </p>
         </section>
 
