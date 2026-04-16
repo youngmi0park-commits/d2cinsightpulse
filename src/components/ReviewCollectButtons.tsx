@@ -229,6 +229,10 @@ export function ReviewCollectButtons() {
           functionName = "bv-collect-reviews";
           body = { locale: "en_AU", runType: "resume", batchSize: 15 };
           break;
+        case "bv_collect_br":
+          functionName = "bv-collect-reviews";
+          body = { locale: "pt_BR", runType: "resume", batchSize: 15 };
+          break;
         case "bv_sync":
           functionName = "bv-incremental-sync";
           body = {};
