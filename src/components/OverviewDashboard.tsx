@@ -23,14 +23,14 @@ function useOverviewKPIs() {
       const twoWeeksAgo = new Date(); twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
       const [totalRes, thisWeekRes, lastWeekRes, lgcomTotalRes, lgcomWeeklyRes, lgcomLastWeekRes, redditTotalRes, redditWeeklyRes, redditLastWeekRes] = await Promise.all([
         supabase.from("reviews").select("*", { count: "exact", head: true }),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%"),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("collected_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit"),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("collected_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("published_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
       ]);
       const calc = (c: number, p: number) => p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100);
       const allSources = sourceCounts || {};
