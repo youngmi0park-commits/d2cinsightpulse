@@ -757,10 +757,10 @@ const CHANNEL_SOURCE_MAP: Record<string, string> = {
 
 // Hook: latest collection log per source + BV runs
 function useCollectionLogs() {
-  const [logs, setLogs] = useState<Record<string, { lastAt: string; count: number; status: string }>>({});
+  const [logs, setLogs] = useState<Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }>>({});
   useEffect(() => {
     const fetchLogs = async () => {
-      const map: Record<string, { lastAt: string; count: number; status: string }> = {};
+      const map: Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }> = {};
       // collection_logs: latest per source
       const { data: clData } = await supabase
         .from("collection_logs")
@@ -804,6 +804,34 @@ function useCollectionLogs() {
           }
         }
       }
+
+      // Fetch latest published_at per lge_com source for BV rows
+      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au"];
+      const bvSourceToBvKey: Record<string, string> = {
+        lge_com_us: "bv_us", lge_com_uk: "bv_uk", lge_com_in: "bv_in", lge_com_tw: "bv_tw",
+        lge_com_jp: "bv_jp", lge_com_th: "bv_th", lge_com_de: "bv_de", lge_com_au: "bv_au",
+      };
+      // Get latest review per BV source
+      const latestPromises = bvSources.map(src =>
+        supabase
+          .from("reviews")
+          .select("source, published_at")
+          .eq("source", src)
+          .not("published_at", "is", null)
+          .order("published_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      );
+      const latestResults = await Promise.all(latestPromises);
+      for (const res of latestResults) {
+        if (res.data?.source && res.data?.published_at) {
+          const bvKey = bvSourceToBvKey[res.data.source];
+          if (bvKey && map[bvKey]) {
+            map[bvKey].latestReviewAt = res.data.published_at;
+          }
+        }
+      }
+
       setLogs(map);
     };
     fetchLogs();
@@ -953,8 +981,8 @@ function resolveCumulativeCount(
 function resolveChannelLog(
   channel: string,
   country: string,
-  logs: Record<string, { lastAt: string; count: number; status: string }>
-): { lastAt: string; count: number; status: string } | null {
+  logs: Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }>
+): { lastAt: string; count: number; status: string; latestReviewAt?: string } | null {
   // BV channels first
   if (channel.includes("BV") || channel.includes("Bazaarvoice")) {
     const countryToBv: Record<string, string> = {
@@ -1125,7 +1153,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collected Data", "수집 대상 데이터")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
-                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Last Collected", "마지막 수집")}</th>
+                  <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Latest Review / Last Run", "최신 리뷰일 / 수집일")}</th>
                   <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Last Run", "최근 건수")}</th>
                   <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Cumulative", "누적 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
@@ -1171,10 +1199,19 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
                       <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
                         {logEntry ? (
-                          <span className={`${logEntry.status === "running" ? "text-yellow-600" : "text-foreground"}`}>
-                            {logEntry.status === "running" ? "🔄 " : ""}
-                            {formatTimeAgo(logEntry.lastAt)}
-                          </span>
+                          <div className="flex flex-col gap-0.5">
+                            {logEntry.latestReviewAt && (
+                              <span className="text-foreground font-medium text-[10px]">
+                                📝 {new Date(logEntry.latestReviewAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                                <span className="text-muted-foreground/60 ml-0.5">리뷰</span>
+                              </span>
+                            )}
+                            <span className={`text-[9px] ${logEntry.status === "running" ? "text-yellow-600" : "text-muted-foreground/60"}`}>
+                              {logEntry.status === "running" ? "🔄 " : "⚙️ "}
+                              {formatTimeAgo(logEntry.lastAt)}
+                              {!logEntry.latestReviewAt && <span className="ml-0.5">수집</span>}
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
