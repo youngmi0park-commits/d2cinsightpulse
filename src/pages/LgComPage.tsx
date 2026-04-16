@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Store, Globe, BarChart3, Brain } from "lucide-react";
+import { Store, Globe, BarChart3, Brain, Calendar, Database } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
@@ -114,6 +114,7 @@ function CountryStatsGrid({
 const LgComPage = () => {
   const { t } = useLang();
   const [selectedCountry, setSelectedCountry] = useState("all");
+  const [period, setPeriod] = useState<"weekly" | "cumulative">("weekly");
 
   const handleCountrySelect = (country: string) => {
     setSelectedCountry(country);
@@ -151,9 +152,36 @@ const LgComPage = () => {
       {/* LG.com 리뷰 분석 결과 */}
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-5 py-4 border-b border-border bg-primary/5">
-          <h2 className="text-base font-bold font-heading">
-            📊 {t("LG.com Review Analysis Results", "LG.com 리뷰 분석 결과")}
-          </h2>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-base font-bold font-heading">
+              📊 {t("LG.com Review Analysis Results", "LG.com 리뷰 분석 결과")}
+            </h2>
+            {/* Period toggle */}
+            <div className="flex gap-0.5 bg-muted/50 rounded-full p-0.5">
+              <button
+                onClick={() => setPeriod("weekly")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                  period === "weekly"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Calendar className="h-3 w-3" />
+                {t("Weekly", "주간")}
+              </button>
+              <button
+                onClick={() => setPeriod("cumulative")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                  period === "cumulative"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Database className="h-3 w-3" />
+                {t("Cumulative", "전체 누적")}
+              </button>
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
             <span>{t("Country", "국가")}: <span className="font-semibold text-foreground">{
               selectedCountry === "all"
@@ -164,7 +192,9 @@ const LgComPage = () => {
                   )}`
             }</span></span>
             <span className="text-border">|</span>
-            <span>{t("Period", "기간")}: <span className="font-semibold text-foreground">{t("Weekly", "주간")}</span></span>
+            <span>{t("Period", "기간")}: <span className="font-semibold text-foreground">{
+              period === "weekly" ? t("Weekly", "주간") : t("Cumulative", "전체 누적")
+            }</span></span>
             <span className="text-border">|</span>
             <span>{t("Basis", "기준")}: <span className="font-semibold text-foreground">{t("By Product", "제품별")}</span></span>
           </div>
@@ -182,10 +212,10 @@ const LgComPage = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="weekly" className="p-4 mt-0">
-            <LgComWeeklyReport country={selectedCountry} />
+            <LgComWeeklyReport country={selectedCountry} period={period} />
           </TabsContent>
           <TabsContent value="strategic" className="p-4 mt-0">
-            <WeeklyInsightsPanel country={selectedCountry} />
+            <WeeklyInsightsPanel country={selectedCountry} period={period} />
           </TabsContent>
         </Tabs>
       </section>

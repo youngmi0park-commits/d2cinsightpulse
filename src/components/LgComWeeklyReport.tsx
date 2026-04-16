@@ -96,7 +96,7 @@ function SectionCard({ icon: Icon, title, children, color = "border-border bg-ca
 }
 
 /* ── main component ── */
-export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
+export function LgComWeeklyReport({ country = "all", period = "weekly" }: { country?: string; period?: "weekly" | "cumulative" }) {
   const { t } = useLang();
   const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
@@ -112,7 +112,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
     setIsLoading(true);
     if (!productId) setCategory(target);
     try {
-      const invokeBody: any = { region, limit: 10, category: target };
+      const invokeBody: any = { region, limit: 10, category: target, period };
       if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("generate-lgcom-weekly-report", {
         body: invokeBody,
@@ -135,7 +135,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
 
   useEffect(() => {
     runReport("all");
-  }, [region]);
+  }, [region, period]);
 
   const es = report?.executive_summary;
 
@@ -150,7 +150,7 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
-              {t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트")}
+              {period === "weekly" ? t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트") : t("LG.com Cumulative Insight Report", "LG.com 전체 누적 인사이트 리포트")}
             </CardTitle>
             <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
           </div>
@@ -166,10 +166,9 @@ export function LgComWeeklyReport({ country = "all" }: { country?: string }) {
           </button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {t(
-            "AI-powered weekly insight report — uses country filter above",
-            "AI 기반 주간 인사이트 리포트 · 상단 국가 필터와 연동"
-          )}
+          {period === "weekly"
+            ? t("AI-powered weekly insight report — uses country filter above", "AI 기반 주간 인사이트 리포트 · 상단 국가 필터와 연동")
+            : t("AI-powered cumulative insight report — all collected reviews", "AI 기반 전체 누적 인사이트 리포트 · 수집된 전체 리뷰 분석")}
         </p>
       </CardHeader>
 

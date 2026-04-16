@@ -120,7 +120,7 @@ function ProductTag({ name }: { name: string }) {
   );
 }
 
-export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
+export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { country?: string; period?: "weekly" | "cumulative" }) {
   const { t } = useLang();
   const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
@@ -134,7 +134,7 @@ export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
     setIsLoading(true);
     if (!productId) setCategory(targetCategory);
     try {
-      const invokeBody: any = { region, limit: 5, category: targetCategory };
+      const invokeBody: any = { region, limit: 5, category: targetCategory, period };
       if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
         body: invokeBody,
