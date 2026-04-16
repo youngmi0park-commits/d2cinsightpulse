@@ -576,6 +576,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           reddit: "🌐 Reddit", lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK",
           lge_com_de: "🇩🇪 DE", lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN",
           lge_com_jp: "🇯🇵 JP", lge_com_tw: "🇹🇼 TW", lge_com_th: "🇹🇭 TH",
+          lge_com_br: "🇧🇷 BR",
         };
         const SOURCE_CHANNEL: Record<string, string> = {
           consumer_reports: "Consumer Reports", bestreviews: "BestReviews",
