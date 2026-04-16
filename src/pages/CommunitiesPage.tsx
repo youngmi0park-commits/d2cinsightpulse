@@ -57,19 +57,21 @@ function sourceLabel(source: string): string {
 }
 
 /* ── basic stats hook with <50 merging ── */
-function useBasicStats(country: string) {
+function useBasicStats(country: string, range: "all" | "weekly") {
   const sourcesFilter = countryToSourceFilter(country);
   return useQuery({
-    queryKey: ["community-basic-stats", country],
+    queryKey: ["community-basic-stats", country, range],
     queryFn: async () => {
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("source, sentiment", { count: "exact" })
         .not("source", "like", "lge_com%")
         .not("source", "like", "reddit%")
-        .gte("published_at", weekAgo)
         .limit(2000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter && sourcesFilter.length > 0) {
         query = query.in("source", sourcesFilter);
       }
@@ -113,12 +115,12 @@ function useBasicStats(country: string) {
 }
 
 /* ── AI insights with 30-min cache (useQuery auto-trigger) ── */
-function useAutoInsights(country: string, hasData: boolean) {
+function useAutoInsights(country: string, range: "all" | "weekly", hasData: boolean) {
   return useQuery<InsightsResponse>({
-    queryKey: ["community-insights", country],
+    queryKey: ["community-insights", country, range],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-community-insights", {
-        body: { country },
+        body: { country, range },
       });
       if (error) throw error;
       return data as InsightsResponse;
@@ -195,10 +197,11 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
 /* ── Main Page ── */
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry);
+  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, range);
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
-  const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, hasData);
+  const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, range, hasData);
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
