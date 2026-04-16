@@ -918,6 +918,13 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               ⚠️ General 카테고리 부정 리뷰는 실제 제품 불만 가능성 높음 — CS 팀과 즉시 매핑 필요
             </div>
           )}
+          {/* Always-visible action insight */}
+          <div className="mx-3.5 mb-3 mt-1 p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-200 text-[10px] text-emerald-900 leading-relaxed">
+            📌 LG.com 인증 구매자 리뷰는 PDP 전환의 핵심 지표 —{" "}
+            <strong className="text-emerald-800">
+              긍정 상위 제품은 Hero Banner·Social Proof 소재로 즉시 활용, 부정 집중 제품은 CS 응대·FAQ 업데이트 우선 필요
+            </strong>
+          </div>
         </div>
 
         {/* RIGHT — Reddit Signal Analysis */}
