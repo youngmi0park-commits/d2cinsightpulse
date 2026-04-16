@@ -82,7 +82,7 @@ function CountryStatsGrid({
         <span className="text-xl">🌐</span>
         <span className="text-[11px] font-semibold text-foreground">{t("All", "전체")}</span>
         <span className="text-sm font-bold font-sans text-primary">{total.toLocaleString()}</span>
-        <span className="text-[9px] text-muted-foreground">{t("reviews", "건")}</span>
+        <span className="text-[9px] text-muted-foreground">{t("cumulative reviews", "누적 리뷰")}</span>
       </button>
 
       {/* Per-country cards */}
@@ -103,7 +103,9 @@ function CountryStatsGrid({
             <span className="text-xl">{c.flag}</span>
             <span className="text-[11px] font-semibold text-foreground">{t(c.labelEn, c.label)}</span>
             <span className="text-sm font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
-            <span className="text-[9px] text-muted-foreground">{pct}%</span>
+            <span className="text-[9px] text-muted-foreground" title={t(`${c.labelEn}: Cumulative total since collection start`, `${c.label}: 수집 시작 이후 전체 누적`)}>
+              {t("cumulative", "누적")} · {pct}%
+            </span>
           </button>
         );
       })}

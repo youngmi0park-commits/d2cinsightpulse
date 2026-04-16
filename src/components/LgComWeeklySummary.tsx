@@ -112,8 +112,8 @@ export function LgComWeeklySummary() {
           <CardTitle className="text-lg font-heading">
             {t("LG.com Weekly Insight Summary", "LG.com 주간 인사이트 요약")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            {t("Weekly", "주간")} {stats.total.toLocaleString()}{t(" reviews", "건")}
+          <Badge variant="secondary" className="text-[10px] ml-auto" title={t("Total reviews published in the last 7 days (from RPC weekly count)", "최근 7일 내 작성된 리뷰 수 (RPC 주간 집계)")}>
+            {t("Last 7 days", "최근 7일")} {stats.total.toLocaleString()}{t(" reviews", "건")}
           </Badge>
         </div>
       </CardHeader>
@@ -123,22 +123,22 @@ export function LgComWeeklySummary() {
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <FileText className="h-4 w-4 mx-auto mb-1 text-primary" />
             <div className="text-lg font-bold text-foreground">{stats.total.toLocaleString()}</div>
-            <div className="text-[10px] text-muted-foreground">{t("Weekly Reviews", "주간 리뷰")}</div>
+            <div className="text-[10px] text-muted-foreground" title={t("Reviews published within the last 7 days across all LG.com regions", "전체 LG.com 지역에서 최근 7일 내 작성된 리뷰 합계")}>{t("Weekly Total", "주간 합계")}</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <Star className="h-4 w-4 mx-auto mb-1 text-primary" />
             <div className="text-lg font-bold text-foreground">{stats.avgRating}</div>
-            <div className="text-[10px] text-muted-foreground">{t("Avg Rating", "평균 평점")}</div>
+            <div className="text-[10px] text-muted-foreground" title={t("Average star rating from sampled weekly reviews (max 1,000)", "주간 샘플 리뷰(최대 1,000건)의 평균 별점")}>{t("Avg Rating", "평균 평점")}</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <ThumbsUp className="h-4 w-4 mx-auto mb-1 text-success" />
             <div className="text-lg font-bold text-success">{stats.posPct}%</div>
-            <div className="text-[10px] text-muted-foreground">{t("Positive", "긍정")}</div>
+            <div className="text-[10px] text-muted-foreground" title={t("Positive sentiment ratio from sampled reviews", "샘플 리뷰 기반 긍정 감성 비율")}>{t("Positive", "긍정")}</div>
           </div>
           <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
             <ThumbsDown className="h-4 w-4 mx-auto mb-1 text-destructive" />
             <div className="text-lg font-bold text-destructive">{stats.negPct}%</div>
-            <div className="text-[10px] text-muted-foreground">{t("Negative", "부정")}</div>
+            <div className="text-[10px] text-muted-foreground" title={t("Negative sentiment ratio from sampled reviews", "샘플 리뷰 기반 부정 감성 비율")}>{t("Negative", "부정")}</div>
           </div>
         </div>
 
