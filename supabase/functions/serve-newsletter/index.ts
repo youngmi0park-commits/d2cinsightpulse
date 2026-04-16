@@ -22,10 +22,12 @@ interface AllChannelSummary {
 
 /* ── AI insight generation per channel ── */
 async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit"): Promise<ChannelInsight | null> {
+  const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
   let query = sb
     .from("reviews")
     .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
-    .order("collected_at", { ascending: false })
+    .gte("published_at", weekAgoStr)
+    .order("published_at", { ascending: false })
     .limit(800);
 
   if (channel === "lgcom") query = query.like("source", "lge_com%");
