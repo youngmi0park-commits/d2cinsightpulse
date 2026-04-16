@@ -757,10 +757,10 @@ const CHANNEL_SOURCE_MAP: Record<string, string> = {
 
 // Hook: latest collection log per source + BV runs
 function useCollectionLogs() {
-  const [logs, setLogs] = useState<Record<string, { lastAt: string; count: number; status: string }>>({});
+  const [logs, setLogs] = useState<Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }>>({});
   useEffect(() => {
     const fetchLogs = async () => {
-      const map: Record<string, { lastAt: string; count: number; status: string }> = {};
+      const map: Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }> = {};
       // collection_logs: latest per source
       const { data: clData } = await supabase
         .from("collection_logs")
@@ -804,6 +804,34 @@ function useCollectionLogs() {
           }
         }
       }
+
+      // Fetch latest published_at per lge_com source for BV rows
+      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au"];
+      const bvSourceToBvKey: Record<string, string> = {
+        lge_com_us: "bv_us", lge_com_uk: "bv_uk", lge_com_in: "bv_in", lge_com_tw: "bv_tw",
+        lge_com_jp: "bv_jp", lge_com_th: "bv_th", lge_com_de: "bv_de", lge_com_au: "bv_au",
+      };
+      // Get latest review per BV source
+      const latestPromises = bvSources.map(src =>
+        supabase
+          .from("reviews")
+          .select("source, published_at")
+          .eq("source", src)
+          .not("published_at", "is", null)
+          .order("published_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      );
+      const latestResults = await Promise.all(latestPromises);
+      for (const res of latestResults) {
+        if (res.data?.source && res.data?.published_at) {
+          const bvKey = bvSourceToBvKey[res.data.source];
+          if (bvKey && map[bvKey]) {
+            map[bvKey].latestReviewAt = res.data.published_at;
+          }
+        }
+      }
+
       setLogs(map);
     };
     fetchLogs();
