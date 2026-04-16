@@ -93,6 +93,13 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     descriptionKo: "BV 호주 전체 페이지네이션 수집",
   },
   {
+    id: "bv_collect_br",
+    label: "BV Collect BR",
+    icon: Download,
+    description: "Full pagination collect from BV Brazil",
+    descriptionKo: "BV 브라질 전체 페이지네이션 수집",
+  },
+  {
     id: "bv_sync",
     label: "BV Daily Sync",
     icon: Download,
@@ -103,15 +110,15 @@ const COLLECT_CHANNELS: ChannelDef[] = [
     id: "bv_auto_full",
     label: "🔄 BV Auto (Full)",
     icon: Globe,
-    description: "Auto sweep + collect + sync all 8 countries",
-    descriptionKo: "8개국 전체 자동 스윕 + 수집 + 동기화",
+    description: "Auto sweep + collect + sync all 9 countries",
+    descriptionKo: "9개국 전체 자동 스윕 + 수집 + 동기화",
   },
   {
     id: "bv_auto_sweep",
     label: "🔍 BV Auto Sweep",
     icon: Globe,
-    description: "Auto sweep all 8 countries (register products only)",
-    descriptionKo: "8개국 전체 제품 카탈로그 스캔",
+    description: "Auto sweep all 9 countries (register products only)",
+    descriptionKo: "9개국 전체 제품 카탈로그 스캔",
   },
   {
     id: "reddit",
