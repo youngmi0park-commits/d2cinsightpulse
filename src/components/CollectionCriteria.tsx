@@ -790,6 +790,7 @@ function useCollectionLogs() {
         const localeToSource: Record<string, string> = {
           en_US: "bv_us", en_GB: "bv_uk", en_IN: "bv_in", zh_TW: "bv_tw",
           ja_JP: "bv_jp", th_TH: "bv_th", de_DE: "bv_de", en_AU: "bv_au",
+          pt_BR: "bv_br",
         };
         const seen = new Set<string>();
         for (const row of bvData) {
@@ -806,10 +807,11 @@ function useCollectionLogs() {
       }
 
       // Fetch latest collected_at & published_at per lge_com source for BV rows
-      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au"];
+      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au","lge_com_br"];
       const bvSourceToBvKey: Record<string, string> = {
         lge_com_us: "bv_us", lge_com_uk: "bv_uk", lge_com_in: "bv_in", lge_com_tw: "bv_tw",
         lge_com_jp: "bv_jp", lge_com_th: "bv_th", lge_com_de: "bv_de", lge_com_au: "bv_au",
+        lge_com_br: "bv_br",
       };
       // Get latest review per BV source (by collected_at = actual sync time)
       const latestPromises = bvSources.map(src =>
@@ -893,6 +895,7 @@ function resolveCumulativeCount(
     const countryToSource: Record<string, string> = {
       US: "lge_com_us", UK: "lge_com_uk", IN: "lge_com_in", TW: "lge_com_tw",
       JP: "lge_com_jp", TH: "lge_com_th", DE: "lge_com_de", AU: "lge_com_au",
+      BR: "lge_com_br",
     };
     return sourceCounts[countryToSource[country] || ""] || 0;
   }
@@ -998,6 +1001,7 @@ function resolveChannelLog(
     const countryToBv: Record<string, string> = {
       US: "bv_us", UK: "bv_uk", IN: "bv_in", TW: "bv_tw",
       JP: "bv_jp", TH: "bv_th", DE: "bv_de", AU: "bv_au",
+      BR: "bv_br",
     };
     const key = countryToBv[country];
     if (key && logs[key]) return logs[key];
