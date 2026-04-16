@@ -134,7 +134,7 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
     setIsLoading(true);
     if (!productId) setCategory(targetCategory);
     try {
-      const invokeBody: any = { region, limit: 5, category: targetCategory };
+      const invokeBody: any = { region, limit: 5, category: targetCategory, period };
       if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
         body: invokeBody,

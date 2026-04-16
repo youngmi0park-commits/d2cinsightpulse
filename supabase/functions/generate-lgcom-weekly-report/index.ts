@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
     const sampledTotal = allPos + allNeg + allNeutral;
 
     // Use actual weekly total from DB
-    const totalReviews = actualWeeklyTotal > 0 ? actualWeeklyTotal : sampledTotal;
+    const totalReviews = actualTotal > 0 ? actualTotal : sampledTotal;
     const posPct = sampledTotal > 0 ? Math.round(allPos / sampledTotal * 100) : 0;
     const negPct = sampledTotal > 0 ? Math.round(allNeg / sampledTotal * 100) : 0;
     const neuPct = 100 - posPct - negPct;
@@ -259,7 +259,7 @@ Deno.serve(async (req) => {
         region,
         category,
         total_reviews: totalReviews,
-        weekly_total: actualWeeklyTotal,
+        total: actualTotal,
         generated_at: new Date().toISOString(),
       },
     };
