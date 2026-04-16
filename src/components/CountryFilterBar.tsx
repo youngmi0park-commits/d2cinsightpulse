@@ -10,6 +10,8 @@ export interface CountryFilter {
 interface CountryFilterBarProps {
   selected: string;
   onChange: (country: string) => void;
+  /** Override internal counts with custom data (e.g. community-only) */
+  customCounts?: Record<string, number> | null;
 }
 
 /** Full country metadata — only countries with data will render */
