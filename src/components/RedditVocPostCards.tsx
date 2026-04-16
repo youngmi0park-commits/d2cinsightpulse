@@ -59,7 +59,8 @@ const SENTIMENT_ICON: Record<string, React.ReactNode> = {
 };
 
 export function RedditVocPostCards({ country = "all" }: { country?: string }) {
-  const { data: posts, isLoading } = useRedditPosts(country);
+  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const { data: posts, isLoading } = useRedditPosts(country, range);
   const [filter, setFilter] = useState<BucketFilter>("ALL");
   const [showCount, setShowCount] = useState(12);
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -142,6 +143,20 @@ export function RedditVocPostCards({ country = "all" }: { country?: string }) {
             <MessageCircle className="h-5 w-5 text-primary" />
             <CardTitle className="text-base font-semibold">Reddit VOC Post Cards</CardTitle>
             <Badge variant="secondary" className="text-[10px]">{total}건</Badge>
+          </div>
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+            <button
+              onClick={() => setRange("weekly")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "weekly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >주간</button>
+            <button
+              onClick={() => setRange("all")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >전체</button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
