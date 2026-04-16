@@ -60,9 +60,9 @@ function CountryStatsGrid({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+      <div className="flex gap-1.5">
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl bg-secondary/50 animate-pulse" />
+          <div key={i} className="flex-1 h-16 rounded-lg bg-secondary/50 animate-pulse" />
         ))}
       </div>
     );
