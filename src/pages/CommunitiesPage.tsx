@@ -266,30 +266,46 @@ const CommunitiesPage = () => {
             </div>
           </div>
 
-          {/* Insights Header with Refresh */}
+          {/* Insights Header with Range Toggle + Refresh */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 주간 인사이트</h3>
+              <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 {range === "weekly" ? "주간" : "전체"} 인사이트</h3>
               {insights && !insightsLoading && (
                 <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">
                   30분 캐시 적용
                 </Badge>
               )}
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => refetch()}
-              disabled={insightsLoading}
-              className="gap-1.5"
-            >
-              {insightsLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3.5 w-3.5" />
-              )}
-              새로고침
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setRange("weekly")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    range === "weekly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >주간</button>
+                <button
+                  onClick={() => setRange("all")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    range === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >전체</button>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => refetch()}
+                disabled={insightsLoading}
+                className="gap-1.5"
+              >
+                {insightsLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
+                새로고침
+              </Button>
+            </div>
           </div>
 
           {/* Loading state */}
