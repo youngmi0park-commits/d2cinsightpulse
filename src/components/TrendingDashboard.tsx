@@ -533,7 +533,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           📅 {dateRangeLabel} · 주간 집계
         </span>
         <span className="text-[11px] text-primary border border-primary/20 rounded-full px-2.5 py-0.5">
-          🔌 43개+ 채널 · 14개국 수집중
+          🔌 43개+ 채널 · 15개국 수집중
         </span>
         {lastSyncLabel && (
           <span className="text-[10px] text-muted-foreground ml-auto">
