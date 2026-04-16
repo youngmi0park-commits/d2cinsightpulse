@@ -201,7 +201,6 @@ const CommunitiesPage = () => {
   // Channel stats always show cumulative totals
   const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, "all");
   // AI insights respect the range toggle
-  const { data: rangeStats, isLoading: rangeStatsLoading } = useBasicStats(selectedCountry, range);
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
   const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, range, hasData);
