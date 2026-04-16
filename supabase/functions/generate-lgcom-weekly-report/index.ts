@@ -59,18 +59,30 @@ Deno.serve(async (req) => {
     const sourceFilter = getSourceFilter(region);
     const weekAgo = isCumulative ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // 1. Get actual weekly total count for this country+category from DB
-    let actualWeeklyTotal = 0;
-    {
+    // 1. Get total count for this country+category from DB
+    let actualTotal = 0;
+    if (isCumulative) {
+      const { data: ccData } = await sb.rpc("get_category_counts_by_country", {
+        p_country: region,
+      });
+      if (ccData) {
+        if (category === "all") {
+          actualTotal = (ccData as any[]).reduce((s: number, r: any) => s + Number(r.count), 0);
+        } else {
+          const match = (ccData as any[]).find((r: any) => r.category === category);
+          actualTotal = match ? Number(match.count) : 0;
+        }
+      }
+    } else {
       const { data: wcData } = await sb.rpc("get_weekly_category_counts_by_country", {
         p_country: region,
       });
       if (wcData) {
         if (category === "all") {
-          actualWeeklyTotal = (wcData as any[]).reduce((s: number, r: any) => s + Number(r.count), 0);
+          actualTotal = (wcData as any[]).reduce((s: number, r: any) => s + Number(r.count), 0);
         } else {
           const match = (wcData as any[]).find((r: any) => r.category === category);
-          actualWeeklyTotal = match ? Number(match.count) : 0;
+          actualTotal = match ? Number(match.count) : 0;
         }
       }
     }
@@ -127,14 +139,19 @@ Deno.serve(async (req) => {
     for (const pid of allProductIds) {
       const prodInfo = [...filteredPos, ...filteredNeg].find((p: any) => p.product_id === pid);
 
-      const { data: reviews } = await sb
+      let query = sb
         .from("reviews")
         .select("title, rating, sentiment, sentiment_score, published_at, content, emotion_category")
         .eq("product_id", pid)
         .in("source", sourceFilter)
-        .gte("published_at", weekAgo)
         .order("published_at", { ascending: false })
-        .limit(200);
+        .limit(isCumulative ? 500 : 200);
+
+      if (weekAgo) {
+        query = query.gte("published_at", weekAgo);
+      }
+
+      const { data: reviews } = await query;
 
       const pos = (reviews || []).filter((r: any) => r.sentiment === "positive");
       const neg = (reviews || []).filter((r: any) => r.sentiment === "negative");
