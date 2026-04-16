@@ -981,8 +981,8 @@ function resolveCumulativeCount(
 function resolveChannelLog(
   channel: string,
   country: string,
-  logs: Record<string, { lastAt: string; count: number; status: string }>
-): { lastAt: string; count: number; status: string } | null {
+  logs: Record<string, { lastAt: string; count: number; status: string; latestReviewAt?: string }>
+): { lastAt: string; count: number; status: string; latestReviewAt?: string } | null {
   // BV channels first
   if (channel.includes("BV") || channel.includes("Bazaarvoice")) {
     const countryToBv: Record<string, string> = {
