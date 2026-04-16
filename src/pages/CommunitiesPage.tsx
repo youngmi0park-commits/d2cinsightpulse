@@ -195,39 +195,37 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
 }
 
 /* ── Community-only country counts (exclude LG.com & Reddit) ── */
+const SOURCE_COUNTRY: Record<string, string> = {
+  amazon: "US", amazon_us: "US", amazon_uk: "UK", amazon_ca: "CA", amazon_de: "DE",
+  amazon_fr: "FR", amazon_au: "AU", amazon_br: "BR", amazon_mx: "MX", amazon_jp: "JP",
+  amazon_sg: "SG", amazon_in: "IN",
+  youtube: "US", youtube_us: "US", youtube_LGUSAChannel: "US",
+  youtube_uk: "UK", youtube_ca: "CA", youtube_de: "DE", youtube_fr: "FR", youtube_au: "AU",
+  youtube_jp: "JP", youtube_sg: "SG", youtube_my: "MY", youtube_th: "TH", youtube_ph: "PH",
+  youtube_id: "ID", youtube_vn: "VN", youtube_tw: "TW", youtube_hk: "HK", youtube_in: "IN",
+  bestbuy: "US", walmart: "US", costco: "US", target: "US",
+  consumeraffairs: "US", consumer_reports: "US", bestreviews: "US", houzz: "US",
+  web_review: "US", web_review_jp: "JP", web_review_th: "TH", web_review_in: "IN",
+  web_review_sg: "SG", web_review_id: "ID", web_review_vn: "VN", web_review_hk: "HK", web_review_tw: "TW",
+  trusted_reviews: "UK",
+  trustpilot: "Global", rtings: "Global", pcmag: "Global", cnet: "Global",
+  techradar: "Global", notebookcheck: "Global", lemon8: "Global",
+};
+
 function useCommunityCountryCounts() {
   return useQuery({
     queryKey: ["community-country-counts"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("source")
-        .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%")
-        .limit(5000);
+      // Use get_source_counts RPC to avoid row limit issues
+      const { data, error } = await supabase.rpc("get_source_counts");
       if (error) throw error;
-
-      const SOURCE_COUNTRY: Record<string, string> = {
-        amazon: "US", amazon_us: "US", amazon_uk: "UK", amazon_ca: "CA", amazon_de: "DE",
-        amazon_fr: "FR", amazon_au: "AU", amazon_br: "BR", amazon_mx: "MX", amazon_jp: "JP",
-        amazon_sg: "SG", amazon_in: "IN",
-        youtube: "US", youtube_us: "US", youtube_LGUSAChannel: "US",
-        youtube_uk: "UK", youtube_ca: "CA", youtube_de: "DE", youtube_fr: "FR", youtube_au: "AU",
-        youtube_jp: "JP", youtube_sg: "SG", youtube_my: "MY", youtube_th: "TH", youtube_ph: "PH",
-        youtube_id: "ID", youtube_vn: "VN", youtube_tw: "TW", youtube_hk: "HK", youtube_in: "IN",
-        bestbuy: "US", walmart: "US", costco: "US", target: "US",
-        consumeraffairs: "US", consumer_reports: "US", bestreviews: "US", houzz: "US",
-        web_review: "US", web_review_jp: "JP", web_review_th: "TH", web_review_in: "IN",
-        web_review_sg: "SG", web_review_id: "ID", web_review_vn: "VN", web_review_hk: "HK", web_review_tw: "TW",
-        trusted_reviews: "UK",
-        trustpilot: "Global", rtings: "Global", pcmag: "Global", cnet: "Global",
-        techradar: "Global", notebookcheck: "Global", lemon8: "Global",
-      };
 
       const counts: Record<string, number> = {};
       for (const r of data || []) {
+        // Exclude LG.com and Reddit sources
+        if (r.source.startsWith("lge_com") || r.source.startsWith("reddit")) continue;
         const country = SOURCE_COUNTRY[r.source] || "Global";
-        counts[country] = (counts[country] || 0) + 1;
+        counts[country] = (counts[country] || 0) + r.count;
       }
       return counts;
     },
