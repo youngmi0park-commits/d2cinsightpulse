@@ -32,16 +32,20 @@ interface CompetitorMention {
   sampleContexts: string[];
 }
 
-function useCompetitorMentions(country: string) {
+function useCompetitorMentions(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-competitor-mentions", country],
+    queryKey: ["reddit-competitor-mentions", country, range],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
         .select("content, sentiment")
         .like("source", "reddit%")
-        .limit(500);
+        .limit(2000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
         if (redditSources.length === 0) return [];
