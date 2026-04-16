@@ -18,12 +18,14 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { data: classified } = useQuery({
     queryKey: ["reddit-weekly-summary", country],
     queryFn: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
-        .order("collected_at", { ascending: false })
-        .limit(500);
+        .gte("published_at", weekAgo)
+        .order("published_at", { ascending: false })
+        .limit(2000);
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
         if (redditSources.length === 0) return [];
