@@ -14,17 +14,21 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { country } = await req.json().catch(() => ({ country: "all" }));
+    const { country, range } = await req.json().catch(() => ({ country: "all", range: "weekly" }));
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Build query for non-lgcom, non-reddit reviews from last 7 days
+    // Build query for non-lgcom, non-reddit reviews
     let query = sb
       .from("reviews")
       .select("source, sentiment, content, product_id, products!inner(display_name, category)")
       .not("source", "like", "lge_com%")
       .not("source", "like", "reddit%")
-      .gte("published_at", new Date(Date.now() - 7 * 86400000).toISOString())
       .limit(2000);
+
+    // Apply weekly filter unless "all" range requested
+    if (range !== "all") {
+      query = query.gte("published_at", new Date(Date.now() - 7 * 86400000).toISOString());
+    }
 
     // Apply country filter if specified
     if (country && country !== "all") {

@@ -57,19 +57,21 @@ function sourceLabel(source: string): string {
 }
 
 /* ── basic stats hook with <50 merging ── */
-function useBasicStats(country: string) {
+function useBasicStats(country: string, range: "all" | "weekly") {
   const sourcesFilter = countryToSourceFilter(country);
   return useQuery({
-    queryKey: ["community-basic-stats", country],
+    queryKey: ["community-basic-stats", country, range],
     queryFn: async () => {
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("source, sentiment", { count: "exact" })
         .not("source", "like", "lge_com%")
         .not("source", "like", "reddit%")
-        .gte("published_at", weekAgo)
         .limit(2000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter && sourcesFilter.length > 0) {
         query = query.in("source", sourcesFilter);
       }
@@ -113,12 +115,12 @@ function useBasicStats(country: string) {
 }
 
 /* ── AI insights with 30-min cache (useQuery auto-trigger) ── */
-function useAutoInsights(country: string, hasData: boolean) {
+function useAutoInsights(country: string, range: "all" | "weekly", hasData: boolean) {
   return useQuery<InsightsResponse>({
-    queryKey: ["community-insights", country],
+    queryKey: ["community-insights", country, range],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("generate-community-insights", {
-        body: { country },
+        body: { country, range },
       });
       if (error) throw error;
       return data as InsightsResponse;
@@ -195,10 +197,11 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
 /* ── Main Page ── */
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry);
+  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, range);
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
-  const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, hasData);
+  const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, range, hasData);
 
   return (
     <div className="p-6 space-y-5 max-w-[1400px] mx-auto">
@@ -263,30 +266,46 @@ const CommunitiesPage = () => {
             </div>
           </div>
 
-          {/* Insights Header with Refresh */}
+          {/* Insights Header with Range Toggle + Refresh */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 주간 인사이트</h3>
+              <h3 className="text-sm font-semibold text-foreground">📊 커뮤니티 리뷰 {range === "weekly" ? "주간" : "전체"} 인사이트</h3>
               {insights && !insightsLoading && (
                 <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">
                   30분 캐시 적용
                 </Badge>
               )}
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => refetch()}
-              disabled={insightsLoading}
-              className="gap-1.5"
-            >
-              {insightsLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3.5 w-3.5" />
-              )}
-              새로고침
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setRange("weekly")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    range === "weekly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >주간</button>
+                <button
+                  onClick={() => setRange("all")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                    range === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >전체</button>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => refetch()}
+                disabled={insightsLoading}
+                className="gap-1.5"
+              >
+                {insightsLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
+                새로고침
+              </Button>
+            </div>
           </div>
 
           {/* Loading state */}
