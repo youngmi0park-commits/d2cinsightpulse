@@ -22,10 +22,12 @@ interface AllChannelSummary {
 
 /* ── AI insight generation per channel ── */
 async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit"): Promise<ChannelInsight | null> {
+  const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
   let query = sb
     .from("reviews")
     .select("title, content, sentiment, sentiment_score, rating, source, products!inner(display_name, model_number, category, sub_category)")
-    .order("collected_at", { ascending: false })
+    .gte("published_at", weekAgoStr)
+    .order("published_at", { ascending: false })
     .limit(800);
 
   if (channel === "lgcom") query = query.like("source", "lge_com%");
@@ -121,7 +123,7 @@ async function generateAllChannelSummary(sb: any, lovableApiKey: string): Promis
   const { data: reviews, error } = await sb
     .from("reviews")
     .select("source, sentiment, content, products!inner(display_name, category)")
-    .gte("collected_at", weekAgo)
+    .gte("published_at", weekAgo)
     .limit(600);
   if (error || !reviews?.length) return null;
 
@@ -322,9 +324,9 @@ function buildNewsletterHTML(d: {
   /* ── Channel badges ── */
   const channelBadges = d.channels.map(ch => {
     if (ch.name === "LG.com") {
-      return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;"><!--[if !mso]><!--><span style="border-radius:14px;">${ch.name} ${ch.count.toLocaleString()}</span><!--<![endif]--><!--[if mso]>${ch.name} ${ch.count.toLocaleString()}<![endif]--></td></tr></table></td>`;
+      return `<td style="padding:0 3px;"><!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;">${ch.name} ${ch.count.toLocaleString()}</td></tr></table><![endif]--><!--[if !mso]><!--><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#A50034;color:#ffffff;padding:4px 12px;font-size:11px;font-weight:700;font-family:${FONT};border-radius:14px;line-height:16px;">${ch.name} ${ch.count.toLocaleString()}</td></tr></table><!--<![endif]--></td>`;
     }
-    return `<td style="padding:0 3px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;"><!--[if mso]><span style="font-size:6px;color:${ch.color};">&#9679;</span><![endif]--><!--[if !mso]><!--><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span><!--<![endif]-->${ch.name} ${ch.count.toLocaleString()}</td></tr></table></td>`;
+    return `<td style="padding:0 3px;"><!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};mso-line-height-rule:exactly;line-height:16px;"><span style="font-size:6px;color:${ch.color};">&#9679;</span> ${ch.name} ${ch.count.toLocaleString()}</td></tr></table><![endif]--><!--[if !mso]><!--><table cellpadding="0" cellspacing="0" border="0"><tr><td style="border:1px solid #E0DBD3;padding:4px 10px;font-size:11px;color:#444;font-family:${FONT};border-radius:14px;line-height:16px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:4px;vertical-align:middle;"></span>${ch.name} ${ch.count.toLocaleString()}</td></tr></table><!--<![endif]--></td>`;
   }).join("");
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -399,7 +401,7 @@ a {text-decoration:none;}
 
 <!-- Data Bar -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;border-radius:12px;overflow:hidden;">
     <tr><td style="padding:12px 16px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
@@ -419,7 +421,7 @@ a {text-decoration:none;}
 <tr><td style="padding:20px 32px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
@@ -429,7 +431,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
@@ -439,7 +441,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
@@ -449,7 +451,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
@@ -463,7 +465,7 @@ a {text-decoration:none;}
 
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
     <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
@@ -496,7 +498,7 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 
 ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
     <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
     </td></tr>
@@ -566,7 +568,7 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
     <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
     <tr>
       <td width="180" style="padding:20px 16px;vertical-align:middle;">
@@ -633,8 +635,8 @@ Deno.serve(async (req) => {
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
     const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
-      sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
-      sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
       sb.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
