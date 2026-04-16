@@ -37,10 +37,10 @@ export const sourceToLgeCode = (source: string): string => {
   const map: Record<string, string> = {
     lge_com_us: "LGEUS", lge_com_uk: "LGEUK", lge_com_de: "LGEDE",
     lge_com_au: "LGEAP", lge_com_in: "LGEIL", lge_com_tw: "LGETT",
-    lge_com_jp: "LGEJP", lge_com_th: "LGETH",
+    lge_com_jp: "LGEJP", lge_com_th: "LGETH", lge_com_br: "LGESP",
     lge_com_sg: "LGESL", lge_com_my: "LGEML", lge_com_id: "LGEIN",
     lge_com_ph: "LGEPH", lge_com_vn: "LGEVN", lge_com_hk: "LGEHK",
-    lge_com_ca: "LGECI", lge_com_br: "LGESP", lge_com_mx: "LGEMS",
+    lge_com_ca: "LGECI", lge_com_mx: "LGEMS",
     lge_com_fr: "LGEFS", lge_com_nl: "LGEBN",
   };
   return map[source] ?? "LGEUS";

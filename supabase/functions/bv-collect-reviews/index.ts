@@ -85,10 +85,12 @@ Deno.serve(async (req) => {
     th_TH: "BAZAARVOICE_TH_API_KEY",
     de_DE: "BAZAARVOICE_DE_API_KEY",
     en_AU: "BAZAARVOICE_AU_API_KEY",
+    pt_BR: "BAZAARVOICE_BR_API_KEY",
   };
   const LOCALE_REGION_MAP: Record<string, string> = {
     en_US: "us", en_GB: "uk", en_IN: "in", zh_TW: "tw",
     ja_JP: "jp", th_TH: "th", de_DE: "de", en_AU: "au",
+    pt_BR: "br",
   };
   const passkey = Deno.env.get(LOCALE_KEY_MAP[locale] ?? "BAZAARVOICE_US_API_KEY")!;
   const region = LOCALE_REGION_MAP[locale] ?? "us";
