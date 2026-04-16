@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
               ? originalName : bvProductId;
             const displayName = rv.Products?.[rv.ProductId]?.Name || prog.product_name || "LG Product";
             const rawCategory = rv.Products?.[rv.ProductId]?.CategoryId || prog.category || "General";
-            const category = normalizeCategory(rawCategory, modelNum);
+            const category = normalizeCategory(rawCategory, modelNum, displayName);
 
             // Ensure product exists in products table
             if (!productCache[modelNum]) {
