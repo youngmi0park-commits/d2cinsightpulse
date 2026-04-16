@@ -13,17 +13,21 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MessageSquare, ChevronDown, Copy, TrendingUp, AlertTriangle, HelpCircle, Hash, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-function useRedditClassified(country: string) {
+function useRedditClassified(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-classified", country],
+    queryKey: ["reddit-classified", country, range],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source")
+        .select("id, content, title, sentiment, sentiment_score, source, published_at")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
         if (redditSources.length === 0) return [];
@@ -193,7 +197,8 @@ function PostItem({
 
 export function RedditBucketDashboard({ country = "all" }: { country?: string }) {
   const { t } = useLang();
-  const { data: summaries, isLoading } = useRedditClassified(country);
+  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const { data: summaries, isLoading } = useRedditClassified(country, range);
 
   const totalPosts = summaries?.reduce((s, b) => s + b.count, 0) || 0;
 
@@ -211,6 +216,29 @@ export function RedditBucketDashboard({ country = "all" }: { country?: string })
                 {totalPosts}{t(" posts analyzed", "건 분석")}
               </Badge>
             )}
+          </div>
+          {/* 전체/주간 토글 */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+            <button
+              onClick={() => setRange("weekly")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "weekly"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("Weekly", "주간")}
+            </button>
+            <button
+              onClick={() => setRange("all")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "all"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("All", "전체")}
+            </button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
