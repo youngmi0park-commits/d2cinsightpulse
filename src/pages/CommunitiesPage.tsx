@@ -198,7 +198,9 @@ function ChannelInsightCard({ insight }: { insight: ChannelInsight }) {
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [range, setRange] = useState<"all" | "weekly">("weekly");
-  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, range);
+  // Channel stats always show cumulative totals
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, "all");
+  // AI insights respect the range toggle
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
   const { data: insights, isLoading: insightsLoading, refetch } = useAutoInsights(selectedCountry, range, hasData);
