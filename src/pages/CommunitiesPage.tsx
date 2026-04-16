@@ -237,7 +237,7 @@ function useCommunityCountryCounts() {
 /* ── Main Page ── */
 const CommunitiesPage = () => {
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const [range, setRange] = useState<"all" | "weekly">("all");
   const { data: communityCounts } = useCommunityCountryCounts();
   // Channel stats always show cumulative totals
   const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, "all");
