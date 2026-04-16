@@ -18,6 +18,7 @@ const BV_COUNTRIES = [
   { value: "TW", label: "대만", labelEn: "TW", flag: "🇹🇼" },
   { value: "JP", label: "일본", labelEn: "JP", flag: "🇯🇵" },
   { value: "TH", label: "태국", labelEn: "TH", flag: "🇹🇭" },
+  { value: "BR", label: "브라질", labelEn: "BR", flag: "🇧🇷" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
@@ -29,6 +30,7 @@ const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
   TW: ["lge_com_tw"],
   JP: ["lge_com_jp"],
   TH: ["lge_com_th"],
+  BR: ["lge_com_br"],
 };
 
 /* ── Country Stats Cards ── */
@@ -129,8 +131,8 @@ const LgComPage = () => {
         icon={Store}
         title="🏬 LG.com 인사이트 리포트"
         description={t(
-          "Analyze customer reviews from 8 LG.com regions. Select a country, search products, and generate marketing assets.",
-          "LG.com 8개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
+          "Analyze customer reviews from 9 LG.com regions. Select a country, search products, and generate marketing assets.",
+          "LG.com 9개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
         )}
       />
 
