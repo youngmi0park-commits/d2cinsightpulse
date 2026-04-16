@@ -1199,10 +1199,19 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                       <td className="px-2 py-1.5 text-muted-foreground">{row.schedule}</td>
                       <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
                         {logEntry ? (
-                          <span className={`${logEntry.status === "running" ? "text-yellow-600" : "text-foreground"}`}>
-                            {logEntry.status === "running" ? "🔄 " : ""}
-                            {formatTimeAgo(logEntry.lastAt)}
-                          </span>
+                          <div className="flex flex-col gap-0.5">
+                            {logEntry.latestReviewAt && (
+                              <span className="text-foreground font-medium text-[10px]">
+                                📝 {new Date(logEntry.latestReviewAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                                <span className="text-muted-foreground/60 ml-0.5">리뷰</span>
+                              </span>
+                            )}
+                            <span className={`text-[9px] ${logEntry.status === "running" ? "text-yellow-600" : "text-muted-foreground/60"}`}>
+                              {logEntry.status === "running" ? "🔄 " : "⚙️ "}
+                              {formatTimeAgo(logEntry.lastAt)}
+                              {!logEntry.latestReviewAt && <span className="ml-0.5">수집</span>}
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
