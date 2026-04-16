@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
-import { CommunityCountryBreakdown } from "@/components/CommunityCountryBreakdown";
 
 /* ── types ── */
 interface ProductInsight {
