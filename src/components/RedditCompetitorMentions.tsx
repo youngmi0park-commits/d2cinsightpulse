@@ -108,18 +108,35 @@ const BRAND_COLORS: Record<string, string> = {
 };
 
 export function RedditCompetitorMentions({ country = "all" }: { country?: string }) {
-  const { data: mentions, isLoading } = useCompetitorMentions(country);
+  const [range, setRange] = useState<"all" | "weekly">("weekly");
+  const { data: mentions, isLoading } = useCompetitorMentions(country, range);
   const totalMentions = mentions?.reduce((s, m) => s + m.count, 0) || 0;
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base font-semibold">경쟁사 언급 분석</CardTitle>
-          {totalMentions > 0 && (
-            <Badge variant="secondary" className="text-[10px]">{totalMentions}건 언급</Badge>
-          )}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold">경쟁사 언급 분석</CardTitle>
+            {totalMentions > 0 && (
+              <Badge variant="secondary" className="text-[10px]">{totalMentions}건 언급</Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+            <button
+              onClick={() => setRange("weekly")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "weekly" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >주간</button>
+            <button
+              onClick={() => setRange("all")}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+                range === "all" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >전체</button>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           Reddit에서 LG 제품과 함께 언급된 경쟁사 브랜드를 이니셜로 분석합니다. 비교 맥락과 감성을 파악하세요.
