@@ -71,20 +71,20 @@ function CountryStatsGrid({
   const countMap = new Map(data?.map((c) => [c.country, Number(c.count)]) || []);
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+    <div className="flex gap-1.5 overflow-x-auto">
       {/* All card */}
       <button
         onClick={() => onSelect("all")}
-        className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 transition-all hover:shadow-md ${
+        className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
           selectedCountry === "all"
             ? "border-primary bg-primary/5 shadow-sm"
             : "border-border bg-card hover:border-primary/40"
         }`}
       >
-        <span className="text-xl">🌐</span>
-        <span className="text-[11px] font-semibold text-foreground">{t("All", "전체")}</span>
-        <span className="text-sm font-bold font-sans text-primary">{total.toLocaleString()}</span>
-        <span className="text-[9px] text-muted-foreground">{t("cumulative reviews", "누적 리뷰")}</span>
+        <span className="text-base">🌐</span>
+        <span className="text-[10px] font-semibold text-foreground">{t("All", "전체")}</span>
+        <span className="text-xs font-bold font-sans text-primary">{total.toLocaleString()}</span>
+        <span className="text-[8px] text-muted-foreground">{t("cumulative reviews", "누적 리뷰")}</span>
       </button>
 
       {/* Per-country cards */}
@@ -96,16 +96,16 @@ function CountryStatsGrid({
           <button
             key={c.value}
             onClick={() => onSelect(c.value)}
-            className={`relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-3 transition-all hover:shadow-md ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
               isActive
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border bg-card hover:border-primary/40"
             }`}
           >
-            <span className="text-xl">{c.flag}</span>
-            <span className="text-[11px] font-semibold text-foreground">{t(c.labelEn, c.label)}</span>
-            <span className="text-sm font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
-            <span className="text-[9px] text-muted-foreground" title={t(`${c.labelEn}: Cumulative total since collection start`, `${c.label}: 수집 시작 이후 전체 누적`)}>
+            <span className="text-base">{c.flag}</span>
+            <span className="text-[10px] font-semibold text-foreground">{t(c.labelEn, c.label)}</span>
+            <span className="text-xs font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
+            <span className="text-[8px] text-muted-foreground" title={t(`${c.labelEn}: Cumulative total since collection start`, `${c.label}: 수집 시작 이후 전체 누적`)}>
               {t("cumulative", "누적")} · {pct}%
             </span>
           </button>
