@@ -32,6 +32,8 @@ Deno.serve(async (req) => {
     const category = body.category || "all";
     const limit = body.limit || 10;
     const productId = body.product_id || null;
+    const period = body.period || "weekly";
+    const isCumulative = period === "cumulative";
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
@@ -55,7 +57,7 @@ Deno.serve(async (req) => {
     };
 
     const sourceFilter = getSourceFilter(region);
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const weekAgo = isCumulative ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // 1. Get actual weekly total count for this country+category from DB
     let actualWeeklyTotal = 0;

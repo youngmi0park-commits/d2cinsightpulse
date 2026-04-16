@@ -120,7 +120,7 @@ function ProductTag({ name }: { name: string }) {
   );
 }
 
-export function WeeklyInsightsPanel({ country = "all" }: { country?: string }) {
+export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { country?: string; period?: "weekly" | "cumulative" }) {
   const { t } = useLang();
   const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
