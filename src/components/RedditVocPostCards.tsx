@@ -10,17 +10,21 @@ import { Button } from "@/components/ui/button";
 import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ChevronDown, Filter, Languages, Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-function useRedditPosts(country: string) {
+function useRedditPosts(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
   return useQuery({
-    queryKey: ["reddit-voc-posts", country],
+    queryKey: ["reddit-voc-posts", country, range],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, published_at, author, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
-        .limit(500);
+        .limit(2000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
         if (redditSources.length === 0) return [];
