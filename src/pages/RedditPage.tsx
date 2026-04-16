@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RedditBucketDashboard } from "@/components/RedditBucketDashboard";
+
 import { RedditCountryInsights } from "@/components/RedditCountryInsights";
 import { RedditVocPostCards } from "@/components/RedditVocPostCards";
 
@@ -195,7 +195,7 @@ const RedditPage = () => {
       />
       <RedditFilterBar selected={selectedCategory} onChange={setSelectedCategory} />
       <RedditWeeklySummary country={sourceFilter} />
-      <RedditBucketDashboard country={sourceFilter} />
+      
       <RedditVocPostCards country={sourceFilter} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <RedditCategoryAnalysis country={sourceFilter} />
