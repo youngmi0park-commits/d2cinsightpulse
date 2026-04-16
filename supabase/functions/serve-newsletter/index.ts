@@ -369,7 +369,7 @@ a {text-decoration:none;}
 <tr><td align="center" style="padding:24px 0;">
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#EFECE5;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background:#EFECE5;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#EFECE5;overflow:hidden;">
 
 <!-- Header -->
 <tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
