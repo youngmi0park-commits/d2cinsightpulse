@@ -10,6 +10,8 @@ export interface CountryFilter {
 interface CountryFilterBarProps {
   selected: string;
   onChange: (country: string) => void;
+  /** Override internal counts with custom data (e.g. community-only) */
+  customCounts?: Record<string, number> | null;
 }
 
 /** Full country metadata — only countries with data will render */
@@ -103,9 +105,10 @@ export function countryToSourceFilter(country: string): string[] | null {
   return map[country] || [`%_${country.toLowerCase()}`];
 }
 
-export function CountryFilterBar({ selected, onChange }: CountryFilterBarProps) {
+export function CountryFilterBar({ selected, onChange, customCounts }: CountryFilterBarProps) {
   const { t } = useLang();
-  const { data: countryCounts } = useCountryCounts();
+  const { data: defaultCounts } = useCountryCounts();
+  const countryCounts = customCounts !== undefined ? customCounts : defaultCounts;
 
   // Determine which countries actually have data, sorted by count descending
   const activeCountries = ALL_COUNTRIES
