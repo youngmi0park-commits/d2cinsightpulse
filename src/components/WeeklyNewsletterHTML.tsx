@@ -278,7 +278,7 @@ table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
 </table>
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" align="center" style="width:${WIDTH}px;background-color:${CARD_BG};"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;background:${CARD_BG};overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.07);">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${WIDTH}" class="email-container" style="max-width:${WIDTH}px;background-color:${CARD_BG};overflow:hidden;">
 
 <!-- Header -->
 <tr><td style="padding:30px 40px 20px;border-bottom:2px solid ${BORDER};">
