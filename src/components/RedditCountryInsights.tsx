@@ -1,7 +1,7 @@
-import { Globe, ChevronDown } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useLang } from "@/contexts/LanguageContext";
+import { Badge } from "@/components/ui/badge";
 
 interface CountryData {
   rank: number;
@@ -130,16 +130,15 @@ const CATEGORY_KEYWORD_MAP: Record<string, string[]> = {
   india: [],
 };
 
+const PREVIEW_COUNT = 5;
+
 export const RedditCountryInsights = ({ category = "all" }: { category?: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [expandedCountry, setExpandedCountry] = useState<number | null>(null);
   const { t } = useLang();
 
-  // Filter country keywords based on selected category
   const filteredCountries = useMemo(() => {
     if (category === "all" || category === "general" || category === "lifestyle") return countries;
-
-    // For India category, only show India
     if (category === "india") return countries.filter((c) => c.risCode === "LGEIL");
 
     const relevantCats = CATEGORY_KEYWORD_MAP[category] || [];
@@ -153,87 +152,159 @@ export const RedditCountryInsights = ({ category = "all" }: { category?: string 
     })).filter((c) => c.keywords.length > 0);
   }, [category]);
 
+  const previewCountries = filteredCountries.slice(0, PREVIEW_COUNT);
+  const remainingCountries = filteredCountries.slice(PREVIEW_COUNT);
+  const hasMore = remainingCountries.length > 0;
+
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="w-full gradient-card rounded-xl border border-border p-4 md:p-5 flex items-center justify-between cursor-pointer hover:border-primary/30 transition-colors">
+    <div className="gradient-card rounded-xl border border-border overflow-hidden">
+      {/* Header */}
+      <div className="p-4 md:p-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-bold font-heading">🌍 {t("Reddit LG Product Mentions by Country TOP 10", "Reddit 국가별 LG 제품 언급 TOP 10")}</h3>
+          <h3 className="text-base font-bold font-heading">
+            🌍 {t("Reddit LG Product Mentions by Country", "Reddit 국가별 LG 제품 언급")}
+          </h3>
+          <Badge variant="secondary" className="text-[10px]">
+            TOP {filteredCountries.length}
+          </Badge>
           {category !== "all" && (
             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-              {category.toUpperCase()} 필터 적용
+              {category.toUpperCase()} 필터
             </span>
           )}
         </div>
-        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="gradient-card rounded-b-xl border border-t-0 border-border p-6 md:p-8">
-          <p className="text-sm text-muted-foreground mb-2">
-            {t(
-              "Rankings estimating potential LG product mention volume on English Reddit from an English-speaking perspective.",
-              "영어권 중심 관점에서 영문 Reddit 상 LG 제품 잠재 언급량을 추정한 순위입니다."
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground mb-6">
-            {t(
-              "Sources: WorldPopulationReview (users), ExpertBeacon (engagement), SimilarWeb (lg.com traffic)",
-              "출처: WorldPopulationReview (사용자 수), ExpertBeacon (참여도), SimilarWeb (lg.com 트래픽)"
-            )}
-          </p>
+      </div>
 
-          {filteredCountries.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              {t("No country data for this category filter.", "이 카테고리에 해당하는 국가 데이터가 없습니다.")}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {filteredCountries.map((country) => (
-                <div key={country.rank} className="rounded-lg border border-border bg-background/50 overflow-hidden">
-                  <button
-                    onClick={() => setExpandedCountry(expandedCountry === country.rank ? null : country.rank)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-primary bg-primary/10 rounded-full w-7 h-7 flex items-center justify-center shrink-0">
-                        {country.rank}
-                      </span>
-                      <span className="text-lg">{country.flag}</span>
-                      <div>
-                        <span className="font-semibold text-sm font-heading">{country.name}</span>
-                        <span className="text-muted-foreground text-xs ml-2">({country.nameKo})</span>
-                        <span className="text-xs font-mono text-primary/70 ml-2">[{country.risCode}]</span>
-                      </div>
-                    </div>
-                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${expandedCountry === country.rank ? "rotate-180" : ""}`} />
-                  </button>
+      {/* Preview: Top 5 compact cards */}
+      <div className="px-4 md:px-5 pb-2 space-y-1.5">
+        {previewCountries.map((country) => (
+          <CountryRow
+            key={country.rank}
+            country={country}
+            isExpanded={expandedCountry === country.rank}
+            onToggle={() => setExpandedCountry(expandedCountry === country.rank ? null : country.rank)}
+            t={t}
+          />
+        ))}
+      </div>
 
-                  {expandedCountry === country.rank && (
-                    <div className="px-4 pb-4 border-t border-border pt-3">
-                      <p className="text-xs text-muted-foreground mb-3 italic">{t(country.descriptionEn, country.descriptionKo)}</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {country.keywords.map((kw) => (
-                          <div key={kw.category} className="rounded-md bg-secondary/30 p-3">
-                            <span className="text-xs font-semibold text-primary mb-1.5 block">{kw.category}</span>
-                            <ul className="space-y-1">
-                              {kw.items.map((item, i) => (
-                                <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
-                                  <span className="text-primary shrink-0">•</span>
-                                  <span>{item}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+      {/* Expandable remaining countries */}
+      {hasMore && (
+        <>
+          {showAll && (
+            <div className="px-4 md:px-5 pb-2 space-y-1.5">
+              {remainingCountries.map((country) => (
+                <CountryRow
+                  key={country.rank}
+                  country={country}
+                  isExpanded={expandedCountry === country.rank}
+                  onToggle={() => setExpandedCountry(expandedCountry === country.rank ? null : country.rank)}
+                  t={t}
+                />
               ))}
             </div>
           )}
+
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full py-3 flex items-center justify-center gap-1.5 text-[12px] font-medium text-primary hover:bg-primary/5 transition-colors border-t border-border"
+          >
+            {showAll ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                {t("Show less", "접기")}
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                {t(`Show ${remainingCountries.length} more countries`, `${remainingCountries.length}개국 더 보기`)}
+              </>
+            )}
+          </button>
+        </>
+      )}
+
+      {filteredCountries.length === 0 && (
+        <div className="px-5 pb-5 text-sm text-muted-foreground text-center py-8">
+          {t("No country data for this category filter.", "이 카테고리에 해당하는 국가 데이터가 없습니다.")}
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      )}
+
+      {!hasMore && <div className="pb-3" />}
+    </div>
   );
 };
+
+/* ── Individual country row ── */
+function CountryRow({
+  country,
+  isExpanded,
+  onToggle,
+  t,
+}: {
+  country: CountryData;
+  isExpanded: boolean;
+  onToggle: () => void;
+  t: (en: string, ko: string) => string;
+}) {
+  // Top keywords preview (first 3 items across categories)
+  const previewKeywords = country.keywords
+    .flatMap((kw) => kw.items.slice(0, 2))
+    .slice(0, 3);
+
+  return (
+    <div className="rounded-lg border border-border bg-background/50 overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-3.5 py-2.5 flex items-center gap-3 hover:bg-secondary/30 transition-colors text-left"
+      >
+        {/* Rank */}
+        <span className="text-[11px] font-bold text-primary bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center shrink-0">
+          {country.rank}
+        </span>
+
+        {/* Flag + Name */}
+        <span className="text-base shrink-0">{country.flag}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs font-semibold text-foreground truncate">{country.name}</span>
+          <span className="text-[10px] text-muted-foreground shrink-0">({country.nameKo})</span>
+          <span className="text-[9px] font-mono text-primary/60 shrink-0">[{country.risCode}]</span>
+        </div>
+
+        {/* Preview keywords */}
+        <div className="hidden md:flex items-center gap-1 ml-auto mr-2 shrink-0">
+          {previewKeywords.map((kw, i) => (
+            <span key={i} className="text-[9px] bg-secondary/60 text-muted-foreground px-1.5 py-0.5 rounded truncate max-w-[120px]">
+              {kw}
+            </span>
+          ))}
+        </div>
+
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-180" : ""}`} />
+      </button>
+
+      {/* Expanded detail */}
+      {isExpanded && (
+        <div className="px-3.5 pb-3.5 border-t border-border pt-3">
+          <p className="text-[11px] text-muted-foreground mb-3 italic">{t(country.descriptionEn, country.descriptionKo)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {country.keywords.map((kw) => (
+              <div key={kw.category} className="rounded-md bg-secondary/30 p-2.5">
+                <span className="text-[11px] font-semibold text-primary mb-1 block">{kw.category}</span>
+                <ul className="space-y-0.5">
+                  {kw.items.map((item, i) => (
+                    <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                      <span className="text-primary shrink-0">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
