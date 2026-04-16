@@ -368,11 +368,12 @@ const criteria: CriteriaItem[] = [
       "🇯🇵 Japan [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + Web Reviews",
       "🇹🇼 Taiwan [LGETT] — 🆕 lg.com/tw (Bazaarvoice) + Amazon Global + YouTube TW + Reviews.io",
       "🇹🇭 Thailand [LGETH] — 🆕 lg.com/th (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
+      "🇧🇷 Brazil [LGESP] — 🆕 lg.com/br (Bazaarvoice) + YouTube BR + Web Reviews",
       "🇸🇬 Singapore [LGESL] — Shopee SG + Lazada SG + YouTube SG + Web Reviews",
       "🇻🇳 Vietnam [LGEVN] — Shopee VN + Lazada VN + YouTube VN + Web Reviews",
       "🇭🇰 Hong Kong [LGEHK] — Amazon Global + YouTube HK + Reviews.io",
       "🌐 Global — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 LGEML · 🇮🇩 LGEIN · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇧🇷 LGESP · 🇲🇽 LGEMS",
+      "📋 수집 예정: 🇲🇾 LGEML · 🇮🇩 LGEIN · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇲🇽 LGEMS",
     ],
     itemsKo: [
       "🇺🇸 미국 [LGEUS] — lg.com/us (Bazaarvoice) + Reddit + Amazon + Best Buy + YouTube + Walmart + Target",
@@ -383,11 +384,12 @@ const criteria: CriteriaItem[] = [
       "🇯🇵 일본 [LGEJP] — 🆕 lg.com/jp (Bazaarvoice) + Amazon JP + YouTube JP + 웹 리뷰",
       "🇹🇼 대만 [LGETT] — 🆕 lg.com/tw (Bazaarvoice) + Amazon 글로벌 + YouTube TW + Reviews.io",
       "🇹🇭 태국 [LGETH] — 🆕 lg.com/th (Bazaarvoice) + Shopee TH + Lazada TH + YouTube TH",
+      "🇧🇷 브라질 [LGESP] — 🆕 lg.com/br (Bazaarvoice) + YouTube BR + 웹 리뷰",
       "🇸🇬 싱가포르 [LGESL] — Shopee SG + Lazada SG + YouTube SG + 웹 리뷰",
       "🇻🇳 베트남 [LGEVN] — Shopee VN + Lazada VN + YouTube VN + 웹 리뷰",
       "🇭🇰 홍콩 [LGEHK] — Amazon 글로벌 + YouTube HK + Reviews.io",
       "🌐 글로벌 — Trustpilot + Reviews.io + ComplaintsBoard + PCMag + RTINGS + CNET + TechRadar",
-      "📋 수집 예정: 🇲🇾 LGEML · 🇮🇩 LGEIN · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇧🇷 LGESP · 🇲🇽 LGEMS",
+      "📋 수집 예정: 🇲🇾 LGEML · 🇮🇩 LGEIN · 🇵🇭 LGEPH · 🇫🇷 LGEFS · 🇨🇦 LGECI · 🇲🇽 LGEMS",
     ],
   },
   {
@@ -418,7 +420,7 @@ const criteria: CriteriaItem[] = [
       "📦 Collect phase: 50 products/batch, priority order — Refrigerator/Washer/Dryer → Dishwasher/Vacuum/AC → Kitchen → Others → TV (lowest)",
       "🔄 Sweep phase: Scans full BV product catalog daily, auto-reopens completed products when new reviews appear",
       "🆕 Sync phase: Incremental sync for reviews submitted in last 25 hours — catches all new reviews daily",
-      "🌐 LG.com Bazaarvoice API: 8 countries (US, UK, IN, TW, JP, TH, DE, AU) — No date restriction, all categories, full historical backfill",
+      "🌐 LG.com Bazaarvoice API: 9 countries (US, UK, IN, TW, JP, TH, DE, AU, BR) — No date restriction, all categories, full historical backfill",
       "📦 collect-reviews (Reddit/Amazon/BestBuy etc.) at 07:00 KST → collect-youtube-comments at 07:05 KST",
       "🆕 collect-asian-reviews at 07:10 KST → Firecrawl-based scraping for Shopee/Lazada/Reviews.io/ComplaintsBoard",
       "Trending dashboard updates automatically after each collection cycle (same timing)",
@@ -431,7 +433,7 @@ const criteria: CriteriaItem[] = [
       "📦 Collect 단계: 50개 제품/배치, 우선순위 — 냉장고/세탁기/건조기 → 식기세척기/청소기/에어컨 → 주방가전 → 기타 → TV(후순위)",
       "🔄 Sweep 단계: 매일 BV 전체 제품 카탈로그 스캔, 신규 리뷰 감지 시 완료 제품도 자동 재오픈",
       "🆕 Sync 단계: 최근 25시간 내 작성된 리뷰 증분 동기화 — 매일 신규 리뷰 누락 없이 수집",
-      "🌐 LG.com Bazaarvoice API: 8개국 (US, UK, IN, TW, JP, TH, DE, AU) — 작성시점 제한 없음, 전 카테고리, 과거 리뷰 전량 수집",
+      "🌐 LG.com Bazaarvoice API: 9개국 (US, UK, IN, TW, JP, TH, DE, AU, BR) — 작성시점 제한 없음, 전 카테고리, 과거 리뷰 전량 수집",
       "📦 collect-reviews (Reddit/Amazon/BestBuy 등) 07:00 KST → collect-youtube-comments 07:05 KST 후속 실행",
       "🆕 collect-asian-reviews 07:10 KST 실행 → Shopee/Lazada/Reviews.io/ComplaintsBoard Firecrawl 기반 스크래핑",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
@@ -790,6 +792,7 @@ function useCollectionLogs() {
         const localeToSource: Record<string, string> = {
           en_US: "bv_us", en_GB: "bv_uk", en_IN: "bv_in", zh_TW: "bv_tw",
           ja_JP: "bv_jp", th_TH: "bv_th", de_DE: "bv_de", en_AU: "bv_au",
+          pt_BR: "bv_br",
         };
         const seen = new Set<string>();
         for (const row of bvData) {
@@ -806,10 +809,11 @@ function useCollectionLogs() {
       }
 
       // Fetch latest collected_at & published_at per lge_com source for BV rows
-      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au"];
+      const bvSources = ["lge_com_us","lge_com_uk","lge_com_in","lge_com_tw","lge_com_jp","lge_com_th","lge_com_de","lge_com_au","lge_com_br"];
       const bvSourceToBvKey: Record<string, string> = {
         lge_com_us: "bv_us", lge_com_uk: "bv_uk", lge_com_in: "bv_in", lge_com_tw: "bv_tw",
         lge_com_jp: "bv_jp", lge_com_th: "bv_th", lge_com_de: "bv_de", lge_com_au: "bv_au",
+        lge_com_br: "bv_br",
       };
       // Get latest review per BV source (by collected_at = actual sync time)
       const latestPromises = bvSources.map(src =>
@@ -893,6 +897,7 @@ function resolveCumulativeCount(
     const countryToSource: Record<string, string> = {
       US: "lge_com_us", UK: "lge_com_uk", IN: "lge_com_in", TW: "lge_com_tw",
       JP: "lge_com_jp", TH: "lge_com_th", DE: "lge_com_de", AU: "lge_com_au",
+      BR: "lge_com_br",
     };
     return sourceCounts[countryToSource[country] || ""] || 0;
   }
@@ -998,6 +1003,7 @@ function resolveChannelLog(
     const countryToBv: Record<string, string> = {
       US: "bv_us", UK: "bv_uk", IN: "bv_in", TW: "bv_tw",
       JP: "bv_jp", TH: "bv_th", DE: "bv_de", AU: "bv_au",
+      BR: "bv_br",
     };
     const key = countryToBv[country];
     if (key && logs[key]) return logs[key];
@@ -1513,7 +1519,7 @@ export const CollectionCriteria = () => {
           </div>
 
           <p className="text-[9px] text-muted-foreground px-3 pb-2">
-            {t("Source: Bazaarvoice API (Prod) · 8 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 8개국 · 전 카테고리 · 작성시점 제한 없음")}
+            {t("Source: Bazaarvoice API (Prod) · 9 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 9개국 · 전 카테고리 · 작성시점 제한 없음")}
           </p>
         </section>
 
