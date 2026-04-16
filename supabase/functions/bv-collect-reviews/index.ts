@@ -52,10 +52,30 @@ function inferCategoryFromModel(model: string): string | null {
   return null;
 }
 
-function normalizeCategory(bvCatId: string | null, modelNumber: string): string {
+function inferCategoryFromDisplayName(name: string): string | null {
+  const u = name.toUpperCase();
+  if (u.includes("DISHWASH") || u.includes("QUADWASH") || /PLACE SETTING/i.test(name)) return "Dishwasher";
+  if (u.includes("WASHER") || u.includes("WASHING") || u.includes("WASHTOWER")) return "Washer";
+  if (u.includes("DRYER") && !u.includes("COMBO")) return "Dryer";
+  if (u.includes("FRIDGE") || u.includes("REFRIGER") || u.includes("INSTAVIEW")) return "Refrigerator";
+  if (u.includes("VACUUM") || u.includes("CORDZERO")) return "Vacuum";
+  if (u.includes("SOUNDBAR") || u.includes("XBOOM") || u.includes("TONE FREE")) return "Audio";
+  if (u.includes("LG GRAM")) return "Laptop";
+  if (u.includes("PURIFIER") || u.includes("PURICARE")) return "Air Purifier";
+  if (u.includes("AIR CONDITION") || u.includes("ARTCOOL")) return "Air Conditioner";
+  if (u.includes("MICROWAVE")) return "Microwave";
+  if (u.includes("PROJECTOR") || u.includes("CINEBEAM")) return "Projector";
+  return null;
+}
+
+function normalizeCategory(bvCatId: string | null, modelNumber: string, displayName = ""): string {
+  // Display-name check first for dishwasher/washer disambiguation
+  const fromName = inferCategoryFromDisplayName(displayName);
+  if (fromName === "Dishwasher") return "Dishwasher";
   if (bvCatId && CATEGORY_NORM[bvCatId]) return CATEGORY_NORM[bvCatId];
   const inferred = inferCategoryFromModel(modelNumber);
   if (inferred) return inferred;
+  if (fromName) return fromName;
   return "General";
 }
 
@@ -204,7 +224,7 @@ Deno.serve(async (req) => {
               ? originalName : bvProductId;
             const displayName = rv.Products?.[rv.ProductId]?.Name || prog.product_name || "LG Product";
             const rawCategory = rv.Products?.[rv.ProductId]?.CategoryId || prog.category || "General";
-            const category = normalizeCategory(rawCategory, modelNum);
+            const category = normalizeCategory(rawCategory, modelNum, displayName);
 
             // Ensure product exists in products table
             if (!productCache[modelNum]) {
