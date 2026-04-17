@@ -587,23 +587,23 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1B1A1E;border-radius:24px;overflow:hidden;">
+    <tr><td colspan="3" style="height:4px;background:#EA1917;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
     <tr>
-      <td width="180" style="padding:20px 16px;vertical-align:middle;">
+      <td width="180" style="padding:24px 18px;vertical-align:middle;">
         <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#B5B4B8;">리뷰 분석</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#B5B4B8;">광고 카피</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#B5B4B8;">FAQ</div></td>
         </tr></table>
       </td>
-      <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
-      <td style="padding:20px 22px;vertical-align:middle;font-family:${FONT};">
-        <div style="font-family:${INTER};font-size:14px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:20px;">Marketing Asset Studio</div>
-        <div style="font-family:${INTER};font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;mso-line-height-rule:exactly;line-height:26px;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
-        <div style="font-size:11px;color:#888;line-height:18px;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
-        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;"><tr><td style="background:#A50034;padding:8px 18px;"><a href="${baseUrl}/" style="color:#ffffff;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a></td></tr></table><![endif]-->
-        <!--[if !mso]><!--><a href="${baseUrl}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
+      <td width="1" style="padding:14px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:80px;background:#3A393E;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+      <td style="padding:24px 24px;vertical-align:middle;font-family:${FONT};">
+        <div style="font-family:${INTER};font-size:13px;font-weight:600;color:#B5B4B8;mso-line-height-rule:exactly;line-height:18px;letter-spacing:0.3px;">Marketing Asset Studio</div>
+        <div style="font-family:${INTER};font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:28px;margin-top:4px;">Review-to-Asset,<br/><span style="color:#EA1917;">Instantly.</span></div>
+        <div style="font-size:11px;color:#B5B4B8;line-height:18px;margin-top:8px;font-weight:400;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td style="background:#FFFFFF;padding:10px 22px;"><a href="${baseUrl}/" style="color:#1B1A1E;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a></td></tr></table><![endif]-->
+        <!--[if !mso]><!--><a href="${baseUrl}/" style="display:inline-block;margin-top:14px;background:#FFFFFF;color:#1B1A1E;border-radius:50px;padding:10px 22px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
       </td>
     </tr>
   </table>
