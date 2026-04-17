@@ -74,14 +74,7 @@ const NewsletterPage = () => {
   const { refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
 
-  const toggleStaticOpen = (id: number) => {
-    setStaticOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  // (archive selector handles open state inline)
 
   // ── Fetch full newsletter HTML from serve-newsletter ──
   const fetchNewsletterHtml = useCallback(async () => {
