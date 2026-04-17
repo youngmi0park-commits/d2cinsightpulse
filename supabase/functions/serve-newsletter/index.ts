@@ -374,17 +374,21 @@ a {text-decoration:none;}
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
+<body style="margin:0;padding:0;background-color:#FFFFFF;font-family:${FONT};word-spacing:normal;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;">
 <tr><td align="center" style="padding:24px 0;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#EFECE5;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#EFECE5;overflow:hidden;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FFFFFF;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#FFFFFF;overflow:hidden;">
+
+<!-- ===== TOP STATUS BOX (Warm gray bordered container) ===== -->
+<tr><td style="padding:0 0 16px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:12px;overflow:hidden;">
 
 <!-- Header -->
-<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
+<tr><td style="padding:24px 28px 16px;border-bottom:1px solid #E8E4DC;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset Studio</div>
