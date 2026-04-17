@@ -510,22 +510,22 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
     <tr><td style="padding:12px 14px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>${d.trendingSignals.slice(0, 3).map(sig => {
-          const bc = sig.type === "rising" ? "#bbf7d0" : sig.type === "falling" ? "#fecaca" : "#e5e7eb";
-          const bg = sig.type === "rising" ? "#f0fdf4" : sig.type === "falling" ? "#fef2f2" : "#fafafa";
-          const bl = sig.type === "rising" ? "급증" : sig.type === "falling" ? "주의" : "유지";
-          const blb = sig.type === "rising" ? "#dcfce7" : sig.type === "falling" ? "#fee2e2" : "#f3f4f6";
-          const blc = sig.type === "rising" ? "#16a34a" : sig.type === "falling" ? "#dc2626" : "#888";
+          const bc = sig.type === "rising" ? "#bbf7d0" : sig.type === "falling" ? "#fecaca" : sig.type === "new" ? "#ddd6fe" : "#e5e7eb";
+          const bg = sig.type === "rising" ? "#f0fdf4" : sig.type === "falling" ? "#fef2f2" : sig.type === "new" ? "#f5f3ff" : "#fafafa";
+          const bl = sig.type === "rising" ? "📈 급증" : sig.type === "falling" ? "⚠️ 주의" : sig.type === "new" ? "🆕 신규" : "— 유지";
+          const blb = sig.type === "rising" ? "#dcfce7" : sig.type === "falling" ? "#fee2e2" : sig.type === "new" ? "#ede9fe" : "#f3f4f6";
+          const blc = sig.type === "rising" ? "#16a34a" : sig.type === "falling" ? "#dc2626" : sig.type === "new" ? "#7c3aed" : "#4A4A4A";
           const vc = sig.sentiment === "positive" ? "#16a34a" : sig.sentiment === "negative" ? "#dc2626" : "#1a1a1a";
-          const dtc = sig.delta > 0 ? "#16a34a" : sig.delta < 0 ? "#dc2626" : "#888";
+          const dtc = sig.delta > 0 ? "#16a34a" : sig.delta < 0 ? "#dc2626" : "#4A4A4A";
           return `<td width="33%" style="padding:0 3px;vertical-align:top;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${bc};background:${bg};">
               <tr><td style="padding:10px;font-family:${INTER};">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
                   <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;">"${sig.keyword}"</td>
-                  <td width="40" style="text-align:right;"><span style="font-size:8px;font-weight:700;padding:2px 4px;background:${blb};color:${blc};">${bl}</span></td>
+                  <td width="48" style="text-align:right;"><span style="font-size:8px;font-weight:700;padding:2px 4px;background:${blb};color:${blc};">${bl}</span></td>
                 </tr></table>
-                <div style="font-size:18px;font-weight:800;color:${vc};margin-top:5px;">${sig.count}<span style="font-size:10px;color:#888;font-weight:400;"> 건</span></div>
-                <div style="font-size:10px;font-weight:600;color:${dtc};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta : sig.delta < 0 ? "▼ " + sig.delta : "—"}건 vs 전주</div>
+                <div style="font-size:18px;font-weight:800;color:${vc};margin-top:5px;">${sig.count}<span style="font-size:10px;color:#4A4A4A;font-weight:400;"> 건</span></div>
+                <div style="font-size:10px;font-weight:600;color:${dtc};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta + "%" : sig.delta < 0 ? "▼ " + sig.delta + "%" : "— 변동 미미"} vs 전주</div>
               </td></tr>
             </table>
           </td>`;
@@ -639,12 +639,28 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} – ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
+    // 메인 대시보드와 동일하게 — 최신 snapshot_date의 trending_keywords만 사용
+    const { data: latestKwRow } = await sb
+      .from("trending_keywords")
+      .select("snapshot_date")
+      .order("snapshot_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const latestKwDate = (latestKwRow as any)?.snapshot_date;
+
+    let kwQuery = sb
+      .from("trending_keywords")
+      .select("keyword, count, sentiment, change_percent")
+      .order("count", { ascending: false })
+      .limit(30);
+    if (latestKwDate) kwQuery = kwQuery.eq("snapshot_date", latestKwDate);
+
     const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
-      sb.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
+      kwQuery,
       sb.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
     ]);
 
@@ -814,14 +830,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Trending signals
-    const trendingSignals = kws.slice(0, 6).map((k: any) => ({
-      keyword: k.keyword,
-      count: k.count,
-      delta: Number(k.change_percent) || 0,
-      type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
-      sentiment: k.sentiment,
-    }));
+    // Trending signals — 메인 대시보드 TrendingDashboard와 동일한 분류 규칙 + 상위 3개만
+    const trendingSignals = [...posKws, ...negKws]
+      .sort((a: any, b: any) => (b.count || 0) - (a.count || 0))
+      .slice(0, 3)
+      .map((k: any) => {
+        const change = Number(k.change_percent) || 0;
+        const count = Number(k.count) || 0;
+        const type = change > 20 ? "rising"
+          : change < -10 ? "falling"
+          : count <= 5 ? "new"
+          : "stable";
+        return {
+          keyword: k.keyword,
+          count,
+          delta: Math.round(change),
+          type,
+          sentiment: k.sentiment,
+        };
+      });
 
     const newsletterData = {
       dateRange, generatedAt,
