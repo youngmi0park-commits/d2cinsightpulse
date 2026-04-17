@@ -21,7 +21,7 @@ interface AllChannelSummary {
 }
 
 /* ── AI insight generation per channel ── */
-async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit"): Promise<ChannelInsight | null> {
+async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit" | "community"): Promise<ChannelInsight | null> {
   const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
   let query = sb
     .from("reviews")
