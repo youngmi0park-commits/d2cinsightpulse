@@ -482,9 +482,11 @@ export type Database = {
           id: string
           issue_date: string
           lgcom_count: number | null
+          lgcom_overview: Json | null
           other_channel_count: number | null
           published_at: string | null
           reddit_count: number | null
+          reddit_overview: Json | null
           review_delta: string | null
           status: string | null
           title: string | null
@@ -508,9 +510,11 @@ export type Database = {
           id?: string
           issue_date: string
           lgcom_count?: number | null
+          lgcom_overview?: Json | null
           other_channel_count?: number | null
           published_at?: string | null
           reddit_count?: number | null
+          reddit_overview?: Json | null
           review_delta?: string | null
           status?: string | null
           title?: string | null
@@ -534,9 +538,11 @@ export type Database = {
           id?: string
           issue_date?: string
           lgcom_count?: number | null
+          lgcom_overview?: Json | null
           other_channel_count?: number | null
           published_at?: string | null
           reddit_count?: number | null
+          reddit_overview?: Json | null
           review_delta?: string | null
           status?: string | null
           title?: string | null
