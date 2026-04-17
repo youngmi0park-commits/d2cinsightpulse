@@ -477,9 +477,13 @@ a {text-decoration:none;}
   </tr></table>
 </td></tr>
 
+  </table>
+</td></tr>
+<!-- ===== END TOP STATUS BOX ===== -->
+
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+<tr><td style="padding:8px 0 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
     <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
