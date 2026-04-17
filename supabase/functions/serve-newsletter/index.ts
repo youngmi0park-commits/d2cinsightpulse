@@ -415,9 +415,18 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
-      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">Weekly Insight Report &nbsp;·&nbsp; <span style="color:#9B9A9E;">Turn Real Reviews into Ready-to-Use Marketing Assets.</span></div>
+      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
-    <td width="140" style="text-align:right;vertical-align:top;">
+    <td width="180" style="text-align:right;vertical-align:top;">
+      <!-- Language Toggle (browser-only, hidden in email via mso conditional) -->
+      <!--[if !mso]><!-->
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right" style="margin-bottom:8px;">
+        <tr>
+          <td id="lg-btn-ko" class="lg-toggle-btn active" onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').classList.add('active');document.getElementById('lg-btn-en').classList.remove('active');" style="background:#1B1A1E;color:#FFFFFF;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:50px 0 0 50px;letter-spacing:0.5px;border:1px solid #1B1A1E;">KO</td>
+          <td id="lg-btn-en" class="lg-toggle-btn" onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').classList.add('active');document.getElementById('lg-btn-ko').classList.remove('active');" style="background:#FFFFFF;color:#1B1A1E;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:0 50px 50px 0;letter-spacing:0.5px;border:1px solid #1B1A1E;border-left:none;">EN</td>
+        </tr>
+      </table>
+      <!--<![endif]-->
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
         <tr><td style="background:#1B1A1E;padding:8px 16px;text-align:center;font-family:${INTER};border-radius:50px;">
           <div style="font-size:10px;font-weight:700;color:#FFFFFF;letter-spacing:1.2px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
