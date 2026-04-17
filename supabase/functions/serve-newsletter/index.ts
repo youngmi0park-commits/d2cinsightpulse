@@ -407,71 +407,71 @@ a {text-decoration:none;}
 </td></tr>
 
 <!-- Intro -->
-<tr><td style="padding:18px 32px;border-bottom:1px solid #E8E4DC;font-family:${FONT};">
+<tr><td style="padding:20px 32px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:4px;mso-line-height-rule:exactly;line-height:18px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:11px;color:#888;line-height:20px;">RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
+    <tr><td style="font-size:14px;font-weight:600;color:#1B1A1E;padding-bottom:6px;mso-line-height-rule:exactly;line-height:20px;letter-spacing:-0.2px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
+    <tr><td style="font-size:12px;color:#6B6A6E;line-height:20px;font-weight:400;">RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
   </table>
 </td></tr>
 
-<!-- Data Bar -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:12px;overflow:hidden;">
-    <tr><td style="padding:12px 16px;">
+<!-- Data Bar (LG.com beige strip) -->
+<tr><td style="padding:20px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0ECE4;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
-        <td style="text-align:right;font-size:11px;color:#666;font-family:${FONT};">
-          <strong style="color:#EA1917;font-size:14px;">${d.totalReviews.toLocaleString()}</strong>
-          <span style="color:#888;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+        <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">데이터 수집 현황</td>
+        <td style="text-align:right;font-size:11px;color:#6B6A6E;font-family:${FONT};">
+          <strong style="color:#EA1917;font-size:15px;font-weight:700;">${d.totalReviews.toLocaleString()}</strong>
+          <span style="color:#8B8A8E;font-weight:400;">건 · ${d.productCount.toLocaleString()}개 제품</span>
         </td>
       </tr></table>
     </td></tr>
-    <tr><td style="padding:0 16px 12px;">
+    <tr><td style="padding:0 18px 14px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${channelBadges}</tr></table>
     </td></tr>
   </table>
 </td></tr>
 
-<!-- KPI Pulse Row -->
-<tr><td style="padding:20px 32px 0;">
+<!-- KPI Pulse Row (LG.com style cards) -->
+<tr><td style="padding:20px 32px 28px;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
-        <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
-          <div style="font-size:20px;font-weight:800;color:#1a1a1a;line-height:26px;margin-top:3px;">${d.totalReviews.toLocaleString()}</div>
-          <div style="font-size:10px;color:${d.wow >= 0 ? '#16a34a' : '#dc2626'};font-weight:600;margin-top:2px;">${d.wow > 0 ? '▲+' : d.wow < 0 ? '▼' : ''}${d.wow}% vs 전주</div>
+    <td width="25%" style="padding:0 4px 0 0;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">총 리뷰 수집</div>
+          <div style="font-size:22px;font-weight:700;color:#1B1A1E;line-height:28px;margin-top:4px;letter-spacing:-0.6px;">${d.totalReviews.toLocaleString()}</div>
+          <div style="font-size:10px;color:${d.wow >= 0 ? '#0D9488' : '#EA1917'};font-weight:600;margin-top:3px;">${d.wow > 0 ? '▲ +' : d.wow < 0 ? '▼ ' : ''}${d.wow}% vs 전주</div>
         </td></tr>
       </table>
     </td>
-    <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
-        <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
-          <div style="font-size:13px;font-weight:800;color:#16a34a;line-height:18px;margin-top:5px;">"${d.topPositiveKeyword}"</div>
-          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topPositiveCount}건 언급 1위</div>
+    <td width="25%" style="padding:0 4px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:4px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">긍정 TOP 키워드</div>
+          <div style="font-size:14px;font-weight:700;color:#0D9488;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topPositiveKeyword}"</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topPositiveCount}건 언급 1위</div>
         </td></tr>
       </table>
     </td>
-    <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
-        <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
-          <div style="font-size:13px;font-weight:800;color:#dc2626;line-height:18px;margin-top:5px;">"${d.topNegativeKeyword}"</div>
-          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topNegativeCount}건 · FAQ 대응</div>
+    <td width="25%" style="padding:0 4px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">부정 TOP 키워드</div>
+          <div style="font-size:14px;font-weight:700;color:#EA1917;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topNegativeKeyword}"</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topNegativeCount}건 · FAQ 대응</div>
         </td></tr>
       </table>
     </td>
-    <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
-        <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
-          <div style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;margin-top:5px;">${d.topProduct}</div>
-          <div style="font-size:10px;color:#888;margin-top:2px;">${d.topProductCount}건 · 1위</div>
+    <td width="25%" style="padding:0 0 0 4px;vertical-align:top;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:4px;background:#1B1A1E;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">주간 언급 TOP</div>
+          <div style="font-size:13px;font-weight:700;color:#1B1A1E;line-height:18px;margin-top:6px;letter-spacing:-0.2px;">${d.topProduct}</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topProductCount}건 · 1위</div>
         </td></tr>
       </table>
     </td>
