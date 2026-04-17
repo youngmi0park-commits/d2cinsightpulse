@@ -475,41 +475,37 @@ a {text-decoration:none;}
   </tr></table>
 </td></tr>
 
-  </table>
-</td></tr>
-<!-- ===== END TOP STATUS BOX ===== -->
-
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
-<tr><td style="padding:8px 0 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
+<tr><td style="padding:8px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
-        <td style="text-align:right;font-size:9px;color:#999;font-family:${FONT};">리뷰 기반 자동 분류</td>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🎯 마케팅 기회 매트릭스</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">리뷰 기반 자동 분류</td>
       </tr></table>
     </td></tr>
     ${d.opportunities.map(op => {
-      const tc = op.tag === "amplify" ? "#16a34a" : op.tag === "fix" ? "#dc2626" : "#d97706";
-      const tb = op.tag === "amplify" ? "#f0fdf4" : op.tag === "fix" ? "#fef2f2" : "#fffbeb";
+      const tc = op.tag === "amplify" ? "#0D9488" : op.tag === "fix" ? "#EA1917" : "#D97706";
+      const tb = op.tag === "amplify" ? "#F0FDFA" : op.tag === "fix" ? "#FEF2F2" : "#FFFBEB";
       const tl = op.tag === "amplify" ? "AMPLIFY" : op.tag === "fix" ? "FIX" : "WATCH";
-      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#16a34a"
-               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#dc2626" : "#4A4A4A";
-      return `<tr><td style="padding:0;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #E8E4DC;"><tr>
+      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#0D9488"
+               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#EA1917" : "#4A4A4A";
+      return `<tr><td style="padding:0;background:#FFFFFF;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #F0ECE4;"><tr>
           <td width="4" style="background:${tc};font-size:0;">&nbsp;</td>
-          <td style="padding:10px 14px;font-family:${FONT};">
-            <div style="margin-bottom:4px;">
-              <span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span>
-              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:4px;background:#EFECE5;color:#2A2A2A;border:1px solid #E0DBD3;">${op.country}</span>
-              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border:1px solid #E0DBD3;">${op.channel}</span>
+          <td style="padding:12px 16px;font-family:${FONT};">
+            <div style="margin-bottom:5px;">
+              <span style="font-size:9px;font-weight:700;padding:3px 8px;background:${tb};color:${tc};border-radius:50px;letter-spacing:0.3px;">${tl}</span>
+              <span style="font-size:9px;font-weight:600;padding:3px 8px;margin-left:4px;background:#F0ECE4;color:#1B1A1E;border-radius:50px;">${op.country}</span>
+              <span style="font-size:9px;font-weight:600;padding:3px 8px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border-radius:50px;">${op.channel}</span>
             </div>
-            <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
-            <div style="font-size:10px;color:#3A3A3A;line-height:15px;margin-top:3px;">${op.desc}</div>
+            <div style="font-size:12px;font-weight:700;color:#1B1A1E;line-height:17px;letter-spacing:-0.1px;">${op.title}</div>
+            <div style="font-size:10.5px;color:#4A4A4A;line-height:15px;margin-top:3px;font-weight:400;">${op.desc}</div>
           </td>
-          <td width="76" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
-            <div style="font-size:16px;font-weight:800;color:${dc};">${op.count}</div>
-            <div style="font-size:9px;color:#4A4A4A;">건</div>
-            <div style="font-size:10px;font-weight:700;color:${dc};margin-top:2px;">${op.delta}</div>
+          <td width="76" style="padding:12px 16px 12px 8px;text-align:right;font-family:${INTER};vertical-align:middle;">
+            <div style="font-size:18px;font-weight:700;color:${dc};letter-spacing:-0.4px;">${op.count}</div>
+            <div style="font-size:9px;color:#8B8A8E;font-weight:400;">건</div>
+            <div style="font-size:10px;font-weight:600;color:${dc};margin-top:2px;">${op.delta}</div>
           </td>
         </tr></table>
       </td></tr>`;
