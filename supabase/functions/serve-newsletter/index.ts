@@ -379,17 +379,14 @@ a {text-decoration:none;}
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;"><tr><td align="center"><![endif]-->
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;">
-<tr><td align="center" style="padding:24px 0;">
+<tr><td align="center" style="padding:32px 16px;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#F0ECE4;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#F0ECE4;overflow:hidden;">
-
-<!-- ===== TOP STATUS BOX (LG.com clean white card on warm beige) ===== -->
-<tr><td style="padding:0 0 16px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="720" align="center" style="width:720px;"><tr><td><![endif]-->
+<!-- ===== MASTER WHITE CONTAINER (wraps entire newsletter) ===== -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="720" class="email-container" style="max-width:720px;width:100%;background-color:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;box-shadow:0 2px 10px 0 rgba(27,26,30,0.06);">
 
 <!-- Header -->
-<tr><td style="padding:28px 32px 20px;border-bottom:1px solid #F0ECE4;">
+<tr><td style="padding:32px 36px 20px;border-bottom:1px solid #F0ECE4;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
@@ -478,41 +475,37 @@ a {text-decoration:none;}
   </tr></table>
 </td></tr>
 
-  </table>
-</td></tr>
-<!-- ===== END TOP STATUS BOX ===== -->
-
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
-<tr><td style="padding:8px 0 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
+<tr><td style="padding:8px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
-        <td style="text-align:right;font-size:9px;color:#999;font-family:${FONT};">리뷰 기반 자동 분류</td>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🎯 마케팅 기회 매트릭스</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">리뷰 기반 자동 분류</td>
       </tr></table>
     </td></tr>
     ${d.opportunities.map(op => {
-      const tc = op.tag === "amplify" ? "#16a34a" : op.tag === "fix" ? "#dc2626" : "#d97706";
-      const tb = op.tag === "amplify" ? "#f0fdf4" : op.tag === "fix" ? "#fef2f2" : "#fffbeb";
+      const tc = op.tag === "amplify" ? "#0D9488" : op.tag === "fix" ? "#EA1917" : "#D97706";
+      const tb = op.tag === "amplify" ? "#F0FDFA" : op.tag === "fix" ? "#FEF2F2" : "#FFFBEB";
       const tl = op.tag === "amplify" ? "AMPLIFY" : op.tag === "fix" ? "FIX" : "WATCH";
-      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#16a34a"
-               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#dc2626" : "#4A4A4A";
-      return `<tr><td style="padding:0;">
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #E8E4DC;"><tr>
+      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#0D9488"
+               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#EA1917" : "#4A4A4A";
+      return `<tr><td style="padding:0;background:#FFFFFF;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #F0ECE4;"><tr>
           <td width="4" style="background:${tc};font-size:0;">&nbsp;</td>
-          <td style="padding:10px 14px;font-family:${FONT};">
-            <div style="margin-bottom:4px;">
-              <span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span>
-              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:4px;background:#EFECE5;color:#2A2A2A;border:1px solid #E0DBD3;">${op.country}</span>
-              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border:1px solid #E0DBD3;">${op.channel}</span>
+          <td style="padding:12px 16px;font-family:${FONT};">
+            <div style="margin-bottom:5px;">
+              <span style="font-size:9px;font-weight:700;padding:3px 8px;background:${tb};color:${tc};border-radius:50px;letter-spacing:0.3px;">${tl}</span>
+              <span style="font-size:9px;font-weight:600;padding:3px 8px;margin-left:4px;background:#F0ECE4;color:#1B1A1E;border-radius:50px;">${op.country}</span>
+              <span style="font-size:9px;font-weight:600;padding:3px 8px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border-radius:50px;">${op.channel}</span>
             </div>
-            <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
-            <div style="font-size:10px;color:#3A3A3A;line-height:15px;margin-top:3px;">${op.desc}</div>
+            <div style="font-size:12px;font-weight:700;color:#1B1A1E;line-height:17px;letter-spacing:-0.1px;">${op.title}</div>
+            <div style="font-size:10.5px;color:#4A4A4A;line-height:15px;margin-top:3px;font-weight:400;">${op.desc}</div>
           </td>
-          <td width="76" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
-            <div style="font-size:16px;font-weight:800;color:${dc};">${op.count}</div>
-            <div style="font-size:9px;color:#4A4A4A;">건</div>
-            <div style="font-size:10px;font-weight:700;color:${dc};margin-top:2px;">${op.delta}</div>
+          <td width="76" style="padding:12px 16px 12px 8px;text-align:right;font-family:${INTER};vertical-align:middle;">
+            <div style="font-size:18px;font-weight:700;color:${dc};letter-spacing:-0.4px;">${op.count}</div>
+            <div style="font-size:9px;color:#8B8A8E;font-weight:400;">건</div>
+            <div style="font-size:10px;font-weight:600;color:${dc};margin-top:2px;">${op.delta}</div>
           </td>
         </tr></table>
       </td></tr>`;
@@ -521,10 +514,10 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 </td></tr>` : ""}
 
 ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
-      <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
+<tr><td style="padding:20px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <div style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
     </td></tr>
     <tr><td style="padding:12px 14px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
@@ -539,7 +532,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
           // Truncate long keywords for height consistency (3-line max ≈ 60 chars)
           const kw = sig.keyword.length > 60 ? sig.keyword.slice(0, 57) + "..." : sig.keyword;
           return `<td width="33%" style="padding:0 3px;vertical-align:top;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" height="120" style="border:1px solid ${bc};background:${bg};height:120px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" height="120" style="border:1px solid ${bc};background:${bg};height:120px;border-radius:16px;">
               <tr><td valign="top" style="padding:10px;font-family:${INTER};height:120px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
                   <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;height:48px;vertical-align:top;">"${kw}"</td>
@@ -594,33 +587,33 @@ ${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td colspan="3" style="height:4px;background:#A50034;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1B1A1E;border-radius:24px;overflow:hidden;">
+    <tr><td colspan="3" style="height:4px;background:#EA1917;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td></tr>
     <tr>
-      <td width="180" style="padding:20px 16px;vertical-align:middle;">
+      <td width="180" style="padding:24px 18px;vertical-align:middle;">
         <table role="presentation" cellpadding="0" cellspacing="4" border="0"><tr>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#999;">리뷰 분석</div></td>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#999;">광고 카피</div></td>
-          <td width="54" height="48" style="background:#EFECE5;border:1px solid #E8E4DC;text-align:center;vertical-align:middle;font-family:${FONT};"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#999;">FAQ</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">📊</div><div style="font-size:7px;color:#B5B4B8;">리뷰 분석</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">⚡</div><div style="font-size:7px;color:#B5B4B8;">광고 카피</div></td>
+          <td width="54" height="48" style="background:#2A292E;border:1px solid #3A393E;text-align:center;vertical-align:middle;font-family:${FONT};border-radius:12px;"><div style="font-size:16px;">❓</div><div style="font-size:7px;color:#B5B4B8;">FAQ</div></td>
         </tr></table>
       </td>
-      <td width="1" style="padding:12px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:70px;background:#E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
-      <td style="padding:20px 22px;vertical-align:middle;font-family:${FONT};">
-        <div style="font-family:${INTER};font-size:14px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:20px;">Marketing Asset Studio</div>
-        <div style="font-family:${INTER};font-size:20px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px;mso-line-height-rule:exactly;line-height:26px;margin-top:2px;">Review-to-Asset,<br/><span style="color:#A50034;">Instantly.</span></div>
-        <div style="font-size:11px;color:#888;line-height:18px;margin-top:6px;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
-        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;"><tr><td style="background:#A50034;padding:8px 18px;"><a href="${baseUrl}/" style="color:#ffffff;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a></td></tr></table><![endif]-->
-        <!--[if !mso]><!--><a href="${baseUrl}/" style="display:inline-block;margin-top:10px;background:#A50034;color:#fff;border-radius:6px;padding:8px 18px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
+      <td width="1" style="padding:14px 0;vertical-align:middle;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:1px;height:80px;background:#3A393E;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+      <td style="padding:24px 24px;vertical-align:middle;font-family:${FONT};">
+        <div style="font-family:${INTER};font-size:13px;font-weight:600;color:#B5B4B8;mso-line-height-rule:exactly;line-height:18px;letter-spacing:0.3px;">Marketing Asset Studio</div>
+        <div style="font-family:${INTER};font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:28px;margin-top:4px;">Review-to-Asset,<br/><span style="color:#EA1917;">Instantly.</span></div>
+        <div style="font-size:11px;color:#B5B4B8;line-height:18px;margin-top:8px;font-weight:400;">광고 카피부터 이미지 에셋까지 —<br/>리뷰가 증명한 메시지로 만듭니다.</div>
+        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td style="background:#FFFFFF;padding:10px 22px;"><a href="${baseUrl}/" style="color:#1B1A1E;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a></td></tr></table><![endif]-->
+        <!--[if !mso]><!--><a href="${baseUrl}/" style="display:inline-block;margin-top:14px;background:#FFFFFF;color:#1B1A1E;border-radius:50px;padding:10px 22px;font-family:${INTER};font-size:11px;font-weight:600;text-decoration:none;">마케팅 에셋 스튜디오 바로가기 →</a><!--<![endif]-->
       </td>
     </tr>
   </table>
 </td></tr>
 
 <!-- Footer -->
-<tr><td style="padding:20px 32px;">
+<tr><td style="padding:24px 32px 28px;border-top:1px solid #F0ECE4;background:#FAF9F6;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1a1a1a;mso-line-height-rule:exactly;line-height:16px;">Review-to-Asset Studio</div><div style="font-size:9px;color:#999;margin-top:2px;mso-line-height-rule:exactly;line-height:14px;">Produced by LG전자 D2C마케팅전략팀</div></td>
-    <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#ccc;line-height:14px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
+    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1B1A1E;mso-line-height-rule:exactly;line-height:16px;letter-spacing:-0.1px;">Review-to-Asset Studio</div><div style="font-size:9px;color:#8B8A8E;margin-top:3px;mso-line-height-rule:exactly;line-height:14px;font-weight:400;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#B5B4B8;line-height:14px;font-weight:400;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
   </tr></table>
 </td></tr>
 
