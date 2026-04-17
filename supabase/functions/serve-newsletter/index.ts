@@ -933,6 +933,92 @@ Deno.serve(async (req) => {
         };
       });
 
+    // ── Regional Marketing Signals — country-level snapshot for local marketers ──
+    const COUNTRY_META: Record<string, { name: string; flag: string }> = {
+      lge_com_us: { name: "US", flag: "🇺🇸" }, lge_com_uk: { name: "UK", flag: "🇬🇧" },
+      lge_com_de: { name: "DE", flag: "🇩🇪" }, lge_com_au: { name: "AU", flag: "🇦🇺" },
+      lge_com_in: { name: "IN", flag: "🇮🇳" }, lge_com_tw: { name: "TW", flag: "🇹🇼" },
+      lge_com_jp: { name: "JP", flag: "🇯🇵" }, lge_com_th: { name: "TH", flag: "🇹🇭" },
+      lge_com_br: { name: "BR", flag: "🇧🇷" }, lge_com_es: { name: "ES", flag: "🇪🇸" },
+    };
+    const countryAgg: Record<string, { total: number; pos: number; neg: number; cats: Record<string, number> }> = {};
+    for (const r of (weeklyAgg ?? []) as any[]) {
+      if (!r.source?.startsWith("lge_com_")) continue;
+      const meta = COUNTRY_META[r.source];
+      if (!meta) continue;
+      const key = meta.name;
+      if (!countryAgg[key]) countryAgg[key] = { total: 0, pos: 0, neg: 0, cats: {} };
+      const c = countryAgg[key];
+      c.total += 1;
+      if (r.sentiment === "positive") c.pos += 1;
+      else if (r.sentiment === "negative") c.neg += 1;
+      const cat = r.products?.category || "General";
+      c.cats[cat] = (c.cats[cat] ?? 0) + 1;
+    }
+    const regionalSignals = Object.entries(countryAgg)
+      .map(([country, s]) => {
+        const flag = Object.values(COUNTRY_META).find(m => m.name === country)?.flag || "🌐";
+        const posPct = s.total > 0 ? Math.round((s.pos / s.total) * 100) : 0;
+        const negPct = s.total > 0 ? Math.round((s.neg / s.total) * 100) : 0;
+        const topCategory = Object.entries(s.cats).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
+        let signal = `${topCategory} 카테고리 ${s.total}건 수집 — 추가 모니터링`;
+        if (posPct >= 75) signal = `${topCategory} 긍정 시그널 강함 — Affiliate/PMAX 소재 확대 권고`;
+        else if (negPct >= 35) signal = `${topCategory} 부정 누적 — 현지 FAQ/PDP 보강 우선`;
+        else if (posPct >= 55) signal = `${topCategory} 호의적 흐름 — Criteo 리타겟팅 강화 검토`;
+        return { country, flag, total: s.total, posPct, negPct, topCategory, signal };
+      })
+      .filter(r => r.total >= 5)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    // ── Action Checklist — derived from opportunities + trending + regional ──
+    const actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[] = [];
+    for (const op of opportunities.slice(0, 4)) {
+      if (op.tag === "fix") {
+        actionChecklist.push({
+          priority: "HIGH",
+          channel: "FAQ / PDP",
+          action: `${op.title} — FAQ 보강 및 CRITEO 캠페인 일시 중단`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "현지 마케팅팀",
+        });
+      } else if (op.tag === "amplify") {
+        actionChecklist.push({
+          priority: "MID",
+          channel: "PMAX / Affiliate",
+          action: `${op.title} — 긍정 리뷰 헤드라인을 PMAX 소재로 즉시 적용`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "글로벌 디지털팀",
+        });
+      } else {
+        actionChecklist.push({
+          priority: "LOW",
+          channel: "모니터링",
+          action: `${op.title} — 차주 데이터 누적 후 재평가`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "RTA 운영팀",
+        });
+      }
+    }
+    if (negKws[0]?.keyword) {
+      actionChecklist.push({
+        priority: "HIGH",
+        channel: "CRM / CS",
+        action: `"${negKws[0].keyword}" 부정 키워드 대응 — CS 응대 스크립트 업데이트`,
+        basis: `이번 주 부정 1위 · ${negKws[0].count}건 언급`,
+        owner: "CS 운영팀",
+      });
+    }
+    if (posKws[0]?.keyword) {
+      actionChecklist.push({
+        priority: "MID",
+        channel: "SEO / 콘텐츠",
+        action: `"${posKws[0].keyword}" 키워드 — 블로그·PDP 본문에 반영하여 SEO 강화`,
+        basis: `이번 주 긍정 1위 · ${posKws[0].count}건 언급`,
+        owner: "콘텐츠팀",
+      });
+    }
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
@@ -947,6 +1033,8 @@ Deno.serve(async (req) => {
       topProductCount: topProd?.mention_count || 0,
       opportunities,
       trendingSignals,
+      regionalSignals,
+      actionChecklist: actionChecklist.slice(0, 6),
     };
 
     // ── Generate AI insights ──
