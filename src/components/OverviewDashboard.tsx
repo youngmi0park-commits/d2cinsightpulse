@@ -28,14 +28,18 @@ function useOverviewKPIs() {
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%"),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit"),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("published_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).eq("source", "reddit").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%"),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("published_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
       ]);
       const calc = (c: number, p: number) => p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100);
       const allSources = sourceCounts || {};
       let communityTotal = 0;
-      for (const [src, cnt] of Object.entries(allSources)) { if (src !== "lge_com" && src !== "reddit") communityTotal += cnt; }
+      for (const [src, cnt] of Object.entries(allSources)) {
+        if (src === "lge_com" || src === "reddit") continue;
+        if (src.startsWith("lge_com") || src.startsWith("reddit")) continue;
+        communityTotal += cnt;
+      }
       return {
         total: { cumulative: totalRes.count || 0, weekly: thisWeekRes.count || 0, wow: calc(thisWeekRes.count || 0, lastWeekRes.count || 0) },
         lgcom: { cumulative: lgcomTotalRes.count || 0, weekly: lgcomWeeklyRes.count || 0, wow: calc(lgcomWeeklyRes.count || 0, lgcomLastWeekRes.count || 0) },
