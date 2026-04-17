@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductSearchInput } from "@/components/ProductSearchInput";
 import { CategoryPillBar } from "@/components/CategoryPillBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +129,12 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
   const [isLoading, setIsLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<"category" | "product">("category");
 
+  // Reset result when region or period changes so stale analysis isn't shown
+  useEffect(() => {
+    setResult(null);
+    setCategory("all");
+  }, [region, period]);
+
   const runAnalysis = async (cat?: string, productId?: string) => {
     const targetCategory = cat ?? category;
     setIsLoading(true);
@@ -164,12 +170,22 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Brain className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
               {t("Strategic Deep-Dive: Main User · JTBD", "전략 심층분석: Main User · JTBD")}
             </CardTitle>
             <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
+            <Badge
+              variant="outline"
+              className={`text-[10px] font-medium ${
+                period === "cumulative"
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-success/10 text-success border-success/30"
+              }`}
+            >
+              {period === "cumulative" ? t("Cumulative · All-time", "전체 누적") : t("Weekly · 7d", "주간 · 7일")}
+            </Badge>
           </div>
           <button
             onClick={() => runAnalysis()}
@@ -185,8 +201,8 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           {t(
-            "AI-powered deep analysis — uses country filter above",
-            "AI 전략 프레임워크 분석 · 상단 국가 필터와 연동"
+            "AI-powered deep analysis — uses country & period filter above",
+            "AI 전략 프레임워크 분석 · 상단 국가/기간 필터와 연동"
           )}
         </p>
       </CardHeader>
@@ -231,7 +247,7 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
             isLoading={isLoading}
             hasResult={!!result}
             country={region}
-            weekly={true}
+            weekly={period === "weekly"}
           />
         )}
 
