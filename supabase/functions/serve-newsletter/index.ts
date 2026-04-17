@@ -476,18 +476,23 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
       const tc = op.tag === "amplify" ? "#16a34a" : op.tag === "fix" ? "#dc2626" : "#d97706";
       const tb = op.tag === "amplify" ? "#f0fdf4" : op.tag === "fix" ? "#fef2f2" : "#fffbeb";
       const tl = op.tag === "amplify" ? "AMPLIFY" : op.tag === "fix" ? "FIX" : "WATCH";
-      const dc = op.delta.startsWith("+") ? "#16a34a" : op.delta.startsWith("-") ? "#dc2626" : "#888";
+      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#16a34a"
+               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#dc2626" : "#4A4A4A";
       return `<tr><td style="padding:0;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #E8E4DC;"><tr>
           <td width="4" style="background:${tc};font-size:0;">&nbsp;</td>
           <td style="padding:10px 14px;font-family:${FONT};">
-            <div style="margin-bottom:3px;"><span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span></div>
+            <div style="margin-bottom:4px;">
+              <span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span>
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:4px;background:#EFECE5;color:#2A2A2A;border:1px solid #E0DBD3;">${op.country}</span>
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border:1px solid #E0DBD3;">${op.channel}</span>
+            </div>
             <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
-            <div style="font-size:10px;color:#888;line-height:15px;margin-top:2px;">${op.desc}</div>
+            <div style="font-size:10px;color:#3A3A3A;line-height:15px;margin-top:3px;">${op.desc}</div>
           </td>
-          <td width="70" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
+          <td width="76" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
             <div style="font-size:16px;font-weight:800;color:${dc};">${op.count}</div>
-            <div style="font-size:9px;color:#888;">건</div>
+            <div style="font-size:9px;color:#4A4A4A;">건</div>
             <div style="font-size:10px;font-weight:700;color:${dc};margin-top:2px;">${op.delta}</div>
           </td>
         </tr></table>
