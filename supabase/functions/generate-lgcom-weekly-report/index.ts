@@ -100,14 +100,17 @@ Deno.serve(async (req) => {
       }
     } else {
       const fetchLimit = category === "all" ? limit : 50;
+      const topProductsRpc = isCumulative
+        ? "get_lgcom_cumulative_top_products"
+        : "get_lgcom_weekly_top_products";
       const { data: posProducts, error: posErr } = await sb.rpc(
-        "get_lgcom_weekly_top_products",
+        topProductsRpc,
         { p_region: region, p_sentiment: "positive", p_limit: fetchLimit }
       );
       if (posErr) throw posErr;
 
       const { data: negProducts } = await sb.rpc(
-        "get_lgcom_weekly_top_products",
+        topProductsRpc,
         { p_region: region, p_sentiment: "negative", p_limit: fetchLimit }
       );
 
