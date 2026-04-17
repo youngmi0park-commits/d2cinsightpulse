@@ -298,109 +298,145 @@ const NewsletterPage = () => {
         />
       </div>
 
-      {/* ── Static Archive ── */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 bg-primary rounded-full" />
-          <h2 className="text-sm font-bold tracking-widest uppercase text-foreground">
-            지난 뉴스레터 아카이브
-          </h2>
-          <Badge variant="outline" className="text-[10px] border-primary/30 text-primary font-semibold">
-            {(issues?.length ?? 0) + staticNewsletters.length}건
-          </Badge>
-        </div>
+      {/* ── Archive (date selector) ── */}
+      {(() => {
+        const dbItems = (issues ?? []).map((i: any) => ({
+          kind: "db" as const,
+          id: i.id,
+          label: `${i.week_start} ~ ${i.week_end}${i.title ? ` · ${i.title}` : ""}`,
+          date: i.issue_date ?? i.week_end,
+          data: i,
+        }));
+        const staticItems = staticNewsletters.map((nl) => ({
+          kind: "static" as const,
+          id: `static-${nl.id}`,
+          label: `${nl.date} · ${nl.title}`,
+          date: nl.date,
+          data: nl,
+        }));
+        const allItems = [...dbItems, ...staticItems].sort((a, b) =>
+          (b.date ?? "").localeCompare(a.date ?? "")
+        );
 
-        <div className="space-y-3">
-          {/* DB issues */}
-          {issues?.map((issue: any) => (
-            <Card
-              key={issue.id}
-              className={`border cursor-pointer hover:shadow-md transition-shadow ${
-                activeId === issue.id ? "border-[#C8102E] bg-red-50/30" : "border-border"
-              }`}
-              onClick={() => setActiveId(issue.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-semibold text-sm">{issue.title}</h4>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {issue.week_start} ~ {issue.week_end}
-                    </div>
-                    <div className="flex gap-1.5 mt-2">
-                      <Badge variant="outline" className="text-[9px]">
-                        {issue.total_reviews?.toLocaleString()}건
-                      </Badge>
-                      <Badge variant="outline" className="text-[9px]">
-                        {issue.countries_count}개국
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={`text-[9px] ${
-                          issue.avg_sentiment >= 80 ? "text-green-600 border-green-200"
-                          : issue.avg_sentiment >= 65 ? "text-amber-600 border-amber-200"
-                          : "text-red-600 border-red-200"
-                        }`}
-                      >
-                        감성 {issue.avg_sentiment}점
-                      </Badge>
-                    </div>
-                  </div>
-                  <Badge className={`text-[9px] ${
-                    issue.status === "published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                  }`}>
-                    {issue.status === "published" ? "발행됨" : "초안"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        const selectedKey = activeId
+          ? activeId
+          : staticOpenIds.size > 0
+          ? `static-${Array.from(staticOpenIds)[0]}`
+          : allItems[0]?.id ?? "";
 
-          {/* Static newsletters */}
-          {staticNewsletters.map((nl) => {
-            const isOpen = staticOpenIds.has(nl.id);
-            return (
-              <Collapsible key={nl.id} open={isOpen} onOpenChange={() => toggleStaticOpen(nl.id)}>
-                <Card className="border border-border bg-card hover:shadow-md transition-shadow">
-                  <CollapsibleTrigger asChild>
-                    <CardContent className="p-4 cursor-pointer">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                            {nl.id}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-sm text-foreground">{nl.title}</h4>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Calendar className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">{nl.date}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{nl.summary}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground ml-3 flex-shrink-0">
-                          <FileText className="h-3.5 w-3.5" />
-                          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </div>
+        const selected = allItems.find((it) => it.id === selectedKey) ?? allItems[0];
+
+        const handleSelect = (val: string) => {
+          if (val.startsWith("static-")) {
+            const sid = Number(val.replace("static-", ""));
+            setActiveId(null);
+            setStaticOpenIds(new Set([sid]));
+          } else {
+            setActiveId(val);
+            setStaticOpenIds(new Set());
+          }
+        };
+
+        return (
+          <div>
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <div className="w-1 h-5 bg-primary rounded-full" />
+              <h2 className="text-sm font-bold tracking-widest uppercase text-foreground">
+                지난 뉴스레터 아카이브
+              </h2>
+              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary font-semibold">
+                {allItems.length}건
+              </Badge>
+              <div className="ml-auto flex items-center gap-2">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                <Select value={selected?.id ?? ""} onValueChange={handleSelect}>
+                  <SelectTrigger className="h-8 text-xs w-[320px] bg-card">
+                    <SelectValue placeholder="발행일을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    {allItems.map((it) => (
+                      <SelectItem key={it.id} value={it.id} className="text-xs">
+                        {it.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {selected?.kind === "db" && (
+              <Card className="border border-primary/40 bg-card">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-semibold text-sm">{selected.data.title}</h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {selected.data.week_start} ~ {selected.data.week_end}
                       </div>
-                    </CardContent>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="px-4 pb-4">
-                      <div className="border-t border-border pt-4">
+                      <div className="flex gap-1.5 mt-2 flex-wrap">
+                        <Badge variant="outline" className="text-[9px]">
+                          {selected.data.total_reviews?.toLocaleString()}건
+                        </Badge>
+                        <Badge variant="outline" className="text-[9px]">
+                          {selected.data.countries_count}개국
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] ${
+                            selected.data.avg_sentiment >= 80 ? "text-green-600 border-green-200"
+                            : selected.data.avg_sentiment >= 65 ? "text-amber-600 border-amber-200"
+                            : "text-red-600 border-red-200"
+                          }`}
+                        >
+                          감성 {selected.data.avg_sentiment}점
+                        </Badge>
+                      </div>
+                    </div>
+                    <Badge className={`text-[9px] ${
+                      selected.data.status === "published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                    }`}>
+                      {selected.data.status === "published" ? "발행됨" : "초안"}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-3">
+                    선택한 이슈가 상단 미리보기에 반영됩니다.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {selected?.kind === "static" && (
+              <Card className="border border-border bg-card">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+                      {selected.data.id}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm text-foreground">{selected.data.title}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">{selected.data.date}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{selected.data.summary}</p>
+                      <div className="border-t border-border mt-3 pt-3">
                         <pre className="text-xs text-foreground/80 whitespace-pre-wrap leading-relaxed font-[Inter,sans-serif]">
-                          {nl.content}
+                          {selected.data.content}
                         </pre>
                       </div>
                     </div>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            );
-          })}
-        </div>
-      </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {!selected && (
+              <p className="text-xs text-muted-foreground">아카이브에 표시할 이슈가 없습니다.</p>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 };
