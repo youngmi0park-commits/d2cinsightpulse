@@ -178,8 +178,9 @@ function buildNewsletterHTML(d: {
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
-  const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
-  const INTER = "Inter,'Segoe UI',Arial,sans-serif";
+  // LG.com Design System tokens (LGEI Text fallback chain → Inter → Noto Sans KR → system)
+  const FONT = "'LGEI Text','LG SmHaT','Inter','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
+  const INTER = "'LGEI Text','LG SmHaT','Inter','Segoe UI',Arial,sans-serif";
 
   /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
