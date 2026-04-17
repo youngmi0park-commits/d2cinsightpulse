@@ -374,17 +374,21 @@ a {text-decoration:none;}
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#EFECE5;font-family:${FONT};word-spacing:normal;">
+<body style="margin:0;padding:0;background-color:#FFFFFF;font-family:${FONT};word-spacing:normal;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;"><tr><td align="center"><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#EFECE5;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;">
 <tr><td align="center" style="padding:24px 0;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#EFECE5;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#EFECE5;overflow:hidden;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FFFFFF;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#FFFFFF;overflow:hidden;">
+
+<!-- ===== TOP STATUS BOX (Warm gray bordered container) ===== -->
+<tr><td style="padding:0 0 16px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:12px;overflow:hidden;">
 
 <!-- Header -->
-<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #E8E4DC;">
+<tr><td style="padding:24px 28px 16px;border-bottom:1px solid #E8E4DC;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset Studio</div>
@@ -411,7 +415,7 @@ a {text-decoration:none;}
 
 <!-- Data Bar -->
 <tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;border-radius:12px;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:12px;overflow:hidden;">
     <tr><td style="padding:12px 16px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:700;color:#333;font-family:${FONT};">데이터 수집 현황</td>
@@ -431,7 +435,7 @@ a {text-decoration:none;}
 <tr><td style="padding:20px 32px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
@@ -441,7 +445,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
@@ -451,7 +455,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
@@ -461,7 +465,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
@@ -473,9 +477,13 @@ a {text-decoration:none;}
   </tr></table>
 </td></tr>
 
+  </table>
+</td></tr>
+<!-- ===== END TOP STATUS BOX ===== -->
+
 ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+<tr><td style="padding:8px 0 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
     <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🎯 마케팅 기회 매트릭스</td>
