@@ -586,11 +586,12 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 <!-- KEY TAKEAWAY -->
 <tr><td style="padding:24px 32px 0;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">💡 KEY TAKEAWAY — 채널별 마케터 인사이트</td></tr>
+    <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">💡 ${bi("KEY TAKEAWAY — 채널별 마케터 인사이트", "KEY TAKEAWAY — Marketer Insights by Channel")}</td></tr>
   </table>
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
   ${renderKeyTakeaway("REDDIT", "💬", "#FF4500", reddit)}
+  ${renderKeyTakeaway(bi("커뮤니티 (Amazon/YouTube/기타)", "Communities (Amazon/YouTube/Others)"), "🌐", "#0D9488", (arguments[1] as any)?.community || null)}
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
