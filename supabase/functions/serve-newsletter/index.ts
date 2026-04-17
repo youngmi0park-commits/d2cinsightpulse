@@ -435,7 +435,7 @@ a {text-decoration:none;}
 <tr><td style="padding:20px 32px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td width="25%" style="padding:0 3px 0 0;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">총 리뷰 수집</div>
@@ -445,7 +445,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#16a34a;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">긍정 TOP 키워드</div>
@@ -455,7 +455,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#dc2626;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">부정 TOP 키워드</div>
@@ -465,7 +465,7 @@ a {text-decoration:none;}
       </table>
     </td>
     <td width="25%" style="padding:0 0 0 3px;vertical-align:top;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:10px;overflow:hidden;">
         <tr><td style="height:3px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:12px 10px;text-align:center;height:85px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:9px;font-weight:700;color:#888;letter-spacing:0.5px;line-height:13px;">주간 언급 TOP</div>
