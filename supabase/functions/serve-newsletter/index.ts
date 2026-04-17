@@ -67,9 +67,9 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
     `${p.name} (${p.category}): 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`
   ).join("\n\n");
 
-  const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : "Reddit 및 커뮤니티";
+  const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
-  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in Korean. Be specific, actionable, and use real product names from the data.`;
+  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in BOTH Korean and English. Be specific, actionable, and use real product names from the data.`;
 
   const userPrompt = `다음은 ${channelLabel}의 최근 수집된 리뷰 데이터입니다:
 
@@ -78,33 +78,35 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
 제품별 현황:
 ${productSummary}
 
-위 데이터를 분석하여 아래 5가지 섹션을 **한국어로** 작성해주세요:
+위 데이터를 분석하여 아래 5가지 섹션을 **한국어(_ko)와 영어(_en) 둘 다** 작성해주세요. 한국어가 메인, 영어는 짧고 자연스러운 비즈니스 톤으로:
 
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
 - rank, name, category, mention_count
-- pos_summary: **반드시 한 문장 60자 이내**로 핵심 강점만 (예: "선명한 화질·세련된 디자인 호평, 특히 게이밍 시청 만족도↑")
-- neg_summary: **한 문장 50자 이내** 또는 "특이 불만 없음"
-- praise_points: 정확히 3개, 각 8자 이내 짧은 키워드 (예: ["선명한 화질", "슬림 디자인", "가성비 우수"])
+- pos_summary (한 문장 60자 이내) + pos_summary_en (한 문장 90자 이내, 영어)
+- neg_summary (50자 이내) + neg_summary_en (80자 이내) — 또는 빈문자열
+- praise_points: 정확히 3개, 각 8자 이내 짧은 한국어 키워드
+- praise_points_en: 정확히 3개, 각 14자 이내 짧은 영어 키워드
 
 ## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (한국어 12자 이내), mention_pct, positive_pct, negative_pct
-- representative_comment: **한 문장 45자 이내** 핵심만
+- rank, topic (한국어 12자 이내), topic_en (English, ≤22 chars), mention_pct, positive_pct, negative_pct
+- representative_comment (한 문장 45자 이내) + representative_comment_en (≤80 chars)
 - related_products
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue (15자 이내), mention_pct, pattern (25자 이내), cause (25자 이내), related_products
+- rank, issue + issue_en (각 15/25자 이내), mention_pct
+- pattern + pattern_en (각 25/45자 이내)
+- cause + cause_en (각 25/45자 이내)
+- related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목 { "text": "20자 이내 짧은 칭찬", "product": "제품명", "category": "카테고리" }
+- 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
-- **카테고리별로 1개씩** 선정 (TV, Washer, Refrigerator, Dryer, Dishwasher, Monitor, Audio, Vacuum, Air Conditioner, Air Purifier 등 실제 데이터에 존재하는 카테고리만)
-- 각 카테고리마다 가장 언급량이 많고 시그널이 명확한 대표 제품 1개를 골라 인사이트 작성
-- 동일 카테고리 항목 중복 금지, 카테고리당 정확히 1개
-- 최대 8개 카테고리까지, 언급량 기준 내림차순 정렬
-- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄 (실제 사용자 표현 인용)", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "해당 카테고리 마케터가 즉시 실행할 액션 한 줄 (PMAX/Affiliate/FAQ/PDP/CRITEO 등 채널 명시)" }
+- **카테고리별로 1개씩** (실제 데이터에 존재하는 카테고리만), 동일 카테고리 중복 금지
+- 최대 8개까지, 언급량 기준 내림차순
+- 형태: { "product", "category", "positive_msg", "positive_msg_en", "negative_msg", "negative_msg_en", "marketer_action", "marketer_action_en" }
 
 JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...], "key_takeaway": [...] }`;
 
