@@ -481,24 +481,12 @@ export type Database = {
           html_snapshot: string | null
           id: string
           issue_date: string
-          lgcom_count: number | null
-          lgcom_overview: Json | null
-          other_channel_count: number | null
           published_at: string | null
-          reddit_count: number | null
-          reddit_overview: Json | null
-          review_delta: string | null
           status: string | null
           title: string | null
-          top_positive_count: number | null
-          top_positive_kw: string | null
-          top_product: string | null
-          top_product_count: number | null
           total_reviews: number | null
-          trustpilot_count: number | null
           week_end: string
           week_start: string
-          youtube_count: number | null
         }
         Insert: {
           avg_sentiment?: number | null
@@ -509,24 +497,12 @@ export type Database = {
           html_snapshot?: string | null
           id?: string
           issue_date: string
-          lgcom_count?: number | null
-          lgcom_overview?: Json | null
-          other_channel_count?: number | null
           published_at?: string | null
-          reddit_count?: number | null
-          reddit_overview?: Json | null
-          review_delta?: string | null
           status?: string | null
           title?: string | null
-          top_positive_count?: number | null
-          top_positive_kw?: string | null
-          top_product?: string | null
-          top_product_count?: number | null
           total_reviews?: number | null
-          trustpilot_count?: number | null
           week_end: string
           week_start: string
-          youtube_count?: number | null
         }
         Update: {
           avg_sentiment?: number | null
@@ -537,24 +513,12 @@ export type Database = {
           html_snapshot?: string | null
           id?: string
           issue_date?: string
-          lgcom_count?: number | null
-          lgcom_overview?: Json | null
-          other_channel_count?: number | null
           published_at?: string | null
-          reddit_count?: number | null
-          reddit_overview?: Json | null
-          review_delta?: string | null
           status?: string | null
           title?: string | null
-          top_positive_count?: number | null
-          top_positive_kw?: string | null
-          top_product?: string | null
-          top_product_count?: number | null
           total_reviews?: number | null
-          trustpilot_count?: number | null
           week_end?: string
           week_start?: string
-          youtube_count?: number | null
         }
         Relationships: []
       }
