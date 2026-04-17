@@ -259,74 +259,6 @@ Deno.serve(async (req) => {
     const rawText = aiData.choices?.[0]?.message?.content ?? "{}";
     const intel = JSON.parse(rawText.replace(/```json|```/g, "").trim());
 
-    // ── 9.5 Compute KPI extras ──
-    // Prev week delta
-    const { data: prevIssue } = await supabase
-      .from("newsletter_issues")
-      .select("total_reviews")
-      .lt("week_start", weekStart)
-      .order("week_start", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const prevCount = Number(prevIssue?.total_reviews ?? 0);
-    let reviewDelta = "신규 베이스라인";
-    if (prevCount > 0) {
-      const diff = totalReviews - prevCount;
-      const pct = Math.round((diff / prevCount) * 100);
-      if (pct === 0) reviewDelta = "변동없음 vs 전주";
-      else reviewDelta = (pct > 0 ? "▲ +" : "▼ ") + pct + "% vs 전주";
-    }
-
-    // Channel counts
-    const lgcomCount = bySource["lgcom"] ?? 0;
-    const redditCount = bySource["reddit"] ?? 0;
-    const youtubeCount = bySource["youtube"] ?? 0;
-    const trustpilotCount = bySource["trustpilot"] ?? 0;
-    const shownGroups = ["lgcom", "reddit", "youtube", "trustpilot"];
-    const otherChannelCount = Object.keys(bySource)
-      .filter((s) => !shownGroups.includes(s.toLowerCase())).length;
-
-    // Top positive keyword (single extra SQL on positive review titles+content)
-    let topPositiveKw = "";
-    let topPositiveCount = 0;
-    try {
-      const KW_LIST = ["picture quality", "excellent", "great", "amazing", "perfect",
-        "love", "fantastic", "outstanding", "best"];
-      const { data: posSample } = await supabase
-        .from("reviews")
-        .select("title, content")
-        .eq("sentiment", "positive")
-        .gte("published_at", weekStart + "T00:00:00+00")
-        .lte("published_at", weekEnd + "T23:59:59+00")
-        .limit(2000);
-      const kwMap: Record<string, number> = {};
-      for (const r of posSample ?? []) {
-        const text = ((r.title ?? "") + " " + (r.content ?? "")).toLowerCase();
-        for (const kw of KW_LIST) {
-          if (text.includes(kw)) kwMap[kw] = (kwMap[kw] ?? 0) + 1;
-        }
-      }
-      const topKw = Object.entries(kwMap).sort((a, b) => b[1] - a[1])[0];
-      if (topKw) {
-        topPositiveKw = topKw[0].replace(/\b\w/g, (c) => c.toUpperCase());
-        topPositiveCount = topKw[1];
-      }
-    } catch (e) {
-      console.warn("[newsletter] positive kw extraction failed:", e);
-    }
-
-    // Top mentioned product (sum across countries)
-    const productAgg: Record<string, number> = {};
-    for (const c of Object.values(byCountry)) {
-      for (const [name, cnt] of Object.entries(c.products)) {
-        productAgg[name] = (productAgg[name] ?? 0) + cnt;
-      }
-    }
-    const topProductEntry = Object.entries(productAgg).sort((a, b) => b[1] - a[1])[0];
-    const topProduct = topProductEntry?.[0] ?? "";
-    const topProductCount = topProductEntry?.[1] ?? 0;
-
     // ── 10. Save to DB ──
     const { data: issue, error: issueErr } = await supabase
       .from("newsletter_issues")
@@ -341,16 +273,6 @@ Deno.serve(async (req) => {
         avg_sentiment: avgSentiment,
         status: "draft",
         generated_at: new Date().toISOString(),
-        review_delta: reviewDelta,
-        top_positive_kw: topPositiveKw || "—",
-        top_positive_count: topPositiveCount,
-        top_product: topProduct || "—",
-        top_product_count: topProductCount,
-        lgcom_count: lgcomCount,
-        reddit_count: redditCount,
-        youtube_count: youtubeCount,
-        trustpilot_count: trustpilotCount,
-        other_channel_count: otherChannelCount,
       }, { onConflict: "week_start" })
       .select().single();
 
