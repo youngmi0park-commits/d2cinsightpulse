@@ -450,10 +450,10 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0ECE4;border-radius:24px;overflow:hidden;">
     <tr><td style="padding:14px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">데이터 수집 현황</td>
+        <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">${bi("데이터 수집 현황", "Data Collection Status")}</td>
         <td style="text-align:right;font-size:11px;color:#6B6A6E;font-family:${FONT};">
           <strong style="color:#EA1917;font-size:15px;font-weight:700;">${d.totalReviews.toLocaleString()}</strong>
-          <span style="color:#8B8A8E;font-weight:400;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+          <span style="color:#8B8A8E;font-weight:400;">${bi("건 · " + d.productCount.toLocaleString() + "개 제품", "reviews · " + d.productCount.toLocaleString() + " products")}</span>
         </td>
       </tr></table>
     </td></tr>
