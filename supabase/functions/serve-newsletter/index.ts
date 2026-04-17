@@ -386,6 +386,14 @@ a {text-decoration:none;}
   body, table, td, p, a, li { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
   img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+  /* Language toggle (browser-only; ignored by Outlook/email clients) */
+  body.lang-en .lg-ko { display:none !important; }
+  body.lang-en .lg-en { display:inline !important; }
+  body:not(.lang-en) .lg-ko { display:inline; }
+  body:not(.lang-en) .lg-en { display:none !important; }
+  .lg-toggle-btn { cursor:pointer; user-select:none; transition:all 0.2s ease; }
+  .lg-toggle-btn:hover { opacity:0.85; }
+  .lg-toggle-btn.active { background:#1B1A1E !important; color:#FFFFFF !important; }
   @media only screen and (max-width:699px) {
     .email-container { width:100% !important; max-width:100% !important; }
     .stack-column { display:block !important; width:100% !important; }
