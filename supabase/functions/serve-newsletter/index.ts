@@ -440,8 +440,8 @@ a {text-decoration:none;}
 <!-- Intro -->
 <tr><td style="padding:20px 32px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:14px;font-weight:600;color:#1B1A1E;padding-bottom:6px;mso-line-height-rule:exactly;line-height:20px;letter-spacing:-0.2px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:12px;color:#6B6A6E;line-height:20px;font-weight:400;">RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
+    <tr><td style="font-size:14px;font-weight:600;color:#1B1A1E;padding-bottom:6px;mso-line-height-rule:exactly;line-height:20px;letter-spacing:-0.2px;">${bi("고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.", "Find marketing answers in real customer voices.")}</td></tr>
+    <tr><td style="font-size:12px;color:#6B6A6E;line-height:20px;font-weight:400;">${bi("RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.", "RTA Studio analyzes real user reviews across 15 countries and 43+ channels, surfacing hidden insights and producing ready-to-use marketing assets — all in one platform.")}</td></tr>
   </table>
 </td></tr>
 
