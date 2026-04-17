@@ -206,9 +206,9 @@ const NewsletterPage = () => {
       await refetchArchive();
       await refetchIssue();
 
-      // Fetch full HTML for preview and Outlook copy
-      setGenProgress("뉴스레터 HTML 렌더링 중...");
-      await fetchNewsletterHtml();
+      // Trigger template re-fill via currentIssue refetch
+      setGenProgress("뉴스레터 렌더링 중...");
+      await refetchCurrent();
     } catch (err) {
       toast.error("생성 실패: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
@@ -216,7 +216,7 @@ const NewsletterPage = () => {
       setGenerating(false);
       setGenProgress("");
     }
-  }, [weekStart, weekEnd, refetchArchive, refetchIssue, fetchNewsletterHtml]);
+  }, [weekStart, weekEnd, refetchArchive, refetchIssue, refetchCurrent]);
 
   // ── Outlook Copy ──
   const handleCopyForOutlook = useCallback(async () => {
