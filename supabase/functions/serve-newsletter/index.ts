@@ -562,14 +562,81 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
-    <tr><td style="border-left:4px solid #0066CC;padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">🌐 전채널 종합</td></tr>
+    <tr><td style="padding-left:10px;border-left:4px solid #0D9488;font-size:12px;font-weight:700;color:#1B1A1E;padding-bottom:10px;font-family:${INTER};letter-spacing:-0.1px;">🌐 전채널 종합</td></tr>
     <tr><td>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;">
-        <tr><td style="padding:14px 16px;font-size:12px;color:#1a1a1a;line-height:20px;font-family:${FONT};">${allChannel.key_takeaway}</td></tr>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;overflow:hidden;">
+        <tr><td style="padding:16px 18px;font-size:12px;color:#1B1A1E;line-height:20px;font-family:${FONT};font-weight:400;">${allChannel.key_takeaway}</td></tr>
       </table>
     </td></tr>
   </table>` : ""}
 </td></tr>
+
+${d.regionalSignals.length > 0 ? `<!-- Regional Marketing Signals (per-country snapshot for local marketers) -->
+<tr><td style="padding:24px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🌍 지역별 마케팅 시그널</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">현지 마케터 액션 가이드</td>
+      </tr></table>
+    </td></tr>
+    ${d.regionalSignals.slice(0, 6).map((rs, idx, arr) => {
+      const sentColor = rs.posPct >= 70 ? "#0D9488" : rs.negPct >= 30 ? "#EA1917" : "#D97706";
+      const sentLabel = rs.posPct >= 70 ? "긍정 우세" : rs.negPct >= 30 ? "부정 주의" : "혼조";
+      const sentBg = sentColor === "#0D9488" ? "#F0FDFA" : sentColor === "#EA1917" ? "#FEF2F2" : "#FFFBEB";
+      return `<tr><td style="padding:0;background:#FFFFFF;${idx < arr.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td width="80" style="padding:14px 12px 14px 18px;vertical-align:middle;font-family:${INTER};">
+            <div style="font-size:18px;line-height:22px;">${rs.flag}</div>
+            <div style="font-size:11px;font-weight:700;color:#1B1A1E;margin-top:2px;letter-spacing:-0.1px;">${rs.country}</div>
+          </td>
+          <td style="padding:14px 8px;font-family:${FONT};vertical-align:middle;">
+            <div style="margin-bottom:4px;">
+              <span style="display:inline-block;background:${sentBg};color:${sentColor};padding:2px 9px;font-size:9px;font-weight:700;border-radius:50px;letter-spacing:0.3px;margin-right:5px;">${sentLabel}</span>
+              <span style="display:inline-block;background:#F0ECE4;color:#1B1A1E;padding:2px 9px;font-size:9px;font-weight:600;border-radius:50px;">${rs.topCategory}</span>
+            </div>
+            <div style="font-size:11.5px;color:#1B1A1E;line-height:16px;font-weight:500;letter-spacing:-0.1px;">${rs.signal}</div>
+          </td>
+          <td width="86" style="padding:14px 18px 14px 8px;text-align:right;vertical-align:middle;font-family:${INTER};">
+            <div style="font-size:16px;font-weight:700;color:#1B1A1E;letter-spacing:-0.4px;">${rs.total.toLocaleString()}</div>
+            <div style="font-size:9px;color:#8B8A8E;font-weight:400;">건 수집</div>
+            <div style="font-size:10px;font-weight:600;color:${sentColor};margin-top:2px;">긍 ${rs.posPct}% · 부 ${rs.negPct}%</div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+    }).join("")}
+  </table>
+</td></tr>` : ""}
+
+${d.actionChecklist.length > 0 ? `<!-- Weekly Action Checklist -->
+<tr><td style="padding:24px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">📋 이번 주 추천 액션 체크리스트</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">즉시 실행 가능</td>
+      </tr></table>
+    </td></tr>
+    ${d.actionChecklist.slice(0, 6).map((ac, idx, arr) => {
+      const pColor = ac.priority === "HIGH" ? "#EA1917" : ac.priority === "MID" ? "#D97706" : "#0D9488";
+      const pBg = ac.priority === "HIGH" ? "#FEF2F2" : ac.priority === "MID" ? "#FFFBEB" : "#F0FDFA";
+      return `<tr><td style="padding:0;background:#FFFFFF;${idx < arr.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td width="6" style="background:${pColor};font-size:0;line-height:0;">&nbsp;</td>
+          <td style="padding:13px 16px 13px 14px;font-family:${FONT};">
+            <div style="margin-bottom:6px;">
+              <span style="display:inline-block;background:${pBg};color:${pColor};padding:2px 10px;font-size:9px;font-weight:700;border-radius:50px;letter-spacing:0.3px;margin-right:5px;">${ac.priority}</span>
+              <span style="display:inline-block;background:#1B1A1E;color:#FFFFFF;padding:2px 10px;font-size:9px;font-weight:600;border-radius:50px;margin-right:5px;">${ac.channel}</span>
+              <span style="display:inline-block;background:#F0ECE4;color:#1B1A1E;padding:2px 9px;font-size:9px;font-weight:500;border-radius:50px;">${ac.owner}</span>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B1A1E;line-height:17px;letter-spacing:-0.1px;">${ac.action}</div>
+            <div style="font-size:10.5px;color:#6B6A6E;line-height:15px;margin-top:3px;font-weight:400;">근거 — ${ac.basis}</div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+    }).join("")}
+  </table>
+</td></tr>` : ""}
 
 <!-- Divider -->
 <tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
