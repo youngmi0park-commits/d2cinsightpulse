@@ -259,6 +259,21 @@ Deno.serve(async (req) => {
     const rawText = aiData.choices?.[0]?.message?.content ?? "{}";
     const intel = JSON.parse(rawText.replace(/```json|```/g, "").trim());
 
+    // ── 9.5. Fetch LG.com & Reddit weekly overviews (same as main dashboard) ──
+    let lgcomOverview: unknown = null;
+    let redditOverview: unknown = null;
+    try {
+      const [lgRes, rdRes] = await Promise.all([
+        supabase.functions.invoke("generate-overview-summary", { body: { channel: "lgcom" } }),
+        supabase.functions.invoke("generate-overview-summary", { body: { channel: "reddit" } }),
+      ]);
+      lgcomOverview = (lgRes.data as Record<string, unknown> | null)?.overview ?? null;
+      redditOverview = (rdRes.data as Record<string, unknown> | null)?.overview ?? null;
+      console.log("[newsletter] overviews fetched:", !!lgcomOverview, !!redditOverview);
+    } catch (e) {
+      console.warn("[newsletter] overview fetch failed:", e);
+    }
+
     // ── 10. Save to DB ──
     const { data: issue, error: issueErr } = await supabase
       .from("newsletter_issues")
@@ -271,6 +286,8 @@ Deno.serve(async (req) => {
         countries_count: Object.keys(byCountry).length,
         channels_count: Object.keys(bySource).length,
         avg_sentiment: avgSentiment,
+        lgcom_overview: lgcomOverview,
+        reddit_overview: redditOverview,
         status: "draft",
         generated_at: new Date().toISOString(),
       }, { onConflict: "week_start" })

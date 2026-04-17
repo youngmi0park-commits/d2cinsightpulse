@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -10,6 +11,90 @@ import {
   useNewsletterArchive,
   useNewsletterIssue,
 } from "@/hooks/useNewsletterData";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* ── Build compact insight HTML from generate-overview-summary payload ── */
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+function buildInsightHtml(ov: any, accent: string): string {
+  if (!ov) {
+    return `<div style="font-size:11px;color:#999;line-height:18px;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">아직 인사이트가 생성되지 않았습니다.<br/>메인 대시보드에서 '오버뷰 생성'을 먼저 실행해주세요.</div>`;
+  }
+  const topics = Array.isArray(ov.top_topics) ? ov.top_topics.slice(0, 3) : [];
+  const issues = Array.isArray(ov.urgent_issues) ? ov.urgent_issues.slice(0, 2) : [];
+  const takeaway = Array.isArray(ov.key_takeaway) ? ov.key_takeaway.slice(0, 1) : [];
+
+  const topicRows = topics.map((t: any) => `
+    <tr><td style="padding:3px 0;font-size:11px;line-height:16px;color:#333;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">
+      <span style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;background:${accent};color:#FFFFFF;margin-right:5px;">#${esc(t.rank ?? "")}</span>
+      <strong style="color:#1A1A1A;">${esc(t.topic)}</strong>
+      <span style="color:#888;font-size:10px;">· ${esc(t.mention_pct ?? 0)}% 언급 · 긍 ${esc(t.positive_pct ?? 0)}%</span>
+    </td></tr>`).join("");
+
+  const issueRows = issues.map((i: any) => `
+    <tr><td style="padding:3px 0;font-size:11px;line-height:16px;color:#333;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">
+      <span style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;background:#dc2626;color:#FFFFFF;margin-right:5px;">!</span>
+      <strong style="color:#1A1A1A;">${esc(i.issue)}</strong>
+      <span style="color:#888;font-size:10px;">· ${esc(i.mention_pct ?? 0)}%</span>
+    </td></tr>`).join("");
+
+  const takeawayHtml = takeaway.length ? `
+    <div style="margin-top:8px;padding:8px 10px;background:#FFFBEB;border-left:3px solid #d97706;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">
+      <div style="font-size:9px;font-weight:700;color:#d97706;letter-spacing:0.4px;">💡 마케터 인사이트</div>
+      <div style="font-size:11px;color:#1A1A1A;font-weight:600;margin-top:3px;line-height:16px;">${esc(takeaway[0].positive_msg || takeaway[0].marketer_action || "—")}</div>
+    </div>` : "";
+
+  return `
+    <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.4px;margin-bottom:5px;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">TOP 토픽</div>
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">${topicRows || `<tr><td style="font-size:10px;color:#bbb;">데이터 없음</td></tr>`}</table>
+    ${issueRows ? `
+      <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.4px;margin:10px 0 5px;font-family:Inter,'Noto Sans KR',Arial,sans-serif;">긴급 이슈</div>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">${issueRows}</table>` : ""}
+    ${takeawayHtml}`;
+}
+
+/* ── Fill template placeholders ── */
+function fillTemplate(html: string, issue: any, stats: any[]): string {
+  if (!issue) return html;
+  const findCnt = (key: string): number => {
+    const row = stats?.find((s: any) => s.source?.toLowerCase().includes(key));
+    return Number(row?.review_count ?? 0);
+  };
+  const lgcom = findCnt("lgcom") || findCnt("lg_com") || findCnt("lge_com");
+  const reddit = findCnt("reddit");
+  const youtube = findCnt("youtube");
+  const trustpilot = findCnt("trustpilot");
+  const knownKeys = ["lgcom","lg_com","lge_com","reddit","youtube","trustpilot"];
+  const otherCnt = (stats ?? []).filter(
+    (s: any) => !knownKeys.some(k => s.source?.toLowerCase().includes(k))
+  ).length;
+
+  const lgcomHtml = buildInsightHtml(issue.lgcom_overview, "#C8102E");
+  const redditHtml = buildInsightHtml(issue.reddit_overview, "#FF4500");
+
+  return html
+    .replace(/\{\{WEEK_START\}\}/g, String(issue.week_start ?? ""))
+    .replace(/\{\{WEEK_END\}\}/g, String(issue.week_end ?? ""))
+    .replace(/\{\{TOTAL_REVIEWS\}\}/g, Number(issue.total_reviews ?? 0).toLocaleString())
+    .replace(/\{\{REVIEW_DELTA\}\}/g, String(issue.review_delta ?? "vs 전주"))
+    .replace(/\{\{COUNTRY_COUNT\}\}/g, String(issue.countries_count ?? 0))
+    .replace(/\{\{ACTIVE_CHANNELS\}\}/g, String(issue.channels_count ?? 0))
+    .replace(/\{\{TOP_POSITIVE_KW\}\}/g, esc(issue.top_positive_kw ?? "—"))
+    .replace(/\{\{TOP_POSITIVE_COUNT\}\}/g, String(issue.top_positive_count ?? 0))
+    .replace(/\{\{TOP_PRODUCT\}\}/g, esc(issue.top_product ?? "—"))
+    .replace(/\{\{TOP_PRODUCT_COUNT\}\}/g, String(issue.top_product_count ?? 0))
+    .replace(/\{\{LGCOM_COUNT\}\}/g, lgcom.toLocaleString())
+    .replace(/\{\{REDDIT_COUNT\}\}/g, reddit.toLocaleString())
+    .replace(/\{\{YOUTUBE_COUNT\}\}/g, youtube.toLocaleString())
+    .replace(/\{\{TRUSTPILOT_COUNT\}\}/g, trustpilot.toLocaleString())
+    .replace(/\{\{OTHER_CHANNEL_COUNT\}\}/g, String(otherCnt))
+    .replace(/\{\{LGCOM_INSIGHT_HTML\}\}/g, lgcomHtml)
+    .replace(/\{\{REDDIT_INSIGHT_HTML\}\}/g, redditHtml);
+}
 
 /* ── Past Newsletters Archive (static fallback) ── */
 const staticNewsletters = [
@@ -71,8 +156,23 @@ const NewsletterPage = () => {
   const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
-  const { refetch: refetchIssue } = useNewsletterIssue(activeId);
+  const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
+
+  // Fetch collection stats for the active/latest issue
+  const issueIdForStats = activeId ?? (currentIssue as any)?.id;
+  const { data: collectionStats } = useQuery({
+    queryKey: ["newsletter-stats-page", issueIdForStats],
+    enabled: !!issueIdForStats,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("newsletter_collection_stats")
+        .select("*")
+        .eq("issue_id", issueIdForStats)
+        .order("sort_order");
+      return data ?? [];
+    },
+  });
 
   const toggleStaticOpen = (id: number) => {
     setStaticOpenIds((prev) => {
@@ -83,23 +183,24 @@ const NewsletterPage = () => {
     });
   };
 
-  // ── Fetch full newsletter HTML from serve-newsletter ──
+  // ── Fetch + fill template whenever currentIssue / stats change ──
   const fetchNewsletterHtml = useCallback(async () => {
+    if (!currentIssue) return;
     setLoadingHtml(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
-        body: { format: "json", baseUrl: window.location.origin },
-      });
-      if (error) throw error;
-      if (result?.html) {
-        setNewsletterHtml(result.html);
-      }
+      const res = await fetch("/newsletter-template.html");
+      const tpl = await res.text();
+      setNewsletterHtml(fillTemplate(tpl, currentIssue, collectionStats ?? []));
     } catch {
       // silently fail — preview falls back to static template
     } finally {
       setLoadingHtml(false);
     }
-  }, []);
+  }, [currentIssue, collectionStats]);
+
+  useEffect(() => {
+    fetchNewsletterHtml();
+  }, [fetchNewsletterHtml]);
 
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
