@@ -532,7 +532,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
           // Truncate long keywords for height consistency (3-line max ≈ 60 chars)
           const kw = sig.keyword.length > 60 ? sig.keyword.slice(0, 57) + "..." : sig.keyword;
           return `<td width="33%" style="padding:0 3px;vertical-align:top;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" height="120" style="border:1px solid ${bc};background:${bg};height:120px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" height="120" style="border:1px solid ${bc};background:${bg};height:120px;border-radius:16px;">
               <tr><td valign="top" style="padding:10px;font-family:${INTER};height:120px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
                   <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;height:48px;vertical-align:top;">"${kw}"</td>
