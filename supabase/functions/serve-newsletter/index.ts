@@ -95,9 +95,12 @@ ${productSummary}
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
 - 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
 
-## 5. KEY TAKEAWAY — 마케터 인사이트 (key_takeaway)
-- 3개 항목, 각 항목은 주로 언급된 제품명, 긍/부정 핵심 메시지, 마케터 액션 제안 포함
-- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "마케터 액션 제안 한 줄" }
+## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
+- **카테고리별로 1개씩** 선정 (TV, Washer, Refrigerator, Dryer, Dishwasher, Monitor, Audio, Vacuum, Air Conditioner, Air Purifier 등 실제 데이터에 존재하는 카테고리만)
+- 각 카테고리마다 가장 언급량이 많고 시그널이 명확한 대표 제품 1개를 골라 인사이트 작성
+- 동일 카테고리 항목 중복 금지, 카테고리당 정확히 1개
+- 최대 8개 카테고리까지, 언급량 기준 내림차순 정렬
+- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄 (실제 사용자 표현 인용)", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "해당 카테고리 마케터가 즉시 실행할 액션 한 줄 (PMAX/Affiliate/FAQ/PDP/CRITEO 등 채널 명시)" }
 
 JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...], "key_takeaway": [...] }`;
 
@@ -178,10 +181,19 @@ function buildNewsletterHTML(d: {
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "Inter,'Segoe UI',Arial,sans-serif";
 
-  /* ── Key Takeaway block ── */
+  /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
-    const items = insight?.key_takeaway;
-    if (!items || items.length === 0) return "";
+    const raw = insight?.key_takeaway;
+    if (!raw || raw.length === 0) return "";
+    // 카테고리별 첫 항목만 유지 (AI가 중복 생성해도 1 per category 보장)
+    const seen = new Set<string>();
+    const items = raw.filter(it => {
+      const key = (it.category || "기타").trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 8);
+    if (items.length === 0) return "";
     const rows = items.map(item => `
       <tr><td style="padding:12px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
