@@ -186,7 +186,6 @@ function buildNewsletterHTML(d: {
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const raw = insight?.key_takeaway;
     if (!raw || raw.length === 0) return "";
-    // 카테고리별 첫 항목만 유지 (AI가 중복 생성해도 1 per category 보장)
     const seen = new Set<string>();
     const items = raw.filter(it => {
       const key = (it.category || "기타").trim().toLowerCase();
@@ -195,30 +194,30 @@ function buildNewsletterHTML(d: {
       return true;
     }).slice(0, 8);
     if (items.length === 0) return "";
-    const rows = items.map(item => `
-      <tr><td style="padding:12px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+    const rows = items.map((item, idx) => `
+      <tr><td style="padding:14px 18px;${idx < items.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td style="padding-bottom:4px;">
-            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#F0ECE4;padding:1px 8px;font-size:10px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:16px;">${item.category}</td><td style="padding-left:6px;font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</td></tr></table><![endif]-->
-            <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:4px;padding:1px 8px;font-size:10px;font-weight:700;color:#888;margin-right:6px;">${item.category}</span><span style="font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</span><!--<![endif]-->
+          <td style="padding-bottom:6px;">
+            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#F0ECE4;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;mso-line-height-rule:exactly;line-height:14px;">${item.category}</td><td style="padding-left:8px;font-weight:700;font-size:12.5px;color:#1B1A1E;">${item.product}</td></tr></table><![endif]-->
+            <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:50px;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;margin-right:8px;letter-spacing:0.2px;">${item.category}</span><span style="font-weight:700;font-size:12.5px;color:#1B1A1E;letter-spacing:-0.1px;">${item.product}</span><!--<![endif]-->
           </td>
         </tr></table>
-        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#006600;padding-bottom:3px;font-family:${FONT};">👍 ${item.positive_msg}</td></tr></table>` : ""}
-        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#A50034;padding-bottom:3px;font-family:${FONT};">👎 ${item.negative_msg}</td></tr></table>` : ""}
+        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${item.positive_msg}</td></tr></table>` : ""}
+        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${item.negative_msg}</td></tr></table>` : ""}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">
-          <tr><td style="background:#FFFBEB;padding:6px 10px;font-family:${FONT};">
+          <tr><td style="background:#FFFBEB;padding:8px 12px;font-family:${FONT};border-radius:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:2px;">🎯 마케팅 액션</td></tr>
-              <tr><td style="font-size:11px;color:#333;line-height:18px;">${item.marketer_action}</td></tr>
+              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 마케팅 액션</td></tr>
+              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${item.marketer_action}</td></tr>
             </table>
           </td></tr>
         </table>
       </td></tr>`).join("");
 
-    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-      <tr><td style="border-left:4px solid ${borderColor};padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">${icon} ${label}</td></tr>
+    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:18px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+      <tr><td style="padding-left:10px;border-left:4px solid ${borderColor};font-size:12px;font-weight:700;color:#1B1A1E;padding-bottom:10px;font-family:${INTER};letter-spacing:-0.1px;">${icon} ${label}</td></tr>
       <tr><td>
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;mso-table-lspace:0pt;mso-table-rspace:0pt;">${rows}</table>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;mso-table-lspace:0pt;mso-table-rspace:0pt;">${rows}</table>
       </td></tr>
     </table>`;
   }
