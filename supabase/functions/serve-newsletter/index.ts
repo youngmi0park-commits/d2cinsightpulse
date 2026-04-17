@@ -639,12 +639,28 @@ Deno.serve(async (req) => {
     const dateRange = `${fmt(weekAgo)} – ${fmt(now)}`;
     const generatedAt = `${fmt(now)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
+    // 메인 대시보드와 동일하게 — 최신 snapshot_date의 trending_keywords만 사용
+    const { data: latestKwRow } = await sb
+      .from("trending_keywords")
+      .select("snapshot_date")
+      .order("snapshot_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const latestKwDate = (latestKwRow as any)?.snapshot_date;
+
+    let kwQuery = sb
+      .from("trending_keywords")
+      .select("keyword, count, sentiment, change_percent")
+      .order("count", { ascending: false })
+      .limit(30);
+    if (latestKwDate) kwQuery = kwQuery.eq("snapshot_date", latestKwDate);
+
     const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
-      sb.from("trending_keywords").select("keyword, count, sentiment, change_percent").order("count", { ascending: false }).limit(20),
+      kwQuery,
       sb.from("trending_snapshots").select("product_id, mention_count, change_percent, trend, products!inner(display_name, model_number, is_active)").eq("products.is_active", true).order("mention_count", { ascending: false }).limit(10),
     ]);
 
@@ -814,14 +830,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Trending signals
-    const trendingSignals = kws.slice(0, 6).map((k: any) => ({
-      keyword: k.keyword,
-      count: k.count,
-      delta: Number(k.change_percent) || 0,
-      type: (Number(k.change_percent) || 0) > 20 ? "rising" : (Number(k.change_percent) || 0) < -20 ? "falling" : "stable",
-      sentiment: k.sentiment,
-    }));
+    // Trending signals — 메인 대시보드 TrendingDashboard와 동일한 분류 규칙 + 상위 3개만
+    const trendingSignals = [...posKws, ...negKws]
+      .sort((a: any, b: any) => (b.count || 0) - (a.count || 0))
+      .slice(0, 3)
+      .map((k: any) => {
+        const change = Number(k.change_percent) || 0;
+        const count = Number(k.count) || 0;
+        const type = change > 20 ? "rising"
+          : change < -10 ? "falling"
+          : count <= 5 ? "new"
+          : "stable";
+        return {
+          keyword: k.keyword,
+          count,
+          delta: Math.round(change),
+          type,
+          sentiment: k.sentiment,
+        };
+      });
 
     const newsletterData = {
       dateRange, generatedAt,
