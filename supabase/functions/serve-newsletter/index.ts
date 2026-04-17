@@ -171,7 +171,7 @@ function buildNewsletterHTML(d: {
   topPositiveKeyword: string; topPositiveCount: number;
   topNegativeKeyword: string; topNegativeCount: number;
   topProduct: string; topProductCount: number;
-  opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[];
+  opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country: string; channel: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
@@ -476,18 +476,23 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
       const tc = op.tag === "amplify" ? "#16a34a" : op.tag === "fix" ? "#dc2626" : "#d97706";
       const tb = op.tag === "amplify" ? "#f0fdf4" : op.tag === "fix" ? "#fef2f2" : "#fffbeb";
       const tl = op.tag === "amplify" ? "AMPLIFY" : op.tag === "fix" ? "FIX" : "WATCH";
-      const dc = op.delta.startsWith("+") ? "#16a34a" : op.delta.startsWith("-") ? "#dc2626" : "#888";
+      const dc = op.delta.includes("+") || op.delta.startsWith("▲") ? "#16a34a"
+               : op.delta.includes("-") || op.delta.startsWith("▼") ? "#dc2626" : "#4A4A4A";
       return `<tr><td style="padding:0;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-bottom:1px solid #E8E4DC;"><tr>
           <td width="4" style="background:${tc};font-size:0;">&nbsp;</td>
           <td style="padding:10px 14px;font-family:${FONT};">
-            <div style="margin-bottom:3px;"><span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span></div>
+            <div style="margin-bottom:4px;">
+              <span style="font-size:9px;font-weight:700;padding:2px 6px;background:${tb};color:${tc};border:1px solid ${tc}40;">${tl}</span>
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:4px;background:#EFECE5;color:#2A2A2A;border:1px solid #E0DBD3;">${op.country}</span>
+              <span style="font-size:9px;font-weight:600;padding:2px 6px;margin-left:3px;background:#F5F2EC;color:#4A4A4A;border:1px solid #E0DBD3;">${op.channel}</span>
+            </div>
             <div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:16px;">${op.title}</div>
-            <div style="font-size:10px;color:#888;line-height:15px;margin-top:2px;">${op.desc}</div>
+            <div style="font-size:10px;color:#3A3A3A;line-height:15px;margin-top:3px;">${op.desc}</div>
           </td>
-          <td width="70" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
+          <td width="76" style="padding:10px;text-align:right;font-family:${INTER};vertical-align:middle;">
             <div style="font-size:16px;font-weight:800;color:${dc};">${op.count}</div>
-            <div style="font-size:9px;color:#888;">건</div>
+            <div style="font-size:9px;color:#4A4A4A;">건</div>
             <div style="font-size:10px;font-weight:700;color:${dc};margin-top:2px;">${op.delta}</div>
           </td>
         </tr></table>
@@ -675,19 +680,138 @@ Deno.serve(async (req) => {
     const trendProds = trendingRes.data || [];
     const topProd = trendProds[0];
 
-    // Opportunities
-    const opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[] = [];
-    for (const tp of trendProds.slice(0, 3)) {
-      const prod = (tp as any).products;
-      const chg = Number(tp.change_percent) || 0;
-      const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+    // Opportunities — Dashboard와 동일하게 amplify/fix/watch를 다양하게 구성
+    // 주간 리뷰에서 product × source × sentiment 별로 집계해서 다양한 시그널 추출
+    const SOURCE_TO_FLAG: Record<string, string> = {
+      lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK", lge_com_de: "🇩🇪 DE",
+      lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN", lge_com_tw: "🇹🇼 TW",
+      lge_com_jp: "🇯🇵 JP", lge_com_th: "🇹🇭 TH", lge_com_br: "🇧🇷 BR",
+      reddit: "🌐 Global", youtube: "🌐 Global", trustpilot: "🌐 Global",
+    };
+    const sourceCountry = (s: string) => {
+      if (SOURCE_TO_FLAG[s]) return SOURCE_TO_FLAG[s];
+      if (s?.startsWith("lge_com_")) return "🌍 " + s.replace("lge_com_", "").toUpperCase();
+      return "🌐 Global";
+    };
+    const sourceChannel = (s: string) => {
+      if (s?.startsWith("lge_com")) return "LG.com";
+      if (s?.startsWith("reddit")) return "Reddit";
+      if (s?.startsWith("youtube")) return "YouTube";
+      return s || "기타";
+    };
+
+    // 최근 7일 리뷰를 product+source+sentiment 단위로 집계
+    const { data: weeklyAgg } = await sb
+      .from("reviews")
+      .select("product_id, source, sentiment, products!inner(display_name, category, is_active)")
+      .gte("published_at", weekAgo.toISOString())
+      .eq("products.is_active", true)
+      .limit(5000);
+
+    type Bucket = {
+      productId: string; name: string; category: string;
+      bestSource: string; pos: number; neg: number; total: number;
+      sourceCounts: Record<string, number>;
+    };
+    const bucketMap: Record<string, Bucket> = {};
+    for (const r of (weeklyAgg ?? []) as any[]) {
+      const id = r.product_id as string;
+      if (!bucketMap[id]) {
+        bucketMap[id] = {
+          productId: id,
+          name: r.products?.display_name || "Unknown",
+          category: r.products?.category || "General",
+          bestSource: r.source, pos: 0, neg: 0, total: 0,
+          sourceCounts: {},
+        };
+      }
+      const b = bucketMap[id];
+      b.total += 1;
+      if (r.sentiment === "positive") b.pos += 1;
+      else if (r.sentiment === "negative") b.neg += 1;
+      b.sourceCounts[r.source] = (b.sourceCounts[r.source] ?? 0) + 1;
+      // 가장 많이 수집된 소스를 대표 소스로
+      if (b.sourceCounts[r.source] > (b.sourceCounts[b.bestSource] ?? 0)) b.bestSource = r.source;
+    }
+    const buckets = Object.values(bucketMap).filter(b => b.total >= 3);
+
+    const opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country: string; channel: string }[] = [];
+
+    // AMPLIFY: 긍정 비율 ≥70% & 긍정 ≥5건 → 상위 2건
+    const amplifyCands = buckets
+      .filter(b => b.total >= 5 && b.pos / b.total >= 0.7)
+      .sort((a, b) => b.pos - a.pos);
+    for (const b of amplifyCands.slice(0, 2)) {
+      const posRate = Math.round((b.pos / b.total) * 100);
       opportunities.push({
-        tag,
-        title: prod?.display_name || "Unknown",
-        desc: tag === "amplify" ? "긍정 트렌드 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS 즉시 대응" : "모니터링 필요",
-        count: tp.mention_count,
-        delta: (chg > 0 ? "+" : "") + chg + "%",
+        tag: "amplify",
+        title: b.name,
+        desc: `${b.category} · 긍정 ${posRate}% (${b.pos}건) — PMAX/Affiliate 즉시 활용 권고`,
+        count: b.pos,
+        delta: `▲ +${posRate}%`,
+        country: sourceCountry(b.bestSource),
+        channel: sourceChannel(b.bestSource),
       });
+    }
+
+    // FIX: 부정 비율 ≥35% & 부정 ≥3건 → 상위 2건
+    const fixCands = buckets
+      .filter(b => b.total >= 4 && b.neg / b.total >= 0.35 && b.neg >= 3)
+      .sort((a, b) => b.neg - a.neg);
+    for (const b of fixCands.slice(0, 2)) {
+      const negRate = Math.round((b.neg / b.total) * 100);
+      opportunities.push({
+        tag: "fix",
+        title: b.name,
+        desc: `${b.category} · 부정 ${negRate}% (${b.neg}건) — FAQ/PDP 보강 및 CRITEO 일시 중단 권고`,
+        count: b.neg,
+        delta: `▲ ${negRate}%`,
+        country: sourceCountry(b.bestSource),
+        channel: sourceChannel(b.bestSource),
+      });
+    }
+
+    // WATCH: 언급 다수지만 명확한 호/불호 판단 어려운 제품 (중립/혼조) → 상위 2건
+    const used = new Set(opportunities.map(o => o.title));
+    const watchCands = buckets
+      .filter(b => !used.has(b.name) && b.total >= 5)
+      .sort((a, b) => b.total - a.total);
+    for (const b of watchCands.slice(0, 2)) {
+      const posRate = Math.round((b.pos / b.total) * 100);
+      const negRate = Math.round((b.neg / b.total) * 100);
+      let reason = "혼조 시그널 — 추가 데이터 확보 후 재평가";
+      if (negRate >= 20 && posRate >= 50) reason = `긍정 ${posRate}% / 부정 ${negRate}% — 부정 사유 카테고라이즈 후 액션 결정`;
+      else if (b.total >= 10 && posRate < 60 && negRate < 30) reason = `언급 ${b.total}건 / 명확한 호불호 신호 부족 — 키워드 클러스터링 필요`;
+      else if (b.pos > b.neg) reason = `긍정 우세지만 표본 부족 — 차주 데이터 누적 후 AMPLIFY 재검토`;
+      opportunities.push({
+        tag: "watch",
+        title: b.name,
+        desc: `${b.category} · ${reason}`,
+        count: b.total,
+        delta: `— 모니터링`,
+        country: sourceCountry(b.bestSource),
+        channel: sourceChannel(b.bestSource),
+      });
+    }
+
+    // 폴백 — 데이터가 부족하면 trending_snapshots 사용
+    if (opportunities.length === 0) {
+      for (const tp of trendProds.slice(0, 3)) {
+        const prod = (tp as any).products;
+        const chg = Number(tp.change_percent) || 0;
+        const tag = chg > 10 ? "amplify" : chg < -10 ? "fix" : "watch";
+        opportunities.push({
+          tag,
+          title: prod?.display_name || "Unknown",
+          desc: tag === "amplify" ? "긍정 트렌드 — 마케팅 소재 활용 권고"
+              : tag === "fix" ? "부정 급증 — CS/FAQ 즉시 대응 필요"
+              : `언급량 ${tp.mention_count}건 / 변화율 ${chg}% — 트렌드 안정 구간, 차주 모니터링`,
+          count: tp.mention_count,
+          delta: (chg > 0 ? "+" : "") + chg + "%",
+          country: "🌐 Global",
+          channel: "Trending",
+        });
+      }
     }
 
     // Trending signals
