@@ -375,31 +375,31 @@ a {text-decoration:none;}
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#FFFFFF;font-family:${FONT};word-spacing:normal;">
+<body style="margin:0;padding:0;background-color:#F0ECE4;font-family:${FONT};word-spacing:normal;color:#1B1A1E;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;"><tr><td align="center"><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#FFFFFF;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;"><tr><td align="center"><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;">
 <tr><td align="center" style="padding:24px 0;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#FFFFFF;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#FFFFFF;overflow:hidden;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#F0ECE4;"><tr><td><![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#F0ECE4;overflow:hidden;">
 
-<!-- ===== TOP STATUS BOX (Warm gray bordered container) ===== -->
+<!-- ===== TOP STATUS BOX (LG.com clean white card on warm beige) ===== -->
 <tr><td style="padding:0 0 16px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:12px;overflow:hidden;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
 
 <!-- Header -->
-<tr><td style="padding:24px 28px 16px;border-bottom:1px solid #E8E4DC;">
+<tr><td style="padding:28px 32px 20px;border-bottom:1px solid #F0ECE4;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
-      <div style="font-size:24px;font-weight:800;color:#EA1917;letter-spacing:-0.5px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset Studio</div>
-      <div style="font-size:12px;color:#888;margin-top:4px;mso-line-height-rule:exactly;line-height:18px;">Weekly Insight Report &nbsp;·&nbsp; <em style="color:#bbb;">Turn Real Reviews into Ready-to-Use Marketing Assets.</em></div>
+      <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
+      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">Weekly Insight Report &nbsp;·&nbsp; <span style="color:#9B9A9E;">Turn Real Reviews into Ready-to-Use Marketing Assets.</span></div>
     </td>
     <td width="140" style="text-align:right;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
-        <tr><td style="border:2px solid #EA1917;padding:6px 14px;text-align:center;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:800;color:#EA1917;letter-spacing:1px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
-          <div style="font-size:9px;color:#888;margin-top:3px;mso-line-height-rule:exactly;line-height:13px;">${d.dateRange}</div>
+        <tr><td style="background:#1B1A1E;padding:8px 16px;text-align:center;font-family:${INTER};border-radius:50px;">
+          <div style="font-size:10px;font-weight:700;color:#FFFFFF;letter-spacing:1.2px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
+          <div style="font-size:9px;color:#B5B4B8;margin-top:3px;mso-line-height-rule:exactly;line-height:13px;font-weight:400;">${d.dateRange}</div>
         </td></tr>
       </table>
     </td>
