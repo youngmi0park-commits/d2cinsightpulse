@@ -95,9 +95,12 @@ ${productSummary}
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
 - 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
 
-## 5. KEY TAKEAWAY — 마케터 인사이트 (key_takeaway)
-- 3개 항목, 각 항목은 주로 언급된 제품명, 긍/부정 핵심 메시지, 마케터 액션 제안 포함
-- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "마케터 액션 제안 한 줄" }
+## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
+- **카테고리별로 1개씩** 선정 (TV, Washer, Refrigerator, Dryer, Dishwasher, Monitor, Audio, Vacuum, Air Conditioner, Air Purifier 등 실제 데이터에 존재하는 카테고리만)
+- 각 카테고리마다 가장 언급량이 많고 시그널이 명확한 대표 제품 1개를 골라 인사이트 작성
+- 동일 카테고리 항목 중복 금지, 카테고리당 정확히 1개
+- 최대 8개 카테고리까지, 언급량 기준 내림차순 정렬
+- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄 (실제 사용자 표현 인용)", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "해당 카테고리 마케터가 즉시 실행할 액션 한 줄 (PMAX/Affiliate/FAQ/PDP/CRITEO 등 채널 명시)" }
 
 JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...], "key_takeaway": [...] }`;
 
