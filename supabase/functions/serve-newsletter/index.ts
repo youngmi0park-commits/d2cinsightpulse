@@ -190,6 +190,12 @@ function buildNewsletterHTML(d: {
   const FONT = "'LGEI Text','LG SmHaT','Inter','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "'LGEI Text','LG SmHaT','Inter','Segoe UI',Arial,sans-serif";
 
+  // Bilingual helper — renders both KO and EN spans; CSS toggles visibility
+  const bi = (ko: string, en?: string) => {
+    const enText = en && en.trim() ? en : ko;
+    return `<span class="lg-ko">${ko}</span><span class="lg-en" style="display:none;">${enText}</span>`;
+  };
+
   /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const raw = insight?.key_takeaway;
