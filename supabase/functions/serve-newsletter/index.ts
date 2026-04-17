@@ -527,12 +527,14 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
           const blc = sig.type === "rising" ? "#16a34a" : sig.type === "falling" ? "#dc2626" : sig.type === "new" ? "#7c3aed" : "#4A4A4A";
           const vc = sig.sentiment === "positive" ? "#16a34a" : sig.sentiment === "negative" ? "#dc2626" : "#1a1a1a";
           const dtc = sig.delta > 0 ? "#16a34a" : sig.delta < 0 ? "#dc2626" : "#4A4A4A";
+          // Truncate long keywords for height consistency (3-line max ≈ 60 chars)
+          const kw = sig.keyword.length > 60 ? sig.keyword.slice(0, 57) + "..." : sig.keyword;
           return `<td width="33%" style="padding:0 3px;vertical-align:top;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${bc};background:${bg};">
-              <tr><td style="padding:10px;font-family:${INTER};">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" height="120" style="border:1px solid ${bc};background:${bg};height:120px;">
+              <tr><td valign="top" style="padding:10px;font-family:${INTER};height:120px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-                  <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;">"${sig.keyword}"</td>
-                  <td width="48" style="text-align:right;"><span style="font-size:8px;font-weight:700;padding:2px 4px;background:${blb};color:${blc};">${bl}</span></td>
+                  <td style="font-size:12px;font-weight:800;color:#1a1a1a;line-height:16px;height:48px;vertical-align:top;">"${kw}"</td>
+                  <td width="48" style="text-align:right;vertical-align:top;"><span style="font-size:8px;font-weight:700;padding:2px 4px;background:${blb};color:${blc};white-space:nowrap;">${bl}</span></td>
                 </tr></table>
                 <div style="font-size:18px;font-weight:800;color:${vc};margin-top:5px;">${sig.count}<span style="font-size:10px;color:#4A4A4A;font-weight:400;"> 건</span></div>
                 <div style="font-size:10px;font-weight:600;color:${dtc};margin-top:2px;">${sig.delta > 0 ? "▲ +" + sig.delta + "%" : sig.delta < 0 ? "▼ " + sig.delta + "%" : "— 변동 미미"} vs 전주</div>
