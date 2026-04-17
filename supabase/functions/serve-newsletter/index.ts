@@ -176,6 +176,8 @@ function buildNewsletterHTML(d: {
   topProduct: string; topProductCount: number;
   opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country: string; channel: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
+  regionalSignals: { country: string; flag: string; total: number; posPct: number; negPct: number; topCategory: string; signal: string }[];
+  actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
   // LG.com Design System tokens (LGEI Text fallback chain → Inter → Noto Sans KR → system)
@@ -186,7 +188,6 @@ function buildNewsletterHTML(d: {
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const raw = insight?.key_takeaway;
     if (!raw || raw.length === 0) return "";
-    // 카테고리별 첫 항목만 유지 (AI가 중복 생성해도 1 per category 보장)
     const seen = new Set<string>();
     const items = raw.filter(it => {
       const key = (it.category || "기타").trim().toLowerCase();
@@ -195,30 +196,30 @@ function buildNewsletterHTML(d: {
       return true;
     }).slice(0, 8);
     if (items.length === 0) return "";
-    const rows = items.map(item => `
-      <tr><td style="padding:12px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+    const rows = items.map((item, idx) => `
+      <tr><td style="padding:14px 18px;${idx < items.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td style="padding-bottom:4px;">
-            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#F0ECE4;padding:1px 8px;font-size:10px;font-weight:700;color:#888;mso-line-height-rule:exactly;line-height:16px;">${item.category}</td><td style="padding-left:6px;font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</td></tr></table><![endif]-->
-            <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:4px;padding:1px 8px;font-size:10px;font-weight:700;color:#888;margin-right:6px;">${item.category}</span><span style="font-weight:700;font-size:12px;color:#1a1a1a;">${item.product}</span><!--<![endif]-->
+          <td style="padding-bottom:6px;">
+            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background:#F0ECE4;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;mso-line-height-rule:exactly;line-height:14px;">${item.category}</td><td style="padding-left:8px;font-weight:700;font-size:12.5px;color:#1B1A1E;">${item.product}</td></tr></table><![endif]-->
+            <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:50px;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;margin-right:8px;letter-spacing:0.2px;">${item.category}</span><span style="font-weight:700;font-size:12.5px;color:#1B1A1E;letter-spacing:-0.1px;">${item.product}</span><!--<![endif]-->
           </td>
         </tr></table>
-        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#006600;padding-bottom:3px;font-family:${FONT};">👍 ${item.positive_msg}</td></tr></table>` : ""}
-        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#A50034;padding-bottom:3px;font-family:${FONT};">👎 ${item.negative_msg}</td></tr></table>` : ""}
+        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${item.positive_msg}</td></tr></table>` : ""}
+        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${item.negative_msg}</td></tr></table>` : ""}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">
-          <tr><td style="background:#FFFBEB;padding:6px 10px;font-family:${FONT};">
+          <tr><td style="background:#FFFBEB;padding:8px 12px;font-family:${FONT};border-radius:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:2px;">🎯 마케팅 액션</td></tr>
-              <tr><td style="font-size:11px;color:#333;line-height:18px;">${item.marketer_action}</td></tr>
+              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 마케팅 액션</td></tr>
+              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${item.marketer_action}</td></tr>
             </table>
           </td></tr>
         </table>
       </td></tr>`).join("");
 
-    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-      <tr><td style="border-left:4px solid ${borderColor};padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">${icon} ${label}</td></tr>
+    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:18px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+      <tr><td style="padding-left:10px;border-left:4px solid ${borderColor};font-size:12px;font-weight:700;color:#1B1A1E;padding-bottom:10px;font-family:${INTER};letter-spacing:-0.1px;">${icon} ${label}</td></tr>
       <tr><td>
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;mso-table-lspace:0pt;mso-table-rspace:0pt;">${rows}</table>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;mso-table-lspace:0pt;mso-table-rspace:0pt;">${rows}</table>
       </td></tr>
     </table>`;
   }
@@ -228,103 +229,104 @@ function buildNewsletterHTML(d: {
     if (!insight) return `
     <tr><td style="padding:24px 32px 0;font-family:${FONT};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};">${icon} ${label}</td></tr>
-        <tr><td style="text-align:center;padding:24px;color:#999;font-size:12px;border:1px solid #E0DBD3;background:#EFECE5;">데이터 없음</td></tr>
+        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};letter-spacing:-0.2px;">${icon} ${label}</td></tr>
+        <tr><td style="text-align:center;padding:28px;color:#8B8A8E;font-size:12px;border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;">데이터 없음</td></tr>
       </table>
     </td></tr>`;
 
-    // 서버 측 길이 강제 (AI가 길게 응답해도 잘라냄)
     const trim = (s: string | undefined, n: number) => {
       if (!s) return "";
       const t = String(s).replace(/\s+/g, " ").trim();
       return t.length > n ? t.slice(0, n - 1) + "…" : t;
     };
 
-    // Top products — 컴팩트 카드
-    const productsHTML = (insight.top_products || []).slice(0, 5).map(p => `
-      <tr><td style="padding:10px 14px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+    // Top products — 카드 (rounded)
+    const productsList = (insight.top_products || []).slice(0, 5);
+    const productsHTML = productsList.map((p, idx) => `
+      <tr><td style="padding:12px 16px;${idx < productsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-          <td width="28" valign="top" style="padding-top:1px;">
-            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="width:22px;height:22px;background:#EA1917;color:#ffffff;font-size:11px;font-weight:800;text-align:center;mso-line-height-rule:exactly;line-height:22px;">${p.rank}</td></tr></table><![endif]-->
-            <!--[if !mso]><!--><div style="width:22px;height:22px;background:#EA1917;border-radius:50%;color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:22px;">${p.rank}</div><!--<![endif]-->
+          <td width="30" valign="top" style="padding-top:1px;">
+            <!--[if mso]><table cellpadding="0" cellspacing="0" border="0"><tr><td style="width:24px;height:24px;background:#EA1917;color:#ffffff;font-size:11px;font-weight:800;text-align:center;mso-line-height-rule:exactly;line-height:24px;">${p.rank}</td></tr></table><![endif]-->
+            <!--[if !mso]><!--><div style="width:24px;height:24px;background:#EA1917;border-radius:50%;color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:24px;">${p.rank}</div><!--<![endif]-->
           </td>
-          <td style="padding-left:10px;">
+          <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-weight:700;font-size:12.5px;color:#1a1a1a;padding-bottom:1px;font-family:${FONT};">${p.name} <span style="font-weight:500;font-size:10px;color:#4A4A4A;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")}건</span></td></tr>
-              <tr><td style="padding-top:5px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDF4;border-left:3px solid #16a34a;">
-                  <tr><td style="padding:6px 10px;font-size:11px;color:#1a1a1a;line-height:17px;font-family:${FONT};"><span style="color:#006600;font-weight:700;">👍</span> ${trim(p.pos_summary, 70)}</td></tr>
+              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")}건</span></td></tr>
+              <tr><td style="padding-top:6px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border-left:3px solid #0D9488;border-radius:8px;overflow:hidden;">
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${trim(p.pos_summary, 70)}</td></tr>
                 </table>
               </td></tr>
               ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
-              <tr><td style="padding-top:4px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFF5F5;border-left:3px solid #A50034;">
-                  <tr><td style="padding:6px 10px;font-size:11px;color:#1a1a1a;line-height:17px;font-family:${FONT};"><span style="color:#A50034;font-weight:700;">👎</span> ${trim(p.neg_summary, 60)}</td></tr>
+              <tr><td style="padding-top:5px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F2;border-left:3px solid #EA1917;border-radius:8px;overflow:hidden;">
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${trim(p.neg_summary, 60)}</td></tr>
                 </table>
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
-              <tr><td style="padding-top:5px;font-family:${FONT};">
-                ${p.praise_points.slice(0, 3).map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 3px 1px 0;"><tr><td style="background:#EFECE5;border:1px solid #E0DBD3;padding:1px 7px;font-size:10px;color:#3A3A3A;">✅ ${trim(pp, 12)}</td></tr></table>`).join("")}
+              <tr><td style="padding-top:6px;font-family:${FONT};">
+                ${p.praise_points.slice(0, 3).map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 4px 1px 0;"><tr><td style="background:#F0ECE4;border:1px solid #E5DFD3;padding:2px 8px;font-size:10px;color:#1B1A1E;border-radius:50px;font-weight:500;">✅ ${trim(pp, 12)}</td></tr></table>`).join("")}
               </td></tr>` : ""}
             </table>
           </td>
         </tr></table>
       </td></tr>`).join("");
 
-    // Top topics — 3개 / 한 줄 정돈
-    const topicsHTML = (insight.top_topics || []).slice(0, 3).map(t => `
-      <tr><td style="padding:8px 14px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
+    // Top topics — rounded
+    const topicsList = (insight.top_topics || []).slice(0, 3);
+    const topicsHTML = topicsList.map((t, idx) => `
+      <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1a1a1a;">${t.rank}. ${trim(t.topic, 18)}</td>
-            <td align="right" style="font-size:10px;color:#4A4A4A;white-space:nowrap;"><span style="color:#006600;font-weight:700;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${trim(t.topic, 18)}</td>
+            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:3px;font-size:10.5px;color:#3A3A3A;font-style:italic;background:#EFECE5;padding:5px 8px;line-height:15px;">"${trim(t.representative_comment, 55)}"</td></tr>
+          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${trim(t.representative_comment, 55)}"</div></td></tr>
         </table>
       </td></tr>`).join("");
 
-    // Urgent issues — 한 줄로 통합
-    const issuesHTML = (insight.urgent_issues || []).slice(0, 3).map(iss => `
-      <tr><td style="padding:8px 14px;border-bottom:1px solid #FECACA;font-family:${FONT};">
+    // Urgent issues
+    const issuesList = (insight.urgent_issues || []).slice(0, 3);
+    const issuesHTML = issuesList.map((iss, idx) => `
+      <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#A50034;padding-bottom:2px;">⚠️ ${iss.rank}. ${trim(iss.issue, 20)} <span style="color:#777;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:10.5px;color:#333;line-height:15px;">${trim(iss.pattern, 35)} · <span style="color:#777;">${trim(iss.cause, 35)}</span></td></tr>
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${trim(iss.issue, 20)} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${trim(iss.pattern, 35)} · <span style="color:#6B6A6E;">${trim(iss.cause, 35)}</span></td></tr>
         </table>
       </td></tr>`).join("");
 
-    // Recurring praise — 컴팩트 한 줄씩
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      return `<tr><td style="padding:2px 0;font-size:11px;color:#006600;line-height:16px;font-family:${FONT};">✅ ${item.product ? `<strong>${item.product}</strong> — ` : ""}${trim(item.text, 30)}</td></tr>`;
+      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${trim(item.text, 30)}</td></tr>`;
     }).join("");
 
     return `
     <tr><td style="padding:20px 32px 0;font-family:${FONT};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:10px;font-family:${INTER};">${icon} ${label}</td></tr>
+        <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:12px;font-family:${INTER};letter-spacing:-0.2px;">${icon} ${label}</td></tr>
       </table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#333;padding-bottom:5px;font-family:${FONT};">📦 가장 많이 언급된 제품</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">📦 가장 많이 언급된 제품</td></tr>
       </table>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;margin-bottom:12px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${productsHTML}</table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${productsHTML}</table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#333;padding-bottom:5px;font-family:${FONT};">🔥 주요 키워드 TOP 3</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🔥 주요 키워드 TOP 3</td></tr>
       </table>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;margin-bottom:12px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${topicsHTML}</table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${topicsHTML}</table>
 
       ${issuesHTML ? `
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#A50034;padding-bottom:5px;font-family:${FONT};">🚨 개선 시급 이슈</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#EA1917;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🚨 개선 시급 이슈</td></tr>
       </table>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #FECACA;background:#FFFBFB;margin-bottom:12px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${issuesHTML}</table>` : ""}
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #FECACA;background:#FFFBFB;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${issuesHTML}</table>` : ""}
 
       ${praiseRows ? `
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDF4;border:1px solid #BBF7D0;margin-bottom:8px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-        <tr><td style="padding:14px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:20px;overflow:hidden;margin-bottom:8px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+        <tr><td style="padding:14px 18px;">
           <table cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr><td style="font-size:11px;font-weight:700;color:#006600;padding-bottom:6px;font-family:${FONT};">🏆 반복 칭찬 포인트</td></tr>
+            <tr><td style="font-size:11px;font-weight:700;color:#0D9488;padding-bottom:8px;font-family:${FONT};letter-spacing:0.2px;">🏆 반복 칭찬 포인트</td></tr>
             ${praiseRows}
           </table>
         </td></tr>
@@ -560,14 +562,81 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
-    <tr><td style="border-left:4px solid #0066CC;padding-left:10px;font-size:12px;font-weight:700;color:#333;padding-bottom:8px;font-family:${FONT};">🌐 전채널 종합</td></tr>
+    <tr><td style="padding-left:10px;border-left:4px solid #0D9488;font-size:12px;font-weight:700;color:#1B1A1E;padding-bottom:10px;font-family:${INTER};letter-spacing:-0.1px;">🌐 전채널 종합</td></tr>
     <tr><td>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E0DBD3;background:#EFECE5;">
-        <tr><td style="padding:14px 16px;font-size:12px;color:#1a1a1a;line-height:20px;font-family:${FONT};">${allChannel.key_takeaway}</td></tr>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;overflow:hidden;">
+        <tr><td style="padding:16px 18px;font-size:12px;color:#1B1A1E;line-height:20px;font-family:${FONT};font-weight:400;">${allChannel.key_takeaway}</td></tr>
       </table>
     </td></tr>
   </table>` : ""}
 </td></tr>
+
+${d.regionalSignals.length > 0 ? `<!-- Regional Marketing Signals (per-country snapshot for local marketers) -->
+<tr><td style="padding:24px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🌍 지역별 마케팅 시그널</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">현지 마케터 액션 가이드</td>
+      </tr></table>
+    </td></tr>
+    ${d.regionalSignals.slice(0, 6).map((rs, idx, arr) => {
+      const sentColor = rs.posPct >= 70 ? "#0D9488" : rs.negPct >= 30 ? "#EA1917" : "#D97706";
+      const sentLabel = rs.posPct >= 70 ? "긍정 우세" : rs.negPct >= 30 ? "부정 주의" : "혼조";
+      const sentBg = sentColor === "#0D9488" ? "#F0FDFA" : sentColor === "#EA1917" ? "#FEF2F2" : "#FFFBEB";
+      return `<tr><td style="padding:0;background:#FFFFFF;${idx < arr.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td width="80" style="padding:14px 12px 14px 18px;vertical-align:middle;font-family:${INTER};">
+            <div style="font-size:18px;line-height:22px;">${rs.flag}</div>
+            <div style="font-size:11px;font-weight:700;color:#1B1A1E;margin-top:2px;letter-spacing:-0.1px;">${rs.country}</div>
+          </td>
+          <td style="padding:14px 8px;font-family:${FONT};vertical-align:middle;">
+            <div style="margin-bottom:4px;">
+              <span style="display:inline-block;background:${sentBg};color:${sentColor};padding:2px 9px;font-size:9px;font-weight:700;border-radius:50px;letter-spacing:0.3px;margin-right:5px;">${sentLabel}</span>
+              <span style="display:inline-block;background:#F0ECE4;color:#1B1A1E;padding:2px 9px;font-size:9px;font-weight:600;border-radius:50px;">${rs.topCategory}</span>
+            </div>
+            <div style="font-size:11.5px;color:#1B1A1E;line-height:16px;font-weight:500;letter-spacing:-0.1px;">${rs.signal}</div>
+          </td>
+          <td width="86" style="padding:14px 18px 14px 8px;text-align:right;vertical-align:middle;font-family:${INTER};">
+            <div style="font-size:16px;font-weight:700;color:#1B1A1E;letter-spacing:-0.4px;">${rs.total.toLocaleString()}</div>
+            <div style="font-size:9px;color:#8B8A8E;font-weight:400;">건 수집</div>
+            <div style="font-size:10px;font-weight:600;color:${sentColor};margin-top:2px;">긍 ${rs.posPct}% · 부 ${rs.negPct}%</div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+    }).join("")}
+  </table>
+</td></tr>` : ""}
+
+${d.actionChecklist.length > 0 ? `<!-- Weekly Action Checklist -->
+<tr><td style="padding:24px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">📋 이번 주 추천 액션 체크리스트</td>
+        <td style="text-align:right;font-size:10px;color:#8B8A8E;font-family:${FONT};font-weight:400;">즉시 실행 가능</td>
+      </tr></table>
+    </td></tr>
+    ${d.actionChecklist.slice(0, 6).map((ac, idx, arr) => {
+      const pColor = ac.priority === "HIGH" ? "#EA1917" : ac.priority === "MID" ? "#D97706" : "#0D9488";
+      const pBg = ac.priority === "HIGH" ? "#FEF2F2" : ac.priority === "MID" ? "#FFFBEB" : "#F0FDFA";
+      return `<tr><td style="padding:0;background:#FFFFFF;${idx < arr.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+          <td width="6" style="background:${pColor};font-size:0;line-height:0;">&nbsp;</td>
+          <td style="padding:13px 16px 13px 14px;font-family:${FONT};">
+            <div style="margin-bottom:6px;">
+              <span style="display:inline-block;background:${pBg};color:${pColor};padding:2px 10px;font-size:9px;font-weight:700;border-radius:50px;letter-spacing:0.3px;margin-right:5px;">${ac.priority}</span>
+              <span style="display:inline-block;background:#1B1A1E;color:#FFFFFF;padding:2px 10px;font-size:9px;font-weight:600;border-radius:50px;margin-right:5px;">${ac.channel}</span>
+              <span style="display:inline-block;background:#F0ECE4;color:#1B1A1E;padding:2px 9px;font-size:9px;font-weight:500;border-radius:50px;">${ac.owner}</span>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B1A1E;line-height:17px;letter-spacing:-0.1px;">${ac.action}</div>
+            <div style="font-size:10.5px;color:#6B6A6E;line-height:15px;margin-top:3px;font-weight:400;">근거 — ${ac.basis}</div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+    }).join("")}
+  </table>
+</td></tr>` : ""}
 
 <!-- Divider -->
 <tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
@@ -864,6 +933,92 @@ Deno.serve(async (req) => {
         };
       });
 
+    // ── Regional Marketing Signals — country-level snapshot for local marketers ──
+    const COUNTRY_META: Record<string, { name: string; flag: string }> = {
+      lge_com_us: { name: "US", flag: "🇺🇸" }, lge_com_uk: { name: "UK", flag: "🇬🇧" },
+      lge_com_de: { name: "DE", flag: "🇩🇪" }, lge_com_au: { name: "AU", flag: "🇦🇺" },
+      lge_com_in: { name: "IN", flag: "🇮🇳" }, lge_com_tw: { name: "TW", flag: "🇹🇼" },
+      lge_com_jp: { name: "JP", flag: "🇯🇵" }, lge_com_th: { name: "TH", flag: "🇹🇭" },
+      lge_com_br: { name: "BR", flag: "🇧🇷" }, lge_com_es: { name: "ES", flag: "🇪🇸" },
+    };
+    const countryAgg: Record<string, { total: number; pos: number; neg: number; cats: Record<string, number> }> = {};
+    for (const r of (weeklyAgg ?? []) as any[]) {
+      if (!r.source?.startsWith("lge_com_")) continue;
+      const meta = COUNTRY_META[r.source];
+      if (!meta) continue;
+      const key = meta.name;
+      if (!countryAgg[key]) countryAgg[key] = { total: 0, pos: 0, neg: 0, cats: {} };
+      const c = countryAgg[key];
+      c.total += 1;
+      if (r.sentiment === "positive") c.pos += 1;
+      else if (r.sentiment === "negative") c.neg += 1;
+      const cat = r.products?.category || "General";
+      c.cats[cat] = (c.cats[cat] ?? 0) + 1;
+    }
+    const regionalSignals = Object.entries(countryAgg)
+      .map(([country, s]) => {
+        const flag = Object.values(COUNTRY_META).find(m => m.name === country)?.flag || "🌐";
+        const posPct = s.total > 0 ? Math.round((s.pos / s.total) * 100) : 0;
+        const negPct = s.total > 0 ? Math.round((s.neg / s.total) * 100) : 0;
+        const topCategory = Object.entries(s.cats).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
+        let signal = `${topCategory} 카테고리 ${s.total}건 수집 — 추가 모니터링`;
+        if (posPct >= 75) signal = `${topCategory} 긍정 시그널 강함 — Affiliate/PMAX 소재 확대 권고`;
+        else if (negPct >= 35) signal = `${topCategory} 부정 누적 — 현지 FAQ/PDP 보강 우선`;
+        else if (posPct >= 55) signal = `${topCategory} 호의적 흐름 — Criteo 리타겟팅 강화 검토`;
+        return { country, flag, total: s.total, posPct, negPct, topCategory, signal };
+      })
+      .filter(r => r.total >= 5)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    // ── Action Checklist — derived from opportunities + trending + regional ──
+    const actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[] = [];
+    for (const op of opportunities.slice(0, 4)) {
+      if (op.tag === "fix") {
+        actionChecklist.push({
+          priority: "HIGH",
+          channel: "FAQ / PDP",
+          action: `${op.title} — FAQ 보강 및 CRITEO 캠페인 일시 중단`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "현지 마케팅팀",
+        });
+      } else if (op.tag === "amplify") {
+        actionChecklist.push({
+          priority: "MID",
+          channel: "PMAX / Affiliate",
+          action: `${op.title} — 긍정 리뷰 헤드라인을 PMAX 소재로 즉시 적용`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "글로벌 디지털팀",
+        });
+      } else {
+        actionChecklist.push({
+          priority: "LOW",
+          channel: "모니터링",
+          action: `${op.title} — 차주 데이터 누적 후 재평가`,
+          basis: `${op.country} ${op.channel} · ${op.desc}`,
+          owner: "RTA 운영팀",
+        });
+      }
+    }
+    if (negKws[0]?.keyword) {
+      actionChecklist.push({
+        priority: "HIGH",
+        channel: "CRM / CS",
+        action: `"${negKws[0].keyword}" 부정 키워드 대응 — CS 응대 스크립트 업데이트`,
+        basis: `이번 주 부정 1위 · ${negKws[0].count}건 언급`,
+        owner: "CS 운영팀",
+      });
+    }
+    if (posKws[0]?.keyword) {
+      actionChecklist.push({
+        priority: "MID",
+        channel: "SEO / 콘텐츠",
+        action: `"${posKws[0].keyword}" 키워드 — 블로그·PDP 본문에 반영하여 SEO 강화`,
+        basis: `이번 주 긍정 1위 · ${posKws[0].count}건 언급`,
+        owner: "콘텐츠팀",
+      });
+    }
+
     const newsletterData = {
       dateRange, generatedAt,
       weeklyReviews: weeklyRes.count || 0, wow,
@@ -878,6 +1033,8 @@ Deno.serve(async (req) => {
       topProductCount: topProd?.mention_count || 0,
       opportunities,
       trendingSignals,
+      regionalSignals,
+      actionChecklist: actionChecklist.slice(0, 6),
     };
 
     // ── Generate AI insights ──
