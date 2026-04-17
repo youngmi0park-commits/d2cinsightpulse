@@ -379,17 +379,14 @@ a {text-decoration:none;}
 
 <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;"><tr><td align="center"><![endif]-->
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F0ECE4;">
-<tr><td align="center" style="padding:24px 0;">
+<tr><td align="center" style="padding:32px 16px;">
 
-<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" align="center" style="width:680px;background-color:#F0ECE4;"><tr><td><![endif]-->
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="email-container" style="max-width:680px;background-color:#F0ECE4;overflow:hidden;">
-
-<!-- ===== TOP STATUS BOX (LG.com clean white card on warm beige) ===== -->
-<tr><td style="padding:0 0 16px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="720" align="center" style="width:720px;"><tr><td><![endif]-->
+<!-- ===== MASTER WHITE CONTAINER (wraps entire newsletter) ===== -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="720" class="email-container" style="max-width:720px;width:100%;background-color:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;box-shadow:0 2px 10px 0 rgba(27,26,30,0.06);">
 
 <!-- Header -->
-<tr><td style="padding:28px 32px 20px;border-bottom:1px solid #F0ECE4;">
+<tr><td style="padding:32px 36px 20px;border-bottom:1px solid #F0ECE4;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
