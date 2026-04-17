@@ -184,7 +184,7 @@ function buildNewsletterHTML(d: {
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
   regionalSignals: { country: string; flag: string; total: number; posPct: number; negPct: number; topCategory: string; signal: string }[];
   actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[];
-}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
+}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null, community: ChannelInsight | null = null): string {
 
   // LG.com Design System tokens (LGEI Text fallback chain → Inter → Noto Sans KR → system)
   const FONT = "'LGEI Text','LG SmHaT','Inter','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
