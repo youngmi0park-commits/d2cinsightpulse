@@ -242,7 +242,7 @@ function buildNewsletterHTML(d: {
     <tr><td style="padding:24px 32px 0;font-family:${FONT};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};letter-spacing:-0.2px;">${icon} ${label}</td></tr>
-        <tr><td style="text-align:center;padding:28px;color:#8B8A8E;font-size:12px;border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;">데이터 없음</td></tr>
+        <tr><td style="text-align:center;padding:28px;color:#8B8A8E;font-size:12px;border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;">${bi("데이터 없음", "No data available")}</td></tr>
       </table>
     </td></tr>`;
 
@@ -263,21 +263,24 @@ function buildNewsletterHTML(d: {
           </td>
           <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")}건</span></td></tr>
+              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span></td></tr>
               <tr><td style="padding-top:6px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border-left:3px solid #0D9488;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${trim(p.pos_summary, 70)}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(trim(p.pos_summary, 70), trim((p as any).pos_summary_en, 110))}</td></tr>
                 </table>
               </td></tr>
               ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
               <tr><td style="padding-top:5px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F2;border-left:3px solid #EA1917;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${trim(p.neg_summary, 60)}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(trim(p.neg_summary, 60), trim((p as any).neg_summary_en, 100))}</td></tr>
                 </table>
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
               <tr><td style="padding-top:6px;font-family:${FONT};">
-                ${p.praise_points.slice(0, 3).map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 4px 1px 0;"><tr><td style="background:#F0ECE4;border:1px solid #E5DFD3;padding:2px 8px;font-size:10px;color:#1B1A1E;border-radius:50px;font-weight:500;">✅ ${trim(pp, 12)}</td></tr></table>`).join("")}
+                ${p.praise_points.slice(0, 3).map((pp, i) => {
+                  const enPp = ((p as any).praise_points_en || [])[i];
+                  return `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 4px 1px 0;"><tr><td style="background:#F0ECE4;border:1px solid #E5DFD3;padding:2px 8px;font-size:10px;color:#1B1A1E;border-radius:50px;font-weight:500;">✅ ${bi(trim(pp, 12), trim(enPp, 18))}</td></tr></table>`;
+                }).join("")}
               </td></tr>` : ""}
             </table>
           </td>
@@ -290,10 +293,10 @@ function buildNewsletterHTML(d: {
       <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${trim(t.topic, 18)}</td>
-            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${bi(trim(t.topic, 18), trim((t as any).topic_en, 28))}</td>
+            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${trim(t.representative_comment, 55)}"</div></td></tr>
+          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${bi(trim(t.representative_comment, 55), trim((t as any).representative_comment_en, 90))}"</div></td></tr>
         </table>
       </td></tr>`).join("");
 
@@ -302,14 +305,14 @@ function buildNewsletterHTML(d: {
     const issuesHTML = issuesList.map((iss, idx) => `
       <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${trim(iss.issue, 20)} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${trim(iss.pattern, 35)} · <span style="color:#6B6A6E;">${trim(iss.cause, 35)}</span></td></tr>
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${bi(trim(iss.issue, 20), trim((iss as any).issue_en, 32))} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${bi(trim(iss.pattern, 35), trim((iss as any).pattern_en, 55))} · <span style="color:#6B6A6E;">${bi(trim(iss.cause, 35), trim((iss as any).cause_en, 55))}</span></td></tr>
         </table>
       </td></tr>`).join("");
 
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${trim(item.text, 30)}</td></tr>`;
+      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${bi(trim(item.text, 30), trim(item.text_en, 48))}</td></tr>`;
     }).join("");
 
     return `
@@ -319,18 +322,18 @@ function buildNewsletterHTML(d: {
       </table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">📦 가장 많이 언급된 제품</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">📦 ${bi("가장 많이 언급된 제품", "Most Mentioned Products")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${productsHTML}</table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🔥 주요 키워드 TOP 3</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🔥 ${bi("주요 키워드 TOP 3", "Top 3 Topics")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${topicsHTML}</table>
 
       ${issuesHTML ? `
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#EA1917;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🚨 개선 시급 이슈</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#EA1917;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🚨 ${bi("개선 시급 이슈", "Urgent Issues to Fix")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #FECACA;background:#FFFBFB;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${issuesHTML}</table>` : ""}
 
@@ -338,7 +341,7 @@ function buildNewsletterHTML(d: {
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:20px;overflow:hidden;margin-bottom:8px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
         <tr><td style="padding:14px 18px;">
           <table cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr><td style="font-size:11px;font-weight:700;color:#0D9488;padding-bottom:8px;font-family:${FONT};letter-spacing:0.2px;">🏆 반복 칭찬 포인트</td></tr>
+            <tr><td style="font-size:11px;font-weight:700;color:#0D9488;padding-bottom:8px;font-family:${FONT};letter-spacing:0.2px;">🏆 ${bi("반복 칭찬 포인트", "Recurring Praise")}</td></tr>
             ${praiseRows}
           </table>
         </td></tr>
