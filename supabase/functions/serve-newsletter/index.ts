@@ -514,10 +514,10 @@ ${d.opportunities.length > 0 ? `<!-- Marketing Opportunity Matrix -->
 </td></tr>` : ""}
 
 ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
-<tr><td style="padding:16px 32px 0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#EFECE5;border:1px solid #E0DBD3;border-radius:10px;overflow:hidden;">
-    <tr><td style="padding:10px 14px;border-bottom:1px solid #E0DBD3;background:#EFECE5;">
-      <div style="font-size:12px;font-weight:800;color:#333;font-family:${INTER};">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
+<tr><td style="padding:20px 32px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAF7F0;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
+    <tr><td style="padding:14px 18px;border-bottom:1px solid #E5DFD3;">
+      <div style="font-size:13px;font-weight:700;color:#1B1A1E;font-family:${INTER};letter-spacing:-0.2px;">🔥 트렌딩 신호 — 이번 주 주목 키워드</div>
     </td></tr>
     <tr><td style="padding:12px 14px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
