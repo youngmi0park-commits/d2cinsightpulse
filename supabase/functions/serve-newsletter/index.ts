@@ -21,7 +21,7 @@ interface AllChannelSummary {
 }
 
 /* ── AI insight generation per channel ── */
-async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit"): Promise<ChannelInsight | null> {
+async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit" | "community"): Promise<ChannelInsight | null> {
   const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
   let query = sb
     .from("reviews")
@@ -31,7 +31,11 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
     .limit(800);
 
   if (channel === "lgcom") query = query.like("source", "lge_com%");
-  else query = query.eq("source", "reddit");
+  else if (channel === "reddit") query = query.eq("source", "reddit");
+  else {
+    // community: Amazon, YouTube, Trustpilot, BestBuy, Shopee, Lazada, etc. (exclude LG.com and Reddit)
+    query = query.not("source", "like", "lge_com%").neq("source", "reddit");
+  }
 
   const { data: reviews, error } = await query;
   if (error || !reviews?.length) return null;
@@ -63,9 +67,9 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
     `${p.name} (${p.category}): 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`
   ).join("\n\n");
 
-  const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : "Reddit 및 커뮤니티";
+  const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
-  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in Korean. Be specific, actionable, and use real product names from the data.`;
+  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in BOTH Korean and English. Be specific, actionable, and use real product names from the data.`;
 
   const userPrompt = `다음은 ${channelLabel}의 최근 수집된 리뷰 데이터입니다:
 
@@ -74,33 +78,35 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
 제품별 현황:
 ${productSummary}
 
-위 데이터를 분석하여 아래 5가지 섹션을 **한국어로** 작성해주세요:
+위 데이터를 분석하여 아래 5가지 섹션을 **한국어(_ko)와 영어(_en) 둘 다** 작성해주세요. 한국어가 메인, 영어는 짧고 자연스러운 비즈니스 톤으로:
 
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
 - rank, name, category, mention_count
-- pos_summary: **반드시 한 문장 60자 이내**로 핵심 강점만 (예: "선명한 화질·세련된 디자인 호평, 특히 게이밍 시청 만족도↑")
-- neg_summary: **한 문장 50자 이내** 또는 "특이 불만 없음"
-- praise_points: 정확히 3개, 각 8자 이내 짧은 키워드 (예: ["선명한 화질", "슬림 디자인", "가성비 우수"])
+- pos_summary (한 문장 60자 이내) + pos_summary_en (한 문장 90자 이내, 영어)
+- neg_summary (50자 이내) + neg_summary_en (80자 이내) — 또는 빈문자열
+- praise_points: 정확히 3개, 각 8자 이내 짧은 한국어 키워드
+- praise_points_en: 정확히 3개, 각 14자 이내 짧은 영어 키워드
 
 ## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (한국어 12자 이내), mention_pct, positive_pct, negative_pct
-- representative_comment: **한 문장 45자 이내** 핵심만
+- rank, topic (한국어 12자 이내), topic_en (English, ≤22 chars), mention_pct, positive_pct, negative_pct
+- representative_comment (한 문장 45자 이내) + representative_comment_en (≤80 chars)
 - related_products
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue (15자 이내), mention_pct, pattern (25자 이내), cause (25자 이내), related_products
+- rank, issue + issue_en (각 15/25자 이내), mention_pct
+- pattern + pattern_en (각 25/45자 이내)
+- cause + cause_en (각 25/45자 이내)
+- related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목 { "text": "20자 이내 짧은 칭찬", "product": "제품명", "category": "카테고리" }
+- 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
-- **카테고리별로 1개씩** 선정 (TV, Washer, Refrigerator, Dryer, Dishwasher, Monitor, Audio, Vacuum, Air Conditioner, Air Purifier 등 실제 데이터에 존재하는 카테고리만)
-- 각 카테고리마다 가장 언급량이 많고 시그널이 명확한 대표 제품 1개를 골라 인사이트 작성
-- 동일 카테고리 항목 중복 금지, 카테고리당 정확히 1개
-- 최대 8개 카테고리까지, 언급량 기준 내림차순 정렬
-- 형태: { "product": "제품명", "category": "TV", "positive_msg": "긍정 핵심 한 줄 (실제 사용자 표현 인용)", "negative_msg": "부정 핵심 한 줄 (없으면 빈 문자열)", "marketer_action": "해당 카테고리 마케터가 즉시 실행할 액션 한 줄 (PMAX/Affiliate/FAQ/PDP/CRITEO 등 채널 명시)" }
+- **카테고리별로 1개씩** (실제 데이터에 존재하는 카테고리만), 동일 카테고리 중복 금지
+- 최대 8개까지, 언급량 기준 내림차순
+- 형태: { "product", "category", "positive_msg", "positive_msg_en", "negative_msg", "negative_msg_en", "marketer_action", "marketer_action_en" }
 
 JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_issues": [...], "recurring_praise": [...], "key_takeaway": [...] }`;
 
@@ -178,11 +184,17 @@ function buildNewsletterHTML(d: {
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
   regionalSignals: { country: string; flag: string; total: number; posPct: number; negPct: number; topCategory: string; signal: string }[];
   actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[];
-}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
+}, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null, community: ChannelInsight | null = null): string {
 
   // LG.com Design System tokens (LGEI Text fallback chain → Inter → Noto Sans KR → system)
   const FONT = "'LGEI Text','LG SmHaT','Inter','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "'LGEI Text','LG SmHaT','Inter','Segoe UI',Arial,sans-serif";
+
+  // Bilingual helper — renders both KO and EN spans; CSS toggles visibility
+  const bi = (ko: string, en?: string) => {
+    const enText = en && en.trim() ? en : ko;
+    return `<span class="lg-ko">${ko}</span><span class="lg-en" style="display:none;">${enText}</span>`;
+  };
 
   /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
@@ -204,13 +216,13 @@ function buildNewsletterHTML(d: {
             <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:50px;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;margin-right:8px;letter-spacing:0.2px;">${item.category}</span><span style="font-weight:700;font-size:12.5px;color:#1B1A1E;letter-spacing:-0.1px;">${item.product}</span><!--<![endif]-->
           </td>
         </tr></table>
-        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${item.positive_msg}</td></tr></table>` : ""}
-        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${item.negative_msg}</td></tr></table>` : ""}
+        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${bi(item.positive_msg, (item as any).positive_msg_en)}</td></tr></table>` : ""}
+        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${bi(item.negative_msg, (item as any).negative_msg_en)}</td></tr></table>` : ""}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">
           <tr><td style="background:#FFFBEB;padding:8px 12px;font-family:${FONT};border-radius:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 마케팅 액션</td></tr>
-              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${item.marketer_action}</td></tr>
+              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 ${bi("마케팅 액션", "Marketing Action")}</td></tr>
+              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${bi(item.marketer_action, (item as any).marketer_action_en)}</td></tr>
             </table>
           </td></tr>
         </table>
@@ -230,7 +242,7 @@ function buildNewsletterHTML(d: {
     <tr><td style="padding:24px 32px 0;font-family:${FONT};">
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:8px;font-family:${INTER};letter-spacing:-0.2px;">${icon} ${label}</td></tr>
-        <tr><td style="text-align:center;padding:28px;color:#8B8A8E;font-size:12px;border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;">데이터 없음</td></tr>
+        <tr><td style="text-align:center;padding:28px;color:#8B8A8E;font-size:12px;border:1px solid #E5DFD3;background:#FAF7F0;border-radius:20px;">${bi("데이터 없음", "No data available")}</td></tr>
       </table>
     </td></tr>`;
 
@@ -251,21 +263,24 @@ function buildNewsletterHTML(d: {
           </td>
           <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")}건</span></td></tr>
+              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span></td></tr>
               <tr><td style="padding-top:6px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border-left:3px solid #0D9488;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${trim(p.pos_summary, 70)}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(trim(p.pos_summary, 70), trim((p as any).pos_summary_en, 110))}</td></tr>
                 </table>
               </td></tr>
               ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
               <tr><td style="padding-top:5px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F2;border-left:3px solid #EA1917;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${trim(p.neg_summary, 60)}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(trim(p.neg_summary, 60), trim((p as any).neg_summary_en, 100))}</td></tr>
                 </table>
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
               <tr><td style="padding-top:6px;font-family:${FONT};">
-                ${p.praise_points.slice(0, 3).map(pp => `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 4px 1px 0;"><tr><td style="background:#F0ECE4;border:1px solid #E5DFD3;padding:2px 8px;font-size:10px;color:#1B1A1E;border-radius:50px;font-weight:500;">✅ ${trim(pp, 12)}</td></tr></table>`).join("")}
+                ${p.praise_points.slice(0, 3).map((pp, i) => {
+                  const enPp = ((p as any).praise_points_en || [])[i];
+                  return `<table cellpadding="0" cellspacing="0" border="0" style="display:inline-block;mso-table-lspace:0pt;mso-table-rspace:0pt;margin:1px 4px 1px 0;"><tr><td style="background:#F0ECE4;border:1px solid #E5DFD3;padding:2px 8px;font-size:10px;color:#1B1A1E;border-radius:50px;font-weight:500;">✅ ${bi(trim(pp, 12), trim(enPp, 18))}</td></tr></table>`;
+                }).join("")}
               </td></tr>` : ""}
             </table>
           </td>
@@ -278,10 +293,10 @@ function buildNewsletterHTML(d: {
       <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${trim(t.topic, 18)}</td>
-            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">긍정 ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${bi(trim(t.topic, 18), trim((t as any).topic_en, 28))}</td>
+            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${trim(t.representative_comment, 55)}"</div></td></tr>
+          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${bi(trim(t.representative_comment, 55), trim((t as any).representative_comment_en, 90))}"</div></td></tr>
         </table>
       </td></tr>`).join("");
 
@@ -290,14 +305,14 @@ function buildNewsletterHTML(d: {
     const issuesHTML = issuesList.map((iss, idx) => `
       <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${trim(iss.issue, 20)} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${trim(iss.pattern, 35)} · <span style="color:#6B6A6E;">${trim(iss.cause, 35)}</span></td></tr>
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${bi(trim(iss.issue, 20), trim((iss as any).issue_en, 32))} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${bi(trim(iss.pattern, 35), trim((iss as any).pattern_en, 55))} · <span style="color:#6B6A6E;">${bi(trim(iss.cause, 35), trim((iss as any).cause_en, 55))}</span></td></tr>
         </table>
       </td></tr>`).join("");
 
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${trim(item.text, 30)}</td></tr>`;
+      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${bi(trim(item.text, 30), trim(item.text_en, 48))}</td></tr>`;
     }).join("");
 
     return `
@@ -307,18 +322,18 @@ function buildNewsletterHTML(d: {
       </table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">📦 가장 많이 언급된 제품</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">📦 ${bi("가장 많이 언급된 제품", "Most Mentioned Products")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${productsHTML}</table>
 
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🔥 주요 키워드 TOP 3</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#1B1A1E;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🔥 ${bi("주요 키워드 TOP 3", "Top 3 Topics")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #E5DFD3;background:#FFFFFF;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${topicsHTML}</table>
 
       ${issuesHTML ? `
       <table cellpadding="0" cellspacing="0" border="0" width="100%">
-        <tr><td style="font-size:11px;font-weight:700;color:#EA1917;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🚨 개선 시급 이슈</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#EA1917;padding-bottom:6px;font-family:${FONT};letter-spacing:0.2px;">🚨 ${bi("개선 시급 이슈", "Urgent Issues to Fix")}</td></tr>
       </table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #FECACA;background:#FFFBFB;border-radius:20px;overflow:hidden;margin-bottom:14px;mso-table-lspace:0pt;mso-table-rspace:0pt;">${issuesHTML}</table>` : ""}
 
@@ -326,7 +341,7 @@ function buildNewsletterHTML(d: {
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border:1px solid #99F6E4;border-radius:20px;overflow:hidden;margin-bottom:8px;mso-table-lspace:0pt;mso-table-rspace:0pt;">
         <tr><td style="padding:14px 18px;">
           <table cellpadding="0" cellspacing="0" border="0" width="100%">
-            <tr><td style="font-size:11px;font-weight:700;color:#0D9488;padding-bottom:8px;font-family:${FONT};letter-spacing:0.2px;">🏆 반복 칭찬 포인트</td></tr>
+            <tr><td style="font-size:11px;font-weight:700;color:#0D9488;padding-bottom:8px;font-family:${FONT};letter-spacing:0.2px;">🏆 ${bi("반복 칭찬 포인트", "Recurring Praise")}</td></tr>
             ${praiseRows}
           </table>
         </td></tr>
@@ -371,6 +386,14 @@ a {text-decoration:none;}
   body, table, td, p, a, li { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
   img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
+  /* Language toggle (browser-only; ignored by Outlook/email clients) */
+  body.lang-en .lg-ko { display:none !important; }
+  body.lang-en .lg-en { display:inline !important; }
+  body:not(.lang-en) .lg-ko { display:inline; }
+  body:not(.lang-en) .lg-en { display:none !important; }
+  .lg-toggle-btn { cursor:pointer; user-select:none; transition:all 0.2s ease; }
+  .lg-toggle-btn:hover { opacity:0.85; }
+  .lg-toggle-btn.active { background:#1B1A1E !important; color:#FFFFFF !important; }
   @media only screen and (max-width:699px) {
     .email-container { width:100% !important; max-width:100% !important; }
     .stack-column { display:block !important; width:100% !important; }
@@ -392,9 +415,18 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
-      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">Weekly Insight Report &nbsp;·&nbsp; <span style="color:#9B9A9E;">Turn Real Reviews into Ready-to-Use Marketing Assets.</span></div>
+      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
-    <td width="140" style="text-align:right;vertical-align:top;">
+    <td width="180" style="text-align:right;vertical-align:top;">
+      <!-- Language Toggle (browser-only, hidden in email via mso conditional) -->
+      <!--[if !mso]><!-->
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right" style="margin-bottom:8px;">
+        <tr>
+          <td id="lg-btn-ko" class="lg-toggle-btn active" onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').classList.add('active');document.getElementById('lg-btn-en').classList.remove('active');" style="background:#1B1A1E;color:#FFFFFF;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:50px 0 0 50px;letter-spacing:0.5px;border:1px solid #1B1A1E;">KO</td>
+          <td id="lg-btn-en" class="lg-toggle-btn" onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').classList.add('active');document.getElementById('lg-btn-ko').classList.remove('active');" style="background:#FFFFFF;color:#1B1A1E;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:0 50px 50px 0;letter-spacing:0.5px;border:1px solid #1B1A1E;border-left:none;">EN</td>
+        </tr>
+      </table>
+      <!--<![endif]-->
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
         <tr><td style="background:#1B1A1E;padding:8px 16px;text-align:center;font-family:${INTER};border-radius:50px;">
           <div style="font-size:10px;font-weight:700;color:#FFFFFF;letter-spacing:1.2px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
@@ -408,8 +440,8 @@ a {text-decoration:none;}
 <!-- Intro -->
 <tr><td style="padding:20px 32px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:14px;font-weight:600;color:#1B1A1E;padding-bottom:6px;mso-line-height-rule:exactly;line-height:20px;letter-spacing:-0.2px;">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</td></tr>
-    <tr><td style="font-size:12px;color:#6B6A6E;line-height:20px;font-weight:400;">RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.</td></tr>
+    <tr><td style="font-size:14px;font-weight:600;color:#1B1A1E;padding-bottom:6px;mso-line-height-rule:exactly;line-height:20px;letter-spacing:-0.2px;">${bi("고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.", "Find marketing answers in real customer voices.")}</td></tr>
+    <tr><td style="font-size:12px;color:#6B6A6E;line-height:20px;font-weight:400;">${bi("RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여 숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.", "RTA Studio analyzes real user reviews across 15 countries and 43+ channels, surfacing hidden insights and producing ready-to-use marketing assets — all in one platform.")}</td></tr>
   </table>
 </td></tr>
 
@@ -418,10 +450,10 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0ECE4;border-radius:24px;overflow:hidden;">
     <tr><td style="padding:14px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">데이터 수집 현황</td>
+        <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">${bi("데이터 수집 현황", "Data Collection Status")}</td>
         <td style="text-align:right;font-size:11px;color:#6B6A6E;font-family:${FONT};">
           <strong style="color:#EA1917;font-size:15px;font-weight:700;">${d.totalReviews.toLocaleString()}</strong>
-          <span style="color:#8B8A8E;font-weight:400;">건 · ${d.productCount.toLocaleString()}개 제품</span>
+          <span style="color:#8B8A8E;font-weight:400;">${bi("건 · " + d.productCount.toLocaleString() + "개 제품", "reviews · " + d.productCount.toLocaleString() + " products")}</span>
         </td>
       </tr></table>
     </td></tr>
@@ -438,9 +470,9 @@ a {text-decoration:none;}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">총 리뷰 수집</div>
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("총 리뷰 수집", "Total Reviews")}</div>
           <div style="font-size:22px;font-weight:700;color:#1B1A1E;line-height:28px;margin-top:4px;letter-spacing:-0.6px;">${d.totalReviews.toLocaleString()}</div>
-          <div style="font-size:10px;color:${d.wow >= 0 ? '#0D9488' : '#EA1917'};font-weight:600;margin-top:3px;">${d.wow > 0 ? '▲ +' : d.wow < 0 ? '▼ ' : ''}${d.wow}% vs 전주</div>
+          <div style="font-size:10px;color:${d.wow >= 0 ? '#0D9488' : '#EA1917'};font-weight:600;margin-top:3px;">${d.wow > 0 ? '▲ +' : d.wow < 0 ? '▼ ' : ''}${d.wow}% ${bi("vs 전주", "vs last week")}</div>
         </td></tr>
       </table>
     </td>
@@ -448,9 +480,9 @@ a {text-decoration:none;}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">긍정 TOP 키워드</div>
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("긍정 TOP 키워드", "Top Positive Keyword")}</div>
           <div style="font-size:14px;font-weight:700;color:#0D9488;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topPositiveKeyword}"</div>
-          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topPositiveCount}건 언급 1위</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topPositiveCount} ${bi("건 언급 1위", "mentions · #1")}</div>
         </td></tr>
       </table>
     </td>
@@ -458,9 +490,9 @@ a {text-decoration:none;}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">부정 TOP 키워드</div>
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("부정 TOP 키워드", "Top Negative Keyword")}</div>
           <div style="font-size:14px;font-weight:700;color:#EA1917;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topNegativeKeyword}"</div>
-          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topNegativeCount}건 · FAQ 대응</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topNegativeCount} ${bi("건 · FAQ 대응", "mentions · FAQ needed")}</div>
         </td></tr>
       </table>
     </td>
@@ -468,9 +500,9 @@ a {text-decoration:none;}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#1B1A1E;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">주간 언급 TOP</div>
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("주간 언급 TOP", "Top Mentioned Product")}</div>
           <div style="font-size:13px;font-weight:700;color:#1B1A1E;line-height:18px;margin-top:6px;letter-spacing:-0.2px;">${d.topProduct}</div>
-          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topProductCount}건 · 1위</div>
+          <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topProductCount} ${bi("건 · 1위", "mentions · #1")}</div>
         </td></tr>
       </table>
     </td>
@@ -554,11 +586,12 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 <!-- KEY TAKEAWAY -->
 <tr><td style="padding:24px 32px 0;font-family:${FONT};">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">💡 KEY TAKEAWAY — 채널별 마케터 인사이트</td></tr>
+    <tr><td style="font-size:14px;font-weight:800;color:#EA1917;padding-bottom:16px;font-family:${INTER};">💡 ${bi("KEY TAKEAWAY — 채널별 마케터 인사이트", "KEY TAKEAWAY — Marketer Insights by Channel")}</td></tr>
   </table>
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
   ${renderKeyTakeaway("REDDIT", "💬", "#FF4500", reddit)}
+  ${renderKeyTakeaway(bi("커뮤니티 (Amazon/YouTube/기타)", "Communities (Amazon/YouTube/Others)"), "🌐", "#0D9488", community)}
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
@@ -644,7 +677,7 @@ ${d.actionChecklist.length > 0 ? `<!-- Weekly Action Checklist -->
 </td></tr>
 
 <!-- LG.com Section -->
-${channelSectionHTML("LG.COM 주간 오버뷰", "🏪", lgcom)}
+${channelSectionHTML(bi("LG.COM 주간 오버뷰", "LG.COM Weekly Overview"), "🏪", lgcom)}
 
 <!-- Divider -->
 <tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
@@ -652,7 +685,15 @@ ${channelSectionHTML("LG.COM 주간 오버뷰", "🏪", lgcom)}
 </td></tr>
 
 <!-- Reddit Section -->
-${channelSectionHTML("REDDIT & 커뮤니티 주간 오버뷰", "💬", reddit)}
+${channelSectionHTML(bi("REDDIT 주간 오버뷰", "REDDIT Weekly Overview"), "💬", reddit)}
+
+<!-- Divider -->
+<tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+</td></tr>
+
+<!-- Community Section (Amazon/YouTube/Trustpilot/etc) -->
+${channelSectionHTML(bi("커뮤니티 & 외부 채널 주간 오버뷰 (Amazon · YouTube · Trustpilot · etc)", "Communities & External Channels Weekly Overview (Amazon · YouTube · Trustpilot · etc)"), "🌐", community)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
