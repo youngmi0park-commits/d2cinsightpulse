@@ -269,6 +269,8 @@ Deno.serve(async (req) => {
         })),
         region,
         category,
+        period,
+        period_label: periodLabel,
         total_reviews: totalReviews,
         total: actualTotal,
         generated_at: new Date().toISOString(),
