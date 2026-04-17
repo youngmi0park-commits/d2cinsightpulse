@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -10,6 +11,31 @@ import {
   useNewsletterArchive,
   useNewsletterIssue,
 } from "@/hooks/useNewsletterData";
+
+// ── Placeholder fill helper ──
+type IssueData = Record<string, string | number | null | undefined>;
+function fillTemplate(html: string, d: IssueData): string {
+  const num = (v: unknown) => Number(v ?? 0).toLocaleString();
+  const str = (v: unknown) => (v == null || v === "" ? "—" : String(v));
+  return html
+    .replace(/\{\{WEEK_START\}\}/g, str(d.week_start))
+    .replace(/\{\{WEEK_END\}\}/g, str(d.week_end))
+    .replace(/\{\{TOTAL_REVIEWS\}\}/g, num(d.total_reviews))
+    .replace(/\{\{COUNTRY_COUNT\}\}/g, str(d.countries_count ?? 0))
+    .replace(/\{\{CHANNEL_COUNT\}\}/g, str(d.channels_count ?? 0))
+    .replace(/\{\{ACTIVE_CHANNELS\}\}/g, str(d.channels_count ?? 0))
+    .replace(/\{\{AVG_SENTIMENT\}\}/g, str(d.avg_sentiment ?? 0))
+    .replace(/\{\{LGCOM_COUNT\}\}/g, num(d.lgcom_count))
+    .replace(/\{\{REDDIT_COUNT\}\}/g, num(d.reddit_count))
+    .replace(/\{\{YOUTUBE_COUNT\}\}/g, num(d.youtube_count))
+    .replace(/\{\{TRUSTPILOT_COUNT\}\}/g, num(d.trustpilot_count))
+    .replace(/\{\{OTHER_CHANNEL_COUNT\}\}/g, str(d.other_channel_count ?? 0))
+    .replace(/\{\{REVIEW_DELTA\}\}/g, str(d.review_delta))
+    .replace(/\{\{TOP_POSITIVE_KW\}\}/g, str(d.top_positive_kw))
+    .replace(/\{\{TOP_POSITIVE_COUNT\}\}/g, str(d.top_positive_count ?? 0))
+    .replace(/\{\{TOP_PRODUCT\}\}/g, str(d.top_product))
+    .replace(/\{\{TOP_PRODUCT_COUNT\}\}/g, num(d.top_product_count));
+}
 
 /* ── Past Newsletters Archive (static fallback) ── */
 const staticNewsletters = [
