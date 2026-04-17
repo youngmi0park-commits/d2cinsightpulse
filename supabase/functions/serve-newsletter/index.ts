@@ -216,13 +216,13 @@ function buildNewsletterHTML(d: {
             <!--[if !mso]><!--><span style="display:inline-block;background:#F0ECE4;border-radius:50px;padding:3px 10px;font-size:10px;font-weight:700;color:#1B1A1E;margin-right:8px;letter-spacing:0.2px;">${item.category}</span><span style="font-weight:700;font-size:12.5px;color:#1B1A1E;letter-spacing:-0.1px;">${item.product}</span><!--<![endif]-->
           </td>
         </tr></table>
-        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${item.positive_msg}</td></tr></table>` : ""}
-        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${item.negative_msg}</td></tr></table>` : ""}
+        ${item.positive_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#0D9488;padding-bottom:3px;font-family:${FONT};font-weight:500;line-height:16px;">👍 ${bi(item.positive_msg, (item as any).positive_msg_en)}</td></tr></table>` : ""}
+        ${item.negative_msg ? `<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="font-size:11px;color:#EA1917;padding-bottom:6px;font-family:${FONT};font-weight:500;line-height:16px;">👎 ${bi(item.negative_msg, (item as any).negative_msg_en)}</td></tr></table>` : ""}
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">
           <tr><td style="background:#FFFBEB;padding:8px 12px;font-family:${FONT};border-radius:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 마케팅 액션</td></tr>
-              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${item.marketer_action}</td></tr>
+              <tr><td style="font-size:10px;font-weight:700;color:#D97706;padding-bottom:3px;letter-spacing:0.3px;">🎯 ${bi("마케팅 액션", "Marketing Action")}</td></tr>
+              <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;">${bi(item.marketer_action, (item as any).marketer_action_en)}</td></tr>
             </table>
           </td></tr>
         </table>
