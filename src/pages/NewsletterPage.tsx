@@ -156,8 +156,23 @@ const NewsletterPage = () => {
   const [loadingHtml, setLoadingHtml] = useState(false);
 
   // Data hooks
-  const { refetch: refetchIssue } = useNewsletterIssue(activeId);
+  const { data: currentIssue, refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
+
+  // Fetch collection stats for the active/latest issue
+  const issueIdForStats = activeId ?? (currentIssue as any)?.id;
+  const { data: collectionStats } = useQuery({
+    queryKey: ["newsletter-stats-page", issueIdForStats],
+    enabled: !!issueIdForStats,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("newsletter_collection_stats")
+        .select("*")
+        .eq("issue_id", issueIdForStats)
+        .order("sort_order");
+      return data ?? [];
+    },
+  });
 
   const toggleStaticOpen = (id: number) => {
     setStaticOpenIds((prev) => {
@@ -168,23 +183,24 @@ const NewsletterPage = () => {
     });
   };
 
-  // ── Fetch full newsletter HTML from serve-newsletter ──
+  // ── Fetch + fill template whenever currentIssue / stats change ──
   const fetchNewsletterHtml = useCallback(async () => {
+    if (!currentIssue) return;
     setLoadingHtml(true);
     try {
-      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
-        body: { format: "json", baseUrl: window.location.origin },
-      });
-      if (error) throw error;
-      if (result?.html) {
-        setNewsletterHtml(result.html);
-      }
+      const res = await fetch("/newsletter-template.html");
+      const tpl = await res.text();
+      setNewsletterHtml(fillTemplate(tpl, currentIssue, collectionStats ?? []));
     } catch {
       // silently fail — preview falls back to static template
     } finally {
       setLoadingHtml(false);
     }
-  }, []);
+  }, [currentIssue, collectionStats]);
+
+  useEffect(() => {
+    fetchNewsletterHtml();
+  }, [fetchNewsletterHtml]);
 
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
