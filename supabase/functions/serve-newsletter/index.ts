@@ -78,22 +78,22 @@ ${productSummary}
 
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
-- rank (순위), name (제품명), category, mention_count (언급 수)
-- pos_summary: 긍정 코멘트 요약 (2~3문장, 한국어, 실사용자 키워드 포함)
-- neg_summary: 부정 코멘트 요약 (2~3문장, 한국어, 없으면 "특이 불만 없음")
-- praise_points: 반복 칭찬 포인트 배열 (3~5개, 한국어)
+- rank, name, category, mention_count
+- pos_summary: **반드시 한 문장 60자 이내**로 핵심 강점만 (예: "선명한 화질·세련된 디자인 호평, 특히 게이밍 시청 만족도↑")
+- neg_summary: **한 문장 50자 이내** 또는 "특이 불만 없음"
+- praise_points: 정확히 3개, 각 8자 이내 짧은 키워드 (예: ["선명한 화질", "슬림 디자인", "가성비 우수"])
 
-## 2. 고객이 가장 많이 말하는 5가지 주제 (top_topics)
+## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (구체적 주제명, 한국어), mention_pct (%), positive_pct (%), negative_pct (%)
-- representative_comment (대표 코멘트 1줄 한국어 요약)
-- related_products (관련 제품명 리스트)
+- rank, topic (한국어 12자 이내), mention_pct, positive_pct, negative_pct
+- representative_comment: **한 문장 45자 이내** 핵심만
+- related_products
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue (한국어), mention_pct (%), pattern (패턴 한국어), cause (원인 추정 한국어), related_products
+- rank, issue (15자 이내), mention_pct, pattern (25자 이내), cause (25자 이내), related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목은 { "text": "칭찬 내용", "product": "제품명", "category": "카테고리" } 형태
+- 각 항목 { "text": "20자 이내 짧은 칭찬", "product": "제품명", "category": "카테고리" }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
 - **카테고리별로 1개씩** 선정 (TV, Washer, Refrigerator, Dryer, Dishwasher, Monitor, Audio, Vacuum, Air Conditioner, Air Purifier 등 실제 데이터에 존재하는 카테고리만)
