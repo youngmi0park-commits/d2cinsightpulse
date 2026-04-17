@@ -75,11 +75,12 @@ Deno.serve(async (req) => {
       let hasMore = true;
 
       while (hasMore) {
-        const { data: batch } = await sb
+        let q = sb
           .from("reviews")
           .select("product_id, products!inner(model_number, display_name, category)")
-          .in("source", sourceFilter)
-          .range(offset, offset + pageSize - 1);
+          .in("source", sourceFilter);
+        if (sinceDate) q = q.gte("published_at", sinceDate);
+        const { data: batch } = await q.range(offset, offset + pageSize - 1);
 
         if (!batch || batch.length === 0) { hasMore = false; break; }
 
@@ -126,11 +127,13 @@ Deno.serve(async (req) => {
       let more = true;
 
       while (more) {
-        const { data: batch } = await sb
+        let qr = sb
           .from("reviews")
           .select("title, content, rating, sentiment, sentiment_score, published_at, source, review_type, emotion_category")
           .eq("product_id", pid)
-          .in("source", sourceFilter)
+          .in("source", sourceFilter);
+        if (sinceDate) qr = qr.gte("published_at", sinceDate);
+        const { data: batch } = await qr
           .order("published_at", { ascending: false })
           .range(off, off + 999);
 
@@ -228,14 +231,19 @@ ${negContentSamples.map((s, i) => `${i + 1}. ${s}`).join("\n") || "N/A"}`;
       })
       .join("\n\n---\n\n");
 
-    const systemPrompt = `You are a global brand strategist and consumer insight analyst for LG Electronics. 
+    const periodLabel = isCumulative ? "전체 누적 (수집 시점 제한 없음)" : "최근 7일 (주간)";
+    const periodFocus = isCumulative
+      ? "You are analyzing ALL collected reviews (cumulative, all-time). Focus on long-term patterns, product life-cycle trends, and deep structural consumer understanding."
+      : "You are analyzing reviews from the LAST 7 DAYS only. Focus on recent signals, emerging issues, and what's changed this week. Highlight time-sensitive marketing opportunities.";
+
+    const systemPrompt = `You are a global brand strategist and consumer insight analyst for LG Electronics.
 Analyze LG.com review data and provide actionable marketing insights in Korean.
 Focus on "Why LG?" - what makes customers choose and love LG products.
 Be specific with examples from the data. Use marketing-ready language.
-You are analyzing ALL collected reviews (not just weekly), so your insights should reflect long-term patterns and deep consumer understanding.
+${periodFocus}
 IMPORTANT: Do NOT expose any original review text verbatim. Synthesize and paraphrase insights from the patterns you observe.`;
 
-    const userPrompt = `다음은 LG.com에서 수집된 **전체** 리뷰 데이터(수집 시점 제한 없음) 기반 상위 제품들의 분석 자료입니다:
+    const userPrompt = `다음은 LG.com에서 수집된 **${periodLabel}** 리뷰 데이터 기반 상위 제품들의 분석 자료입니다:
 
 ${reviewSummary}
 
@@ -369,6 +377,8 @@ ${reviewSummary}
         })),
         total_reviews_analyzed: Object.values(productReviews).reduce((s, pr) => s + pr.totalCount, 0),
         region,
+        period,
+        period_label: isCumulative ? "Cumulative · All-time" : "Weekly · 7d",
         generated_at: new Date().toISOString(),
       },
     };
