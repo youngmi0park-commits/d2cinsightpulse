@@ -135,6 +135,8 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
 
   useEffect(() => {
     setCategory("all");
+    setReport(null);
+    setMeta(null);
     runReport("all");
   }, [region, period]);
 
@@ -148,11 +150,14 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <BarChart3 className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
               {period === "weekly" ? t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트") : t("LG.com Cumulative Insight Report", "LG.com 전체 누적 인사이트 리포트")}
             </CardTitle>
+            <Badge variant={period === "weekly" ? "default" : "secondary"} className="text-[10px] font-semibold">
+              {period === "weekly" ? t("Weekly · 7d", "주간 · 7일") : t("Cumulative · All-time", "전체 누적")}
+            </Badge>
             <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
           </div>
           <button
