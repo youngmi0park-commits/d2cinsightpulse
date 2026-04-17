@@ -171,7 +171,7 @@ function buildNewsletterHTML(d: {
   topPositiveKeyword: string; topPositiveCount: number;
   topNegativeKeyword: string; topNegativeCount: number;
   topProduct: string; topProductCount: number;
-  opportunities: { tag: string; title: string; desc: string; count: number; delta: string }[];
+  opportunities: { tag: string; title: string; desc: string; count: number; delta: string; country: string; channel: string }[];
   trendingSignals: { keyword: string; count: number; delta: number; type: string; sentiment: string }[];
 }, lgcom: ChannelInsight | null, reddit: ChannelInsight | null, baseUrl: string, allChannel: AllChannelSummary | null): string {
 
