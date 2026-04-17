@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  REDDIT-FOCUSED SEARCH QUERIES — per category
+//  REDDIT-FOCUSED SEARCH QUERIES — per category (대폭 확장)
 // ══════════════════════════════════════════════════════════════
 
 const REDDIT_QUERIES: Record<string, string[]> = {
@@ -20,42 +20,86 @@ const REDDIT_QUERIES: Record<string, string[]> = {
     'site:reddit.com LG QNED OR NanoCell review OR recommendation',
     'site:reddit.com LG OLED (calibration OR settings OR "best picture" OR tips)',
     'site:reddit.com "LG C6H" OR "LG W6" OR "OLED evo" 2026 review',
+    'site:reddit.com/r/OLED LG (impression OR experience OR setup)',
+    'site:reddit.com/r/4kTV LG OLED OR QNED comparison',
+    'site:reddit.com/r/hometheater LG OLED OR projector setup',
+    'site:reddit.com LG OLED "webOS" (lag OR slow OR ads OR update)',
+    'site:reddit.com LG OLED "magic remote" (broken OR battery OR pairing)',
   ],
   Monitor: [
     'site:reddit.com LG UltraGear (review OR "just bought" OR impression OR gaming)',
     'site:reddit.com "27GR83Q" OR "32GS95UE" OR "27GP850" OR "LG monitor" review',
     'site:reddit.com LG monitor (flickering OR issue OR problem OR calibration)',
     'site:reddit.com "LG UltraWide" OR "LG UltraFine" review OR recommend',
+    'site:reddit.com/r/Monitors LG OLED OR UltraGear',
+    'site:reddit.com/r/buildapc LG monitor recommendation',
+    'site:reddit.com/r/buildapcsales LG (UltraGear OR monitor)',
+    'site:reddit.com/r/ultrawidemasterrace LG (review OR setup)',
+    'site:reddit.com LG monitor "DisplayPort" OR "HDMI 2.1" issue',
   ],
   Laptop: [
     'site:reddit.com "LG Gram" (review OR "just bought" OR lightweight OR battery)',
     'site:reddit.com "LG Gram Pro" OR "Gram 17" OR "Gram 16" 2025 OR 2026 review',
     'site:reddit.com "LG Gram" (issue OR problem OR overheating OR keyboard)',
+    'site:reddit.com/r/LGgram (impression OR question OR setup)',
+    'site:reddit.com/r/SuggestALaptop "LG Gram" recommend',
+    'site:reddit.com "LG Gram" "thermal throttling" OR fan OR noise',
+    'site:reddit.com "LG Gram" battery life OR display OR build quality',
   ],
   Audio: [
     'site:reddit.com "LG Soundbar" (review OR "just bought" OR "Dolby Atmos" OR setup)',
     'site:reddit.com "S95TR" OR "S90TR" OR "S80QY" OR "XBOOM" review OR recommend',
     'site:reddit.com LG soundbar (issue OR problem OR "no sound" OR sync OR connectivity)',
+    'site:reddit.com/r/Soundbars LG (S95 OR S90 OR S80 OR review)',
+    'site:reddit.com/r/hometheater LG soundbar setup OR comparison',
+    'site:reddit.com LG XBOOM (party OR speaker OR bluetooth review)',
+    'site:reddit.com LG "WOW Orchestra" OR "WOWCAST" experience',
   ],
   HomeAppliance: [
     'site:reddit.com LG WashTower OR "LG washer" OR "LG dryer" review OR recommend',
     'site:reddit.com LG InstaView OR "LG refrigerator" OR "LG fridge" review',
     'site:reddit.com LG CordZero OR "LG vacuum" OR "LG PuriCare" review',
     'site:reddit.com LG washer OR dryer (issue OR problem OR vibration OR noise OR error)',
+    'site:reddit.com/r/Appliances LG (washer OR dryer OR fridge)',
+    'site:reddit.com/r/appliancerepair LG (error OR code OR repair)',
+    'site:reddit.com/r/refrigerators LG InstaView OR French door',
+    'site:reddit.com/r/BuyItForLife LG appliance experience',
+    'site:reddit.com LG "Smart Diagnosis" OR ThinQ app review',
+    'site:reddit.com LG dishwasher "QuadWash" OR review OR rack',
   ],
   AirConditioner: [
     'site:reddit.com "LG AC" OR "LG air conditioner" OR "dual inverter" review OR recommend',
     'site:reddit.com LG AC (noise OR "energy saving" OR cooling OR installation OR issue)',
+    'site:reddit.com/r/AirConditioners LG (window OR portable OR mini-split)',
+    'site:reddit.com LG "Artcool" OR mini-split installation experience',
   ],
   StanbyME: [
     'site:reddit.com StanbyME OR "Stand by Me" LG review OR recommend OR worth',
     'site:reddit.com/r/StanbyME LG (review OR discussion OR setup OR tips)',
+    'site:reddit.com StanbyME (battery OR portable OR streaming OR setup)',
   ],
   LG_UserHub: [
     'site:reddit.com/r/LG_UserHub LG (review OR discussion OR announcement OR tips)',
     'site:reddit.com/r/LG_UserHub (product OR firmware OR update OR feature)',
   ],
 };
+
+// 직접 스크레이핑할 서브레딧 핫 페이지 (Phase 2 폴백용)
+const DIRECT_SUBREDDITS: { sub: string; category: string }[] = [
+  { sub: "OLED", category: "TV" },
+  { sub: "4kTV", category: "TV" },
+  { sub: "OLED_Gaming", category: "TV" },
+  { sub: "Monitors", category: "Monitor" },
+  { sub: "ultrawidemasterrace", category: "Monitor" },
+  { sub: "LGgram", category: "Laptop" },
+  { sub: "Soundbars", category: "Audio" },
+  { sub: "appliances", category: "HomeAppliance" },
+  { sub: "refrigerators", category: "HomeAppliance" },
+  { sub: "appliancerepair", category: "HomeAppliance" },
+  { sub: "AirConditioners", category: "AirConditioner" },
+  { sub: "StanbyME", category: "StanbyME" },
+  { sub: "LG_UserHub", category: "LG_UserHub" },
+];
 
 // ══════════════════════════════════════════════════════════════
 //  BUCKET CLASSIFICATION
@@ -65,13 +109,11 @@ type Bucket = "review" | "voc" | "question";
 
 function classifyBucket(text: string): Bucket {
   const t = text.toLowerCase();
-  // VOC patterns
   const vocPatterns = [/disappointed|frustrated|terrible|defective|broken|refund|return/i, /not working|stopped|issue|problem|bug|error|crash/i, /regret|waste|do not buy|avoid|worst/i, /customer service|support ticket|repair/i];
   let vScore = 0;
   for (const p of vocPatterns) if (p.test(t)) vScore++;
   if (vScore >= 2) return "voc";
 
-  // Question patterns
   const qPatterns = [/should\s+i|worth\s+(it|buying)|vs\.?|versus|compared?\s+to/i, /recommend|suggestion|advice|help/i, /how\s+(do|does|is|can|to|much)|what\s+(is|are|should)/i, /\?$/m];
   let qScore = 0;
   for (const p of qPatterns) if (p.test(t)) qScore++;
@@ -112,6 +154,198 @@ RULES:
 - Return ONLY valid JSON array, no markdown`;
 
 // ══════════════════════════════════════════════════════════════
+//  ADAPTIVE SCHEDULER (insane-search inspired)
+//  Phase 0: Firecrawl search
+//  Phase 1: Reddit public JSON API (.json)
+//  Phase 2: old.reddit.com direct scrape via Firecrawl
+//  Phase 3: Bing search fallback via Firecrawl
+// ══════════════════════════════════════════════════════════════
+
+const UA_POOL = [
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+];
+
+function pickUA(): string {
+  return UA_POOL[Math.floor(Math.random() * UA_POOL.length)];
+}
+
+interface FetchResult {
+  content: string;
+  url: string;
+  source: string; // which phase succeeded
+}
+
+// ─── Phase 1: Reddit public JSON ───────────────────────────────
+async function fetchSubredditJson(sub: string, listing: "hot" | "new" | "top" = "hot"): Promise<FetchResult[]> {
+  const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const posts = json?.data?.children || [];
+    const results: FetchResult[] = [];
+    for (const p of posts) {
+      const d = p.data;
+      if (!d) continue;
+      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || sub}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
+      results.push({
+        content: block.slice(0, 4500),
+        url: `https://reddit.com${d.permalink || ""}`,
+        source: "reddit_json",
+      });
+    }
+    return results;
+  } catch (e) {
+    console.warn(`Phase1 JSON failed for r/${sub}:`, e);
+    return [];
+  }
+}
+
+// ─── Phase 1b: Reddit search JSON ──────────────────────────────
+async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
+  // Strip "site:reddit.com" prefix for the native search
+  const q = query.replace(/site:reddit\.com\/?(r\/[\w_]+)?/i, "").trim();
+  if (!q) return [];
+  const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&limit=15&sort=relevance&t=year`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const posts = json?.data?.children || [];
+    return posts.slice(0, 12).map((p: any) => {
+      const d = p.data || {};
+      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || ""}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
+      return {
+        content: block.slice(0, 4500),
+        url: `https://reddit.com${d.permalink || ""}`,
+        source: "reddit_search_json",
+      };
+    });
+  } catch (e) {
+    console.warn(`Phase1b search JSON failed:`, e);
+    return [];
+  }
+}
+
+// ─── Phase 1c: Comments JSON for a specific post ───────────────
+async function fetchCommentsJson(permalink: string): Promise<string> {
+  const url = `https://www.reddit.com${permalink.replace(/\/$/, "")}.json?limit=20&depth=2`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+    });
+    if (!res.ok) return "";
+    const json = await res.json();
+    if (!Array.isArray(json) || json.length < 2) return "";
+    const comments = json[1]?.data?.children || [];
+    const out: string[] = [];
+    for (const c of comments.slice(0, 12)) {
+      const cd = c.data;
+      if (!cd?.body) continue;
+      out.push(`[Comment by u/${cd.author || "anon"} | ${cd.ups || 0} upvotes]: ${cd.body}`);
+    }
+    return out.join("\n\n").slice(0, 6000);
+  } catch {
+    return "";
+  }
+}
+
+// ─── Phase 0: Firecrawl search ─────────────────────────────────
+async function firecrawlSearch(query: string, apiKey: string): Promise<FetchResult[]> {
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query, limit: 6, scrapeOptions: { formats: ["markdown"] } }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || []).map((r: any) => ({
+      content: r.markdown || r.description || "",
+      url: r.url || "",
+      source: "firecrawl_search",
+    })).filter((r: FetchResult) => r.content.length > 80);
+  } catch {
+    return [];
+  }
+}
+
+// ─── Phase 2: old.reddit.com direct scrape via Firecrawl ───────
+async function firecrawlScrapeOldReddit(url: string, apiKey: string): Promise<string> {
+  const oldUrl = url.replace("www.reddit.com", "old.reddit.com").replace("https://reddit.com", "https://old.reddit.com");
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: oldUrl, formats: ["markdown"], onlyMainContent: true }),
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.data?.markdown || "";
+  } catch {
+    return "";
+  }
+}
+
+// ─── Phase 3: Bing search fallback ─────────────────────────────
+async function firecrawlBingFallback(query: string, apiKey: string): Promise<FetchResult[]> {
+  const bingQ = `${query} reddit`;
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: bingQ, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || [])
+      .filter((r: any) => (r.url || "").includes("reddit.com"))
+      .map((r: any) => ({
+        content: r.markdown || r.description || "",
+        url: r.url || "",
+        source: "bing_fallback",
+      }));
+  } catch {
+    return [];
+  }
+}
+
+// ─── Adaptive scheduler: try all phases, return whatever works ─
+async function adaptiveCollect(query: string, firecrawlKey: string): Promise<FetchResult[]> {
+  // Phase 0
+  let results = await firecrawlSearch(query, firecrawlKey);
+  if (results.length >= 3) {
+    console.log(`[Phase0 ✓] Firecrawl: ${results.length}`);
+    return results;
+  }
+
+  // Phase 1: Reddit native search
+  const redditResults = await fetchRedditSearchJson(query);
+  if (redditResults.length >= 3) {
+    console.log(`[Phase1 ✓] Reddit JSON search: ${redditResults.length}`);
+    results = [...results, ...redditResults];
+    return results;
+  }
+
+  results = [...results, ...redditResults];
+
+  // Phase 3: Bing fallback
+  if (results.length < 2) {
+    const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+    console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
+    results = [...results, ...bingResults];
+  }
+
+  return results;
+}
+
+// ══════════════════════════════════════════════════════════════
 //  MAIN HANDLER
 // ══════════════════════════════════════════════════════════════
 
@@ -134,32 +368,33 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Parse options
   let mode: "all" | "review" | "voc" | "question" = "all";
   let categoryFilter: string | null = null;
   let deepComments = true;
-  let maxQueriesPerCategory = 8;
+  let maxQueriesPerCategory = 10;
+  let includeDirectSubs = true;
 
   try {
     const body = await req.json();
     if (body.mode) mode = body.mode;
     if (body.category) categoryFilter = body.category;
     if (body.deepComments !== undefined) deepComments = body.deepComments;
-    if (body.maxQueries) maxQueriesPerCategory = Math.min(Number(body.maxQueries), 10);
+    if (body.maxQueries) maxQueriesPerCategory = Math.min(Number(body.maxQueries), 15);
+    if (body.includeDirectSubs !== undefined) includeDirectSubs = body.includeDirectSubs;
   } catch {
     // defaults
   }
 
-  // Log
   const { data: logEntry } = await supabase
     .from("collection_logs")
-    .insert({ source: "reddit_collector_v2", status: "running" })
+    .insert({ source: "reddit_collector_v3_adaptive", status: "running" })
     .select()
     .single();
   const logId = logEntry?.id;
 
   let totalCollected = 0;
   let totalSkipped = 0;
+  const phaseStats: Record<string, number> = {};
   const errors: string[] = [];
 
   try {
@@ -167,178 +402,94 @@ Deno.serve(async (req) => {
       ? { [categoryFilter]: REDDIT_QUERIES[categoryFilter] || [] }
       : REDDIT_QUERIES;
 
+    // ── Phase A: Query-driven collection ──
     for (const [category, queries] of Object.entries(categories)) {
       const activeQueries = queries.slice(0, maxQueriesPerCategory);
 
       for (const query of activeQueries) {
         try {
-          console.log(`[Reddit/${category}] Searching: ${query.slice(0, 80)}...`);
+          console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY);
 
-          // Firecrawl search
-          const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              query,
-              limit: 5,
-              scrapeOptions: { formats: ["markdown"] },
-            }),
-          });
-
-          if (!searchRes.ok) {
-            const errText = await searchRes.text();
-            errors.push(`Search ${category}: ${searchRes.status} ${errText.slice(0, 100)}`);
+          if (results.length === 0) {
+            errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
             continue;
           }
 
-          const searchData = await searchRes.json();
-          const results = searchData.data || [];
-          console.log(`[Reddit/${category}] Found ${results.length} results`);
+          // Track which phase produced data
+          for (const r of results) phaseStats[r.source] = (phaseStats[r.source] || 0) + 1;
 
-          if (results.length === 0) continue;
-
-          // Deep scrape for more content (comments)
+          // Build batched content with optional comment enrichment
           let batchedContent = "";
           for (const result of results) {
-            let content = result.markdown || result.description || "";
+            let content = result.content;
 
-            // If deep comments enabled and content is short, scrape the full page
-            if (deepComments && content.length < 500 && result.url) {
-              try {
-                const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    url: result.url,
-                    formats: ["markdown"],
-                    onlyMainContent: true,
-                  }),
-                });
-                if (scrapeRes.ok) {
-                  const scrapeData = await scrapeRes.json();
-                  content = scrapeData.data?.markdown || content;
-                }
-              } catch {
-                // use original content
-              }
+            if (deepComments && result.url.includes("/comments/")) {
+              const permalink = result.url.replace(/^https?:\/\/[^/]+/, "");
+              const comments = await fetchCommentsJson(permalink);
+              if (comments) content += `\n\n--- COMMENTS ---\n${comments}`;
+            } else if (deepComments && content.length < 400 && result.url) {
+              const oldScrape = await firecrawlScrapeOldReddit(result.url, FIRECRAWL_API_KEY);
+              if (oldScrape) content = oldScrape;
             }
 
             if (content.length >= 50) {
-              batchedContent += `\n\n--- Reddit Result (${result.url || "unknown"}) ---\n${content.slice(0, 4000)}`;
+              batchedContent += `\n\n--- Reddit Result (${result.url || "unknown"}) [via ${result.source}] ---\n${content.slice(0, 4500)}`;
             }
           }
 
           if (batchedContent.length < 100) continue;
 
           // AI extraction
-          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: REDDIT_EXTRACTION_PROMPT },
-                {
-                  role: "user",
-                  content: `Category: ${category}\n\nReddit Content:\n${batchedContent.slice(0, 15000)}`,
-                },
-              ],
-              temperature: 0.1,
-              max_tokens: 8000,
-            }),
-          });
+          const extracted = await extractWithAI(batchedContent, category, LOVABLE_API_KEY);
+          if (!extracted) continue;
 
-          if (!aiRes.ok) {
-            errors.push(`AI ${category}: ${aiRes.status}`);
-            continue;
-          }
-
-          const aiData = await aiRes.json();
-          const rawText = aiData.choices?.[0]?.message?.content || "[]";
-
-          // Parse AI response
-          let reviews: any[] = [];
-          try {
-            const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-            reviews = JSON.parse(cleaned);
-            if (!Array.isArray(reviews)) reviews = [];
-          } catch {
-            console.error(`Failed to parse AI response for ${category}`);
-            continue;
-          }
-
-          // Filter by LG relevance & save
-          for (const review of reviews) {
-            if (!review.is_lg_relevant) continue;
-            if (!review.content || review.content.length < 20) continue;
-
-            // Bucket classification
-            const bucket = classifyBucket(`${review.title || ""} ${review.content}`);
-
-            // Mode filter
-            if (mode !== "all" && bucket !== mode) continue;
-
-            // Find or create product
-            const productId = await findOrCreateProduct(
-              supabase,
-              review.model_number || category,
-              review.display_name || `LG ${category}`,
-              review.category || category,
-            );
-
-            // Deduplicate by content hash
-            const contentHash = `reddit_${simpleHash(review.content.slice(0, 200))}`;
-            const { data: existing } = await supabase
-              .from("reviews")
-              .select("id")
-              .eq("external_id", contentHash)
-              .maybeSingle();
-
-            if (existing) {
-              totalSkipped++;
-              continue;
-            }
-
-            // Check if author is a known LG operator
-            const LG_OPERATORS = ["stanbyme_mod", "lg_techit"];
-            const authorLower = (review.author || "").toLowerCase();
-            const isLgOperator = LG_OPERATORS.includes(authorLower);
-
-            const { error: insertErr } = await supabase.from("reviews").insert({
-              product_id: productId,
-              source: `reddit_${(review.subreddit || category).toLowerCase()}`,
-              external_id: contentHash,
-              author: review.author || null,
-              title: (review.title || "").slice(0, 500),
-              content: review.content.slice(0, 5000),
-              sentiment: review.sentiment || "neutral",
-              sentiment_score: review.sentiment_score ?? 0.5,
-              rating: null,
-              published_at: review.published_at || null,
-              source_url: null,
-              review_type: isLgOperator ? "official" : "organic",
-              content_type: bucket,
-              platform_type: "community",
-              user_type: isLgOperator ? "lg_operator" : "actual_user",
-            });
-
-            if (insertErr) {
-              errors.push(`Insert: ${insertErr.message}`);
-            } else {
-              totalCollected++;
-            }
-          }
+          const stats = await persistReviews(supabase, extracted, category, mode);
+          totalCollected += stats.collected;
+          totalSkipped += stats.skipped;
         } catch (queryErr) {
           errors.push(`Query ${category}: ${queryErr}`);
+        }
+      }
+    }
+
+    // ── Phase B: Direct subreddit JSON harvest (always-on safety net) ──
+    if (includeDirectSubs) {
+      const subsToFetch = categoryFilter
+        ? DIRECT_SUBREDDITS.filter((s) => s.category === categoryFilter)
+        : DIRECT_SUBREDDITS;
+
+      for (const { sub, category } of subsToFetch) {
+        try {
+          console.log(`[Direct] r/${sub} (${category})`);
+          const posts = await fetchSubredditJson(sub, "hot");
+          if (posts.length === 0) {
+            errors.push(`Direct r/${sub}: 0 posts`);
+            continue;
+          }
+          phaseStats["direct_subreddit"] = (phaseStats["direct_subreddit"] || 0) + posts.length;
+
+          let batched = "";
+          for (const p of posts.slice(0, 15)) {
+            let content = p.content;
+            if (deepComments && p.url.includes("/comments/")) {
+              const permalink = p.url.replace(/^https?:\/\/[^/]+/, "");
+              const cmts = await fetchCommentsJson(permalink);
+              if (cmts) content += `\n\n--- COMMENTS ---\n${cmts}`;
+            }
+            batched += `\n\n--- r/${sub} Post (${p.url}) ---\n${content.slice(0, 4500)}`;
+          }
+
+          if (batched.length < 200) continue;
+
+          const extracted = await extractWithAI(batched, category, LOVABLE_API_KEY);
+          if (!extracted) continue;
+
+          const stats = await persistReviews(supabase, extracted, category, mode);
+          totalCollected += stats.collected;
+          totalSkipped += stats.skipped;
+        } catch (e) {
+          errors.push(`Direct r/${sub}: ${e}`);
         }
       }
     }
@@ -346,7 +497,6 @@ Deno.serve(async (req) => {
     errors.push(`Fatal: ${fatalErr}`);
   }
 
-  // Update log
   if (logId) {
     await supabase
       .from("collection_logs")
@@ -365,10 +515,11 @@ Deno.serve(async (req) => {
     skipped_duplicates: totalSkipped,
     errors: errors.length,
     error_samples: errors.slice(0, 5),
-    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory },
+    phase_stats: phaseStats,
+    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs },
   };
 
-  console.log(`✅ Reddit collection complete:`, JSON.stringify(result));
+  console.log(`✅ Reddit collection v3 complete:`, JSON.stringify(result));
 
   return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -376,8 +527,98 @@ Deno.serve(async (req) => {
 });
 
 // ══════════════════════════════════════════════════════════════
-//  HELPERS
+//  AI + PERSISTENCE HELPERS
 // ══════════════════════════════════════════════════════════════
+
+async function extractWithAI(content: string, category: string, apiKey: string): Promise<any[] | null> {
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: REDDIT_EXTRACTION_PROMPT },
+          { role: "user", content: `Category: ${category}\n\nReddit Content:\n${content.slice(0, 18000)}` },
+        ],
+        temperature: 0.1,
+        max_tokens: 8000,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content || "[]";
+    const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (e) {
+    console.error(`AI extraction failed for ${category}:`, e);
+    return null;
+  }
+}
+
+async function persistReviews(
+  supabase: any,
+  reviews: any[],
+  fallbackCategory: string,
+  mode: string,
+): Promise<{ collected: number; skipped: number }> {
+  let collected = 0;
+  let skipped = 0;
+  const LG_OPERATORS = ["stanbyme_mod", "lg_techit"];
+
+  for (const review of reviews) {
+    if (!review.is_lg_relevant) continue;
+    if (!review.content || review.content.length < 20) continue;
+
+    const bucket = classifyBucket(`${review.title || ""} ${review.content}`);
+    if (mode !== "all" && bucket !== mode) continue;
+
+    const productId = await findOrCreateProduct(
+      supabase,
+      review.model_number || fallbackCategory,
+      review.display_name || `LG ${fallbackCategory}`,
+      review.category || fallbackCategory,
+    );
+
+    const contentHash = `reddit_${simpleHash(review.content.slice(0, 200))}`;
+    const { data: existing } = await supabase
+      .from("reviews")
+      .select("id")
+      .eq("external_id", contentHash)
+      .maybeSingle();
+
+    if (existing) {
+      skipped++;
+      continue;
+    }
+
+    const authorLower = (review.author || "").toLowerCase();
+    const isLgOperator = LG_OPERATORS.includes(authorLower);
+
+    const { error: insertErr } = await supabase.from("reviews").insert({
+      product_id: productId,
+      source: `reddit_${(review.subreddit || fallbackCategory).toLowerCase()}`,
+      external_id: contentHash,
+      author: review.author || null,
+      title: (review.title || "").slice(0, 500),
+      content: review.content.slice(0, 5000),
+      sentiment: review.sentiment || "neutral",
+      sentiment_score: review.sentiment_score ?? 0.5,
+      rating: null,
+      published_at: review.published_at || null,
+      source_url: null,
+      review_type: isLgOperator ? "official" : "organic",
+      content_type: bucket,
+      platform_type: "community",
+      user_type: isLgOperator ? "lg_operator" : "actual_user",
+    });
+
+    if (!insertErr) collected++;
+  }
+
+  return { collected, skipped };
+}
 
 function simpleHash(str: string): string {
   let hash = 0;
@@ -401,7 +642,6 @@ async function findOrCreateProduct(
   const cacheKey = `${safeModel}_${category}`;
   if (productCache.has(cacheKey)) return productCache.get(cacheKey)!;
 
-  // Try match existing
   const { data: existing } = await supabase
     .from("products")
     .select("id")
@@ -415,7 +655,6 @@ async function findOrCreateProduct(
     return existing.id;
   }
 
-  // Create generic Reddit product
   const genericModel = `Reddit_${category}_General`;
   const { data: genExisting } = await supabase
     .from("products")
