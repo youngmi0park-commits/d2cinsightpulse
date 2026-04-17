@@ -22,6 +22,10 @@ Deno.serve(async (req) => {
     const limit = body.limit || 5;
     const category = body.category || "all";
     const productId = body.product_id || null;
+    const period = body.period === "cumulative" ? "cumulative" : "weekly";
+    const isCumulative = period === "cumulative";
+    // Weekly = last 7 days; Cumulative = no date restriction
+    const sinceDate = isCumulative ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // Category matching patterns
     const categoryPatterns: Record<string, string[]> = {
