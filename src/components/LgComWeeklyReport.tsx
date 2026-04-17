@@ -135,6 +135,8 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
 
   useEffect(() => {
     setCategory("all");
+    setReport(null);
+    setMeta(null);
     runReport("all");
   }, [region, period]);
 
