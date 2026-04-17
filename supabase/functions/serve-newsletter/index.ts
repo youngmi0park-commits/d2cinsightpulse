@@ -181,10 +181,19 @@ function buildNewsletterHTML(d: {
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',Arial,sans-serif";
   const INTER = "Inter,'Segoe UI',Arial,sans-serif";
 
-  /* ── Key Takeaway block ── */
+  /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
-    const items = insight?.key_takeaway;
-    if (!items || items.length === 0) return "";
+    const raw = insight?.key_takeaway;
+    if (!raw || raw.length === 0) return "";
+    // 카테고리별 첫 항목만 유지 (AI가 중복 생성해도 1 per category 보장)
+    const seen = new Set<string>();
+    const items = raw.filter(it => {
+      const key = (it.category || "기타").trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 8);
+    if (items.length === 0) return "";
     const rows = items.map(item => `
       <tr><td style="padding:12px 16px;border-bottom:1px solid #F0ECE4;font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
