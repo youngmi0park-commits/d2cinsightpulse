@@ -591,7 +591,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
   ${renderKeyTakeaway("REDDIT", "💬", "#FF4500", reddit)}
-  ${renderKeyTakeaway(bi("커뮤니티 (Amazon/YouTube/기타)", "Communities (Amazon/YouTube/Others)"), "🌐", "#0D9488", (arguments[1] as any)?.community || null)}
+  ${renderKeyTakeaway(bi("커뮤니티 (Amazon/YouTube/기타)", "Communities (Amazon/YouTube/Others)"), "🌐", "#0D9488", community)}
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
