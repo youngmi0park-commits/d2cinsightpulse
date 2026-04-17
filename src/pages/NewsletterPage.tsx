@@ -100,6 +100,36 @@ const NewsletterPage = () => {
   const { refetch: refetchIssue } = useNewsletterIssue(activeId);
   const { data: issues, refetch: refetchArchive } = useNewsletterArchive();
 
+  // ── Current issue (active or latest) — full row including new KPI cols ──
+  const { data: currentIssue, refetch: refetchCurrent } = useQuery({
+    queryKey: ["newsletter-issue-current", activeId],
+    queryFn: async () => {
+      if (activeId) {
+        const { data } = await supabase
+          .from("newsletter_issues").select("*").eq("id", activeId).maybeSingle();
+        return data;
+      }
+      const { data } = await supabase
+        .from("newsletter_issues").select("*")
+        .order("issue_date", { ascending: false }).limit(1).maybeSingle();
+      return data;
+    },
+  });
+
+  // ── Collection stats for channel cards ──
+  const { data: collectionStats } = useQuery({
+    queryKey: ["newsletter-stats", currentIssue?.id],
+    enabled: !!currentIssue?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("newsletter_collection_stats")
+        .select("*")
+        .eq("issue_id", currentIssue!.id)
+        .order("sort_order");
+      return data ?? [];
+    },
+  });
+
   const toggleStaticOpen = (id: number) => {
     setStaticOpenIds((prev) => {
       const next = new Set(prev);
@@ -109,23 +139,43 @@ const NewsletterPage = () => {
     });
   };
 
-  // ── Fetch full newsletter HTML from serve-newsletter ──
-  const fetchNewsletterHtml = useCallback(async () => {
+  // ── Fetch + fill template whenever currentIssue/stats change ──
+  useEffect(() => {
+    if (!currentIssue) return;
+    let cancelled = false;
     setLoadingHtml(true);
-    try {
-      const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
-        body: { format: "json", baseUrl: window.location.origin },
-      });
-      if (error) throw error;
-      if (result?.html) {
-        setNewsletterHtml(result.html);
-      }
-    } catch {
-      // silently fail — preview falls back to static template
-    } finally {
-      setLoadingHtml(false);
-    }
-  }, []);
+
+    const findCount = (match: (s: string) => boolean) =>
+      collectionStats?.find((s) => match((s.source ?? "").toLowerCase()))?.review_count ?? 0;
+    const ci = currentIssue as Record<string, unknown>;
+    const lgcom = (ci.lgcom_count as number | null) ?? findCount((s) => s.includes("lgcom") || s.includes("lge_com"));
+    const reddit = (ci.reddit_count as number | null) ?? findCount((s) => s === "reddit");
+    const youtube = (ci.youtube_count as number | null) ?? findCount((s) => s === "youtube");
+    const trustpilot = (ci.trustpilot_count as number | null) ?? findCount((s) => s === "trustpilot");
+    const otherCnt = (ci.other_channel_count as number | null)
+      ?? Math.max(0, (collectionStats?.length ?? 0)
+          - (collectionStats?.filter((s) => {
+            const src = (s.source ?? "").toLowerCase();
+            return src.includes("lgcom") || src === "reddit" || src === "youtube" || src === "trustpilot";
+          }).length ?? 0));
+
+    const issueData: IssueData = {
+      ...ci,
+      lgcom_count: lgcom,
+      reddit_count: reddit,
+      youtube_count: youtube,
+      trustpilot_count: trustpilot,
+      other_channel_count: otherCnt,
+    };
+
+    fetch("/newsletter-template.html")
+      .then((r) => r.text())
+      .then((html) => { if (!cancelled) setNewsletterHtml(fillTemplate(html, issueData)); })
+      .catch((e) => console.error("[newsletter] template fetch failed:", e))
+      .finally(() => { if (!cancelled) setLoadingHtml(false); });
+
+    return () => { cancelled = true; };
+  }, [currentIssue, collectionStats]);
 
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
