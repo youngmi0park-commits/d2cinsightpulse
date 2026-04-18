@@ -553,8 +553,20 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
           LIVE
         </span>
-        <span className="text-[11px] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
-          📅 {dateRangeLabel} · 주간 집계
+        <span
+          className={cn(
+            "text-[11px] rounded-full px-2.5 py-0.5 border",
+            isFallbackWindow
+              ? "bg-amber-50 border-amber-200 text-amber-800"
+              : "border-border text-muted-foreground"
+          )}
+          title={isFallbackWindow
+            ? `이번 주 작성된 리뷰가 부족(${dataWindow?.weeklyCount ?? 0}건)하여 최근 30일 작성 리뷰까지 분석에 포함했습니다.`
+            : `published_at 기준 이번 주(최근 7일) 작성 리뷰만 분석에 포함합니다.`}
+        >
+          {isFallbackWindow
+            ? `⚠️ 1개월 폴백 · 이번 주 작성 ${dataWindow?.weeklyCount ?? 0}건`
+            : `📅 ${dateRangeLabel} · 이번 주 작성 리뷰`}
         </span>
         <span className="text-[11px] text-primary border border-primary/20 rounded-full px-2.5 py-0.5">
           🔌 43개+ 채널 · 15개국 수집중
