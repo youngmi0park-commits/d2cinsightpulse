@@ -160,11 +160,21 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
   const { data: stats } = useProductStats();
   const { data: sourceCounts = {} } = useSourceCounts();
 
-  // Channel top products
-  const { data: lgcomPos = [], isLoading: lgcomPosL } = useChannelTopProducts("lge_com", "positive");
-  const { data: lgcomNeg = [], isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
-  const { data: redditPos = [], isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
-  const { data: redditNeg = [], isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+  // Channel top products (weekly-first with 30d fallback per channel)
+  const { data: lgcomPosRaw, isLoading: lgcomPosL } = useChannelTopProducts("lge_com", "positive");
+  const { data: lgcomNegRaw, isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
+  const { data: redditPosRaw, isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
+  const { data: redditNegRaw, isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+
+  const lgcomPos = lgcomPosRaw?.products ?? [];
+  const lgcomNeg = lgcomNegRaw?.products ?? [];
+  const redditPos = redditPosRaw?.products ?? [];
+  const redditNeg = redditNegRaw?.products ?? [];
+
+  // Aggregate window status across channels
+  const { data: dataWindow } = useTrendingDataWindow();
+  const channelFallbacks = [lgcomPosRaw, lgcomNegRaw, redditPosRaw, redditNegRaw].filter(c => c?.windowDays === 30).length;
+  const isFallbackWindow = (dataWindow?.isFallback ?? false) || channelFallbacks >= 2;
 
   const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
   const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
