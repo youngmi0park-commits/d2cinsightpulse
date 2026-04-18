@@ -63,22 +63,23 @@ const CATEGORY_LABEL_MAP: Record<string, string> = {
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  "TV": "📺", "Washer": "🧺", "Refrigerator": "🧊", "Dryer": "🌀",
-  "Monitor": "🖥️", "Audio": "🔊", "Air Conditioner": "❄️", "Laptop": "💻",
-  "Air Purifier": "🌬️", "Microwave": "♨️", "Projector": "📽️",
-  "Dishwasher": "🍽️", "Vacuum": "🧹", "Washer/Dryer": "🔄",
-  "Range/Oven": "🍳", "Styler": "👔",
+  "TV": "📺", "세탁기": "🧺", "냉장고": "🧊", "건조기": "🌀",
+  "모니터": "🖥️", "오디오": "🔊", "에어컨": "❄️", "노트북": "💻",
+  "공기청정기": "🌬️", "전자레인지": "♨️", "프로젝터": "📽️",
+  "식기세척기": "🍽️", "청소기": "🧹", "세탁건조기": "🔄",
+  "오븐/레인지": "🍳", "스타일러": "👔", "쿡탑": "🍳",
+  "액세서리": "🔌", "가전 번들": "📦", "스마트폰": "📱",
   "General": "📦",
 };
 
 const CATEGORY_KO: Record<string, string> = {
-  "TV": "TV", "Washer": "세탁기", "Refrigerator": "냉장고", "Dryer": "건조기",
-  "Monitor": "모니터", "Audio": "오디오", "Air Conditioner": "에어컨", "Laptop": "노트북",
-  "Air Purifier": "공기청정기", "Microwave": "전자레인지", "Projector": "프로젝터",
-  "Dishwasher": "식기세척기", "Vacuum": "청소기", "Washer/Dryer": "세탁건조기",
-  "Range/Oven": "오븐/레인지", "Styler": "스타일러", "General": "일반",
-  "Accessory": "액세서리", "Phone": "스마트폰", "Cooktop": "쿡탑",
-  "Appliance Bundle": "가전 번들",
+  "TV": "TV", "세탁기": "세탁기", "냉장고": "냉장고", "건조기": "건조기",
+  "모니터": "모니터", "오디오": "오디오", "에어컨": "에어컨", "노트북": "노트북",
+  "공기청정기": "공기청정기", "전자레인지": "전자레인지", "프로젝터": "프로젝터",
+  "식기세척기": "식기세척기", "청소기": "청소기", "세탁건조기": "세탁건조기",
+  "오븐/레인지": "오븐/레인지", "스타일러": "스타일러", "General": "미분류",
+  "액세서리": "액세서리", "스마트폰": "스마트폰", "쿡탑": "쿡탑",
+  "가전 번들": "가전 번들",
 };
 
 const PIE_COLORS = [
