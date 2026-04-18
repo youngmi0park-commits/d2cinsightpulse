@@ -27,21 +27,38 @@ Deno.serve(async (req) => {
 
   try {
     // Use published_at for weekly window (matches BV data pattern)
+    // Fallback to 30d if weekly is too sparse
+    const WEEKLY_MIN = 30;
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: reviews } = await supabase
+    let { data: reviews } = await supabase
       .from("reviews")
       .select("content, source, sentiment, emotion_category, user_type, content_type, product_id, products!inner(model_number, display_name, category)")
       .gte("published_at", sevenDaysAgo)
       .eq("content_type", "review")
       .limit(500);
 
+    let windowDays: 7 | 30 = 7;
+    if (!reviews || reviews.length < WEEKLY_MIN) {
+      const fallback = await supabase
+        .from("reviews")
+        .select("content, source, sentiment, emotion_category, user_type, content_type, product_id, products!inner(model_number, display_name, category)")
+        .gte("published_at", thirtyDaysAgo)
+        .eq("content_type", "review")
+        .limit(500);
+      reviews = fallback.data || [];
+      windowDays = 30;
+    }
+
     if (!reviews?.length) {
       return new Response(
-        JSON.stringify({ success: true, message: "No recent reviews to extract from", keywords: 0 }),
+        JSON.stringify({ success: true, message: "No recent reviews to extract from", keywords: 0, windowDays }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`extract-keywords window: ${windowDays}d, reviews: ${reviews.length}`);
 
     // Also generate trending_snapshots from the same weekly data
     const productAgg: Record<string, { product_id: string; source: string; count: number; scores: number[]; sentiments: string[] }> = {};
