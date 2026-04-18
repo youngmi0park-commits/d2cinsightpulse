@@ -1440,8 +1440,9 @@ export const CollectionCriteria = () => {
 
             {/* ── 카테고리별 (card grid, matching country tab style) ── */}
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
-              const total = categoryCounts.reduce((s, c) => s + c.count, 0);
+              const grandTotal = categoryCounts.reduce((s, c) => s + c.count, 0);
               const filtered = categoryCounts.filter(c => c.category !== "General");
+              const classifiedTotal = filtered.reduce((s, c) => s + c.count, 0);
               const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
               const maxCount = filtered.length > 0 ? filtered[0].count : 1;
 
@@ -1450,7 +1451,7 @@ export const CollectionCriteria = () => {
                   {/* Card grid - 4 per row */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                     {filtered.map((c) => {
-                      const pct = total > 0 ? Math.round((c.count / total) * 100) : 0;
+                      const pct = classifiedTotal > 0 ? Math.round((c.count / classifiedTotal) * 100) : 0;
                       const barW = Math.max((c.count / maxCount) * 100, 4);
                       return (
                         <div key={c.category} className="rounded border border-border bg-background/60 px-2 py-1.5">
@@ -1464,7 +1465,7 @@ export const CollectionCriteria = () => {
                             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${barW}%` }} />
                           </div>
                           <p className="text-[9px] text-muted-foreground">
-                            <span className="font-bold text-foreground">{c.count.toLocaleString()}</span> / {total.toLocaleString()}
+                            <span className="font-bold text-foreground">{c.count.toLocaleString()}</span> / {classifiedTotal.toLocaleString()}
                           </p>
                         </div>
                       );
@@ -1476,16 +1477,18 @@ export const CollectionCriteria = () => {
                     <div className="rounded border border-border bg-muted/30 px-3 py-2 flex items-center justify-between">
                       <div>
                         <p className="text-[11px] font-semibold text-muted-foreground">📦 미분류 (General)</p>
-                        <p className="text-[9px] text-muted-foreground">카테고리 미지정 리뷰 · 분석 제외</p>
+                        <p className="text-[9px] text-muted-foreground">카테고리 미지정 리뷰 · 분석 제외 · 분모에서 제외</p>
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-bold text-muted-foreground">{generalCount.toLocaleString()}</span>
-                        <p className="text-[9px] text-muted-foreground">전체의 {total > 0 ? Math.round((generalCount / total) * 100) : 0}%</p>
+                        <p className="text-[9px] text-muted-foreground">전체 {grandTotal.toLocaleString()} 중 {grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}%</p>
                       </div>
                     </div>
                   )}
 
-                  <p className="text-[9px] text-muted-foreground text-right">출처: Bazaarvoice API + 커뮤니티 통합</p>
+                  <p className="text-[9px] text-muted-foreground text-right">
+                    분류된 리뷰 {classifiedTotal.toLocaleString()}건 기준 · 출처: Bazaarvoice API + 커뮤니티 통합
+                  </p>
                 </div>
               );
             })()}
