@@ -1080,14 +1080,15 @@ Deno.serve(async (req) => {
 
     // ── Generate AI insights ──
     console.log("Generating AI channel insights...");
-    const [lgcomInsight, redditInsight, allChannelSummary] = await Promise.all([
+    const [lgcomInsight, redditInsight, communityInsight, allChannelSummary] = await Promise.all([
       generateChannelInsight(sb, lovableApiKey, "lgcom"),
       generateChannelInsight(sb, lovableApiKey, "reddit"),
+      generateChannelInsight(sb, lovableApiKey, "community"),
       generateAllChannelSummary(sb, lovableApiKey),
     ]);
-    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, allChannel: !!allChannelSummary });
+    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, community: !!communityInsight, allChannel: !!allChannelSummary });
 
-    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl, allChannelSummary);
+    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl, allChannelSummary, communityInsight);
 
     if (format === "json") {
       return new Response(JSON.stringify({ html, data: newsletterData, lgcomInsight, redditInsight }), {
