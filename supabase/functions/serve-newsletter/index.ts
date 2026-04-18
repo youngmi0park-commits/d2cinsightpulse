@@ -1015,13 +1015,14 @@ Deno.serve(async (req) => {
     // ── Action Checklist — derived from opportunities + trending + regional ──
     const actionChecklist: { priority: "HIGH" | "MID" | "LOW"; channel: string; action: string; basis: string; owner: string }[] = [];
     for (const op of opportunities.slice(0, 4)) {
+      const countryTag = op.country && op.country !== "-" ? op.country : "GLOBAL";
       if (op.tag === "fix") {
         actionChecklist.push({
           priority: "HIGH",
           channel: "FAQ / PDP",
           action: `${op.title} — FAQ 보강 및 CRITEO 캠페인 일시 중단`,
           basis: `${op.country} ${op.channel} · ${op.desc}`,
-          owner: "현지 마케팅팀",
+          owner: countryTag,
         });
       } else if (op.tag === "amplify") {
         actionChecklist.push({
@@ -1029,7 +1030,7 @@ Deno.serve(async (req) => {
           channel: "PMAX / Affiliate",
           action: `${op.title} — 긍정 리뷰 헤드라인을 PMAX 소재로 즉시 적용`,
           basis: `${op.country} ${op.channel} · ${op.desc}`,
-          owner: "글로벌 디지털팀",
+          owner: countryTag,
         });
       } else {
         actionChecklist.push({
@@ -1037,26 +1038,32 @@ Deno.serve(async (req) => {
           channel: "모니터링",
           action: `${op.title} — 차주 데이터 누적 후 재평가`,
           basis: `${op.country} ${op.channel} · ${op.desc}`,
-          owner: "RTA 운영팀",
+          owner: countryTag,
         });
       }
     }
     if (negKws[0]?.keyword) {
+      // 부정 키워드 상위 국가 추정
+      const topNegCountry = regionalSignals
+        .filter(r => r.negPct >= 30)
+        .sort((a, b) => b.negPct - a.negPct)[0]?.country ?? "GLOBAL";
       actionChecklist.push({
         priority: "HIGH",
         channel: "CRM / CS",
         action: `"${negKws[0].keyword}" 부정 키워드 대응 — CS 응대 스크립트 업데이트`,
         basis: `이번 주 부정 1위 · ${negKws[0].count}건 언급`,
-        owner: "CS 운영팀",
+        owner: topNegCountry,
       });
     }
     if (posKws[0]?.keyword) {
+      const topPosCountry = regionalSignals
+        .sort((a, b) => b.posPct - a.posPct)[0]?.country ?? "GLOBAL";
       actionChecklist.push({
         priority: "MID",
         channel: "SEO / 콘텐츠",
         action: `"${posKws[0].keyword}" 키워드 — 블로그·PDP 본문에 반영하여 SEO 강화`,
         basis: `이번 주 긍정 1위 · ${posKws[0].count}건 언급`,
-        owner: "콘텐츠팀",
+        owner: topPosCountry,
       });
     }
 
