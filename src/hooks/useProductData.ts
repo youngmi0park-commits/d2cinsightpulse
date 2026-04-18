@@ -87,63 +87,97 @@ export function useSearchProducts(query: string) {
   });
 }
 
-// Fetch trending products from DB — latest snapshot_date only
+// Shared data window — weekly first, fallback to 30d when too sparse
+const WEEKLY_MIN_REVIEWS = 30;
+
+export interface TrendingDataWindow {
+  windowDays: 7 | 30;
+  isFallback: boolean;
+  weeklyCount: number;
+}
+
+// Fetch trending data window status (used by dashboard header badge)
+export function useTrendingDataWindow() {
+  return useQuery({
+    queryKey: ["trending-data-window"],
+    queryFn: async (): Promise<TrendingDataWindow> => {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("reviews")
+        .select("id", { count: "exact", head: true })
+        .gte("published_at", weekAgo);
+      const weeklyCount = count || 0;
+      const isFallback = weeklyCount < WEEKLY_MIN_REVIEWS;
+      return { windowDays: isFallback ? 30 : 7, isFallback, weeklyCount };
+    },
+    staleTime: 60_000,
+  });
+}
+
+// Aggregate trending products from reviews directly (published_at window)
 export function useTrendingProducts(source?: string) {
   return useQuery({
-    queryKey: ["trending-products", source],
+    queryKey: ["trending-products-v2", source],
     queryFn: async () => {
-      // First get the most recent snapshot_date
-      const { data: latestRow } = await supabase
-        .from("trending_snapshots")
-        .select("snapshot_date")
-        .order("snapshot_date", { ascending: false })
-        .limit(1)
-        .single();
+      const fetchSince = async (sinceISO: string) => {
+        let q = supabase
+          .from("reviews")
+          .select("product_id, sentiment, sentiment_score, source, products!inner(model_number, display_name, category, is_active)")
+          .gte("published_at", sinceISO)
+          .limit(2000);
+        if (source) q = q.like("source", `${source}%`);
+        const { data, error } = await q;
+        if (error) throw error;
+        return (data || []).filter((r: any) => r.products?.is_active);
+      };
 
-      const latestDate = latestRow?.snapshot_date;
-
-      let query = supabase
-        .from("trending_snapshots")
-        .select("*, products!inner(model_number, display_name, category)")
-        .order("mention_count", { ascending: false })
-        .limit(10);
-
-      if (latestDate) {
-        query = query.eq("snapshot_date", latestDate);
-      }
-      if (source) {
-        query = query.eq("source", source);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      let rows = await fetchSince(weekAgo);
+      if (rows.length < WEEKLY_MIN_REVIEWS) {
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        rows = await fetchSince(monthAgo);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const agg: Record<string, { product: any; mentions: number; posScore: number; total: number }> = {};
+      for (const r of rows) {
+        const pid = (r as any).product_id as string;
+        const prod = (r as any).products;
+        if (!agg[pid]) agg[pid] = { product: prod, mentions: 0, posScore: 0, total: 0 };
+        agg[pid].mentions++;
+        if ((r as any).sentiment === "positive") agg[pid].posScore++;
+        agg[pid].total++;
+      }
 
-      return (data || []).map((item: any, idx: number) => ({
-        rank: item.rank || idx + 1,
-        modelNumber: item.products.model_number,
-        displayName: item.products.display_name,
-        category: item.products.category,
-        mentions: item.mention_count,
-        sentimentScore: Math.round((item.avg_sentiment_score || 0.5) * 100),
-        trend: (item.trend || "stable") as "up" | "down" | "stable",
-        changePercent: Number(item.change_percent) || 0,
-      })) as DBTrendingProduct[];
+      return Object.entries(agg)
+        .map(([pid, v]) => ({
+          productId: pid,
+          rank: 0,
+          modelNumber: v.product.model_number,
+          displayName: v.product.display_name,
+          category: v.product.category,
+          mentions: v.mentions,
+          sentimentScore: v.total > 0 ? Math.round((v.posScore / v.total) * 100) : 50,
+          trend: "stable" as const,
+          changePercent: 0,
+        }))
+        .sort((a, b) => b.mentions - a.mentions)
+        .slice(0, 10)
+        .map((p, i) => ({ ...p, rank: i + 1 })) as (DBTrendingProduct & { productId: string })[];
     },
   });
 }
 
-// Fetch trending keywords from DB — latest snapshot_date only
+// Fetch trending keywords from DB — latest snapshot_date only (extract-keywords already uses 7d window)
 export function useTrendingKeywords(source?: string) {
   return useQuery({
     queryKey: ["trending-keywords", source],
     queryFn: async () => {
-      // First get the most recent snapshot_date
       const { data: latestRow } = await supabase
         .from("trending_keywords")
         .select("snapshot_date")
         .order("snapshot_date", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const latestDate = latestRow?.snapshot_date;
 

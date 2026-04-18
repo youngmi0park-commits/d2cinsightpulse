@@ -4,7 +4,7 @@ import { format, subDays } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, useTrendingDataWindow, type DBTrendingKeyword } from "@/hooks/useProductData";
 import { maskCompetitorNames } from "@/lib/sentiment";
 
 /* ───── Types ───── */
@@ -76,19 +76,32 @@ function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
 
 function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 6) {
   return useQuery({
-    queryKey: ["channel-top-products", sourcePrefix, sentiment, limit],
+    queryKey: ["channel-top-products-weekly", sourcePrefix, sentiment, limit],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("product_id, products!inner(model_number, display_name, category, is_active)")
-        .like("source", `${sourcePrefix}%`)
-        .eq("sentiment", sentiment)
-        .limit(1000);
+      const fetchSince = async (sinceISO: string) => {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("product_id, products!inner(model_number, display_name, category, is_active)")
+          .like("source", `${sourcePrefix}%`)
+          .eq("sentiment", sentiment)
+          .gte("published_at", sinceISO)
+          .limit(1000);
+        if (error) throw error;
+        return data || [];
+      };
 
-      if (error) throw error;
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      let data = await fetchSince(weekAgo);
+      let windowDays: 7 | 30 = 7;
+      // Per-channel/sentiment fallback threshold
+      if (data.length < 10) {
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        data = await fetchSince(monthAgo);
+        windowDays = 30;
+      }
 
       const prodMap: Record<string, ChannelTopProduct> = {};
-      for (const r of data || []) {
+      for (const r of data) {
         const prod = r.products as any;
         if (!prod?.is_active) continue;
         const pid = r.product_id;
@@ -103,9 +116,10 @@ function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 
         }
         prodMap[pid].count++;
       }
-      return Object.values(prodMap)
+      const products = Object.values(prodMap)
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
+      return { products, windowDays, totalReviews: data.length };
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -146,11 +160,21 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
   const { data: stats } = useProductStats();
   const { data: sourceCounts = {} } = useSourceCounts();
 
-  // Channel top products
-  const { data: lgcomPos = [], isLoading: lgcomPosL } = useChannelTopProducts("lge_com", "positive");
-  const { data: lgcomNeg = [], isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
-  const { data: redditPos = [], isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
-  const { data: redditNeg = [], isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+  // Channel top products (weekly-first with 30d fallback per channel)
+  const { data: lgcomPosRaw, isLoading: lgcomPosL } = useChannelTopProducts("lge_com", "positive");
+  const { data: lgcomNegRaw, isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
+  const { data: redditPosRaw, isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
+  const { data: redditNegRaw, isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+
+  const lgcomPos = lgcomPosRaw?.products ?? [];
+  const lgcomNeg = lgcomNegRaw?.products ?? [];
+  const redditPos = redditPosRaw?.products ?? [];
+  const redditNeg = redditNegRaw?.products ?? [];
+
+  // Aggregate window status across channels
+  const { data: dataWindow } = useTrendingDataWindow();
+  const channelFallbacks = [lgcomPosRaw, lgcomNegRaw, redditPosRaw, redditNegRaw].filter(c => c?.windowDays === 30).length;
+  const isFallbackWindow = (dataWindow?.isFallback ?? false) || channelFallbacks >= 2;
 
   const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
   const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
@@ -529,8 +553,20 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
           LIVE
         </span>
-        <span className="text-[11px] text-muted-foreground border border-border rounded-full px-2.5 py-0.5">
-          📅 {dateRangeLabel} · 주간 집계
+        <span
+          className={cn(
+            "text-[11px] rounded-full px-2.5 py-0.5 border",
+            isFallbackWindow
+              ? "bg-amber-50 border-amber-200 text-amber-800"
+              : "border-border text-muted-foreground"
+          )}
+          title={isFallbackWindow
+            ? `이번 주 작성된 리뷰가 부족(${dataWindow?.weeklyCount ?? 0}건)하여 최근 30일 작성 리뷰까지 분석에 포함했습니다.`
+            : `published_at 기준 이번 주(최근 7일) 작성 리뷰만 분석에 포함합니다.`}
+        >
+          {isFallbackWindow
+            ? `⚠️ 1개월 폴백 · 이번 주 작성 ${dataWindow?.weeklyCount ?? 0}건`
+            : `📅 ${dateRangeLabel} · 이번 주 작성 리뷰`}
         </span>
         <span className="text-[11px] text-primary border border-primary/20 rounded-full px-2.5 py-0.5">
           🔌 43개+ 채널 · 15개국 수집중
