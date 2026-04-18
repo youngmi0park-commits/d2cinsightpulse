@@ -76,19 +76,32 @@ function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
 
 function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 6) {
   return useQuery({
-    queryKey: ["channel-top-products", sourcePrefix, sentiment, limit],
+    queryKey: ["channel-top-products-weekly", sourcePrefix, sentiment, limit],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("product_id, products!inner(model_number, display_name, category, is_active)")
-        .like("source", `${sourcePrefix}%`)
-        .eq("sentiment", sentiment)
-        .limit(1000);
+      const fetchSince = async (sinceISO: string) => {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("product_id, products!inner(model_number, display_name, category, is_active)")
+          .like("source", `${sourcePrefix}%`)
+          .eq("sentiment", sentiment)
+          .gte("published_at", sinceISO)
+          .limit(1000);
+        if (error) throw error;
+        return data || [];
+      };
 
-      if (error) throw error;
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      let data = await fetchSince(weekAgo);
+      let windowDays: 7 | 30 = 7;
+      // Per-channel/sentiment fallback threshold
+      if (data.length < 10) {
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        data = await fetchSince(monthAgo);
+        windowDays = 30;
+      }
 
       const prodMap: Record<string, ChannelTopProduct> = {};
-      for (const r of data || []) {
+      for (const r of data) {
         const prod = r.products as any;
         if (!prod?.is_active) continue;
         const pid = r.product_id;
@@ -103,9 +116,10 @@ function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 
         }
         prodMap[pid].count++;
       }
-      return Object.values(prodMap)
+      const products = Object.values(prodMap)
         .sort((a, b) => b.count - a.count)
         .slice(0, limit);
+      return { products, windowDays, totalReviews: data.length };
     },
     staleTime: 1000 * 60 * 5,
   });
