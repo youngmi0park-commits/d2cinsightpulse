@@ -4,7 +4,7 @@ import { format, subDays } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, useTrendingDataWindow, type DBTrendingKeyword } from "@/hooks/useProductData";
 import { maskCompetitorNames } from "@/lib/sentiment";
 
 /* ───── Types ───── */
