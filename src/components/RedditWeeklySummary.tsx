@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { countryToSourceFilter } from "@/components/CountryFilterBar";
+import { useTrendingDataWindow } from "@/hooks/useProductData";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,15 +17,18 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { t } = useLang();
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
+  const { data: window } = useTrendingDataWindow("reddit%");
+  const sinceISO = window?.sinceISO;
+
   const { data: classified } = useQuery({
-    queryKey: ["reddit-weekly-summary", country],
+    queryKey: ["reddit-weekly-summary", country, sinceISO],
+    enabled: !!sinceISO,
     queryFn: async () => {
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
-        .gte("published_at", weekAgo)
+        .gte("published_at", sinceISO!)
         .order("published_at", { ascending: false })
         .limit(2000);
       if (sourcesFilter) {
@@ -120,14 +125,17 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <BarChart3 className="h-5 w-5 text-orange-500" />
           <CardTitle className="text-lg font-heading">
             {t("Reddit Weekly Insight Summary", "Reddit 주간 인사이트 요약")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            {stats.total.toLocaleString()}{t(" signals analyzed", "건 분석 완료")}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            <DataWindowBadge sourceLike="reddit%" />
+            <Badge variant="secondary" className="text-[10px]">
+              {stats.total.toLocaleString()}{t(" signals analyzed", "건 분석 완료")}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">

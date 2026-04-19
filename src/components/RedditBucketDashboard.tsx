@@ -5,6 +5,8 @@ import { useLang } from "@/contexts/LanguageContext";
 import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import { classifyRedditPost, generateBucketSummaries, type RedditBucket, type ClassifiedPost, type BucketSummary } from "@/lib/redditBucketClassifier";
+import { useTrendingDataWindow } from "@/hooks/useProductData";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,18 +17,19 @@ import { toast } from "sonner";
 
 function useRedditClassified(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
+  const { data: window } = useTrendingDataWindow("reddit%");
   return useQuery({
-    queryKey: ["reddit-classified", country, range],
+    queryKey: ["reddit-classified", country, range, window?.sinceISO],
+    enabled: range !== "weekly" || !!window,
     queryFn: async () => {
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, published_at")
         .like("source", "reddit%")
-        .order("collected_at", { ascending: false })
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(2000);
-      if (range === "weekly") {
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        query = query.gte("published_at", weekAgo);
+      if (range === "weekly" && window) {
+        query = query.gte("published_at", window.sinceISO);
       }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
@@ -206,11 +209,12 @@ export function RedditBucketDashboard({ country = "all" }: { country?: string })
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <MessageSquare className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
               {t("Reddit Data Auto-Classification", "Reddit 데이터 자동 분류")}
             </CardTitle>
+            {range === "weekly" && <DataWindowBadge sourceLike="reddit%" />}
             {totalPosts > 0 && (
               <Badge variant="secondary" className="text-[10px]">
                 {totalPosts}{t(" posts analyzed", "건 분석")}

@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { useTrendingDataWindow } from "@/hooks/useProductData";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,17 +37,19 @@ export function LgComWeeklySummary() {
     return weeklyCounts.reduce((s, r) => s + Number(r.count), 0);
   }, [weeklyCounts]);
 
-  // Fetch sampled weekly reviews for sentiment breakdown
-  const weekAgo = useMemo(() => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), []);
+  // Use unified data window: 7d normally, 30d fallback when sparse
+  const { data: window } = useTrendingDataWindow("lge_com%");
+  const sinceISO = window?.sinceISO;
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
-    queryKey: ["lgcom-weekly-summary-reviews", weekAgo],
+    queryKey: ["lgcom-weekly-summary-reviews", sinceISO],
+    enabled: !!sinceISO,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reviews")
         .select("id, sentiment, sentiment_score, rating, product_id, products!inner(display_name, category, is_active)")
         .like("source", "lge_com%")
-        .gte("published_at", weekAgo)
+        .gte("published_at", sinceISO!)
         .order("published_at", { ascending: false })
         .limit(1000);
       if (error) throw error;
@@ -107,14 +111,17 @@ export function LgComWeeklySummary() {
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <BarChart3 className="h-5 w-5 text-primary" />
           <CardTitle className="text-lg font-heading">
             {t("LG.com Weekly Insight Summary", "LG.com 주간 인사이트 요약")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] ml-auto" title={t("Total reviews published in the last 7 days (from RPC weekly count)", "최근 7일 내 작성된 리뷰 수 (RPC 주간 집계)")}>
-            {t("Last 7 days", "최근 7일")} {stats.total.toLocaleString()}{t(" reviews", "건")}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            <DataWindowBadge sourceLike="lge_com%" />
+            <Badge variant="secondary" className="text-[10px]" title={t("Reviews published within the active window", "활성 윈도우 내 작성된 리뷰 합계")}>
+              {stats.total.toLocaleString()}{t(" reviews", "건")}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">
