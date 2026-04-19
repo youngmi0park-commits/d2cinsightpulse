@@ -37,17 +37,19 @@ export function LgComWeeklySummary() {
     return weeklyCounts.reduce((s, r) => s + Number(r.count), 0);
   }, [weeklyCounts]);
 
-  // Fetch sampled weekly reviews for sentiment breakdown
-  const weekAgo = useMemo(() => new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), []);
+  // Use unified data window: 7d normally, 30d fallback when sparse
+  const { data: window } = useTrendingDataWindow("lge_com%");
+  const sinceISO = window?.sinceISO;
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
-    queryKey: ["lgcom-weekly-summary-reviews", weekAgo],
+    queryKey: ["lgcom-weekly-summary-reviews", sinceISO],
+    enabled: !!sinceISO,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reviews")
         .select("id, sentiment, sentiment_score, rating, product_id, products!inner(display_name, category, is_active)")
         .like("source", "lge_com%")
-        .gte("published_at", weekAgo)
+        .gte("published_at", sinceISO!)
         .order("published_at", { ascending: false })
         .limit(1000);
       if (error) throw error;
