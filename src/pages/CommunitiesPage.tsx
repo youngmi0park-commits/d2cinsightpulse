@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
+import { WEEKLY_MIN_REVIEWS, getSinceISO } from "@/hooks/useProductData";
 
 /* ── types ── */
 interface ProductInsight {
