@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CountryFilterBar, countryToSourceFilter } from "@/components/CountryFilterBar";
+import { WEEKLY_MIN_REVIEWS, getSinceISO } from "@/hooks/useProductData";
 
 /* ── types ── */
 interface ProductInsight {
@@ -62,21 +63,42 @@ function useBasicStats(country: string, range: "all" | "weekly") {
   return useQuery({
     queryKey: ["community-basic-stats", country, range],
     queryFn: async () => {
-      let query = supabase
-        .from("reviews")
-        .select("source, sentiment", { count: "exact" })
-        .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%")
-        .limit(2000);
+      const baseQuery = () => {
+        let q = supabase
+          .from("reviews")
+          .select("source, sentiment", { count: "exact" })
+          .not("source", "like", "lge_com%")
+          .not("source", "like", "reddit%")
+          .limit(2000);
+        if (sourcesFilter && sourcesFilter.length > 0) {
+          q = q.in("source", sourcesFilter);
+        }
+        return q;
+      };
+
+      let data: any[] | null = null;
+      let count: number | null = null;
+
       if (range === "weekly") {
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        query = query.gte("published_at", weekAgo);
+        // Try 7d first
+        const week = await baseQuery().gte("published_at", getSinceISO(7));
+        if (week.error) throw week.error;
+        if ((week.count || 0) < WEEKLY_MIN_REVIEWS) {
+          // Fallback to 30d
+          const month = await baseQuery().gte("published_at", getSinceISO(30));
+          if (month.error) throw month.error;
+          data = month.data;
+          count = month.count;
+        } else {
+          data = week.data;
+          count = week.count;
+        }
+      } else {
+        const all = await baseQuery();
+        if (all.error) throw all.error;
+        data = all.data;
+        count = all.count;
       }
-      if (sourcesFilter && sourcesFilter.length > 0) {
-        query = query.in("source", sourcesFilter);
-      }
-      const { data, error, count } = await query;
-      if (error) throw error;
 
       const byChannel: Record<string, { total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
@@ -240,7 +262,7 @@ const CommunitiesPage = () => {
   const [range, setRange] = useState<"all" | "weekly">("all");
   const { data: communityCounts } = useCommunityCountryCounts();
   // Channel stats always show cumulative totals
-  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, "all");
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, range);
   // AI insights respect the range toggle
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
@@ -270,10 +292,15 @@ const CommunitiesPage = () => {
         <>
           {/* Channel Stats Bar */}
           <div className="gradient-card rounded-xl border border-border p-5">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <Globe className="h-4 w-4 text-primary" />
               <h4 className="text-sm font-semibold font-heading">채널별 리뷰 현황</h4>
               <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">50건 이상 채널 · 기타 통합</Badge>
+              {range === "weekly" && (
+                <Badge variant="outline" className="text-[10px] gap-1 border-primary/30 text-primary bg-primary/5" title="이번 주(최근 7일) 작성 리뷰 기준. 30건 미만이면 최근 30일로 자동 폴백.">
+                  {stats.total < WEEKLY_MIN_REVIEWS ? "⚠️ 1개월 폴백" : "📅 이번 주 작성"} · {stats.total.toLocaleString()}건
+                </Badge>
+              )}
               <Badge variant="secondary" className="text-[10px] ml-auto">
                 Total {stats.total.toLocaleString()}
               </Badge>
