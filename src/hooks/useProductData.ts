@@ -88,27 +88,41 @@ export function useSearchProducts(query: string) {
 }
 
 // Shared data window — weekly first, fallback to 30d when too sparse
-const WEEKLY_MIN_REVIEWS = 30;
+export const WEEKLY_MIN_REVIEWS = 30;
 
 export interface TrendingDataWindow {
   windowDays: 7 | 30;
   isFallback: boolean;
   weeklyCount: number;
+  sinceISO: string;
+}
+
+// Compute the published_at threshold ISO string for a given window in days
+export function getSinceISO(days: number): string {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 // Fetch trending data window status (used by dashboard header badge)
-export function useTrendingDataWindow() {
+// Optionally scope by source LIKE pattern (e.g. "lge_com%", "reddit%")
+export function useTrendingDataWindow(sourceLike?: string) {
   return useQuery({
-    queryKey: ["trending-data-window"],
+    queryKey: ["trending-data-window", sourceLike || "all"],
     queryFn: async (): Promise<TrendingDataWindow> => {
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await supabase
+      const weekAgo = getSinceISO(7);
+      let q = supabase
         .from("reviews")
         .select("id", { count: "exact", head: true })
         .gte("published_at", weekAgo);
+      if (sourceLike) q = q.like("source", sourceLike);
+      const { count } = await q;
       const weeklyCount = count || 0;
       const isFallback = weeklyCount < WEEKLY_MIN_REVIEWS;
-      return { windowDays: isFallback ? 30 : 7, isFallback, weeklyCount };
+      return {
+        windowDays: isFallback ? 30 : 7,
+        isFallback,
+        weeklyCount,
+        sinceISO: isFallback ? getSinceISO(30) : weekAgo,
+      };
     },
     staleTime: 60_000,
   });
