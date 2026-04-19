@@ -125,14 +125,17 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <BarChart3 className="h-5 w-5 text-orange-500" />
           <CardTitle className="text-lg font-heading">
             {t("Reddit Weekly Insight Summary", "Reddit 주간 인사이트 요약")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] ml-auto">
-            {stats.total.toLocaleString()}{t(" signals analyzed", "건 분석 완료")}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            <DataWindowBadge sourceLike="reddit%" />
+            <Badge variant="secondary" className="text-[10px]">
+              {stats.total.toLocaleString()}{t(" signals analyzed", "건 분석 완료")}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">

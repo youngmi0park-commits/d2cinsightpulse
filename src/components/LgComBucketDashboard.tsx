@@ -477,11 +477,12 @@ export function LgComBucketDashboard() {
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Store className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
               {t("LG.com Review Auto-Classification", "LG.com 리뷰 자동 분류")}
             </CardTitle>
+            {period === "weekly" && <DataWindowBadge sourceLike="lge_com%" />}
             {totalPosts > 0 && (
               <Badge variant="secondary" className="text-[10px]">
                 {totalPosts}{t(" reviews analyzed", "건 분석")}

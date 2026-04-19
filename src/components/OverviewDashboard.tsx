@@ -152,10 +152,16 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
   const [unmatchedOpen, setUnmatchedOpen] = useState(true);
   const [takeawayOpen, setTakeawayOpen] = useState(true);
 
+  // Map channel label → source LIKE pattern for window badge
+  const sourceLike = channelLabel === "LG.COM" ? "lge_com%" : channelLabel === "REDDIT" ? "reddit%" : undefined;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <SectionTitle title={`${channelEmoji} ${channelLabel} 주간 오버뷰`} />
+        <div className="flex items-center gap-3 flex-wrap">
+          <SectionTitle title={`${channelEmoji} ${channelLabel} 주간 오버뷰`} />
+          <DataWindowBadge sourceLike={sourceLike} />
+        </div>
         <button
           onClick={onGenerate}
           disabled={isLoading}
