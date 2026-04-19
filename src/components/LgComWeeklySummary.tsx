@@ -111,14 +111,17 @@ export function LgComWeeklySummary() {
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <BarChart3 className="h-5 w-5 text-primary" />
           <CardTitle className="text-lg font-heading">
             {t("LG.com Weekly Insight Summary", "LG.com 주간 인사이트 요약")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[10px] ml-auto" title={t("Total reviews published in the last 7 days (from RPC weekly count)", "최근 7일 내 작성된 리뷰 수 (RPC 주간 집계)")}>
-            {t("Last 7 days", "최근 7일")} {stats.total.toLocaleString()}{t(" reviews", "건")}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            <DataWindowBadge sourceLike="lge_com%" />
+            <Badge variant="secondary" className="text-[10px]" title={t("Reviews published within the active window", "활성 윈도우 내 작성된 리뷰 합계")}>
+              {stats.total.toLocaleString()}{t(" reviews", "건")}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">

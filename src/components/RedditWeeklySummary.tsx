@@ -17,15 +17,18 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { t } = useLang();
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
+  const { data: window } = useTrendingDataWindow("reddit%");
+  const sinceISO = window?.sinceISO;
+
   const { data: classified } = useQuery({
-    queryKey: ["reddit-weekly-summary", country],
+    queryKey: ["reddit-weekly-summary", country, sinceISO],
+    enabled: !!sinceISO,
     queryFn: async () => {
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, product_id, products!inner(display_name, category)")
         .like("source", "reddit%")
-        .gte("published_at", weekAgo)
+        .gte("published_at", sinceISO!)
         .order("published_at", { ascending: false })
         .limit(2000);
       if (sourcesFilter) {

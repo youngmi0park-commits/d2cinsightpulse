@@ -17,18 +17,19 @@ import { toast } from "sonner";
 
 function useRedditClassified(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
+  const { data: window } = useTrendingDataWindow("reddit%");
   return useQuery({
-    queryKey: ["reddit-classified", country, range],
+    queryKey: ["reddit-classified", country, range, window?.sinceISO],
+    enabled: range !== "weekly" || !!window,
     queryFn: async () => {
       let query = supabase
         .from("reviews")
         .select("id, content, title, sentiment, sentiment_score, source, published_at")
         .like("source", "reddit%")
-        .order("collected_at", { ascending: false })
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(2000);
-      if (range === "weekly") {
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        query = query.gte("published_at", weekAgo);
+      if (range === "weekly" && window) {
+        query = query.gte("published_at", window.sinceISO);
       }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
