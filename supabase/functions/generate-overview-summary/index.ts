@@ -19,21 +19,26 @@ type ReviewRow = {
   sentiment_score: number | null;
   rating: number | null;
   source: string | null;
+  published_at: string | null;
   collected_at: string | null;
   product_id: string | null;
 };
 
 const REVIEW_SELECT =
-  "id,title,content,sentiment,sentiment_score,rating,source,collected_at,product_id";
+  "id,title,content,sentiment,sentiment_score,rating,source,published_at,collected_at,product_id";
 
 const MIN_REQUIRED_REVIEWS = 30;
 const TARGET_SAMPLE_SIZE = 180;
 const REVIEW_PAGE_SIZE = 200;
 
+// Unified window aligned with dashboard DataWindowBadge:
+// 1) 이번 주(최근 7일) 작성 리뷰  → 30건 미만이면
+// 2) 최근 30일 작성 리뷰          → 그래도 부족하면
+// 3) 전체 누적 (작성일 기준, 안전망)
 const REVIEW_WINDOWS = [
-  { label: "이번 주 수집 리뷰", days: 7, maxScanRows: 800 },
-  { label: "최근 30일 수집 리뷰", days: 30, maxScanRows: 1200 },
-  { label: "전체 누적 (수집일 기준)", days: null, maxScanRows: 1600 },
+  { label: "이번 주 작성 리뷰", days: 7, maxScanRows: 800 },
+  { label: "최근 30일 작성 리뷰", days: 30, maxScanRows: 1200 },
+  { label: "전체 누적 (작성일 기준)", days: null, maxScanRows: 1600 },
 ] as const;
 
 function matchesChannel(source: string | null | undefined, channel: string) {
@@ -74,11 +79,12 @@ async function fetchReviewPage(
   let query = sb
     .from("reviews")
     .select(REVIEW_SELECT)
-    .order("collected_at", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
 
   if (sinceIso) {
-    query = query.gte("collected_at", sinceIso);
+    // Filter on published_at (작성 시점) — same as dashboard windows
+    query = query.gte("published_at", sinceIso);
   }
 
   query = applyChannelFilter(query, channel);
@@ -142,7 +148,7 @@ async function fetchSampledReviews(sb: any, channel: string) {
     }
   }
 
-  return { periodLabel: "전체 누적 (수집일 기준)", reviews: [] as ReviewRow[] };
+  return { periodLabel: "전체 누적 (작성일 기준)", reviews: [] as ReviewRow[] };
 }
 
 Deno.serve(async (req) => {
