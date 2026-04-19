@@ -263,7 +263,7 @@ const CommunitiesPage = () => {
   const [range, setRange] = useState<"all" | "weekly">("all");
   const { data: communityCounts } = useCommunityCountryCounts();
   // Channel stats always show cumulative totals
-  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, "all");
+  const { data: stats, isLoading: statsLoading } = useBasicStats(selectedCountry, range);
   // AI insights respect the range toggle
 
   const hasData = !statsLoading && !!stats && stats.channels.length > 0;
