@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
 
 /* ───── KPI hook ───── */
 function useOverviewKPIs() {
