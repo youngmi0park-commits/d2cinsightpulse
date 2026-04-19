@@ -64,21 +64,42 @@ function useBasicStats(country: string, range: "all" | "weekly") {
   return useQuery({
     queryKey: ["community-basic-stats", country, range],
     queryFn: async () => {
-      let query = supabase
-        .from("reviews")
-        .select("source, sentiment", { count: "exact" })
-        .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%")
-        .limit(2000);
+      const baseQuery = () => {
+        let q = supabase
+          .from("reviews")
+          .select("source, sentiment", { count: "exact" })
+          .not("source", "like", "lge_com%")
+          .not("source", "like", "reddit%")
+          .limit(2000);
+        if (sourcesFilter && sourcesFilter.length > 0) {
+          q = q.in("source", sourcesFilter);
+        }
+        return q;
+      };
+
+      let data: any[] | null = null;
+      let count: number | null = null;
+
       if (range === "weekly") {
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        query = query.gte("published_at", weekAgo);
+        // Try 7d first
+        const week = await baseQuery().gte("published_at", getSinceISO(7));
+        if (week.error) throw week.error;
+        if ((week.count || 0) < WEEKLY_MIN_REVIEWS) {
+          // Fallback to 30d
+          const month = await baseQuery().gte("published_at", getSinceISO(30));
+          if (month.error) throw month.error;
+          data = month.data;
+          count = month.count;
+        } else {
+          data = week.data;
+          count = week.count;
+        }
+      } else {
+        const all = await baseQuery();
+        if (all.error) throw all.error;
+        data = all.data;
+        count = all.count;
       }
-      if (sourcesFilter && sourcesFilter.length > 0) {
-        query = query.in("source", sourcesFilter);
-      }
-      const { data, error, count } = await query;
-      if (error) throw error;
 
       const byChannel: Record<string, { total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
