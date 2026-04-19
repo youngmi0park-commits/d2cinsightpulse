@@ -148,7 +148,7 @@ async function fetchSampledReviews(sb: any, channel: string) {
     }
   }
 
-  return { periodLabel: "전체 누적 (수집일 기준)", reviews: [] as ReviewRow[] };
+  return { periodLabel: "전체 누적 (작성일 기준)", reviews: [] as ReviewRow[] };
 }
 
 Deno.serve(async (req) => {
