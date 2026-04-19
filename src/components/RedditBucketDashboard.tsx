@@ -5,6 +5,8 @@ import { useLang } from "@/contexts/LanguageContext";
 import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import { classifyRedditPost, generateBucketSummaries, type RedditBucket, type ClassifiedPost, type BucketSummary } from "@/lib/redditBucketClassifier";
+import { useTrendingDataWindow } from "@/hooks/useProductData";
+import { DataWindowBadge } from "@/components/DataWindowBadge";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

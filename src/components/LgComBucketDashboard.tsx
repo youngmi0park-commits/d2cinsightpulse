@@ -20,8 +20,10 @@ type CountryFilter = "all" | "US" | "UK";
 const DISPLAY_BUCKETS: RedditBucket[] = ["REVIEW", "VOC"];
 
 function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
+  const { data: window } = useTrendingDataWindow("lge_com%");
   return useQuery({
-    queryKey: ["lgcom-classified", period, country],
+    queryKey: ["lgcom-classified", period, country, window?.sinceISO],
+    enabled: period !== "weekly" || !!window,
     queryFn: async () => {
       let query = supabase
         .from("reviews")
@@ -35,13 +37,13 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
         query = query.like("source", "lge_com%");
       }
 
-      if (period === "weekly") {
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        query = query.gte("collected_at", weekAgo);
+      if (period === "weekly" && window) {
+        // Use unified window: 7d normally, 30d fallback when sparse
+        query = query.gte("published_at", window.sinceISO);
       }
 
       const { data, error } = await query
-        .order("collected_at", { ascending: false })
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(500);
       if (error) throw error;
       const classified = (data || []).map((r: any) => ({
@@ -57,17 +59,19 @@ function useLgComClassified(period: PeriodFilter, country: CountryFilter) {
 
 // ── VOC Deep Analysis: weekly negative by country + response rate ──
 function useVocDeepAnalysis() {
+  const { data: window } = useTrendingDataWindow("lge_com%");
   return useQuery({
-    queryKey: ["lgcom-voc-deep"],
+    queryKey: ["lgcom-voc-deep", window?.sinceISO],
+    enabled: !!window,
     queryFn: async () => {
-      // Weekly negative reviews by country
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      // Negative reviews by country within the unified window (7d / 30d fallback)
+      const sinceISO = window!.sinceISO;
       const { data: negData } = await supabase
         .from("reviews")
         .select("id, source, content, title, author, sentiment_score")
         .like("source", "lge_com%")
         .eq("sentiment", "negative")
-        .gte("collected_at", weekAgo)
+        .gte("published_at", sinceISO)
         .order("sentiment_score", { ascending: true })
         .limit(500);
 
