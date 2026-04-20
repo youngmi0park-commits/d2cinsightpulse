@@ -129,13 +129,13 @@ function ProductRankTable({
                   {(() => {
                     const isGeneric = !p.display_name || /^LG Product/i.test(p.display_name) || /GENERIC/i.test(p.display_name);
                     const isGenericCategory = !p.category || p.category === "General";
-                    const primaryName = isGeneric ? p.model_number : p.display_name;
-                    const secondaryName = isGeneric
-                      ? (isGenericCategory ? "" : p.category)
-                      : p.model_number;
+                    // Always prefer display_name as primary; only fall back to model when display_name is unusable
+                    const primaryName = isGeneric ? (isGenericCategory ? p.model_number : `LG ${p.category}`) : p.display_name;
+                    // Hide model number entirely when we have a proper display name — it's just visual noise for marketers
+                    const secondaryName = isGeneric ? (isGenericCategory ? "" : p.model_number) : "";
                     return (
                       <>
-                        <span className="font-medium text-foreground text-xs leading-tight">{primaryName}</span>
+                        <span className="font-medium text-foreground text-xs leading-tight" title={p.model_number}>{primaryName}</span>
                         {secondaryName && <span className="text-[10px] text-muted-foreground font-mono">{secondaryName}</span>}
                       </>
                     );

@@ -117,8 +117,8 @@ export function ProductSearchInput({ onSelect, placeholder, className = "" }: Pr
                 }}
                 className="w-full text-left px-3 py-2 text-xs hover:bg-muted/50 transition-colors border-b border-border/30 last:border-b-0"
               >
-                <div className="font-medium text-foreground truncate">{p.display_name}</div>
-                <div className="text-[10px] text-muted-foreground">{p.model_number} · {p.category}{p.review_count ? ` · ${p.review_count}건` : ""}</div>
+                <div className="font-medium text-foreground truncate" title={p.model_number}>{p.display_name}</div>
+                <div className="text-[10px] text-muted-foreground"><span className="font-mono">{p.model_number}</span> · {p.category}{p.review_count ? ` · ${p.review_count}건` : ""}</div>
               </button>
             ))
           )}

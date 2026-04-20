@@ -931,8 +931,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                   {idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold truncate">{product.displayName}</p>
-                  <p className="text-[9px] text-muted-foreground">{product.category} · {product.modelNumber}</p>
+                  <p className="text-[11px] font-semibold truncate" title={product.modelNumber}>{product.displayName}</p>
+                  <p className="text-[9px] text-muted-foreground">{product.category}</p>
                 </div>
                 <div className="w-24 h-2 bg-muted rounded-full overflow-hidden flex flex-shrink-0">
                   <div className="h-full bg-green-600" style={{ width: `${product.positivePct}%` }} />
@@ -984,8 +984,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                       idx === 0 ? "bg-green-600" : idx === 1 ? "bg-green-500" : "bg-green-400",
                     )}>{idx + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold truncate">{formatProductDisplayName(p.display_name, p.model_number, p.category)}</p>
-                      <p className="text-[9px] text-muted-foreground">{p.category} · {p.model_number}</p>
+                      <p className="text-[11px] font-semibold truncate" title={p.model_number}>{formatProductDisplayName(p.display_name, p.model_number, p.category)}</p>
+                      <p className="text-[9px] text-muted-foreground">{p.category}</p>
                     </div>
                     <span className="text-[11px] font-bold text-green-700">{p.count}</span>
                     <span className="text-[9px] text-green-600 font-semibold">UGC↑</span>
@@ -1007,8 +1007,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
                       idx === 0 ? "bg-destructive" : idx === 1 ? "bg-red-500" : "bg-red-400",
                     )}>{idx + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold truncate">{formatProductDisplayName(p.display_name, p.model_number, p.category)}</p>
-                      <p className="text-[9px] text-muted-foreground">{p.category} · {p.model_number}</p>
+                      <p className="text-[11px] font-semibold truncate" title={p.model_number}>{formatProductDisplayName(p.display_name, p.model_number, p.category)}</p>
+                      <p className="text-[9px] text-muted-foreground">{p.category}</p>
                     </div>
                     <span className="text-[11px] font-bold text-destructive">{p.count}</span>
                     <span className="text-[9px] text-red-500 font-semibold">CS↑</span>
