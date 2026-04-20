@@ -118,16 +118,22 @@ function classifyToCategory(text: string): CategoryKey | null {
 
 export function RedditCategoryAnalysis({ country = "all" }: { country?: string }) {
   const [expanded, setExpanded] = useState<CategoryKey | null>(null);
+  const [range, setRange] = useState<"weekly" | "all">("weekly");
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: reviews } = useQuery({
-    queryKey: ["reddit-category-reviews", country],
+    queryKey: ["reddit-category-reviews", country, range],
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("content, sentiment, title, product_id, author")
+        .select("content, sentiment, title, product_id, author, published_at")
         .like("source", "reddit%")
-        .limit(800);
+        .order("published_at", { ascending: false })
+        .limit(range === "weekly" ? 1000 : 3000);
+      if (range === "weekly") {
+        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        query = query.gte("published_at", weekAgo);
+      }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
         if (redditSources.length === 0) return [];
