@@ -276,7 +276,8 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
       default:
         val = `${capitalize(s1)} ${capitalize(s2)}`;
     }
-    fieldValues[f.name] = truncate(cleanCopy(val), f.max);
+    // 사용자 요구: 전체 카피 노출 — 채널 max 글자수는 카운터로만 표시 (truncate X)
+    fieldValues[f.name] = cleanCopy(val);
   }
 
   const fullText = Object.entries(fieldValues).map(([k, v]) => `${k}: ${v}`).join("\n");
