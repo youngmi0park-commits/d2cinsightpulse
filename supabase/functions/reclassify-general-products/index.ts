@@ -11,50 +11,58 @@ interface RuleSpec {
   nameRegex?: RegExp;
 }
 
-// Order matters: more specific rules first
+// Order matters: more specific rules first.
+// Synced with src/lib/categoryInference.ts — broadened with KR/global model patterns
+// (GL-, GR-, GC-, GM-, F-series washers, S-series stylers/AC, numeric-prefixed TV/monitor codes, etc.)
 const RULES: RuleSpec[] = [
+  // Styler (check before Soundbar — S3/S5 conflicts)
+  { category: "Styler", modelRegex: /^(S3[A-Z]|S5[A-Z])/i },
+  { category: "Styler", nameRegex: /Styler/i },
   // Laptop
-  { category: "Laptop", modelRegex: /^(13Z|14Z|15Z|16Z|17Z|14T|16T|17T)/i },
+  { category: "Laptop", modelRegex: /^(13Z|14Z|15Z|16Z|17Z|14T|16T|17T)\d/i },
   { category: "Laptop", nameRegex: /\bgram\b|UltraPC|Laptop/i },
-  // Monitor
-  { category: "Monitor", modelRegex: /^[0-9]{2}(WP|WQ|GP|GN|GR|GS|MP|MN|MR|UP|UQ|UR|UN|BP|BN|BR|BL|MQ|GL|UL|WL|SR|SQ)/i },
+  // Monitor (numeric-prefixed display codes)
+  { category: "Monitor", modelRegex: /^\d{2}(WP|WQ|WL|GP|GN|GR|GS|GL|MP|MN|MR|MQ|UP|UQ|UR|UN|UL|BP|BN|BR|BL|SR|SQ)/i },
   { category: "Monitor", nameRegex: /Monitor|UltraGear|UltraFine|UltraWide|DualUp/i },
-  // TV
-  { category: "TV", modelRegex: /^(OLED|UH[0-9]|UQ[0-9]|UR[0-9]|UN[0-9]|US[0-9]|QNED|NANO[0-9]|QN[0-9])/i },
-  { category: "TV", nameRegex: /OLED|QNED|NanoCell|Smart TV/i },
-  // Refrigerator
-  { category: "Refrigerator", modelRegex: /^(LRMD|LRFD|LRFC|LRFV|LRFX|LRSD|LRSE|LRSP|LRSC|LRYK|LRYC|LRMV|LRMW|LRMX|LRSV|SRFV|LFCS|LFXS|LMXS|LBN[0-9])/i },
-  { category: "Refrigerator", nameRegex: /Refrigerator|Fridge|InstaView/i },
-  // Washer
-  { category: "Washer", modelRegex: /^(WM[0-9]|WT[0-9]|WKE|WKG|WKHC|WKEX|WKGX|WKHX|WKL)/i },
-  { category: "Washer", nameRegex: /Washer|WashTower|WashCombo|Washing/i },
+  // TV (OLED / QNED / NanoCell / numeric-prefixed UH/UQ/UR/UN/UT codes)
+  { category: "TV", modelRegex: /^(OLED|QNED|NANO\d|QN\d)/i },
+  { category: "TV", modelRegex: /^\d{2,3}(OLED|QNED|NANO|UH|UQ|UR|UN|UT|US)/i },
+  { category: "TV", nameRegex: /OLED|QNED|NanoCell|Smart TV|StanbyME/i },
+  // Refrigerator (US LR-series + KR GL-/GR-/GC-/GM- series)
+  { category: "Refrigerator", modelRegex: /^(LRMD|LRFD|LRFC|LRFV|LRFX|LRFG|LRSD|LRSE|LRSP|LRSC|LRSV|LRYK|LRYC|LRYX|LRMV|LRMW|LRMX|SRFV|LFCS|LFXS|LMXS|LBN\d|LF\d)/i },
+  { category: "Refrigerator", modelRegex: /^(GL-[A-Z]?[BDFNPMTRS]|GR-[A-Z]|GC-[A-Z]|GM-[A-Z])/i },
+  { category: "Refrigerator", nameRegex: /Refrigerator|Fridge|InstaView|French.?Door|냉장고/i },
+  // Washer (US WM/WT + global F-series front loaders)
+  { category: "Washer", modelRegex: /^(WM\d|WT\d|WKE|WKG|WKHC|WKEX|WKGX|WKHX|WKL|FV\d)/i },
+  { category: "Washer", modelRegex: /^F\d+[A-Z]/i },
+  { category: "Washer", nameRegex: /Washer|WashTower|WashCombo|Washing|세탁기/i },
   // Dryer
-  { category: "Dryer", modelRegex: /^(DLE|DLG|DLEX|DLGX|DLHC|DLHX)/i },
-  { category: "Dryer", nameRegex: /\bDryer\b/i },
+  { category: "Dryer", modelRegex: /^(DLE|DLG|DLEX|DLGX|DLHC|DLHX|RD\d)/i },
+  { category: "Dryer", nameRegex: /\bDryer\b|건조기/i },
   // Dishwasher
-  { category: "Dishwasher", modelRegex: /^(LDF|LDP|LDT|LDS|LSDT|LSDF|LDFN|LDFC|LSIL)/i },
-  { category: "Dishwasher", nameRegex: /Dishwasher|QuadWash/i },
+  { category: "Dishwasher", modelRegex: /^(LDF|LDP|LDT|LDS|LSDT|LSDF|LDFN|LDFC|LSIL|DF[A-Z])/i },
+  { category: "Dishwasher", nameRegex: /Dishwasher|QuadWash|식기세척기/i },
   // Microwave
-  { category: "Microwave", modelRegex: /^(LMC|LMV|LMH|LMHM|MH[0-9]|MS[0-9]|MJ[0-9])/i },
-  { category: "Microwave", nameRegex: /Microwave|NeoChef/i },
-  // Range
-  { category: "Range", modelRegex: /^(LRE|LRG|LSE|LSG|LSRL|LSEL|LSGL|LSDL|LREL|LRGL|LWC|LWS|LWD)/i },
-  { category: "Range", nameRegex: /\bRange\b|\bOven\b|Cooktop/i },
-  // AC
-  { category: "AC", modelRegex: /^(LW[0-9]|LP[0-9]|LMU|LSN|LAN|LAU|LSU)/i },
-  { category: "AC", nameRegex: /Air Conditioner|DualCool|Artcool/i },
-  // Soundbar / Audio
-  { category: "Soundbar", modelRegex: /^(SK[0-9]|SL[0-9]|SN[0-9]|SP[0-9]|SH[0-9]|SJ[0-9]|SQC|SC9|USC|USE|DSC|XBOOM|XG[0-9]|XL[0-9]|RG[0-9]|RP[0-9]|XO[0-9]|OL[0-9]|ON[0-9]|OK[0-9]|RN[0-9]|PL[0-9]|PN[0-9]|PK[0-9])/i },
-  { category: "Soundbar", nameRegex: /Soundbar|XBOOM|Speaker/i },
-  // Vacuum
-  { category: "Vacuum", modelRegex: /^(A9|R9|VR[0-9]|VK[0-9])/i },
-  { category: "Vacuum", nameRegex: /Vacuum|CordZero/i },
+  { category: "Microwave", modelRegex: /^(LMC|LMV|LMH|LMHM|MH\d|MS\d|MJ\d|MVE|MVEL)/i },
+  { category: "Microwave", nameRegex: /Microwave|NeoChef|전자레인지/i },
+  // Range / Oven
+  { category: "Range/Oven", modelRegex: /^(LRE|LRG|LSE|LSG|LDE|LSRL|LSEL|LSGL|LSDL|LREL|LRGL|LWC|LWS|LWD)/i },
+  { category: "Range/Oven", nameRegex: /\bRange\b|\bOven\b|Cooktop|오븐|레인지/i },
+  // Air Conditioner (Artcool / DualCool / S-numeric portables)
+  { category: "Air Conditioner", modelRegex: /^(LW\d|LP\d|LMU|LSN|LAN|LAU|LSU|S\d+Q)/i },
+  { category: "Air Conditioner", nameRegex: /Air Conditioner|DualCool|Artcool|에어컨/i },
   // Air Purifier
-  { category: "Air Purifier", modelRegex: /^(AS[0-9]|AP[0-9]|AM[0-9])/i },
-  { category: "Air Purifier", nameRegex: /Purifier|PuriCare/i },
+  { category: "Air Purifier", modelRegex: /^(AS\d|AP\d|AM\d)/i },
+  { category: "Air Purifier", nameRegex: /Purifier|PuriCare|공기청정기/i },
+  // Soundbar / Audio
+  { category: "Audio", modelRegex: /^(SK\d|SL\d|SN\d|SP\d|SH\d|SJ\d|SQC|SC9|USC|USE|DSC|XBOOM|XG\d|XL\d|RG\d|RP\d|XO\d|OL\d|ON\d|OK\d|RN\d|PL\d|PN\d|PK\d|S\d{2}[A-Z])/i },
+  { category: "Audio", nameRegex: /Soundbar|XBOOM|Speaker|사운드바|오디오/i },
+  // Vacuum
+  { category: "Vacuum", modelRegex: /^(A9|R9|VR\d|VK\d|A\d{2}[A-Z])/i },
+  { category: "Vacuum", nameRegex: /Vacuum|CordZero|청소기/i },
   // Projector
-  { category: "Projector", modelRegex: /^(HU[0-9]|PF[0-9]|PH[0-9]|PG[0-9]|HF[0-9])/i },
-  { category: "Projector", nameRegex: /Projector|CineBeam/i },
+  { category: "Projector", modelRegex: /^(HU\d|PF\d|PH\d|PG\d|HF\d)/i },
+  { category: "Projector", nameRegex: /Projector|CineBeam|프로젝터/i },
 ];
 
 function classify(model: string, name: string): string | null {
