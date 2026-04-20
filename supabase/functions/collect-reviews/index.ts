@@ -270,6 +270,23 @@ Deno.serve(async (req) => {
     const body = await req.json();
     if (body.categories?.length) targetCategories = body.categories;
     if (body.channels?.length) {
+      // Reddit 채널이 명시적으로 요청된 경우 collect-reddit 함수로 위임 (Firecrawl 403 방지)
+      const redditRequested = body.channels.some((c: string) => typeof c === "string" && c.startsWith("reddit"));
+      if (redditRequested) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/collect-reddit`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mode: "auto" }),
+          });
+          console.log("[collect-reviews] Reddit 요청을 collect-reddit 함수로 위임했습니다.");
+        } catch (e) {
+          console.warn("[collect-reviews] collect-reddit 위임 실패:", (e as Error).message);
+        }
+      }
       targetChannels = CHANNELS.filter((c) => body.channels.includes(c.id));
       isManualCollection = true;
     }
