@@ -11,6 +11,7 @@ import {
   Loader2, Package, Hash, Sparkles, MessageSquareQuote, Search, X
 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveCategoryEn } from "@/lib/categoryInference";
 
 type SentimentFilter = "ALL" | "positive" | "negative";
 type CountryFilter = "all" | "US" | "UK";
@@ -25,7 +26,7 @@ function useProductReviewDetails(productId: string | null, country: CountryFilte
 
       let query = supabase
         .from("reviews")
-        .select("id, title, content, sentiment, sentiment_score, rating, source, published_at")
+        .select("id, title, content, sentiment, sentiment_score, rating, source, published_at, product_id")
         .eq("product_id", productId)
         .order("published_at", { ascending: false });
 
@@ -90,7 +91,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, title, content, sentiment, sentiment_score, source, rating, products!inner(display_name, category)")
+        .select("id, title, content, sentiment, sentiment_score, source, rating, products!inner(display_name, category, model_number)")
         .order("collected_at", { ascending: false });
 
       if (country === "US") query = query.eq("source", "lge_com_us");
@@ -106,7 +107,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
       if (error) throw error;
 
       const productMap: Record<string, {
-        productName: string; category: string; sentiment: string;
+        productName: string; category: string; modelNumber: string; sentiment: string;
         titlePhrases: Record<string, number>; snippets: string[];
         sources: Set<string>; count: number; avgRating: number; ratingCount: number;
       }> = {};
@@ -118,7 +119,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
 
         if (!productMap[key]) {
           productMap[key] = {
-            productName: prod.display_name, category: prod.category,
+            productName: prod.display_name, category: prod.category, modelNumber: prod.model_number,
             sentiment: r.sentiment || "neutral", titlePhrases: {}, snippets: [],
             sources: new Set(), count: 0, avgRating: 0, ratingCount: 0,
           };
@@ -154,7 +155,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
           }
           const keywords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([w]) => w);
           return {
-            productName: p.productName, category: p.category, sentiment: p.sentiment,
+            productName: p.productName, category: p.category, modelNumber: p.modelNumber, sentiment: p.sentiment,
             count: p.count, topPhrases, keywords, snippets: p.snippets.slice(0, 3),
             avgRating: p.ratingCount > 0 ? (p.avgRating / p.ratingCount).toFixed(1) : null,
             sources: Array.from(p.sources),
@@ -291,7 +292,10 @@ export function LgComProductInsightCards() {
                 <div>
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2" title={selectedProduct.model_number}>
                     📦 {selectedProduct.display_name}
-                    <Badge variant="secondary" className="text-[10px]">{selectedProduct.category}</Badge>
+                    {(() => {
+                      const cat = resolveCategoryEn(selectedProduct.category, selectedProduct.model_number, selectedProduct.display_name);
+                      return cat ? <Badge variant="secondary" className="text-[10px]">{cat}</Badge> : null;
+                    })()}
                   </h3>
                   <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{selectedProduct.model_number}</p>
                 </div>
@@ -459,7 +463,10 @@ export function LgComProductInsightCards() {
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-foreground line-clamp-2">📦 {item.productName}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{item.category}</p>
+                          {(() => {
+                            const cat = resolveCategoryEn(item.category, (item as any).modelNumber, item.productName);
+                            return cat ? <p className="text-[10px] text-muted-foreground mt-0.5">{cat}</p> : null;
+                          })()}
                         </div>
                         {item.topPhrases.length > 0 && (
                           <div className="space-y-1 bg-background/50 rounded-md p-2">
