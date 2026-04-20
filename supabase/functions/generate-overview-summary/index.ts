@@ -427,8 +427,8 @@ JSON 형태로 응답:
     }
 
     // Read as text first — AI gateway can return empty/truncated bodies on timeout
-    const rawBody = await aiResponse.text();
-    if (!rawBody || !rawBody.trim()) {
+    const aiBodyText = await aiResponse.text();
+    if (!aiBodyText || !aiBodyText.trim()) {
       console.error("AI returned empty body");
       return new Response(
         JSON.stringify({ overview: null, error: "AI returned empty response", fallback: true }),
@@ -437,9 +437,9 @@ JSON 형태로 응답:
     }
     let aiData: any;
     try {
-      aiData = JSON.parse(rawBody);
+      aiData = JSON.parse(aiBodyText);
     } catch {
-      console.error("Failed to parse AI gateway response:", rawBody.slice(0, 300));
+      console.error("Failed to parse AI gateway response:", aiBodyText.slice(0, 300));
       return new Response(
         JSON.stringify({ overview: null, error: "Invalid AI gateway response", fallback: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
