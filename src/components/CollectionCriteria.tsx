@@ -1392,7 +1392,7 @@ export const CollectionCriteria = () => {
                     🌏 {activeCountries.length + (countryCounts["Global"] ? 1 : 0)} {t("countries", "개국")}
                   </span>
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
-                    📦 {categoryCounts.filter(c => c.category !== "General").length} {t("categories", "카테고리")}
+                    📦 {mergeCategoryCountsByKo(categoryCounts).filter(c => c.category !== "General" && c.category !== "미분류").length} {t("categories", "카테고리")}
                   </span>
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
                     📡 {totalChannels} {t("channels", "채널")}
