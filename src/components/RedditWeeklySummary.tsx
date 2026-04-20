@@ -17,6 +17,9 @@ import { classifyRedditPost, generateBucketSummaries } from "@/lib/redditBucketC
 
 export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { t } = useLang();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: window } = useTrendingDataWindow("reddit%");
