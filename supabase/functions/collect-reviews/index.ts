@@ -371,29 +371,37 @@ Deno.serve(async (req) => {
         try {
           console.log(`[${channel.label}] Searching: ${category}`);
 
-          const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              query: channel.queryTemplate(category),
-              limit: isManualCollection ? 3 : 5,
-              scrapeOptions: { formats: ["markdown"] },
-            }),
-          });
+          // ── Phase 1: Firecrawl /v1/search (기본) ──
+          let results = await firecrawlSearch(
+            FIRECRAWL_API_KEY,
+            channel.queryTemplate(category),
+            isManualCollection ? 3 : 5
+          );
+          let usedFallback = "";
 
-          if (!searchRes.ok) {
-            const errData = await searchRes.text();
-            console.error(`[${channel.label}] Search failed: ${errData}`);
-            errors.push(`${channel.label}/${category}: ${searchRes.status}`);
-            continue;
+          // ── Phase 2: Bing HTML scrape fallback (Firecrawl이 0건이면) ──
+          if (results.length === 0) {
+            console.log(`[${channel.label}] Firecrawl 0 results, trying Bing fallback...`);
+            results = await bingSearchFallback(FIRECRAWL_API_KEY, channel.queryTemplate(category), isManualCollection ? 3 : 5);
+            if (results.length > 0) usedFallback = "bing";
           }
 
-          const searchData = await searchRes.json();
-          const results = searchData.data || [];
-          console.log(`[${channel.label}] Found ${results.length} search results for ${category}`);
+          // ── Phase 3: DuckDuckGo HTML scrape fallback ──
+          if (results.length === 0) {
+            console.log(`[${channel.label}] Bing 0 results, trying DuckDuckGo fallback...`);
+            results = await ddgSearchFallback(FIRECRAWL_API_KEY, channel.queryTemplate(category), isManualCollection ? 3 : 5);
+            if (results.length > 0) usedFallback = "ddg";
+          }
+
+          // ── Phase 4: Seed URL fallback (Amazon/Trustpilot/Rtings 등 알려진 LG 페이지 직접 사용) ──
+          if (results.length === 0 && CHANNEL_SEED_URLS[channel.id]) {
+            console.log(`[${channel.label}] Search blocked, using seed URLs...`);
+            const seeds = CHANNEL_SEED_URLS[channel.id];
+            results = seeds.slice(0, isManualCollection ? 2 : 3).map((url) => ({ url, markdown: "" }));
+            usedFallback = "seed";
+          }
+
+          console.log(`[${channel.label}] Found ${results.length} results for ${category}${usedFallback ? ` (via ${usedFallback})` : ""}`);
 
           if (results.length === 0) continue;
 
