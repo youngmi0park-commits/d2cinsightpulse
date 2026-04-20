@@ -264,14 +264,23 @@ async function firecrawlSearch(query: string, apiKey: string): Promise<FetchResu
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query, limit: 6, scrapeOptions: { formats: ["markdown"] } }),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.data || []).map((r: any) => ({
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[P0] Firecrawl HTTP ${res.status}: ${txt.slice(0, 200)}`);
+      return [];
+    }
+    const json = await res.json();
+    const rawCount = (json.data || []).length;
+    const mapped = (json.data || []).map((r: any) => ({
       content: r.markdown || r.description || "",
       url: r.url || "",
       source: "firecrawl_search",
-    })).filter((r: FetchResult) => r.content.length > 80);
-  } catch {
+    }));
+    const filtered = mapped.filter((r: FetchResult) => r.content.length > 80);
+    console.log(`[P0] Firecrawl raw=${rawCount} kept(content>80)=${filtered.length} q="${query.slice(0, 60)}"`);
+    return filtered;
+  } catch (e) {
+    console.warn(`[P0] Firecrawl exception: ${e}`);
     return [];
   }
 }
@@ -283,12 +292,16 @@ async function firecrawlScrapeOldReddit(url: string, apiKey: string): Promise<st
     const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ url: oldUrl, formats: ["markdown"], onlyMainContent: true }),
+      body: JSON.stringify({ url: oldUrl, formats: ["markdown"] }),
     });
-    if (!res.ok) return "";
-    const data = await res.json();
-    return data.data?.markdown || "";
-  } catch {
+    if (!res.ok) {
+      console.warn(`[P2] Firecrawl scrape HTTP ${res.status} ${oldUrl}`);
+      return "";
+    }
+    const json = await res.json();
+    return json.data?.markdown || "";
+  } catch (e) {
+    console.warn(`[P2] Firecrawl scrape exception: ${e}`);
     return "";
   }
 }
@@ -302,24 +315,32 @@ async function firecrawlBingFallback(query: string, apiKey: string): Promise<Fet
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query: bingQ, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.data || [])
-      .filter((r: any) => (r.url || "").includes("reddit.com"))
-      .map((r: any) => ({
-        content: r.markdown || r.description || "",
-        url: r.url || "",
-        source: "bing_fallback",
-      }));
-  } catch {
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[P3] Bing fallback HTTP ${res.status}: ${txt.slice(0, 200)}`);
+      return [];
+    }
+    const json = await res.json();
+    const rawCount = (json.data || []).length;
+    const mapped = (json.data || []).map((r: any) => ({
+      content: r.markdown || r.description || "",
+      url: r.url || "",
+      source: "bing_fallback",
+    }));
+    const filtered = mapped.filter((r: FetchResult) => r.content.length > 80);
+    console.log(`[P3] Bing raw=${rawCount} kept=${filtered.length}`);
+    return filtered;
+  } catch (e) {
+    console.warn(`[P3] Bing fallback exception: ${e}`);
     return [];
   }
 }
 
 // ─── Adaptive scheduler: try all phases, return whatever works ─
-async function adaptiveCollect(query: string, firecrawlKey: string): Promise<FetchResult[]> {
+async function adaptiveCollect(query: string, firecrawlKey: string, diag: Record<string, number>): Promise<FetchResult[]> {
   // Phase 0
   let results = await firecrawlSearch(query, firecrawlKey);
+  diag.p0_results = (diag.p0_results || 0) + results.length;
   if (results.length >= 3) {
     console.log(`[Phase0 ✓] Firecrawl: ${results.length}`);
     return results;
@@ -327,6 +348,8 @@ async function adaptiveCollect(query: string, firecrawlKey: string): Promise<Fet
 
   // Phase 1: Reddit native search
   const redditResults = await fetchRedditSearchJson(query);
+  diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+  console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
   if (redditResults.length >= 3) {
     console.log(`[Phase1 ✓] Reddit JSON search: ${redditResults.length}`);
     results = [...results, ...redditResults];
@@ -338,6 +361,7 @@ async function adaptiveCollect(query: string, firecrawlKey: string): Promise<Fet
   // Phase 3: Bing fallback
   if (results.length < 2) {
     const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
     console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
     results = [...results, ...bingResults];
   }
@@ -396,6 +420,17 @@ Deno.serve(async (req) => {
   let totalSkipped = 0;
   const phaseStats: Record<string, number> = {};
   const errors: string[] = [];
+  const diag: Record<string, number> = {
+    queries_attempted: 0,
+    queries_zero_results: 0,
+    queries_short_batch: 0,
+    ai_extractions_attempted: 0,
+    ai_extractions_failed: 0,
+    ai_returned_empty: 0,
+    ai_returned_items: 0,
+    direct_subs_attempted: 0,
+    direct_subs_zero_posts: 0,
+  };
 
   try {
     const categories = categoryFilter
@@ -407,11 +442,13 @@ Deno.serve(async (req) => {
       const activeQueries = queries.slice(0, maxQueriesPerCategory);
 
       for (const query of activeQueries) {
+        diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag);
 
           if (results.length === 0) {
+            diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
             continue;
           }
@@ -438,17 +475,35 @@ Deno.serve(async (req) => {
             }
           }
 
-          if (batchedContent.length < 100) continue;
+          if (batchedContent.length < 100) {
+            diag.queries_short_batch += 1;
+            console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
+            continue;
+          }
 
           // AI extraction
+          diag.ai_extractions_attempted += 1;
           const extracted = await extractWithAI(batchedContent, category, LOVABLE_API_KEY);
-          if (!extracted) continue;
+          if (!extracted) {
+            diag.ai_extractions_failed += 1;
+            console.warn(`[${category}] AI extraction returned null`);
+            continue;
+          }
+          if (extracted.length === 0) {
+            diag.ai_returned_empty += 1;
+            console.warn(`[${category}] AI returned empty array (no LG-relevant content found)`);
+          } else {
+            diag.ai_returned_items += extracted.length;
+            console.log(`[${category}] AI extracted ${extracted.length} items`);
+          }
 
           const stats = await persistReviews(supabase, extracted, category, mode);
           totalCollected += stats.collected;
           totalSkipped += stats.skipped;
+          console.log(`[${category}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (queryErr) {
           errors.push(`Query ${category}: ${queryErr}`);
+          console.error(`[${category}] query error:`, queryErr);
         }
       }
     }
@@ -460,10 +515,12 @@ Deno.serve(async (req) => {
         : DIRECT_SUBREDDITS;
 
       for (const { sub, category } of subsToFetch) {
+        diag.direct_subs_attempted += 1;
         try {
           console.log(`[Direct] r/${sub} (${category})`);
           const posts = await fetchSubredditJson(sub, "hot");
           if (posts.length === 0) {
+            diag.direct_subs_zero_posts += 1;
             errors.push(`Direct r/${sub}: 0 posts`);
             continue;
           }
@@ -480,21 +537,37 @@ Deno.serve(async (req) => {
             batched += `\n\n--- r/${sub} Post (${p.url}) ---\n${content.slice(0, 4500)}`;
           }
 
-          if (batched.length < 200) continue;
+          if (batched.length < 200) {
+            console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
+            continue;
+          }
 
+          diag.ai_extractions_attempted += 1;
           const extracted = await extractWithAI(batched, category, LOVABLE_API_KEY);
-          if (!extracted) continue;
+          if (!extracted) {
+            diag.ai_extractions_failed += 1;
+            console.warn(`[Direct r/${sub}] AI extraction null`);
+            continue;
+          }
+          if (extracted.length === 0) {
+            diag.ai_returned_empty += 1;
+          } else {
+            diag.ai_returned_items += extracted.length;
+          }
 
           const stats = await persistReviews(supabase, extracted, category, mode);
           totalCollected += stats.collected;
           totalSkipped += stats.skipped;
+          console.log(`[Direct r/${sub}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (e) {
           errors.push(`Direct r/${sub}: ${e}`);
+          console.error(`[Direct r/${sub}] error:`, e);
         }
       }
     }
   } catch (fatalErr) {
     errors.push(`Fatal: ${fatalErr}`);
+    console.error("Fatal error:", fatalErr);
   }
 
   if (logId) {
@@ -516,6 +589,7 @@ Deno.serve(async (req) => {
     errors: errors.length,
     error_samples: errors.slice(0, 5),
     phase_stats: phaseStats,
+    diagnostics: diag,
     config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs },
   };
 
@@ -545,14 +619,23 @@ async function extractWithAI(content: string, category: string, apiKey: string):
         max_tokens: 8000,
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[AI] extraction HTTP ${res.status} for ${category}: ${txt.slice(0, 200)}`);
+      return null;
+    }
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content || "[]";
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    return Array.isArray(parsed) ? parsed : null;
+    try {
+      const parsed = JSON.parse(cleaned);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch (parseErr) {
+      console.warn(`[AI] JSON parse failed for ${category}: ${parseErr} | raw="${cleaned.slice(0, 200)}"`);
+      return null;
+    }
   } catch (e) {
-    console.error(`AI extraction failed for ${category}:`, e);
+    console.error(`[AI] extraction exception for ${category}:`, e);
     return null;
   }
 }
