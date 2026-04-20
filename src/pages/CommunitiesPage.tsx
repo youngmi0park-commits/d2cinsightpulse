@@ -294,22 +294,16 @@ function inferCountryFromSource(source: string): string {
 
 function useCommunityCountryCounts() {
   return useQuery({
-    queryKey: ["community-country-counts-v2"],
+    queryKey: ["community-country-counts-v3"],
     queryFn: async () => {
-      // Direct aggregation from reviews to preserve per-country source granularity
-      // (get_source_counts collapses web_review_xx into a single bucket)
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("source")
-        .not("source", "like", "lge_com%")
-        .not("source", "like", "reddit%")
-        .limit(20000);
+      // Server-side aggregation (RPC) to bypass the 1,000-row Supabase select cap
+      // and return real per-country totals across the full reviews table.
+      const { data, error } = await supabase.rpc("get_community_country_counts");
       if (error) throw error;
 
       const counts: Record<string, number> = {};
-      for (const r of data || []) {
-        const country = inferCountryFromSource(r.source);
-        counts[country] = (counts[country] || 0) + 1;
+      for (const row of (data ?? []) as Array<{ country: string; count: number }>) {
+        counts[row.country] = Number(row.count) || 0;
       }
       return counts;
     },
