@@ -127,6 +127,21 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const vocBucket = stats.buckets.find(b => b.bucket === "VOC");
   const questionBucket = stats.buckets.find(b => b.bucket === "QUESTION");
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    toast({ title: t("Refreshing", "새로고침 중"), description: t("Triggering Reddit collection…", "Reddit 신규 데이터 수집을 시작합니다…") });
+    // Fire-and-forget: collect-reddit can take 1-2 minutes, don't block UI
+    supabase.functions.invoke("collect-reddit", { body: { mode: "auto", maxQueries: 6, includeDirectSubs: true, deepComments: false } })
+      .catch(() => { /* swallow — cron will retry */ });
+    // Immediately invalidate caches so user sees latest already-collected data
+    await queryClient.invalidateQueries({ queryKey: ["reddit-weekly-summary"] });
+    await queryClient.invalidateQueries({ queryKey: ["trending-data-window"] });
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast({ title: t("Updated", "업데이트 완료"), description: t("New posts will appear within 1-2 min.", "신규 포스트는 1-2분 내 반영됩니다.") });
+    }, 1200);
+  };
+
   return (
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
@@ -140,6 +155,16 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
             <Badge variant="secondary" className="text-[10px]">
               {stats.total.toLocaleString()}{t(" signals analyzed", "건 분석 완료")}
             </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-[11px]"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+              {t("Refresh", "최신화")}
+            </Button>
           </div>
         </div>
       </CardHeader>
