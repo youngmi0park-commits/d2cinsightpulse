@@ -141,6 +141,52 @@ export function OverviewDashboard({ country: _country }: { country?: string }) {
   );
 }
 
+/* ───── Country distribution hook ───── */
+const COUNTRY_FLAG: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", DE: "🇩🇪", AU: "🇦🇺", IN: "🇮🇳",
+  TW: "🇹🇼", JP: "🇯🇵", TH: "🇹🇭", BR: "🇧🇷",
+  SG: "🇸🇬", MY: "🇲🇾", ID: "🇮🇩", PH: "🇵🇭", VN: "🇻🇳",
+  HK: "🇭🇰", FR: "🇫🇷", CA: "🇨🇦", MX: "🇲🇽",
+  Global: "🌐", Other: "🌐",
+};
+
+function useChannelCountryDistribution(channel: "lgcom" | "reddit" | null) {
+  return useQuery({
+    queryKey: ["channel-country-dist-v1", channel],
+    enabled: !!channel,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+      const sourceLike = channel === "lgcom" ? "lge_com%" : "reddit%";
+
+      const [weeklyRes, totalRes] = await Promise.all([
+        supabase.from("reviews").select("source").like("source", sourceLike).gte("collected_at", weekAgo.toISOString()).limit(10000),
+        supabase.from("reviews").select("source").like("source", sourceLike).limit(20000),
+      ]);
+
+      const mapToCountry = (src: string): string => {
+        if (channel === "lgcom") {
+          const m = src.match(/^lge_com_([a-z]{2})$/);
+          return m ? m[1].toUpperCase() : "Global";
+        }
+        // reddit channels — most are US-based community
+        return "Global";
+      };
+
+      const tally = (rows: { source: string }[] | null) => {
+        const out: Record<string, number> = {};
+        for (const r of rows || []) {
+          const c = mapToCountry(r.source);
+          out[c] = (out[c] || 0) + 1;
+        }
+        return out;
+      };
+
+      return { weekly: tally(weeklyRes.data), total: tally(totalRes.data) };
+    },
+  });
+}
+
 /* ───── Channel Overview Section ───── */
 function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoading, onGenerate }: {
   channelLabel: string; channelEmoji: string;
@@ -155,6 +201,14 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
 
   // Map channel label → source LIKE pattern for window badge
   const sourceLike = channelLabel === "LG.COM" ? "lge_com%" : channelLabel === "REDDIT" ? "reddit%" : undefined;
+  const channelKey: "lgcom" | "reddit" | null =
+    channelLabel === "LG.COM" ? "lgcom" : channelLabel === "REDDIT" ? "reddit" : null;
+  const { data: countryDist } = useChannelCountryDistribution(channelKey);
+
+  const sortedCountries = countryDist
+    ? Object.entries(countryDist.total).sort((a, b) => b[1] - a[1])
+    : [];
+  const totalSum = sortedCountries.reduce((s, [, v]) => s + v, 0);
 
   return (
     <div>
