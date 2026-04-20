@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
 import { countryToSourceFilter } from "@/components/CountryFilterBar";
@@ -7,9 +7,11 @@ import { useTrendingDataWindow } from "@/hooks/useProductData";
 import { DataWindowBadge } from "@/components/DataWindowBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   MessageSquare, TrendingUp, AlertTriangle, HelpCircle,
-  ThumbsUp, ThumbsDown, BarChart3, Users, Lightbulb
+  ThumbsUp, ThumbsDown, BarChart3, Users, Lightbulb, RefreshCw
 } from "lucide-react";
 import { classifyRedditPost, generateBucketSummaries } from "@/lib/redditBucketClassifier";
 
