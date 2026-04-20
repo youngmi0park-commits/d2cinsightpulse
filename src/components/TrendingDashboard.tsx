@@ -650,7 +650,30 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
           Styler: "스타일러", Microwave: "전자레인지", "Range/Oven": "오븐/레인지",
           Cooktop: "쿡탑", Dehumidifier: "제습기", General: "",
         };
-        const getCatKo = (cat?: string) => (cat && CAT_KO[cat]) || cat || "";
+        // Infer category from model number / display name when DB says "General"
+        const inferCatFromModel = (model?: string, display?: string): string => {
+          const m = (model || "").toUpperCase();
+          const d = (display || "").toUpperCase();
+          const t = `${m} ${d}`;
+          if (/^GL-[A-Z]?[BDFNPMTRS]|^GR-|^GC-|^GM-|^LRF|^LRG|^LRM|^LRY|^LF\d|INSTAVIEW|REFRIGER|FRENCH.?DOOR/.test(t)) return "냉장고";
+          if (/^WM\d|^WT\d|^F\d+[A-Z]|^FV\d|WASHTOWER|WASH(ER|ING)/.test(t)) return "세탁기";
+          if (/^DL[A-Z]X|^DLGX|^DLEX|^RD\d|DRYER/.test(t)) return "건조기";
+          if (/^LDP|^LDFN|DISHWASH|QUADWASH/.test(t)) return "식세기";
+          if (/^A9[A-Z]|CORDZERO|VACUUM/.test(t)) return "청소기";
+          if (/ARTCOOL|DUAL.?COOL|^S\d+Q|AIR.?CONDITION/.test(t)) return "에어컨";
+          if (/PURICARE|^AS\d|AIR.?PURIF/.test(t)) return "공기청정기";
+          if (/^OLED|QNED|NANO\d|^\d+UR|^\d+UQ|^\d+NANO|^\d+QNED/.test(t)) return "TV";
+          if (/^SP\d|^S[A-Z]\d|SOUNDBAR/.test(t)) return "사운드바";
+          if (/GRAM|ULTRAPC|LAPTOP/.test(t)) return "노트북";
+          if (/STYLER/.test(t)) return "스타일러";
+          if (/MONITOR|ULTRAGEAR|ULTRAFINE|^\d+UP|^\d+GP|^\d+GR/.test(t)) return "모니터";
+          return "";
+        };
+        const getCatKo = (cat?: string, model?: string, display?: string) => {
+          const direct = (cat && CAT_KO[cat] !== undefined) ? CAT_KO[cat] : (cat || "");
+          if (direct && direct !== "General") return direct;
+          return inferCatFromModel(model, display);
+        };
 
         // Positive keyword context
         const posCountry = getCountryLabel(topPosKw?.source);
@@ -659,7 +682,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         const posProductLabel = posProductMatch
           ? formatProductDisplayName(posProductMatch.display_name, posProductMatch.model_number, posProductMatch.category)
           : "";
-        const posCatLabel = getCatKo(posProductMatch?.category);
+        const posCatLabel = getCatKo(posProductMatch?.category, posProductMatch?.model_number, posProductMatch?.display_name);
 
         // Negative keyword context
         const negCountry = getCountryLabel(topNegKw?.source);
@@ -668,7 +691,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         const negProductLabel = negProductMatch
           ? formatProductDisplayName(negProductMatch.display_name, negProductMatch.model_number, negProductMatch.category)
           : "";
-        const negCatLabel = getCatKo(negProductMatch?.category);
+        const negCatLabel = getCatKo(negProductMatch?.category, negProductMatch?.model_number, negProductMatch?.display_name);
 
         // Top product keywords: find keywords associated by same source or trending
         const topProdKws = topProduct
