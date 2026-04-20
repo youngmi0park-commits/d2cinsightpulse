@@ -466,13 +466,26 @@ Deno.serve(async (req) => {
               if (!content || content.length < 200) {
                 try {
                   console.log(`[${channel.label}] Scraping: ${url}`);
+                  // 차단되는 사이트는 모바일 UA + waitFor + location 추가
+                  const isBlockedSite = ["amazon", "trustpilot", "rtings", "cnet", "techradar", "pcmag", "consumeraffairs"].includes(channel.id);
+                  const scrapeBody: Record<string, unknown> = {
+                    url,
+                    formats: ["markdown"],
+                    onlyMainContent: true,
+                  };
+                  if (isBlockedSite) {
+                    scrapeBody.waitFor = 2500;
+                    scrapeBody.mobile = true; // 모바일 UA로 우회
+                    scrapeBody.location = { country: "US", languages: ["en-US"] };
+                    scrapeBody.blockAds = true;
+                  }
                   const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
                     method: "POST",
                     headers: {
                       Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
                       "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+                    body: JSON.stringify(scrapeBody),
                   });
 
                   if (scrapeRes.ok) {
