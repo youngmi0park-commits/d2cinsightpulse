@@ -161,37 +161,24 @@ const COUNTRY_LGE: Record<string, string> = {
 
 function useChannelCountryDistribution(channel: "lgcom" | "reddit" | null) {
   return useQuery({
-    queryKey: ["channel-country-dist-v1", channel],
+    queryKey: ["channel-country-dist-v2", channel],
     enabled: !!channel,
     staleTime: 60_000,
     queryFn: async () => {
-      const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-      const sourceLike = channel === "lgcom" ? "lge_com%" : "reddit%";
+      // Server-side aggregation (RPC) — bypasses Supabase 1,000-row select cap
+      // and returns real per-country totals + 7-day weekly counts.
+      const { data, error } = await supabase.rpc("get_channel_country_distribution", {
+        p_channel: channel as string,
+      });
+      if (error) throw error;
 
-      const [weeklyRes, totalRes] = await Promise.all([
-        supabase.from("reviews").select("source").like("source", sourceLike).gte("collected_at", weekAgo.toISOString()).limit(10000),
-        supabase.from("reviews").select("source").like("source", sourceLike).limit(20000),
-      ]);
-
-      const mapToCountry = (src: string): string => {
-        if (channel === "lgcom") {
-          const m = src.match(/^lge_com_([a-z]{2})$/);
-          return m ? m[1].toUpperCase() : "Global";
-        }
-        // reddit channels — most are US-based community
-        return "Global";
-      };
-
-      const tally = (rows: { source: string }[] | null) => {
-        const out: Record<string, number> = {};
-        for (const r of rows || []) {
-          const c = mapToCountry(r.source);
-          out[c] = (out[c] || 0) + 1;
-        }
-        return out;
-      };
-
-      return { weekly: tally(weeklyRes.data), total: tally(totalRes.data) };
+      const weekly: Record<string, number> = {};
+      const total: Record<string, number> = {};
+      for (const row of (data ?? []) as Array<{ country: string; weekly_count: number; total_count: number }>) {
+        weekly[row.country] = Number(row.weekly_count) || 0;
+        total[row.country] = Number(row.total_count) || 0;
+      }
+      return { weekly, total };
     },
   });
 }
