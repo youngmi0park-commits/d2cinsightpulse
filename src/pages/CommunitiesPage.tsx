@@ -235,20 +235,42 @@ const SOURCE_COUNTRY: Record<string, string> = {
   techradar: "Global", notebookcheck: "Global", lemon8: "Global",
 };
 
+/** Infer country from a raw source string when not in the explicit map */
+function inferCountryFromSource(source: string): string {
+  if (SOURCE_COUNTRY[source]) return SOURCE_COUNTRY[source];
+  // Suffix-based inference for sources like web_review_xx, youtube_xx, amazon_xx, shopee_xx, lazada_xx
+  const m = source.match(/_([a-z]{2})$/i);
+  if (m) {
+    const code = m[1].toUpperCase();
+    const valid = ["US","UK","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN"];
+    if (valid.includes(code)) return code;
+  }
+  // Known US-centric channels without country suffix
+  if (/^(amazon|youtube|bestbuy|walmart|costco|target|consumeraffairs|consumer_reports|bestreviews|houzz|web_review)$/.test(source)) {
+    return "US";
+  }
+  if (source === "trusted_reviews") return "UK";
+  return "Global";
+}
+
 function useCommunityCountryCounts() {
   return useQuery({
-    queryKey: ["community-country-counts"],
+    queryKey: ["community-country-counts-v2"],
     queryFn: async () => {
-      // Use get_source_counts RPC to avoid row limit issues
-      const { data, error } = await supabase.rpc("get_source_counts");
+      // Direct aggregation from reviews to preserve per-country source granularity
+      // (get_source_counts collapses web_review_xx into a single bucket)
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("source")
+        .not("source", "like", "lge_com%")
+        .not("source", "like", "reddit%")
+        .limit(20000);
       if (error) throw error;
 
       const counts: Record<string, number> = {};
       for (const r of data || []) {
-        // Exclude LG.com and Reddit sources
-        if (r.source.startsWith("lge_com") || r.source.startsWith("reddit")) continue;
-        const country = SOURCE_COUNTRY[r.source] || "Global";
-        counts[country] = (counts[country] || 0) + r.count;
+        const country = inferCountryFromSource(r.source);
+        counts[country] = (counts[country] || 0) + 1;
       }
       return counts;
     },
