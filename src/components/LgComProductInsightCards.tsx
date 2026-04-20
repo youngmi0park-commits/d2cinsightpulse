@@ -90,7 +90,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, title, content, sentiment, sentiment_score, source, rating, products!inner(display_name, category)")
+        .select("id, title, content, sentiment, sentiment_score, source, rating, products!inner(display_name, category, model_number)")
         .order("collected_at", { ascending: false });
 
       if (country === "US") query = query.eq("source", "lge_com_us");
@@ -106,7 +106,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
       if (error) throw error;
 
       const productMap: Record<string, {
-        productName: string; category: string; sentiment: string;
+        productName: string; category: string; modelNumber: string; sentiment: string;
         titlePhrases: Record<string, number>; snippets: string[];
         sources: Set<string>; count: number; avgRating: number; ratingCount: number;
       }> = {};
@@ -118,7 +118,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
 
         if (!productMap[key]) {
           productMap[key] = {
-            productName: prod.display_name, category: prod.category,
+            productName: prod.display_name, category: prod.category, modelNumber: prod.model_number,
             sentiment: r.sentiment || "neutral", titlePhrases: {}, snippets: [],
             sources: new Set(), count: 0, avgRating: 0, ratingCount: 0,
           };
@@ -154,7 +154,7 @@ function useLgComProductInsights(period: PeriodFilter, country: CountryFilter) {
           }
           const keywords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([w]) => w);
           return {
-            productName: p.productName, category: p.category, sentiment: p.sentiment,
+            productName: p.productName, category: p.category, modelNumber: p.modelNumber, sentiment: p.sentiment,
             count: p.count, topPhrases, keywords, snippets: p.snippets.slice(0, 3),
             avgRating: p.ratingCount > 0 ? (p.avgRating / p.ratingCount).toFixed(1) : null,
             sources: Array.from(p.sources),
