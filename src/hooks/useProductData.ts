@@ -195,23 +195,32 @@ export function useTrendingKeywords(source?: string) {
 
       const latestDate = latestRow?.snapshot_date;
 
-      let query = supabase
-        .from("trending_keywords")
-        .select("*")
-        .order("count", { ascending: false })
-        .limit(30);
+      // Fetch positive/negative/neutral separately so each sentiment is represented
+      // (otherwise high-count positives crowd out negatives in a single LIMIT)
+      const buildQuery = (sentiment?: string) => {
+        let q = supabase
+          .from("trending_keywords")
+          .select("*")
+          .order("count", { ascending: false })
+          .limit(30);
+        if (latestDate) q = q.eq("snapshot_date", latestDate);
+        if (source) q = q.eq("source", source);
+        if (sentiment) q = q.eq("sentiment", sentiment);
+        return q;
+      };
 
-      if (latestDate) {
-        query = query.eq("snapshot_date", latestDate);
-      }
-      if (source) {
-        query = query.eq("source", source);
-      }
+      const [posRes, negRes, neuRes] = await Promise.all([
+        buildQuery("positive"),
+        buildQuery("negative"),
+        buildQuery("neutral"),
+      ]);
 
-      const { data, error } = await query;
-      if (error) throw error;
+      if (posRes.error) throw posRes.error;
+      if (negRes.error) throw negRes.error;
 
-      return (data || []).map((item: any) => ({
+      const data = [...(posRes.data || []), ...(negRes.data || []), ...(neuRes.data || [])];
+
+      return data.map((item: any) => ({
         keyword: item.keyword,
         count: item.count,
         sentiment: item.sentiment as "positive" | "negative" | "neutral",
