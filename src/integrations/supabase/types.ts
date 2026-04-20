@@ -933,6 +933,13 @@ export type Database = {
           source: string
         }[]
       }
+      get_recent_source_counts: {
+        Args: { p_hours?: number }
+        Returns: {
+          count: number
+          source: string
+        }[]
+      }
       get_source_counts: {
         Args: never
         Returns: {

@@ -860,6 +860,34 @@ function useCollectionLogs() {
   return logs;
 }
 
+// Hook: recent review counts per source within last N hours (based on reviews.collected_at)
+// Reuses the same source keys as useCumulativeSourceCounts so resolveCumulativeCount works.
+function useRecentSourceCounts(hours: number) {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase.rpc("get_recent_source_counts" as any, { p_hours: hours });
+      if (error || !data) { setCounts({}); return; }
+      const map: Record<string, number> = {};
+      (data as { source: string; count: number }[]).forEach(d => {
+        const src = d.source;
+        const n = Number(d.count || 0);
+        map[src] = (map[src] || 0) + n;
+        // Also bucket BV per-country sources under the normalized "lge_com_xx" key
+        // (resolveCumulativeCount expects this key).
+        if (src.startsWith("lge_com_")) {
+          // Already in correct shape
+        }
+      });
+      setCounts(map);
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 60_000);
+    return () => clearInterval(interval);
+  }, [hours]);
+  return counts;
+}
+
 // Hook: cumulative review counts per source from DB (includes per-country BV counts)
 function useCumulativeSourceCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -1061,8 +1089,10 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
+  const [recentWindow, setRecentWindow] = useState<24 | 168>(24); // hours: 24h or 7d
   const collectionLogs = useCollectionLogs();
   const sourceCounts = useCumulativeSourceCounts();
+  const recentCounts = useRecentSourceCounts(recentWindow);
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
@@ -1175,7 +1205,25 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Latest Review / Last Run", "최신 리뷰일 / 수집일")}</th>
-                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Last Run", "최근 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5 justify-end">
+                      <span title={t("New reviews collected within the selected window (based on reviews.collected_at)", "선택한 기간 내 새로 수집된 리뷰 수 (reviews.collected_at 기준)")}>
+                        {recentWindow === 24 ? t("Last 24h", "최근 24h") : t("Last 7d", "최근 7d")}
+                      </span>
+                      <div className="inline-flex rounded border border-border overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setRecentWindow(24)}
+                          className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${recentWindow === 24 ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                        >24h</button>
+                        <button
+                          type="button"
+                          onClick={() => setRecentWindow(168)}
+                          className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${recentWindow === 168 ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                        >7d</button>
+                      </div>
+                    </div>
+                  </th>
                   <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Cumulative", "누적 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
@@ -1185,6 +1233,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
                     const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
+                    const recent = resolveCumulativeCount(row.channel, row.country, recentCounts);
                     return (
                     <tr
                       key={`${country}-${ri}`}
@@ -1230,9 +1279,9 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                           <span className="text-muted-foreground/40">—</span>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
-                        {logEntry && logEntry.count > 0 ? (
-                          <span className="text-muted-foreground">{logEntry.count.toLocaleString()}</span>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap" title={t(`New reviews collected in last ${recentWindow === 24 ? "24 hours" : "7 days"} (reviews.collected_at)`, `최근 ${recentWindow === 24 ? "24시간" : "7일"} 신규 수집 (reviews.collected_at 기준)`)}>
+                        {recent > 0 ? (
+                          <span className="text-foreground font-semibold">+{recent.toLocaleString()}</span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
