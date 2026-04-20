@@ -1335,7 +1335,7 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
           <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
             <span>✅ 수집 중: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "active").length}</span>개</span>
             <span>📋 예정: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "planned").length}</span>개</span>
-            <span>📊 누적 총계: <span className="font-bold text-primary">{Object.entries(sourceCounts).filter(([k]) => k !== "lge_com").reduce((s, [, v]) => s + v, 0).toLocaleString()}</span>건</span>
+            <span>📊 누적 총계: <span className="font-bold text-primary">{dbTotalReviews.toLocaleString()}</span>건</span>
             <span className="ml-auto">
               ⏰ BV: Sweep(02:00 UTC) → Collect(6h마다) → Sync(06:00 UTC) |
               📦 기타: Reddit/Amazon 07:00 KST → YouTube 07:05 KST → 아시아 07:10 KST
