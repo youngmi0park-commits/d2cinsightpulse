@@ -9,9 +9,8 @@ const corsHeaders = {
 // Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} (review OR owner OR "just bought") upvotes` },
-  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" noise dB cooling speed` },
-  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup` },
+  // NOTE: Reddit 수집은 전용 'collect-reddit' Edge Function에서 처리합니다.
+  // Firecrawl이 reddit.com을 403으로 차단하므로 여기서는 제외합니다 (CPU/에러 로그 절감).
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review "Verified Purchase"` },
   { id: "bestbuy", label: "Best Buy", queryTemplate: (product: string) => `site:bestbuy.com LG ${product} review` },
   { id: "costco", label: "Costco", queryTemplate: (product: string) => `site:costco.com LG ${product} review` },
