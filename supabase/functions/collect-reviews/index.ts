@@ -6,6 +6,63 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ──────────────────────────────────────────────────────────────────
+// SEED URL MAP — 차단되는 사이트의 알려진 LG 브랜드 페이지를 직접 사용
+// Firecrawl search가 0건이거나 차단되는 경우 fallback으로 사용됩니다
+// ──────────────────────────────────────────────────────────────────
+const CHANNEL_SEED_URLS: Record<string, string[]> = {
+  amazon: [
+    "https://www.amazon.com/s?k=LG+OLED+TV&i=electronics&rh=p_72%3A1248915011",
+    "https://www.amazon.com/s?k=LG+Gram+laptop&i=computers",
+    "https://www.amazon.com/s?k=LG+washer&i=appliances",
+    "https://www.amazon.com/s?k=LG+refrigerator&i=appliances",
+    "https://www.amazon.com/s?k=LG+soundbar&i=electronics",
+  ],
+  trustpilot: [
+    "https://www.trustpilot.com/review/www.lg.com",
+    "https://www.trustpilot.com/review/lg.com",
+  ],
+  rtings: [
+    "https://www.rtings.com/tv/reviews/lg",
+    "https://www.rtings.com/monitor/reviews/lg",
+    "https://www.rtings.com/soundbar/reviews/lg",
+  ],
+  cnet: [
+    "https://www.cnet.com/a/topic/lg/",
+    "https://www.cnet.com/tags/lg-oled/",
+  ],
+  techradar: [
+    "https://www.techradar.com/tag/lg",
+    "https://www.techradar.com/reviews/lg-oled",
+  ],
+  pcmag: [
+    "https://www.pcmag.com/search?q=LG+gram",
+    "https://www.pcmag.com/search?q=LG+OLED",
+  ],
+  notebookcheck: [
+    "https://www.notebookcheck.net/LG-Laptop-Reviews.142488.0.html",
+  ],
+  consumeraffairs: [
+    "https://www.consumeraffairs.com/tv/lg.html",
+    "https://www.consumeraffairs.com/appliances/lg.html",
+  ],
+  consumer_reports: [
+    "https://www.consumerreports.org/products/televisions/lg/",
+  ],
+  bestreviews: [
+    "https://bestreviews.com/electronics/televisions/best-lg-tvs",
+  ],
+  trusted_reviews: [
+    "https://www.trustedreviews.com/best/best-lg-tv",
+  ],
+  houzz: [
+    "https://www.houzz.com/products/query/LG",
+  ],
+  lemon8: [
+    "https://www.lemon8-app.com/discover/LG",
+  ],
+};
+
 // Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
