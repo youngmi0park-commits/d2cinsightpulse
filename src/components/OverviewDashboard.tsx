@@ -148,6 +148,14 @@ const COUNTRY_FLAG: Record<string, string> = {
   HK: "🇭🇰", FR: "🇫🇷", CA: "🇨🇦", MX: "🇲🇽",
   Global: "🌐", Other: "🌐",
 };
+// ISO 2자리 → LGE 법인 코드 (RIS Subsidiary List 표준)
+const COUNTRY_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", DE: "LGEDE", AU: "LGEAP", IN: "LGEIL",
+  TW: "LGETT", JP: "LGEJP", TH: "LGETH", BR: "LGESP",
+  SG: "LGESL", MY: "LGEML", ID: "LGEIN", PH: "LGEPH", VN: "LGEVN",
+  HK: "LGEHK", FR: "LGEFS", CA: "LGECI", MX: "LGEMS",
+  Global: "Global", Other: "Other",
+};
 
 function useChannelCountryDistribution(channel: "lgcom" | "reddit" | null) {
   return useQuery({
@@ -227,10 +235,10 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                     key={code}
                     variant="outline"
                     className="text-[10px] px-1.5 py-0 border-border bg-muted/40 text-foreground gap-1"
-                    title={`${code}: 누적 ${total.toLocaleString()} · 7일 ${weekly.toLocaleString()}`}
+                    title={`${COUNTRY_LGE[code] || code}: 누적 ${total.toLocaleString()} · 7일 ${weekly.toLocaleString()}`}
                   >
                     <span>{COUNTRY_FLAG[code] || "🌐"}</span>
-                    <span className="font-semibold">{code}</span>
+                    <span className="font-semibold">{COUNTRY_LGE[code] || code}</span>
                     <span className="text-muted-foreground">{total.toLocaleString()}</span>
                     {weekly > 0 && (
                       <span className="text-success font-semibold">+{weekly}</span>

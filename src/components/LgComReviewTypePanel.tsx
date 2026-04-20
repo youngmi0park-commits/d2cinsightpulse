@@ -81,6 +81,7 @@ export function LgComReviewTypePanel() {
   const nativePct = stats.total > 0 ? Math.round((stats.native / stats.total) * 100) : 0;
   const synPct = 100 - nativePct;
   const FLAG: Record<string, string> = { US: "🇺🇸", UK: "🇬🇧", Other: "🌐" };
+  const LGE: Record<string, string> = { US: "LGEUS", UK: "LGEUK", Other: "Other" };
 
   return (
     <Card className="gradient-card">

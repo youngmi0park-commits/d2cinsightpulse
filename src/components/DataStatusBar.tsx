@@ -8,6 +8,12 @@ const COUNTRY_FLAGS: Record<string, string> = {
   DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺", CA: "🇨🇦", BR: "🇧🇷", MX: "🇲🇽",
   Global: "🌐", Other: "🔹",
 };
+// ISO → LGE 법인 코드
+const COUNTRY_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", JP: "LGEJP", SG: "LGESL", MY: "LGEML", ID: "LGEIN",
+  TH: "LGETH", PH: "LGEPH", VN: "LGEVN", TW: "LGETT", HK: "LGEHK", IN: "LGEIL",
+  DE: "LGEDE", FR: "LGEFS", AU: "LGEAP", CA: "LGECI", BR: "LGESP", MX: "LGEMS",
+};
 
 export function DataStatusBar() {
   const { data: counts } = useSourceCounts() as { data: Record<string, number> | undefined };
@@ -94,7 +100,7 @@ export function DataStatusBar() {
         <span className="font-semibold text-foreground/70">TOP 국가</span>
         {topCountries.map(([country, count]) => (
           <span key={country} className="flex items-center gap-0.5">
-            {COUNTRY_FLAGS[country] || "🔹"} {country}
+            {COUNTRY_FLAGS[country] || "🔹"} {COUNTRY_LGE[country] || country}
             <span className="font-medium text-foreground">{Number(count).toLocaleString()}</span>
           </span>
         ))}
