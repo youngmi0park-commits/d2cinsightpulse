@@ -596,9 +596,16 @@ async function persistReviews(
     const authorLower = (review.author || "").toLowerCase();
     const isLgOperator = LG_OPERATORS.includes(authorLower);
 
+    // Normalize subreddit: strip leading "r/" or "/r/" and any whitespace/slashes
+    const rawSub = (review.subreddit || fallbackCategory || "").toString();
+    const cleanSub = rawSub
+      .replace(/^\/?r\//i, "")
+      .replace(/[^a-z0-9_]/gi, "")
+      .toLowerCase() || fallbackCategory.toLowerCase();
+
     const { error: insertErr } = await supabase.from("reviews").insert({
       product_id: productId,
-      source: `reddit_${(review.subreddit || fallbackCategory).toLowerCase()}`,
+      source: `reddit_${cleanSub}`,
       external_id: contentHash,
       author: review.author || null,
       title: (review.title || "").slice(0, 500),
