@@ -879,6 +879,14 @@ export type Database = {
           count: number
         }[]
       }
+      get_channel_country_distribution: {
+        Args: { p_channel: string }
+        Returns: {
+          country: string
+          total_count: number
+          weekly_count: number
+        }[]
+      }
       get_community_country_counts: {
         Args: never
         Returns: {
