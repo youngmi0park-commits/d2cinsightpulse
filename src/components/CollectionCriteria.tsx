@@ -1169,7 +1169,7 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
           {t("Country × Channel Detail Table", "국가 × 채널 상세 수집 현황표")}
         </span>
         <span className="text-[10px] text-muted-foreground mr-2">
-          {COLLECTION_DETAIL.length}{t(" channels across ", "개 채널 · ")}{countries.length}{t(" countries/regions", "개국")}
+          {COLLECTION_DETAIL.length}{t(" channels · ", "개 채널 · ")}{dbActiveCountries.length}{t(" countries with data", "개국 (데이터 보유)")}
         </span>
         <span className={`transition-transform text-xs ${expanded ? "rotate-180" : ""}`}>▾</span>
       </button>
