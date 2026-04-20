@@ -46,6 +46,16 @@ export const sourceToLgeCode = (source: string): string => {
   return map[source] ?? "LGEUS";
 };
 
+/** ISO 2-letter country code → LGE 법인 코드 (RIS Subsidiary List 표준) */
+export const ISO_TO_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", GB: "LGEUK", CA: "LGECI", BR: "LGESP", MX: "LGEMS",
+  DE: "LGEDE", FR: "LGEFS", NL: "LGEBN",
+  AU: "LGEAP", JP: "LGEJP", TW: "LGETT", HK: "LGEHK",
+  SG: "LGESL", MY: "LGEML", ID: "LGEIN", TH: "LGETH", PH: "LGEPH", VN: "LGEVN",
+  IN: "LGEIL",
+};
+export const isoToLge = (iso: string): string => ISO_TO_LGE[iso?.toUpperCase()] ?? iso;
+
 // ── 시그널 태그 ──
 export type SignalTag =
   | "PMAX_UP" | "PMAX_HOLD" | "PMAX_PAUSE"
