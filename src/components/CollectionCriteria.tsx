@@ -1205,7 +1205,25 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Collection Method", "수집 방식")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Schedule", "수집 주기")}</th>
                   <th className="text-left px-2 py-1.5 font-bold text-muted-foreground">{t("Latest Review / Last Run", "최신 리뷰일 / 수집일")}</th>
-                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Last Run", "최근 건수")}</th>
+                  <th className="text-right px-2 py-1.5 font-bold text-muted-foreground whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5 justify-end">
+                      <span title={t("New reviews collected within the selected window (based on reviews.collected_at)", "선택한 기간 내 새로 수집된 리뷰 수 (reviews.collected_at 기준)")}>
+                        {recentWindow === 24 ? t("Last 24h", "최근 24h") : t("Last 7d", "최근 7d")}
+                      </span>
+                      <div className="inline-flex rounded border border-border overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setRecentWindow(24)}
+                          className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${recentWindow === 24 ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                        >24h</button>
+                        <button
+                          type="button"
+                          onClick={() => setRecentWindow(168)}
+                          className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${recentWindow === 168 ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                        >7d</button>
+                      </div>
+                    </div>
+                  </th>
                   <th className="text-right px-2 py-1.5 font-bold text-muted-foreground">{t("Cumulative", "누적 건수")}</th>
                   <th className="text-center px-2 py-1.5 font-bold text-muted-foreground">{t("Status", "상태")}</th>
                 </tr>
