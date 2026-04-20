@@ -369,7 +369,7 @@ const CommunitiesPage = () => {
             <div className="flex flex-wrap gap-2">
               {stats.channels.map((ch) => {
                 const posP = ch.total ? Math.round((ch.positive / ch.total) * 100) : 0;
-                const flag = COUNTRY_FLAGS[ch.country] || "🌐";
+                const flag = LGE_FLAGS[ch.country] || "🌐";
                 return (
                   <div
                     key={ch.name}
