@@ -599,7 +599,7 @@ export function MarketingHub({
                           <p className="text-[9px] text-muted-foreground mb-0.5">
                             {f.name} · <span className={len > f.max ? "text-destructive font-bold" : "text-[#15803D]"}>{len}/{f.max}ch</span>
                           </p>
-                          <p className={`text-xs ${fi === 0 ? "font-bold" : "text-foreground/80"}`}>{val}</p>
+                          <p className={`text-xs whitespace-pre-wrap break-words ${fi === 0 ? "font-bold" : "text-foreground/80"}`}>{val}</p>
                         </div>
                         <Button variant="outline" size="sm" className="h-6 text-[9px] shrink-0" onClick={() => copyText(val, fKey)}>
                           {copiedKey === fKey ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
