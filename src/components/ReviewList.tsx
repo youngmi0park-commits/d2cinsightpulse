@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { maskCompetitorNames } from "@/lib/sentiment";
+import { extractKeyPhrases, maskPII, isPrivacyPlaceholder } from "@/lib/reviewUtils";
 import type { Review } from "@/data/dummyData";
-import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
+import { Star, Calendar, TrendingUp, Languages, Loader2, Quote } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
