@@ -353,10 +353,16 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  let categories = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier", "Vacuum", "Range", "Microwave"];
+  // CPU mitigation: rotate categories per run instead of crawling all 9 every time.
+  // Each scheduled run picks a small subset; the rotation keeps coverage across the day.
+  const ALL_CATEGORIES = ["TV", "Refrigerator", "Washer", "Dryer", "Dishwasher", "Air Purifier", "Vacuum", "Range", "Microwave"];
+  const ROTATION_SIZE = 3;
+  const minuteBucket = Math.floor(Date.now() / 60000);
+  const startIdx = minuteBucket % ALL_CATEGORIES.length;
+  let categories = Array.from({ length: ROTATION_SIZE }, (_, i) => ALL_CATEGORIES[(startIdx + i) % ALL_CATEGORIES.length]);
   let regions: ("us" | "uk")[] = ["us", "uk"];
-  let maxQueriesPerCategory = 2;
-  let bvPages = 5;
+  let maxQueriesPerCategory = 1;
+  let bvPages = 2; // Reduced from 5 to avoid CPU Time exceeded
   let bvOffset = 0;
   let dateFrom: string | undefined;
   let dateTo: string | undefined;
