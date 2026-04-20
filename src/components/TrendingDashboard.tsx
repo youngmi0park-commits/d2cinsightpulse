@@ -538,9 +538,8 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
     return items.slice(0, 6);
   }, [lgcomTakeaway, redditTakeaway, otherTakeaway, lgcomPos, lgcomNeg, redditPos, redditNeg, topPosKw, topNegKw]);
 
-  // LG.com products for heatmap
+  // LG.com products for heatmap — diversified across categories so TV doesn't dominate
   const lgcomProducts = useMemo(() => {
-    const _allProds = [...lgcomPos, ...lgcomNeg];
     const map: Record<string, { displayName: string; category: string; modelNumber: string; posCount: number; negCount: number }> = {};
     for (const p of lgcomPos) {
       if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
@@ -550,19 +549,18 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       if (!map[p.product_id]) map[p.product_id] = { displayName: formatProductDisplayName(p.display_name, p.model_number, p.category), category: p.category, modelNumber: p.model_number, posCount: 0, negCount: 0 };
       map[p.product_id].negCount += p.count;
     }
-    return Object.values(map)
-      .map(p => {
-        const total = p.posCount + p.negCount;
-        return {
-          ...p,
-          reviewCount: total,
-          positivePct: total > 0 ? Math.round((p.posCount / total) * 100) : 50,
-          negativePct: total > 0 ? Math.round((p.negCount / total) * 100) : 50,
-          sentimentScore: total > 0 ? Math.round((p.posCount / total) * 100) : 50,
-        };
-      })
-      .sort((a, b) => b.reviewCount - a.reviewCount)
-      .slice(0, 6);
+    const enriched = Object.values(map).map(p => {
+      const total = p.posCount + p.negCount;
+      return {
+        ...p,
+        reviewCount: total,
+        positivePct: total > 0 ? Math.round((p.posCount / total) * 100) : 50,
+        negativePct: total > 0 ? Math.round((p.negCount / total) * 100) : 50,
+        sentimentScore: total > 0 ? Math.round((p.posCount / total) * 100) : 50,
+      };
+    }).sort((a, b) => b.reviewCount - a.reviewCount);
+    // Cap at 2 per category for the 6-row heatmap so other categories surface
+    return diversifyByCategory(enriched, 6, 2);
   }, [lgcomPos, lgcomNeg]);
 
   const hasGeneralNeg = lgcomProducts.some(p => p.category === "General" && p.negativePct > 40);
