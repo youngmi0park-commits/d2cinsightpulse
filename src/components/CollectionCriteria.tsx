@@ -1107,7 +1107,7 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   Global: "글로벌", Other: "기타",
 };
 
-function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
+function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: string) => string; dbCountryCounts: Record<string, number> }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
@@ -1115,6 +1115,15 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const collectionLogs = useCollectionLogs();
   const sourceCounts = useCumulativeSourceCounts();
   const recentCounts = useRecentSourceCounts(recentWindow);
+
+  // ✅ Real DB-backed totals (single source of truth)
+  // Only count countries that actually have data in the DB.
+  const dbActiveCountries = Object.keys(dbCountryCounts).filter(
+    (c) => c !== "Other" && (dbCountryCounts[c] || 0) > 0,
+  );
+  const dbTotalReviews = Object.entries(dbCountryCounts)
+    .filter(([k]) => k !== "Other")
+    .reduce((s, [, v]) => s + v, 0);
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
@@ -1160,7 +1169,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
           {t("Country × Channel Detail Table", "국가 × 채널 상세 수집 현황표")}
         </span>
         <span className="text-[10px] text-muted-foreground mr-2">
-          {COLLECTION_DETAIL.length}{t(" channels across ", "개 채널 · ")}{countries.length}{t(" countries/regions", "개국")}
+          {COLLECTION_DETAIL.length}{t(" channels · ", "개 채널 · ")}{dbActiveCountries.length}{t(" countries with data", "개국 (데이터 보유)")}
         </span>
         <span className={`transition-transform text-xs ${expanded ? "rotate-180" : ""}`}>▾</span>
       </button>
@@ -1193,23 +1202,21 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
             })}
           </div>
 
-          {/* Summary line */}
+          {/* Summary line — DB-backed (실측치) */}
           {(() => {
             const filteredRows = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
-            const filteredCountries = [...new Set(filteredRows.map(r => r.country))];
-            const seen = new Set<string>();
-            let filteredCumulative = 0;
-            for (const row of filteredRows) {
-              const key = `${row.channel}|${row.country}`;
-              if (seen.has(key)) continue;
-              seen.add(key);
-              filteredCumulative += resolveCumulativeCount(row.channel, row.country, sourceCounts);
-            }
+            // Use DB country counts as the single source of truth for review totals.
+            const filteredCumulative = filterCountry === "all"
+              ? dbTotalReviews
+              : (dbCountryCounts[filterCountry] || 0);
+            const filteredCountriesCount = filterCountry === "all"
+              ? dbActiveCountries.length
+              : ((dbCountryCounts[filterCountry] || 0) > 0 ? 1 : 0);
             return (
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/40 text-[11px] font-medium text-foreground">
                 <span>📊</span>
                 <span>
-                  {filterCountry === "all" ? t("Total", "총") : `${COUNTRY_KO_NAME[filterCountry] || filterCountry}`} <span className="font-bold text-primary">{filteredCountries.length}</span>{t(" countries", "개국")} · <span className="font-bold text-primary">{filteredRows.length}</span>{t(" channels", "개 채널")} · {t("Cumulative", "누적")} <span className="font-bold text-primary">{filteredCumulative.toLocaleString()}</span>{t(" reviews collected", "건 수집")}
+                  {filterCountry === "all" ? t("Total", "총") : `${COUNTRY_KO_NAME[filterCountry] || filterCountry}`} <span className="font-bold text-primary">{filteredCountriesCount}</span>{t(" countries", "개국")} · <span className="font-bold text-primary">{filteredRows.length}</span>{t(" channels", "개 채널")} · {t("Cumulative", "누적")} <span className="font-bold text-primary">{filteredCumulative.toLocaleString()}</span>{t(" reviews collected", "건 수집")}
                 </span>
               </div>
             );
@@ -1328,7 +1335,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
           <div className="flex flex-wrap gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
             <span>✅ 수집 중: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "active").length}</span>개</span>
             <span>📋 예정: <span className="font-bold text-foreground">{COLLECTION_DETAIL.filter(r => r.status === "planned").length}</span>개</span>
-            <span>📊 누적 총계: <span className="font-bold text-primary">{Object.entries(sourceCounts).filter(([k]) => k !== "lge_com").reduce((s, [, v]) => s + v, 0).toLocaleString()}</span>건</span>
+            <span>📊 누적 총계: <span className="font-bold text-primary">{dbTotalReviews.toLocaleString()}</span>건</span>
             <span className="ml-auto">
               ⏰ BV: Sweep(02:00 UTC) → Collect(6h마다) → Sync(06:00 UTC) |
               📦 기타: Reddit/Amazon 07:00 KST → YouTube 07:05 KST → 아시아 07:10 KST
@@ -1606,7 +1613,7 @@ export const CollectionCriteria = () => {
 
         {/* ─── 국가×채널 상세 수집 현황 테이블 (수집 방식 위에 배치) ─── */}
         <section>
-          <CollectionDetailTable t={t} />
+          <CollectionDetailTable t={t} dbCountryCounts={countryCounts} />
         </section>
 
         {/* ─── 3. 수집 방식 (Schedule + Regions + Logic) ─── */}
