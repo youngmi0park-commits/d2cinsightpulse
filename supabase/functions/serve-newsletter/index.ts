@@ -455,9 +455,14 @@ a {text-decoration:none;}
     <tr><td style="padding:14px 18px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
         <td style="font-size:12px;font-weight:600;color:#1B1A1E;font-family:${FONT};letter-spacing:-0.1px;">${bi("데이터 수집 현황", "Data Collection Status")}</td>
-        <td style="text-align:right;font-size:11px;color:#6B6A6E;font-family:${FONT};">
-          <strong style="color:#EA1917;font-size:15px;font-weight:700;">${d.totalReviews.toLocaleString()}</strong>
-          <span style="color:#8B8A8E;font-weight:400;">${bi("건 · " + d.productCount.toLocaleString() + "개 제품", "reviews · " + d.productCount.toLocaleString() + " products")}</span>
+        <td style="text-align:right;font-size:11px;color:#6B6A6E;font-family:${FONT};white-space:nowrap;">
+          <span style="color:#8B8A8E;font-weight:400;margin-right:4px;">${bi("이번주", "This week")}</span>
+          <strong style="color:#EA1917;font-size:15px;font-weight:700;">${d.weeklyReviews.toLocaleString()}</strong>
+          <span style="color:#8B8A8E;font-weight:400;">${bi("건", "reviews")}</span>
+          <span style="color:#D5D0C5;margin:0 8px;">·</span>
+          <span style="color:#8B8A8E;font-weight:400;margin-right:4px;">${bi("누적", "Total")}</span>
+          <strong style="color:#1B1A1E;font-size:15px;font-weight:700;">${d.totalReviews.toLocaleString()}</strong>
+          <span style="color:#8B8A8E;font-weight:400;">${bi("건", "reviews")}</span>
         </td>
       </tr></table>
     </td></tr>
@@ -473,7 +478,7 @@ a {text-decoration:none;}
     <td width="25%" style="padding:0 4px 0 0;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+        <tr><td style="padding:14px 12px;text-align:center;height:120px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("총 리뷰 수집", "Total Reviews")}</div>
           <div style="font-size:22px;font-weight:700;color:#1B1A1E;line-height:28px;margin-top:4px;letter-spacing:-0.6px;">${d.totalReviews.toLocaleString()}</div>
           <div style="font-size:10px;color:${d.wow >= 0 ? '#0D9488' : '#EA1917'};font-weight:600;margin-top:3px;">${d.wow > 0 ? '▲ +' : d.wow < 0 ? '▼ ' : ''}${d.wow}% ${bi("vs 전주", "vs last week")}</div>
@@ -483,7 +488,7 @@ a {text-decoration:none;}
     <td width="25%" style="padding:0 4px;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#0D9488;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+        <tr><td style="padding:14px 12px;text-align:center;height:120px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("긍정 TOP 키워드", "Top Positive Keyword")}</div>
           <div style="font-size:14px;font-weight:700;color:#0D9488;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topPositiveKeyword}"</div>
           <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topPositiveCount} ${bi("건 언급 1위", "mentions · #1")}</div>
@@ -493,7 +498,7 @@ a {text-decoration:none;}
     <td width="25%" style="padding:0 4px;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+        <tr><td style="padding:14px 12px;text-align:center;height:120px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("부정 TOP 키워드", "Top Negative Keyword")}</div>
           <div style="font-size:14px;font-weight:700;color:#EA1917;line-height:20px;margin-top:6px;letter-spacing:-0.2px;">"${d.topNegativeKeyword}"</div>
           <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topNegativeCount} ${bi("건 · FAQ 대응", "mentions · FAQ needed")}</div>
@@ -503,7 +508,7 @@ a {text-decoration:none;}
     <td width="25%" style="padding:0 0 0 4px;vertical-align:top;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#1B1A1E;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="padding:14px 12px;text-align:center;height:88px;vertical-align:middle;font-family:${INTER};">
+        <tr><td style="padding:14px 12px;text-align:center;height:120px;vertical-align:middle;font-family:${INTER};">
           <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("주간 언급 TOP", "Top Mentioned Product")}</div>
           <div style="font-size:13px;font-weight:700;color:#1B1A1E;line-height:18px;margin-top:6px;letter-spacing:-0.2px;">${d.topProduct}</div>
           <div style="font-size:10px;color:#8B8A8E;margin-top:3px;font-weight:400;">${d.topProductCount} ${bi("건 · 1위", "mentions · #1")}</div>
