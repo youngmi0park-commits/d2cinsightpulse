@@ -78,13 +78,15 @@ function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 
   return useQuery({
     queryKey: ["channel-top-products-weekly", sourcePrefix, sentiment, limit],
     queryFn: async () => {
+      // Reddit (Firecrawl-sourced) posts often have NULL published_at — fall back to collected_at
+      const dateField = sourcePrefix.startsWith("reddit") ? "collected_at" : "published_at";
       const fetchSince = async (sinceISO: string) => {
         const { data, error } = await supabase
           .from("reviews")
           .select("product_id, products!inner(model_number, display_name, category, is_active)")
           .like("source", `${sourcePrefix}%`)
           .eq("sentiment", sentiment)
-          .gte("published_at", sinceISO)
+          .gte(dateField, sinceISO)
           .limit(1000);
         if (error) throw error;
         return data || [];
