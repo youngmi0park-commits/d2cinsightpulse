@@ -11,6 +11,7 @@ import {
   Loader2, Package, Hash, Sparkles, MessageSquareQuote, Search, X
 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveCategoryEn } from "@/lib/categoryInference";
 
 type SentimentFilter = "ALL" | "positive" | "negative";
 type CountryFilter = "all" | "US" | "UK";
