@@ -43,8 +43,9 @@ function useCompetitorMentions(country: string, range: "all" | "weekly") {
         .like("source", "reddit%")
         .limit(2000);
       if (range === "weekly") {
+        // Use collected_at — Firecrawl Reddit posts have NULL published_at
         const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        query = query.gte("published_at", weekAgo);
+        query = query.gte("collected_at", weekAgo);
       }
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));

@@ -29,12 +29,13 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
     queryKey: ["reddit-weekly-summary", country, sinceISO],
     enabled: !!sinceISO,
     queryFn: async () => {
+      // Use collected_at for weekly window — Firecrawl-sourced posts often have NULL published_at
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source, product_id, products!inner(display_name, category)")
+        .select("id, content, title, sentiment, sentiment_score, source, product_id, collected_at, published_at, products!inner(display_name, category)")
         .like("source", "reddit%")
-        .gte("published_at", sinceISO!)
-        .order("published_at", { ascending: false })
+        .gte("collected_at", sinceISO!)
+        .order("collected_at", { ascending: false })
         .limit(2000);
       if (sourcesFilter) {
         const redditSources = sourcesFilter.filter(s => s.startsWith("reddit"));
