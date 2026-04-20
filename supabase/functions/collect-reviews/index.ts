@@ -6,6 +6,63 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ──────────────────────────────────────────────────────────────────
+// SEED URL MAP — 차단되는 사이트의 알려진 LG 브랜드 페이지를 직접 사용
+// Firecrawl search가 0건이거나 차단되는 경우 fallback으로 사용됩니다
+// ──────────────────────────────────────────────────────────────────
+const CHANNEL_SEED_URLS: Record<string, string[]> = {
+  amazon: [
+    "https://www.amazon.com/s?k=LG+OLED+TV&i=electronics&rh=p_72%3A1248915011",
+    "https://www.amazon.com/s?k=LG+Gram+laptop&i=computers",
+    "https://www.amazon.com/s?k=LG+washer&i=appliances",
+    "https://www.amazon.com/s?k=LG+refrigerator&i=appliances",
+    "https://www.amazon.com/s?k=LG+soundbar&i=electronics",
+  ],
+  trustpilot: [
+    "https://www.trustpilot.com/review/www.lg.com",
+    "https://www.trustpilot.com/review/lg.com",
+  ],
+  rtings: [
+    "https://www.rtings.com/tv/reviews/lg",
+    "https://www.rtings.com/monitor/reviews/lg",
+    "https://www.rtings.com/soundbar/reviews/lg",
+  ],
+  cnet: [
+    "https://www.cnet.com/a/topic/lg/",
+    "https://www.cnet.com/tags/lg-oled/",
+  ],
+  techradar: [
+    "https://www.techradar.com/tag/lg",
+    "https://www.techradar.com/reviews/lg-oled",
+  ],
+  pcmag: [
+    "https://www.pcmag.com/search?q=LG+gram",
+    "https://www.pcmag.com/search?q=LG+OLED",
+  ],
+  notebookcheck: [
+    "https://www.notebookcheck.net/LG-Laptop-Reviews.142488.0.html",
+  ],
+  consumeraffairs: [
+    "https://www.consumeraffairs.com/tv/lg.html",
+    "https://www.consumeraffairs.com/appliances/lg.html",
+  ],
+  consumer_reports: [
+    "https://www.consumerreports.org/products/televisions/lg/",
+  ],
+  bestreviews: [
+    "https://bestreviews.com/electronics/televisions/best-lg-tvs",
+  ],
+  trusted_reviews: [
+    "https://www.trustedreviews.com/best/best-lg-tv",
+  ],
+  houzz: [
+    "https://www.houzz.com/products/query/LG",
+  ],
+  lemon8: [
+    "https://www.lemon8-app.com/discover/LG",
+  ],
+};
+
 // Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
@@ -314,29 +371,37 @@ Deno.serve(async (req) => {
         try {
           console.log(`[${channel.label}] Searching: ${category}`);
 
-          const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              query: channel.queryTemplate(category),
-              limit: isManualCollection ? 3 : 5,
-              scrapeOptions: { formats: ["markdown"] },
-            }),
-          });
+          // ── Phase 1: Firecrawl /v1/search (기본) ──
+          let results = await firecrawlSearch(
+            FIRECRAWL_API_KEY,
+            channel.queryTemplate(category),
+            isManualCollection ? 3 : 5
+          );
+          let usedFallback = "";
 
-          if (!searchRes.ok) {
-            const errData = await searchRes.text();
-            console.error(`[${channel.label}] Search failed: ${errData}`);
-            errors.push(`${channel.label}/${category}: ${searchRes.status}`);
-            continue;
+          // ── Phase 2: Bing HTML scrape fallback (Firecrawl이 0건이면) ──
+          if (results.length === 0) {
+            console.log(`[${channel.label}] Firecrawl 0 results, trying Bing fallback...`);
+            results = await bingSearchFallback(FIRECRAWL_API_KEY, channel.queryTemplate(category), isManualCollection ? 3 : 5);
+            if (results.length > 0) usedFallback = "bing";
           }
 
-          const searchData = await searchRes.json();
-          const results = searchData.data || [];
-          console.log(`[${channel.label}] Found ${results.length} search results for ${category}`);
+          // ── Phase 3: DuckDuckGo HTML scrape fallback ──
+          if (results.length === 0) {
+            console.log(`[${channel.label}] Bing 0 results, trying DuckDuckGo fallback...`);
+            results = await ddgSearchFallback(FIRECRAWL_API_KEY, channel.queryTemplate(category), isManualCollection ? 3 : 5);
+            if (results.length > 0) usedFallback = "ddg";
+          }
+
+          // ── Phase 4: Seed URL fallback (Amazon/Trustpilot/Rtings 등 알려진 LG 페이지 직접 사용) ──
+          if (results.length === 0 && CHANNEL_SEED_URLS[channel.id]) {
+            console.log(`[${channel.label}] Search blocked, using seed URLs...`);
+            const seeds = CHANNEL_SEED_URLS[channel.id];
+            results = seeds.slice(0, isManualCollection ? 2 : 3).map((url) => ({ url, markdown: "" }));
+            usedFallback = "seed";
+          }
+
+          console.log(`[${channel.label}] Found ${results.length} results for ${category}${usedFallback ? ` (via ${usedFallback})` : ""}`);
 
           if (results.length === 0) continue;
 
@@ -401,13 +466,26 @@ Deno.serve(async (req) => {
               if (!content || content.length < 200) {
                 try {
                   console.log(`[${channel.label}] Scraping: ${url}`);
+                  // 차단되는 사이트는 모바일 UA + waitFor + location 추가
+                  const isBlockedSite = ["amazon", "trustpilot", "rtings", "cnet", "techradar", "pcmag", "consumeraffairs"].includes(channel.id);
+                  const scrapeBody: Record<string, unknown> = {
+                    url,
+                    formats: ["markdown"],
+                    onlyMainContent: true,
+                  };
+                  if (isBlockedSite) {
+                    scrapeBody.waitFor = 2500;
+                    scrapeBody.mobile = true; // 모바일 UA로 우회
+                    scrapeBody.location = { country: "US", languages: ["en-US"] };
+                    scrapeBody.blockAds = true;
+                  }
                   const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
                     method: "POST",
                     headers: {
                       Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
                       "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+                    body: JSON.stringify(scrapeBody),
                   });
 
                   if (scrapeRes.ok) {
@@ -506,6 +584,91 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// ──────────────────────────────────────────────────────────────────
+// SEARCH HELPERS — Firecrawl 기본 + Bing/DuckDuckGo HTML fallback + Seed URL
+// ──────────────────────────────────────────────────────────────────
+async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query, limit, scrapeOptions: { formats: ["markdown"] } }),
+    });
+    if (!res.ok) {
+      console.warn(`[firecrawlSearch] ${res.status}: ${(await res.text()).slice(0, 150)}`);
+      return [];
+    }
+    const data = await res.json();
+    return data.data || [];
+  } catch (e) {
+    console.warn(`[firecrawlSearch] error: ${(e as Error).message}`);
+    return [];
+  }
+}
+
+/** Bing HTML SERP를 Firecrawl scrape로 가져와 결과 URL 추출 */
+async function bingSearchFallback(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const bingUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=${Math.min(limit * 3, 20)}`;
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: bingUrl,
+        formats: ["links", "markdown"],
+        onlyMainContent: false,
+        waitFor: 1500,
+        location: { country: "US", languages: ["en-US"] },
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const links: string[] = data.data?.links || data.links || [];
+    const siteMatch = query.match(/site:([^\s]+)/i);
+    const targetDomain = siteMatch ? siteMatch[1].replace(/^www\./, "") : null;
+    const filtered = links
+      .filter((u) => typeof u === "string" && u.startsWith("http"))
+      .filter((u) => !u.includes("bing.com") && !u.includes("microsoft.com"))
+      .filter((u) => (targetDomain ? u.includes(targetDomain) : true))
+      .slice(0, limit);
+    return filtered.map((url) => ({ url, markdown: "" }));
+  } catch (e) {
+    console.warn(`[bingSearchFallback] error: ${(e as Error).message}`);
+    return [];
+  }
+}
+
+/** DuckDuckGo HTML SERP fallback */
+async function ddgSearchFallback(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: ddgUrl,
+        formats: ["links"],
+        onlyMainContent: false,
+        waitFor: 1000,
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const links: string[] = data.data?.links || data.links || [];
+    const siteMatch = query.match(/site:([^\s]+)/i);
+    const targetDomain = siteMatch ? siteMatch[1].replace(/^www\./, "") : null;
+    const filtered = links
+      .filter((u) => typeof u === "string" && u.startsWith("http"))
+      .filter((u) => !u.includes("duckduckgo.com"))
+      .filter((u) => (targetDomain ? u.includes(targetDomain) : true))
+      .slice(0, limit);
+    return filtered.map((url) => ({ url, markdown: "" }));
+  } catch (e) {
+    console.warn(`[ddgSearchFallback] error: ${(e as Error).message}`);
+    return [];
+  }
+}
 
 function parseAiReviews(rawText: string, channelLabel: string, category: string): any[] {
   try {
