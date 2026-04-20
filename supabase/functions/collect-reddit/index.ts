@@ -571,11 +571,15 @@ Deno.serve(async (req) => {
       for (const { sub, category } of subsToFetch) {
         diag.direct_subs_attempted += 1;
         try {
-          console.log(`[Direct] r/${sub} (${category})`);
-          const posts = await fetchSubredditJson(sub, "hot");
+          console.log(`[Direct] r/${sub} (${category}) — sort=new&t=week`);
+          // Use sort=new with t=week to capture only fresh posts
+          const posts = await fetchSubredditJson(sub, "new", "week");
+          phaseStats[sub] = (phaseStats[sub] || 0) + posts.length;
+
           if (posts.length === 0) {
             diag.direct_subs_zero_posts += 1;
-            errors.push(`Direct r/${sub}: 0 posts`);
+            errors.push(`Direct r/${sub}: 0 posts (after quality filter)`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           phaseStats["direct_subreddit"] = (phaseStats["direct_subreddit"] || 0) + posts.length;
@@ -593,6 +597,7 @@ Deno.serve(async (req) => {
 
           if (batched.length < 200) {
             console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -601,6 +606,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[Direct r/${sub}] AI extraction null`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           if (extracted.length === 0) {
@@ -614,9 +620,11 @@ Deno.serve(async (req) => {
           totalSkipped += stats.skipped;
           console.log(`[Direct r/${sub}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (e) {
+          phaseStats[`${sub}_error`] = (phaseStats[`${sub}_error`] || 0) + 1;
           errors.push(`Direct r/${sub}: ${e}`);
-          console.error(`[Direct r/${sub}] error:`, e);
+          console.error(`[FAIL] r/${sub} + direct harvest:`, e);
         }
+        await sleep(REDDIT_RATE_LIMIT_MS);
       }
     }
   } catch (fatalErr) {
