@@ -74,6 +74,35 @@ function useChannelKeyTakeaway(channel: "lgcom" | "reddit") {
   });
 }
 
+// Diversify TOP-N across product categories so a single high-volume category (e.g. TV)
+// can't crowd out other categories. Caps per-category occupancy and falls back to
+// volume-based fill once the cap is reached.
+function diversifyByCategory<T extends { category?: string | null }>(
+  items: T[],
+  limit: number,
+  maxPerCategory = 2,
+): T[] {
+  const out: T[] = [];
+  const used: Record<string, number> = {};
+  // First pass: respect per-category cap
+  for (const it of items) {
+    if (out.length >= limit) break;
+    const cat = (it.category || "General").trim();
+    if ((used[cat] || 0) >= maxPerCategory) continue;
+    used[cat] = (used[cat] || 0) + 1;
+    out.push(it);
+  }
+  // Second pass: fill remaining slots ignoring cap
+  if (out.length < limit) {
+    for (const it of items) {
+      if (out.length >= limit) break;
+      if (out.includes(it)) continue;
+      out.push(it);
+    }
+  }
+  return out;
+}
+
 function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 6) {
   return useQuery({
     queryKey: ["channel-top-products-weekly", sourcePrefix, sentiment, limit],
@@ -81,13 +110,16 @@ function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 
       // Reddit (Firecrawl-sourced) posts often have NULL published_at — fall back to collected_at
       const dateField = sourcePrefix.startsWith("reddit") ? "collected_at" : "published_at";
       const fetchSince = async (sinceISO: string) => {
+        // Pull more rows so smaller categories (Monitor/Washer/AC...) get a fair sample
+        // instead of the result being dominated by TV which has the highest volume.
         const { data, error } = await supabase
           .from("reviews")
           .select("product_id, products!inner(model_number, display_name, category, is_active)")
           .like("source", `${sourcePrefix}%`)
           .eq("sentiment", sentiment)
           .gte(dateField, sinceISO)
-          .limit(1000);
+          .order(dateField, { ascending: false })
+          .limit(3000);
         if (error) throw error;
         return data || [];
       };
@@ -118,12 +150,16 @@ function useChannelTopProducts(sourcePrefix: string, sentiment: string, limit = 
         }
         prodMap[pid].count++;
       }
-      const products = Object.values(prodMap)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, limit);
+      const ranked = Object.values(prodMap).sort((a, b) => b.count - a.count);
+      // Diversify: max 2 products per category for top-6, max 1 for top-3
+      const perCat = limit <= 3 ? 1 : 2;
+      const products = diversifyByCategory(ranked, limit, perCat);
       return { products, windowDays, totalReviews: data.length };
     },
-    staleTime: 1000 * 60 * 5,
+    // Near-real-time: refetch every 60s, refresh on tab focus
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 }
 
