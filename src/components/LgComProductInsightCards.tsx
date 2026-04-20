@@ -292,7 +292,10 @@ export function LgComProductInsightCards() {
                 <div>
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2" title={selectedProduct.model_number}>
                     📦 {selectedProduct.display_name}
-                    <Badge variant="secondary" className="text-[10px]">{selectedProduct.category}</Badge>
+                    {(() => {
+                      const cat = resolveCategoryEn(selectedProduct.category, selectedProduct.model_number, selectedProduct.display_name);
+                      return cat ? <Badge variant="secondary" className="text-[10px]">{cat}</Badge> : null;
+                    })()}
                   </h3>
                   <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{selectedProduct.model_number}</p>
                 </div>
@@ -460,7 +463,10 @@ export function LgComProductInsightCards() {
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-foreground line-clamp-2">📦 {item.productName}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{item.category}</p>
+                          {(() => {
+                            const cat = resolveCategoryEn(item.category, (item as any).modelNumber, item.productName);
+                            return cat ? <p className="text-[10px] text-muted-foreground mt-0.5">{cat}</p> : null;
+                          })()}
                         </div>
                         {item.topPhrases.length > 0 && (
                           <div className="space-y-1 bg-background/50 rounded-md p-2">
