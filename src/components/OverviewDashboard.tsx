@@ -211,22 +211,47 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
           <SectionTitle title={`${channelEmoji} ${channelLabel} 주간 오버뷰`} />
           <DataWindowBadge sourceLike={sourceLike} />
         </div>
-        <button
-          onClick={onGenerate}
-          disabled={isLoading}
-          className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
-        >
-          {isLoading ? (
-            <><Loader2 className="h-3.5 w-3.5 animate-spin" /> 분석 중...</>
-          ) : (
-            <><Sparkles className="h-3.5 w-3.5" /> 오버뷰 생성</>
+        <div className="flex items-center gap-2 flex-wrap">
+          {sortedCountries.length > 0 && (
+            <div className="flex items-center gap-1 flex-wrap">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mr-1">국가별</span>
+              {sortedCountries.slice(0, 8).map(([code, total]) => {
+                const weekly = countryDist?.weekly?.[code] || 0;
+                return (
+                  <Badge
+                    key={code}
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0 border-border bg-muted/40 text-foreground gap-1"
+                    title={`${code}: 누적 ${total.toLocaleString()} · 7일 ${weekly.toLocaleString()}`}
+                  >
+                    <span>{COUNTRY_FLAG[code] || "🌐"}</span>
+                    <span className="font-semibold">{code}</span>
+                    <span className="text-muted-foreground">{total.toLocaleString()}</span>
+                    {weekly > 0 && (
+                      <span className="text-success font-semibold">+{weekly}</span>
+                    )}
+                  </Badge>
+                );
+              })}
+            </div>
           )}
-        </button>
+          <button
+            onClick={onGenerate}
+            disabled={isLoading}
+            className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {isLoading ? (
+              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> 분석 중...</>
+            ) : (
+              <><Sparkles className="h-3.5 w-3.5" /> 오버뷰 생성</>
+            )}
+          </button>
+        </div>
       </div>
 
       {!overview && !isLoading && (
