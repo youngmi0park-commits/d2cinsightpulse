@@ -130,38 +130,39 @@ function buildFunnelInsight(
       return t;
     });
 
+  // English-first ad copy strategy (Korean rationale shown as secondary annotation)
   switch (funnel) {
     case "awareness":
       return {
-        message: `"${posKw[0] || "품질"}" 중심 브랜드 인지 메시지 — 긍정 ${posPct}% 기반 신뢰 소구`,
+        message: `Lead with "${posKw[0] || "quality"}" — ${posPct}% positive sentiment builds trust at first impression`,
         sourceQuotes: pickQuotes(posReviews, 2),
         keywords: posKw.slice(0, 4),
-        strategy: `${pName}의 핵심 강점(${posKw.slice(0, 2).join(", ")})을 짧은 노출형 채널(YouTube Bumper, GDN)에서 반복 노출하여 브랜드 연상 강화`,
+        strategy: `Repeat core strengths (${posKw.slice(0, 2).join(", ")}) across short-form awareness placements (YouTube Bumper, GDN) to reinforce brand recall. (브랜드 연상 강화)`,
       };
     case "consideration":
       return {
-        message: `실사용자 ${posPct}% 만족 — "${posKw[0] || "성능"}" + "${scenes[0] || "일상"}" 활용 장면으로 상세 탐색 유도`,
+        message: `${posPct}% of real users satisfied — pair "${posKw[0] || "performance"}" with "${scenes[0] || "everyday"}" usage scenes to drive PDP exploration`,
         sourceQuotes: pickQuotes(posReviews, 2),
         keywords: [...posKw.slice(0, 2), ...(scenes.length ? [scenes[0]] : [])],
         strategy: negKw[0]
-          ? `경쟁사 대비 "${negKw[0]}" 우려를 선제 해소하는 비교형 콘텐츠 + 리뷰 기반 소셜프루프로 PDP 체류 시간 확대`
-          : `리뷰 기반 소셜프루프와 사용 장면(${scenes[0] || "일상"}) 영상으로 PDP 방문 유도`,
+          ? `Pre-empt "${negKw[0]}" concerns with comparison content + review-based social proof to extend PDP dwell time. (우려 선제 해소)`
+          : `Use review-based social proof and usage scenes (${scenes[0] || "everyday"}) video to drive PDP visits. (PDP 방문 유도)`,
       };
     case "conversion":
       return {
         message: negKw[0]
-          ? `"${negKw[0]}" 우려 해소 + "${posKw[0] || "만족도"}" 강조 → 구매 결정 지원`
-          : `"${posKw[0] || "품질"}" 검증 완료 — 리뷰 ${total}건 기반 확신 부여`,
+          ? `Resolve "${negKw[0]}" concern + amplify "${posKw[0] || "satisfaction"}" → support purchase decision`
+          : `"${posKw[0] || "Quality"}" validated — ${total} reviews provide purchase confidence`,
         sourceQuotes: [...pickQuotes(posReviews, 1), ...pickQuotes(negReviews, 1)],
         keywords: [...posKw.slice(0, 2), ...(negKw[0] ? [negKw[0]] : [])],
-        strategy: `장바구니 이탈 방지를 위해 실사용자 만족 데이터(${posPct}% 긍정)와 ${negKw[0] ? `"${negKw[0]}" 해소 메시지` : "핵심 강점 재확인"}을 PDP·리타겟팅 배너에 배치`,
+        strategy: `Place real-user satisfaction data (${posPct}% positive) and ${negKw[0] ? `"${negKw[0]}" resolution messaging` : "core strength reaffirmation"} on PDP & retargeting banners to prevent cart abandonment. (장바구니 이탈 방지)`,
       };
     case "retention":
       return {
-        message: `기존 고객 "${posKw[0] || "만족"}" 경험 활용 — 크로스셀·업셀 메시지`,
+        message: `Leverage existing customers' "${posKw[0] || "satisfaction"}" experience — cross-sell & upsell messaging`,
         sourceQuotes: pickQuotes(posReviews.length ? posReviews : openReviews, 2),
         keywords: posKw.slice(0, 3),
-        strategy: `높은 만족도(${posPct}%)를 활용한 리퍼럴 프로그램 + 동일 카테고리 신제품 이메일 CRM 캠페인`,
+        strategy: `Use high satisfaction (${posPct}%) to power referral programs + same-category new-product email CRM campaigns. (CRM 리텐션)`,
       };
     default:
       return { message: "", sourceQuotes: [], keywords: [], strategy: "" };
