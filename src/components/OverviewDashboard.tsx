@@ -24,14 +24,16 @@ function useOverviewKPIs() {
       const twoWeeksAgo = new Date(); twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
       const [totalRes, thisWeekRes, lastWeekRes, lgcomTotalRes, lgcomWeeklyRes, lgcomLastWeekRes, redditTotalRes, redditWeeklyRes, redditLastWeekRes] = await Promise.all([
         supabase.from("reviews").select("*", { count: "exact", head: true }),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
+        // Total weekly: published_at 기준이지만 reddit은 collected_at fallback이 필요하므로 OR 조건 사용
+        supabase.from("reviews").select("*", { count: "exact", head: true }).or(`published_at.gte.${weekAgo.toISOString()},and(source.like.reddit%,collected_at.gte.${weekAgo.toISOString()})`),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).or(`and(published_at.gte.${twoWeeksAgo.toISOString()},published_at.lt.${weekAgo.toISOString()}),and(source.like.reddit%,collected_at.gte.${twoWeeksAgo.toISOString()},collected_at.lt.${weekAgo.toISOString()})`),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%"),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "lge_com%").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
         supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%"),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("published_at", weekAgo.toISOString()),
-        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
+        // Reddit weekly: Firecrawl-sourced posts often have NULL published_at — use collected_at
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("collected_at", weekAgo.toISOString()),
+        supabase.from("reviews").select("*", { count: "exact", head: true }).like("source", "reddit%").gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
       ]);
       const calc = (c: number, p: number) => p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100);
       const allSources = sourceCounts || {};
