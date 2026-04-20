@@ -1279,9 +1279,9 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                           <span className="text-muted-foreground/40">—</span>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap">
-                        {logEntry && logEntry.count > 0 ? (
-                          <span className="text-muted-foreground">{logEntry.count.toLocaleString()}</span>
+                      <td className="px-2 py-1.5 text-right font-mono whitespace-nowrap" title={t(`New reviews collected in last ${recentWindow === 24 ? "24 hours" : "7 days"} (reviews.collected_at)`, `최근 ${recentWindow === 24 ? "24시간" : "7일"} 신규 수집 (reviews.collected_at 기준)`)}>
+                        {recent > 0 ? (
+                          <span className="text-foreground font-semibold">+{recent.toLocaleString()}</span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
