@@ -342,7 +342,7 @@ const CommunitiesPage = () => {
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <Globe className="h-4 w-4 text-primary" />
               <h4 className="text-sm font-semibold font-heading">채널별 리뷰 현황</h4>
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">50건 이상 채널 · 기타 통합</Badge>
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 text-muted-foreground">채널×국가 분리 · 15건 미만 기타 통합</Badge>
               {range === "weekly" && (
                 <Badge variant="outline" className="text-[10px] gap-1 border-primary/30 text-primary bg-primary/5" title="이번 주(최근 7일) 작성 리뷰 기준. 30건 미만이면 최근 30일로 자동 폴백.">
                   {stats.total < WEEKLY_MIN_REVIEWS ? "⚠️ 1개월 폴백" : "📅 이번 주 작성"} · {stats.total.toLocaleString()}건
