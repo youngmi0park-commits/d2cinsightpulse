@@ -354,9 +354,12 @@ function buildNewsletterHTML(d: {
   }
 
   /* ── Channel badges ── */
-  const channelCount = Math.max(d.channels.length, 1);
+  const visibleChannels = d.channels
+    .filter(ch => (ch.weeklyCount ?? 0) > 0)
+    .sort((a, b) => (b.weeklyCount ?? 0) - (a.weeklyCount ?? 0));
+  const channelCount = Math.max(visibleChannels.length, 1);
   const colWidthPct = (100 / channelCount).toFixed(4);
-  const channelBadges = d.channels.map(ch => {
+  const channelBadges = visibleChannels.map(ch => {
     const weekly = (ch.weeklyCount ?? 0).toLocaleString();
     const total = ch.count.toLocaleString();
     return `<td width="${colWidthPct}%" style="padding:0 3px;vertical-align:top;"><!--[if mso]><table cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center" style="border:1px solid #E0DBD3;background:#FFFFFF;padding:6px 8px;font-size:11px;color:#1B1A1E;font-family:${FONT};mso-line-height-rule:exactly;line-height:14px;"><span style="font-size:6px;color:${ch.color};">&#9679;</span> <strong>${ch.name}</strong> ${weekly}<br/><span style="color:#9A9A9A;font-size:10px;">${bi("누적", "Total")} ${total}</span></td></tr></table><![endif]--><!--[if !mso]><!--><table cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;"><tr><td align="center" style="border:1px solid #E0DBD3;background:#FFFFFF;padding:6px 8px;font-size:11px;color:#1B1A1E;font-family:${FONT};border-radius:14px;line-height:14px;text-align:center;white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${ch.color};margin-right:5px;vertical-align:middle;"></span><strong style="font-weight:700;">${ch.name}</strong> <span style="font-weight:700;">${weekly}</span><div style="color:#9A9A9A;font-size:10px;font-weight:400;margin-top:2px;line-height:12px;">${bi("누적", "Total")} ${total}</div></td></tr></table><!--<![endif]--></td>`;
