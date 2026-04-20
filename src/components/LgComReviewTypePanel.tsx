@@ -172,7 +172,7 @@ export function LgComReviewTypePanel() {
                 <div key={country} className="rounded-lg border border-border bg-card p-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="text-sm">{FLAG[country] || "🌐"}</span>
-                    <span className="text-xs font-bold text-foreground">{country}</span>
+                    <span className="text-xs font-bold text-foreground">{LGE[country] || country}</span>
                     <span className="text-[10px] text-muted-foreground ml-auto">{c.total.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-1 h-3 bg-muted/30 rounded-full overflow-hidden mb-1.5">
