@@ -207,7 +207,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
   const sortedCountries = countryDist
     ? Object.entries(countryDist.total).sort((a, b) => b[1] - a[1])
     : [];
-  const totalSum = sortedCountries.reduce((s, [, v]) => s + v, 0);
+
 
   return (
     <div>
