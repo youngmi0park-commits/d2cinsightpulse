@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Copy, ThumbsUp, ThumbsDown, MessageCircle, ChevronDown, Filter, Languages, Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { resolveCategoryEn } from "@/lib/categoryInference";
 
 function useRedditPosts(country: string, range: "all" | "weekly") {
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
@@ -17,7 +18,7 @@ function useRedditPosts(country: string, range: "all" | "weekly") {
     queryFn: async () => {
       let query = supabase
         .from("reviews")
-        .select("id, content, title, sentiment, sentiment_score, source, published_at, author, product_id, products!inner(display_name, category)")
+        .select("id, content, title, sentiment, sentiment_score, source, published_at, author, product_id, products!inner(display_name, category, model_number)")
         .like("source", "reddit%")
         .order("collected_at", { ascending: false })
         .limit(2000);
@@ -32,13 +33,17 @@ function useRedditPosts(country: string, range: "all" | "weekly") {
       }
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []).map((r) => ({
-        ...classifyRedditPost(r),
-        author: r.author,
-        publishedAt: r.published_at,
-        productName: (r.products as any)?.display_name || "Unknown",
-        category: (r.products as any)?.category || "",
-      }));
+      return (data || []).map((r) => {
+        const prod = (r.products as any) || {};
+        const resolvedCat = resolveCategoryEn(prod.category, prod.model_number, prod.display_name);
+        return {
+          ...classifyRedditPost(r),
+          author: r.author,
+          publishedAt: r.published_at,
+          productName: prod.display_name || "Unknown",
+          category: resolvedCat,
+        };
+      });
     },
     staleTime: 60_000 * 10,
   });

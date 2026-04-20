@@ -288,9 +288,11 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                 {overview.key_takeaway.map((item, i) => (
                   <div key={i} className="border border-amber-500/15 bg-amber-50/30 dark:bg-amber-500/5 rounded-lg p-3 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold">
-                        {item.category}
-                      </Badge>
+                      {item.category && item.category !== "General" && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold">
+                          {item.category}
+                        </Badge>
+                      )}
                       <span className="text-sm font-bold text-foreground">{item.product}</span>
                       <CopyBtn text={`[${item.product}]\n👍 ${item.positive_msg}\n👎 ${item.negative_msg}\n🎯 ${item.marketer_action}`} />
                     </div>
@@ -399,7 +401,7 @@ function ChannelOverviewSection({ channelLabel, channelEmoji, overview, isLoadin
                   <div key={i} className="flex items-start gap-2 px-3 py-2">
                     <span className="text-success mt-0.5">✅</span>
                     <div className="flex-1">
-                      {item.category && (
+                      {item.category && item.category !== "General" && (
                         <Badge variant="outline" className="text-[9px] px-1.5 py-0 mb-1 mr-1 border-success/30 text-success">{item.category}{item.product ? ` · ${item.product}` : ""}</Badge>
                       )}
                       <p className="text-xs text-foreground leading-relaxed">{maskCompetitorNames(item.text)}</p>
