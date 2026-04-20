@@ -540,11 +540,11 @@ export function MarketingHub({
                       return (
                         <div key={i} className="border-l-2 border-primary/30 pl-2 space-y-0.5">
                           <p className="text-[10px] font-medium text-foreground/90">
-                            🇰🇷 {ko || q}
+                            🇺🇸 "{q}"
                           </p>
                           {ko && ko !== q && (
                             <p className="text-[9px] text-muted-foreground italic line-clamp-1">
-                              원문: "{q}"
+                              🇰🇷 {ko}
                             </p>
                           )}
                         </div>
