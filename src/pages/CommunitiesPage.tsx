@@ -66,11 +66,11 @@ function sourceLabel(source: string): string {
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/* ── basic stats hook with <50 merging ── */
+/* ── basic stats hook — splits by channel × country ── */
 function useBasicStats(country: string, range: "all" | "weekly") {
   const sourcesFilter = countryToSourceFilter(country);
   return useQuery({
-    queryKey: ["community-basic-stats", country, range],
+    queryKey: ["community-basic-stats-v2", country, range],
     queryFn: async () => {
       const baseQuery = () => {
         let q = supabase
@@ -78,7 +78,7 @@ function useBasicStats(country: string, range: "all" | "weekly") {
           .select("source, sentiment", { count: "exact" })
           .not("source", "like", "lge_com%")
           .not("source", "like", "reddit%")
-          .limit(2000);
+          .limit(5000);
         if (sourcesFilter && sourcesFilter.length > 0) {
           q = q.in("source", sourcesFilter);
         }
@@ -89,11 +89,9 @@ function useBasicStats(country: string, range: "all" | "weekly") {
       let count: number | null = null;
 
       if (range === "weekly") {
-        // Try 7d first
         const week = await baseQuery().gte("published_at", getSinceISO(7));
         if (week.error) throw week.error;
         if ((week.count || 0) < WEEKLY_MIN_REVIEWS) {
-          // Fallback to 30d
           const month = await baseQuery().gte("published_at", getSinceISO(30));
           if (month.error) throw month.error;
           data = month.data;
@@ -109,31 +107,49 @@ function useBasicStats(country: string, range: "all" | "weekly") {
         count = all.count;
       }
 
-      const byChannel: Record<string, { total: number; positive: number; negative: number }> = {};
+      // Group by channel × country (key = "Channel|Country")
+      const byKey: Record<string, { channel: string; country: string; total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
         const ch = sourceLabel(r.source);
-        if (!byChannel[ch]) byChannel[ch] = { total: 0, positive: 0, negative: 0 };
-        byChannel[ch].total++;
-        if (r.sentiment === "positive") byChannel[ch].positive++;
-        if (r.sentiment === "negative") byChannel[ch].negative++;
+        const co = inferCountryFromSource(r.source);
+        const key = ch + "|" + co;
+        if (!byKey[key]) byKey[key] = { channel: ch, country: co, total: 0, positive: 0, negative: 0 };
+        byKey[key].total++;
+        if (r.sentiment === "positive") byKey[key].positive++;
+        if (r.sentiment === "negative") byKey[key].negative++;
       }
 
-      // Merge channels with <50 reviews into "기타"
-      const mainChannels: { name: string; total: number; positive: number; negative: number }[] = [];
+      // Threshold: smaller (15) since we now split per-country
+      const THRESHOLD = 15;
+      const mainChannels: { name: string; channel: string; country: string; total: number; positive: number; negative: number }[] = [];
       let etcTotal = 0, etcPos = 0, etcNeg = 0;
 
-      for (const [name, s] of Object.entries(byChannel)) {
-        if (s.total >= 50) {
-          mainChannels.push({ name, ...s });
+      for (const v of Object.values(byKey)) {
+        if (v.total >= THRESHOLD) {
+          mainChannels.push({
+            name: v.channel + " " + v.country,
+            channel: v.channel,
+            country: v.country,
+            total: v.total,
+            positive: v.positive,
+            negative: v.negative,
+          });
         } else {
-          etcTotal += s.total;
-          etcPos += s.positive;
-          etcNeg += s.negative;
+          etcTotal += v.total;
+          etcPos += v.positive;
+          etcNeg += v.negative;
         }
       }
 
       if (etcTotal > 0) {
-        mainChannels.push({ name: "기타", total: etcTotal, positive: etcPos, negative: etcNeg });
+        mainChannels.push({
+          name: "기타",
+          channel: "기타",
+          country: "Global",
+          total: etcTotal,
+          positive: etcPos,
+          negative: etcNeg,
+        });
       }
 
       return {
