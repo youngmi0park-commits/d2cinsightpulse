@@ -188,6 +188,8 @@ export function ContentStudioPanel({
 
     const forbiddenPhrases = "\n\n🚫 Forbidden Phrases:\n- No superlatives without evidence: 'best', '#1', 'unprecedented'\n- No direct competitor comparisons\n- No unverified environmental claims\n- Must not mislead reasonable consumers";
 
+    const productNameRule = `\n\n🎯 Product Name Usage (CRITICAL):\n- MINIMIZE explicit product/model name mentions in headlines and body copy.\n- Mention the full product name AT MOST ONCE per asset (only when essential — e.g. legal disclosure, first hero line, or CTA button).\n- Lead with BENEFITS, EMOTIONAL HOOKS, and PROOF POINTS — not the product name.\n- Prefer pronouns/category words ("it", "this OLED", "your fridge") or pure benefit framing instead of repeating the model name.\n- The persuasion must come from the strength/value/transformation, not from name recall.`;
+
     const mustInclude = `\n\n✅ Must Include:\n- Data source disclosure: "Based on ${total} user reviews"\n- Disclaimer reference (ST0010 footer area)\n- ${channelType === "outside" ? "'Ad' label for SNS content" : "Product page link"}`;
 
     const linkedSection = linkedCopy
@@ -249,7 +251,7 @@ ${uspSection}
 ${evidence}
 ${specInfo}${bannerStyleSection}
 ${channelGuidance}
-${forbiddenPhrases}
+${forbiddenPhrases}${productNameRule}
 ${mustInclude}${linkedSection}${reviewHighlightNote}${tvGuideSection}`;
 
     // Generate visual guidance based on content type + banner style
@@ -295,11 +297,11 @@ ${mustInclude}${linkedSection}${reviewHighlightNote}${tvGuideSection}`;
         break;
     }
 
-    // Short version for quick use
-    const shortVersion = `${displayName || productName} — ${strengths[0] || "Quality"}. ${strengths[1] || "Performance"}. ${channelType === "outside" ? "[Ad] " : ""}${usingScenes[0] ? `Perfect for ${usingScenes[0]}.` : "Experience it yourself."}`;
+    // Short version for quick use — benefit-led, product name de-emphasized
+    const shortVersion = `${strengths[0] || "Quality you feel"}. ${strengths[1] || "Performance you trust"}. ${channelType === "outside" ? "[Ad] " : ""}${usingScenes[0] ? `Made for ${usingScenes[0]}.` : "Experience it yourself."}`;
 
-    // Long version for detailed content
-    const longVersion = `${displayName || productName}: Users highlight ${strengths.join(", ")} as standout features. ${painPoints.length > 0 ? `Addressing concerns like ${painPoints[0]}, ` : ""}real users describe their experience in ${usingScenes.join(", ") || "everyday settings"}. ${evidence}`;
+    // Long version for detailed content — benefit-led, single product mention max
+    const longVersion = `Users highlight ${strengths.join(", ")} as standout strengths. ${painPoints.length > 0 ? `Designed to address ${painPoints[0]}, ` : ""}real customers describe their experience in ${usingScenes.join(", ") || "everyday settings"}. ${evidence}`;
 
     // Export formats — adapt to banner style
     const styleScene = bannerStyle === "lifestyle_cut" ? (usingScenes[0] || "modern living room") : bannerStyle === "usp_feature" ? "detail close-up" : (usingScenes[0] || "studio");

@@ -216,6 +216,9 @@ Deno.serve(async (req) => {
 
     const systemPrompt = "You are a senior LG Electronics global performance marketing strategist. " +
       "Analyze weekly VOC data and generate actionable marketing decisions.\n\n" +
+      "COPY-WRITING RULE (CRITICAL): For all copyHeadlineKo/copyHeadlineEn and actionTitle fields, MINIMIZE explicit product/model name mentions. " +
+      "Lead with user benefits, pain-relief, emotional hooks, or proof points — not with the product name. " +
+      "Mention a specific model name AT MOST ONCE per headline only if essential. Prefer category words (TV, fridge, soundbar) or pure benefit framing.\n\n" +
       "RULES:\n" +
       "1. Use LGE subsidiary codes (LGEUS, LGEDE, etc.) — never ISO 2-letter codes\n" +
       "2. SignalTags: PMAX_UP|PMAX_HOLD|PMAX_PAUSE|CRITEO_ON|CRITEO_OFF|AFFILIATE_UP|AFFILIATE_BRIEF|FAQ_URGENT|PDP_FAQ|GEO_READY|SEO_READY|META_ON|YOUTUBE_ON|SEASON_ON|MONITOR|DEFEND\n" +

@@ -43,10 +43,11 @@ export function RedditAiCopyModal() {
     setGeneratedCopy(null);
 
     try {
+      const COPY_RULE = `\n\n🎯 COPY RULE (CRITICAL): MINIMIZE explicit LG product/model name mentions. Lead with USER BENEFITS, EMOTIONAL HOOKS, and PROOF POINTS. Mention a specific model name AT MOST ONCE per message, only if essential. Persuasion must come from value/transformation, not from name recall.`;
       const prompts: Record<string, string> = {
-        defense: `Based on these negative Reddit VOC snippets about LG products, generate 3 defensive marketing messages that address customer concerns and turn them into reassurance. Keep each message under 2 lines. Include Korean translation.\n\nNegative VOC:\n${vocData.topNegativeSnippets.join("\n")}`,
-        offense: `Based on these positive Reddit reviews about LG products, generate 3 offensive marketing messages that amplify customer satisfaction. Perfect for PDP hero copy, social media, or ad banners. Include Korean translation.\n\nPositive reviews:\n${vocData.topPositiveSnippets.join("\n")}`,
-        faq: `Based on these Reddit community discussions about LG products, generate 5 FAQ entries (Q&A format) that address the most common concerns and questions. Include Korean translation.\n\nPositive:\n${vocData.topPositiveSnippets.join("\n")}\n\nNegative:\n${vocData.topNegativeSnippets.join("\n")}`,
+        defense: `Based on these negative Reddit VOC snippets about LG products, generate 3 defensive marketing messages that address customer concerns and turn them into reassurance. Keep each message under 2 lines. Include Korean translation.${COPY_RULE}\n\nNegative VOC:\n${vocData.topNegativeSnippets.join("\n")}`,
+        offense: `Based on these positive Reddit reviews about LG products, generate 3 offensive marketing messages that amplify customer satisfaction. Perfect for PDP hero copy, social media, or ad banners. Include Korean translation.${COPY_RULE}\n\nPositive reviews:\n${vocData.topPositiveSnippets.join("\n")}`,
+        faq: `Based on these Reddit community discussions about LG products, generate 5 FAQ entries (Q&A format) that address the most common concerns and questions. Include Korean translation.${COPY_RULE}\n\nPositive:\n${vocData.topPositiveSnippets.join("\n")}\n\nNegative:\n${vocData.topNegativeSnippets.join("\n")}`,
       };
 
       const response = await supabase.functions.invoke("generate-action-plan", {

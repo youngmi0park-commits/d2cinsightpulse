@@ -69,7 +69,11 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
 
   const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
-  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in BOTH Korean and English. Be specific, actionable, and use real product names from the data.`;
+  const systemPrompt = `You are an expert consumer insight analyst for LG Electronics D2C marketing team. Analyze ${channelLabel} data and provide structured weekly insight in BOTH Korean and English.
+
+🎯 COPY-WRITING RULE (CRITICAL): For all marketing copy fields (headlines, taglines, ad copy, recommended messages, FAQ answers), MINIMIZE explicit product/model name mentions. Lead with USER BENEFITS, EMOTIONAL HOOKS, and PROOF POINTS — not product names. Mention a specific model name AT MOST ONCE per copy block, only when essential. For data fields like top_products listings, real product names ARE required (those are data, not marketing copy).
+
+Be specific, actionable, and let the persuasion come from value, not from name recall.`;
 
   const userPrompt = `다음은 ${channelLabel}의 최근 수집된 리뷰 데이터입니다:
 
