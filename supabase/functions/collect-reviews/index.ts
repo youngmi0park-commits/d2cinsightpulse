@@ -9,9 +9,8 @@ const corsHeaders = {
 // Channel definitions with Firecrawl search queries — enhanced with intent+quantitative signals
 const CHANNELS = [
   { id: "lge_com", label: "LG.com", queryTemplate: (product: string) => `site:lg.com/us LG ${product} review OR ratings` },
-  { id: "reddit", label: "Reddit", queryTemplate: (product: string) => `site:reddit.com LG ${product} (review OR owner OR "just bought") upvotes` },
-  { id: "reddit_ac", label: "Reddit AC", queryTemplate: (product: string) => `site:reddit.com "LG AC" ${product} OR "LG air conditioner" ${product} OR "dual inverter" noise dB cooling speed` },
-  { id: "reddit_stanbyme", label: "Reddit StanbyME", queryTemplate: (product: string) => `site:reddit.com StanbyME OR "StanbyMe" OR "Stand by Me" ${product} review OR setup` },
+  // NOTE: Reddit 수집은 전용 'collect-reddit' Edge Function에서 처리합니다.
+  // Firecrawl이 reddit.com을 403으로 차단하므로 여기서는 제외합니다 (CPU/에러 로그 절감).
   { id: "amazon", label: "Amazon", queryTemplate: (product: string) => `site:amazon.com LG ${product} review "Verified Purchase"` },
   { id: "bestbuy", label: "Best Buy", queryTemplate: (product: string) => `site:bestbuy.com LG ${product} review` },
   { id: "costco", label: "Costco", queryTemplate: (product: string) => `site:costco.com LG ${product} review` },
@@ -271,6 +270,23 @@ Deno.serve(async (req) => {
     const body = await req.json();
     if (body.categories?.length) targetCategories = body.categories;
     if (body.channels?.length) {
+      // Reddit 채널이 명시적으로 요청된 경우 collect-reddit 함수로 위임 (Firecrawl 403 방지)
+      const redditRequested = body.channels.some((c: string) => typeof c === "string" && c.startsWith("reddit"));
+      if (redditRequested) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/collect-reddit`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mode: "auto" }),
+          });
+          console.log("[collect-reviews] Reddit 요청을 collect-reddit 함수로 위임했습니다.");
+        } catch (e) {
+          console.warn("[collect-reviews] collect-reddit 위임 실패:", (e as Error).message);
+        }
+      }
       targetChannels = CHANNELS.filter((c) => body.channels.includes(c.id));
       isManualCollection = true;
     }
