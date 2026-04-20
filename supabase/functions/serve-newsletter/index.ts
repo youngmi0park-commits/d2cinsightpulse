@@ -31,10 +31,10 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
     .limit(800);
 
   if (channel === "lgcom") query = query.like("source", "lge_com%");
-  else if (channel === "reddit") query = query.eq("source", "reddit");
+  else if (channel === "reddit") query = query.like("source", "reddit%");
   else {
-    // community: Amazon, YouTube, Trustpilot, BestBuy, Shopee, Lazada, etc. (exclude LG.com and Reddit)
-    query = query.not("source", "like", "lge_com%").neq("source", "reddit");
+    // community: Amazon, YouTube, Trustpilot, BestBuy, Shopee, Lazada, etc. (exclude LG.com and ALL reddit_* variants)
+    query = query.not("source", "like", "lge_com%").not("source", "like", "reddit%");
   }
 
   const { data: reviews, error } = await query;
