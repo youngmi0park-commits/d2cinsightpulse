@@ -420,6 +420,17 @@ Deno.serve(async (req) => {
   let totalSkipped = 0;
   const phaseStats: Record<string, number> = {};
   const errors: string[] = [];
+  const diag: Record<string, number> = {
+    queries_attempted: 0,
+    queries_zero_results: 0,
+    queries_short_batch: 0,
+    ai_extractions_attempted: 0,
+    ai_extractions_failed: 0,
+    ai_returned_empty: 0,
+    ai_returned_items: 0,
+    direct_subs_attempted: 0,
+    direct_subs_zero_posts: 0,
+  };
 
   try {
     const categories = categoryFilter
@@ -431,11 +442,13 @@ Deno.serve(async (req) => {
       const activeQueries = queries.slice(0, maxQueriesPerCategory);
 
       for (const query of activeQueries) {
+        diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag);
 
           if (results.length === 0) {
+            diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
             continue;
           }
@@ -462,17 +475,35 @@ Deno.serve(async (req) => {
             }
           }
 
-          if (batchedContent.length < 100) continue;
+          if (batchedContent.length < 100) {
+            diag.queries_short_batch += 1;
+            console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
+            continue;
+          }
 
           // AI extraction
+          diag.ai_extractions_attempted += 1;
           const extracted = await extractWithAI(batchedContent, category, LOVABLE_API_KEY);
-          if (!extracted) continue;
+          if (!extracted) {
+            diag.ai_extractions_failed += 1;
+            console.warn(`[${category}] AI extraction returned null`);
+            continue;
+          }
+          if (extracted.length === 0) {
+            diag.ai_returned_empty += 1;
+            console.warn(`[${category}] AI returned empty array (no LG-relevant content found)`);
+          } else {
+            diag.ai_returned_items += extracted.length;
+            console.log(`[${category}] AI extracted ${extracted.length} items`);
+          }
 
           const stats = await persistReviews(supabase, extracted, category, mode);
           totalCollected += stats.collected;
           totalSkipped += stats.skipped;
+          console.log(`[${category}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (queryErr) {
           errors.push(`Query ${category}: ${queryErr}`);
+          console.error(`[${category}] query error:`, queryErr);
         }
       }
     }
@@ -484,10 +515,12 @@ Deno.serve(async (req) => {
         : DIRECT_SUBREDDITS;
 
       for (const { sub, category } of subsToFetch) {
+        diag.direct_subs_attempted += 1;
         try {
           console.log(`[Direct] r/${sub} (${category})`);
           const posts = await fetchSubredditJson(sub, "hot");
           if (posts.length === 0) {
+            diag.direct_subs_zero_posts += 1;
             errors.push(`Direct r/${sub}: 0 posts`);
             continue;
           }
@@ -504,21 +537,37 @@ Deno.serve(async (req) => {
             batched += `\n\n--- r/${sub} Post (${p.url}) ---\n${content.slice(0, 4500)}`;
           }
 
-          if (batched.length < 200) continue;
+          if (batched.length < 200) {
+            console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
+            continue;
+          }
 
+          diag.ai_extractions_attempted += 1;
           const extracted = await extractWithAI(batched, category, LOVABLE_API_KEY);
-          if (!extracted) continue;
+          if (!extracted) {
+            diag.ai_extractions_failed += 1;
+            console.warn(`[Direct r/${sub}] AI extraction null`);
+            continue;
+          }
+          if (extracted.length === 0) {
+            diag.ai_returned_empty += 1;
+          } else {
+            diag.ai_returned_items += extracted.length;
+          }
 
           const stats = await persistReviews(supabase, extracted, category, mode);
           totalCollected += stats.collected;
           totalSkipped += stats.skipped;
+          console.log(`[Direct r/${sub}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (e) {
           errors.push(`Direct r/${sub}: ${e}`);
+          console.error(`[Direct r/${sub}] error:`, e);
         }
       }
     }
   } catch (fatalErr) {
     errors.push(`Fatal: ${fatalErr}`);
+    console.error("Fatal error:", fatalErr);
   }
 
   if (logId) {
@@ -540,6 +589,7 @@ Deno.serve(async (req) => {
     errors: errors.length,
     error_samples: errors.slice(0, 5),
     phase_stats: phaseStats,
+    diagnostics: diag,
     config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs },
   };
 
