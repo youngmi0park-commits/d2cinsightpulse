@@ -240,8 +240,8 @@ export default function FaqGenPage() {
                       : "border-border bg-card hover:border-primary/40"
                   }`}
                 >
-                  <p className="text-[11px] font-bold text-foreground truncate">{p.model_number}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{p.display_name}</p>
+                  <p className="text-[11px] font-bold text-foreground truncate" title={p.model_number}>{p.display_name || p.model_number}</p>
+                  <p className="text-[10px] text-muted-foreground truncate font-mono">{p.model_number}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="secondary" className="text-[9px]">{p.category}</Badge>
                     <span className="text-[9px] text-muted-foreground">{p.reviews.length} {t("reviews", "건 리뷰")}</span>
@@ -286,8 +286,8 @@ export default function FaqGenPage() {
 
           {/* ═══════ Selected Product Info Bar ═══════ */}
           <div className="bg-primary/5 border border-primary/20 rounded-[10px] p-3 flex items-center gap-3 flex-wrap">
-            <span className="text-[11px] font-bold text-primary">{selectedProduct.model_number}</span>
-            <span className="text-[10px] text-muted-foreground">{selectedProduct.display_name}</span>
+            <span className="text-[12px] font-bold text-foreground" title={selectedProduct.model_number}>{selectedProduct.display_name || selectedProduct.model_number}</span>
+            <span className="text-[10px] text-muted-foreground font-mono">{selectedProduct.model_number}</span>
             <Badge variant="secondary" className="text-[9px]">{selectedProduct.category}</Badge>
             <span className="text-[10px] text-muted-foreground ml-auto">{reviews.length} {t("reviews", "건 리뷰")}</span>
           </div>

@@ -181,9 +181,9 @@ export function SearchBar({ onSearch, isLoading }: SearchBarProps) {
                             {(isExpanded || idx >= TOP_N) && (
                               <span className="text-xs text-muted-foreground w-4">{idx + 1}</span>
                             )}
-                            <span className="font-mono text-xs truncate flex-1">{p.model_number}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                              {p.display_name}
+                            <span className="text-xs truncate flex-1 font-medium" title={p.model_number}>{p.display_name || p.model_number}</span>
+                            <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[100px]">
+                              {p.model_number}
                             </span>
                             {p.review_count > 0 && (
                               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 ml-1">
