@@ -289,11 +289,11 @@ export function LgComProductInsightCards() {
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div>
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2" title={selectedProduct.model_number}>
                     📦 {selectedProduct.display_name}
                     <Badge variant="secondary" className="text-[10px]">{selectedProduct.category}</Badge>
                   </h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{selectedProduct.model_number}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{selectedProduct.model_number}</p>
                 </div>
                 <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={handleCopyProductDetail}>
                   <Copy className="h-3 w-3" /> {t("Copy All", "전체 복사")}
