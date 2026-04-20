@@ -260,9 +260,7 @@ async function fetchSubredditJson(
   timeFilter: "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-  });
+  const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
@@ -300,9 +298,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
     ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
     : `https://www.reddit.com/search.json?`;
   const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-  });
+  const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
@@ -328,9 +324,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
 async function fetchCommentsJson(permalink: string): Promise<string> {
   const url = `https://www.reddit.com${permalink.replace(/\/$/, "")}.json?limit=20&depth=2`;
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
+    const res = await fetchWithRetry(url, { headers: browserHeaders() }, 2);
     if (!res.ok) return "";
     const json = await res.json();
     if (!Array.isArray(json) || json.length < 2) return "";
