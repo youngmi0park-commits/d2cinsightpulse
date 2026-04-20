@@ -355,12 +355,20 @@ const CommunitiesPage = () => {
             <div className="flex flex-wrap gap-2">
               {stats.channels.map((ch) => {
                 const posP = ch.total ? Math.round((ch.positive / ch.total) * 100) : 0;
+                const flag = COUNTRY_FLAGS[ch.country] || "🌐";
                 return (
                   <div
                     key={ch.name}
-                    className="rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[160px]"
+                    className="rounded-lg border border-border bg-background/50 px-4 py-2.5 min-w-[170px]"
+                    title={`${ch.channel} · ${ch.country}`}
                   >
-                    <div className="text-xs font-semibold text-foreground">{ch.name}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm leading-none">{flag}</span>
+                      <span className="text-xs font-semibold text-foreground">{ch.channel}</span>
+                      {ch.country !== "Global" && ch.channel !== "기타" && (
+                        <span className="text-[9px] font-medium text-muted-foreground bg-secondary/60 px-1 rounded">{ch.country}</span>
+                      )}
+                    </div>
                     <div className="text-lg font-bold text-primary">{ch.total.toLocaleString()}</div>
                     <div className="flex items-center gap-2 mt-1 text-[10px]">
                       <span className="flex items-center gap-0.5 text-success">
