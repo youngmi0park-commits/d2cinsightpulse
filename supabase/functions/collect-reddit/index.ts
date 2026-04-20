@@ -221,32 +221,43 @@ async function fetchSubredditJson(
   return results;
 }
 
-// ─── Phase 1b: Reddit search JSON ──────────────────────────────
+// ─── Phase 1b: Reddit search JSON (sort=new, t=week for fresh) ─
 async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
-  // Strip "site:reddit.com" prefix for the native search
-  const q = query.replace(/site:reddit\.com\/?(r\/[\w_]+)?/i, "").trim();
-  if (!q) return [];
-  const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&limit=15&sort=relevance&t=year`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const posts = json?.data?.children || [];
-    return posts.slice(0, 12).map((p: any) => {
-      const d = p.data || {};
-      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || ""}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
-      return {
-        content: block.slice(0, 4500),
-        url: `https://reddit.com${d.permalink || ""}`,
-        source: "reddit_search_json",
-      };
-    });
-  } catch (e) {
-    console.warn(`Phase1b search JSON failed:`, e);
-    return [];
+  // Strip "site:reddit.com" and any "r/<sub>" hint, plus operators
+  const cleanedQ = query
+    .replace(/site:reddit\.com\/?(r\/[\w_]+)?/gi, "")
+    .replace(/[()"]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleanedQ) return [];
+  // Detect optional subreddit restriction in original query
+  const subMatch = query.match(/site:reddit\.com\/r\/([\w_]+)/i);
+  const baseUrl = subMatch
+    ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
+    : `https://www.reddit.com/search.json?`;
+  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
+  const json = await res.json();
+  const posts = json?.data?.children || [];
+  const results: FetchResult[] = [];
+  for (const p of posts.slice(0, 20)) {
+    const d = p.data || {};
+    const selftext = d.selftext || "";
+    const score = d.ups || d.score || 0;
+    if (!passesQualityFilter(selftext, score)) continue;
+    const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${score}\nSubreddit: r/${d.subreddit || ""}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${selftext}`;
+    results.push({
+      content: block.slice(0, 4500),
+      url: `https://reddit.com${d.permalink || ""}`,
+      source: "reddit_search_json",
+    });
+  }
+  return results;
 }
 
 // ─── Phase 1c: Comments JSON for a specific post ───────────────
