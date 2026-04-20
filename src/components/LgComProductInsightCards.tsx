@@ -243,8 +243,8 @@ export function LgComProductInsightCards() {
             <Globe className="h-3 w-3 text-muted-foreground ml-1.5" />
             {([
               { v: "all" as const, l: "🌐", label: t("All", "전체") },
-              { v: "US" as const, l: "🇺🇸", label: "US" },
-              { v: "UK" as const, l: "🇬🇧", label: "UK" },
+              { v: "US" as const, l: "🇺🇸", label: "LGEUS" },
+              { v: "UK" as const, l: "🇬🇧", label: "LGEUK" },
             ]).map((opt) => (
               <button
                 key={opt.v}

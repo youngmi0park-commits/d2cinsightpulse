@@ -81,6 +81,7 @@ export function LgComReviewTypePanel() {
   const nativePct = stats.total > 0 ? Math.round((stats.native / stats.total) * 100) : 0;
   const synPct = 100 - nativePct;
   const FLAG: Record<string, string> = { US: "🇺🇸", UK: "🇬🇧", Other: "🌐" };
+  const LGE: Record<string, string> = { US: "LGEUS", UK: "LGEUK", Other: "Other" };
 
   return (
     <Card className="gradient-card">
@@ -171,7 +172,7 @@ export function LgComReviewTypePanel() {
                 <div key={country} className="rounded-lg border border-border bg-card p-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <span className="text-sm">{FLAG[country] || "🌐"}</span>
-                    <span className="text-xs font-bold text-foreground">{country}</span>
+                    <span className="text-xs font-bold text-foreground">{LGE[country] || country}</span>
                     <span className="text-[10px] text-muted-foreground ml-auto">{c.total.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-1 h-3 bg-muted/30 rounded-full overflow-hidden mb-1.5">

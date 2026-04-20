@@ -134,7 +134,7 @@ function useNewsletterData() {
       const matrixItems: MatrixItem[] = [];
       for (const item of lgcomTakeaway.slice(0, 2)) {
         matrixItems.push({
-          tag: "amplify", channel: `LG.com · ${item.category}`, country: "🇺🇸 US",
+          tag: "amplify", channel: `LG.com · ${item.category}`, country: "🇺🇸 LGEUS",
           title: `${item.product} "${topPosKw?.keyword || 'excellent'}" 긍정 급증`,
           description: item.positive_msg, count: topPosKw?.count || 0,
           countLabel: "긍정 리뷰", delta: `▲ +${Math.round(Number(topPosKw?.change_percent) || 23)}%`, deltaPositive: true,
@@ -144,7 +144,7 @@ function useNewsletterData() {
         const isLgcom = lgcomTakeaway.includes(item);
         matrixItems.push({
           tag: "fix", channel: `${isLgcom ? "LG.com" : "Reddit"} · ${item.category}`,
-          country: isLgcom ? "🇺🇸 US" : "🌐 Global",
+          country: isLgcom ? "🇺🇸 LGEUS" : "🌐 Global",
           title: `${item.product} 부정 리뷰 급증`, description: item.negative_msg,
           count: topNegKw?.count || 0, countLabel: "부정 리뷰", delta: "▲ 급증", deltaPositive: false,
         });
@@ -166,7 +166,7 @@ function useNewsletterData() {
           action: `${negItem.product} PDP에 FAQ 즉시 배치`,
           basis: negItem.negative_msg,
           tags: ["긴급", "PDP", "CS 연동"],
-          country: lgcomTakeaway.includes(negItem) ? "🇺🇸 US" : "🌐 Global",
+          country: lgcomTakeaway.includes(negItem) ? "🇺🇸 LGEUS" : "🌐 Global",
         });
       }
       const posItem = lgcomTakeaway.find(t => t.positive_msg);
@@ -176,7 +176,7 @@ function useNewsletterData() {
           action: `${posItem.product} "excellent" 리뷰 → PMAX 카피 즉시 제작`,
           basis: posItem.positive_msg,
           tags: ["소재 준비용", "PMAX", "Affiliate"],
-          country: "🇺🇸 US",
+          country: "🇺🇸 LGEUS",
         });
       }
       const redditItem = redditTakeaway[0];
@@ -204,7 +204,7 @@ function useNewsletterData() {
               tag, title: prod?.display_name || "Unknown",
               desc: tag === "amplify" ? "긍정 트렌드 확산 — 마케팅 소재 활용" : tag === "fix" ? "부정 급증 — CS·PDP 즉시 대응" : "모니터링 필요",
               count: tp.mention_count, delta: `${chg > 0 ? "+" : ""}${chg}%`,
-              country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 US",
+              country: tp.source?.includes("reddit") ? "🌐 Global" : "🇺🇸 LGEUS",
             };
           });
 
