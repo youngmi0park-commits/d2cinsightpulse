@@ -879,6 +879,13 @@ export type Database = {
           count: number
         }[]
       }
+      get_community_country_counts: {
+        Args: never
+        Returns: {
+          count: number
+          country: string
+        }[]
+      }
       get_country_counts: {
         Args: never
         Returns: {
