@@ -1089,8 +1089,10 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
+  const [recentWindow, setRecentWindow] = useState<24 | 168>(24); // hours: 24h or 7d
   const collectionLogs = useCollectionLogs();
   const sourceCounts = useCumulativeSourceCounts();
+  const recentCounts = useRecentSourceCounts(recentWindow);
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
