@@ -1,4 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  INTERNAL_TV_KNOWLEDGE_BASE,
+  INTERNAL_KNOWLEDGE_USAGE_RULE,
+} from "./_internal_knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -290,7 +294,13 @@ Each FAQ MUST have:
 publishable = true ONLY when legal_review.status == "pass" AND evidence >= 2 items
 
 ## WEEKLY ACTION LIST
-Top 3-5 actions sorted by CIS with ready_to_use_copy.`;
+Top 3-5 actions sorted by CIS with ready_to_use_copy.
+
+${INTERNAL_KNOWLEDGE_USAGE_RULE}
+
+## INTERNAL PRODUCT KNOWLEDGE (confidential — use as grounding only, never cite as "internal document")
+${INTERNAL_TV_KNOWLEDGE_BASE}
+`;
 }
 
 serve(async (req) => {
