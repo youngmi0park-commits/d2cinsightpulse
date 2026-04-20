@@ -45,13 +45,27 @@ interface InsightsResponse {
 
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
-/* ── country flag map ── */
-const COUNTRY_FLAGS: Record<string, string> = {
-  US: "🇺🇸", UK: "🇬🇧", CA: "🇨🇦", DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺",
-  BR: "🇧🇷", MX: "🇲🇽", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", TH: "🇹🇭",
-  PH: "🇵🇭", ID: "🇮🇩", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
-  Global: "🌍",
+/* ── ISO2 → LGE 법인코드 매핑 (RIS Subsidiary List 기준) ── */
+const ISO_TO_LGE: Record<string, string> = {
+  US: "LGEUS", UK: "LGEUK", CA: "LGECI", DE: "LGEDE", FR: "LGEFS", AU: "LGEAP",
+  BR: "LGESP", MX: "LGEMS", JP: "LGEJP", SG: "LGESL", MY: "LGEML", TH: "LGETH",
+  PH: "LGEPH", ID: "LGEIN", VN: "LGEVN", TW: "LGETT", HK: "LGEHK", IN: "LGEIL",
+  NL: "LGEBN",
 };
+
+/* ── 법인코드 → 국기 ── */
+const LGE_FLAGS: Record<string, string> = {
+  LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGECI: "🇨🇦", LGEDE: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺",
+  LGESP: "🇧🇷", LGEMS: "🇲🇽", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGETH: "🇹🇭",
+  LGEPH: "🇵🇭", LGEIN: "🇮🇩", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
+  LGEBN: "🇳🇱", Global: "🌍",
+};
+
+/** ISO2 코드를 LGE 법인 코드로 변환 (Global은 그대로 유지) */
+function toLgeCode(iso: string): string {
+  if (iso === "Global") return "Global";
+  return ISO_TO_LGE[iso] || iso;
+}
 
 /* ── source label map ── */
 function sourceLabel(source: string): string {
