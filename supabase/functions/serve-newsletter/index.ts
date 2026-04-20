@@ -180,7 +180,7 @@ function buildNewsletterHTML(d: {
   dateRange: string; generatedAt: string;
   weeklyReviews: number; wow: number;
   totalReviews: number; productCount: number;
-  channels: { name: string; count: number; color: string }[];
+  channels: { name: string; count: number; weeklyCount: number; color: string }[];
   topPositiveKeyword: string; topPositiveCount: number;
   topNegativeKeyword: string; topNegativeCount: number;
   topProduct: string; topProductCount: number;
