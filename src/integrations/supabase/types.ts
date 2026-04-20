@@ -830,6 +830,10 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_stuck_collection_logs: {
+        Args: { p_max_age_minutes?: number }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
