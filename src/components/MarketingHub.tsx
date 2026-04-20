@@ -244,12 +244,50 @@ function deriveCategoryNoun(pName: string): string {
   return "Product";
 }
 
+/**
+ * 카테고리/기능형 키워드(예: "Wash Quality", "Cleaning Performance", "Picture Quality")를
+ * 형용사 중심 베네핏 표현(예: "Spotless", "Effortless", "Brilliant")으로 변환.
+ * Short Headline 등 짧은 광고 헤드라인에 사용.
+ */
+function toAdjectiveBenefit(keyword: string): string {
+  const k = (keyword || "").toLowerCase().trim();
+  if (!k) return "Brilliant";
+  const map: Array<[RegExp, string]> = [
+    [/wash|laundry|clean(ing)?\s*(quality|performance)?|stain|detergent/, "Spotless"],
+    [/dry(ing|er)?|wrinkle/, "Effortless"],
+    [/dish|sanitiz|hygien/, "Sparkling"],
+    [/vacuum|suction|dust|pet\s*hair/, "Powerful"],
+    [/cool|fresh|fridge|refriger|preserv/, "Fresh"],
+    [/quiet|silent|noise/, "Whisper-Quiet"],
+    [/picture|display|color|hdr|contrast|black/, "Brilliant"],
+    [/sound|audio|bass|dolby|atmos/, "Immersive"],
+    [/bright|backlight|luminance/, "Radiant"],
+    [/smart|ai|thinq|automat/, "Smarter"],
+    [/energy|efficien|saving|eco/, "Efficient"],
+    [/fast|speed|quick|rapid/, "Lightning-Fast"],
+    [/durab|reliab|sturdy|build|long\s*last/, "Built to Last"],
+    [/design|sleek|slim|minimal|aesthet|premium/, "Effortlessly Elegant"],
+    [/space|capacit|large|big/, "Roomy"],
+    [/install|setup|easy|simple|intuitive/, "Effortless"],
+    [/gam(e|ing)|refresh|response|latency/, "Razor-Sharp"],
+    [/portab|compact|light(weight)?/, "Featherlight"],
+    [/comfort|cozy|soft/, "Wonderfully Cozy"],
+    [/perform|power|strength/, "Powerful"],
+    [/quality|reliab|trust/, "Dependable"],
+  ];
+  for (const [re, adj] of map) if (re.test(k)) return adj;
+  return "Brilliant";
+}
+
 /* ── Generate channel copy (NO product/SKU mentions in ad surfaces) ── */
 function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
   const s2 = sentiment.keywords.positive?.[1] || "performance";
   const pain = sentiment.keywords.negative?.[0] || "";
   const scene = sentiment.usageScenes?.[0] || "living room";
+  // 형용사 중심 베네핏 (Short Headline용 — "어떤 점이 좋은지" 강조)
+  const adj1 = toAdjectiveBenefit(s1);
+  const adj2 = toAdjectiveBenefit(s2);
   // Generic category noun replaces SKU/model in all ad-facing fields
   const noun = deriveCategoryNoun(pName);
   // Owned channels (LG.com, CRM email) may keep brand context — but still no model code
@@ -261,12 +299,14 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
     let candidates: string[] = [];
     switch (f.name) {
       case "Short Headline":
+        // 카테고리/기능명(Wash Quality 등) 대신 형용사 중심 베네핏만 노출
         candidates = [
-          `${capitalize(s1)} Meets ${capitalize(s2)}`,
-          `${capitalize(s1)}, Redefined`,
-          `True ${capitalize(s1)}`,
-          `Feel the ${capitalize(s1)}`,
-          capitalize(s1),
+          `${adj1}. ${adj2}. Yours.`,
+          `${adj1} & ${adj2}`,
+          `So ${adj1}, So Smart`,
+          `Truly ${adj1}`,
+          `${adj1} ${noun}`,
+          adj1,
         ];
         break;
       case "Headline":
