@@ -71,8 +71,8 @@ const SUBREDDIT_GROUPS: {
   },
   {
     value: "india",
-    label: "India",
-    labelKo: "인도",
+    label: "LGEIL",
+    labelKo: "LGEIL (인도)",
     icon: "🇮🇳",
     subreddits: ["reddit_india"],
   },

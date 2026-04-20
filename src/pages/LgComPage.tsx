@@ -8,17 +8,19 @@ import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// value = ISO code (kept for backward-compatible source mapping & child components)
+// labelEn = LGE 법인 코드 (RIS Subsidiary List 표준)
 const BV_COUNTRIES = [
-  { value: "all", label: "전체", labelEn: "All", flag: "🌐" },
-  { value: "US", label: "미국", labelEn: "US", flag: "🇺🇸" },
-  { value: "UK", label: "영국", labelEn: "UK", flag: "🇬🇧" },
-  { value: "DE", label: "독일", labelEn: "DE", flag: "🇩🇪" },
-  { value: "AU", label: "호주", labelEn: "AU", flag: "🇦🇺" },
-  { value: "IN", label: "인도", labelEn: "IN", flag: "🇮🇳" },
-  { value: "TW", label: "대만", labelEn: "TW", flag: "🇹🇼" },
-  { value: "JP", label: "일본", labelEn: "JP", flag: "🇯🇵" },
-  { value: "TH", label: "태국", labelEn: "TH", flag: "🇹🇭" },
-  { value: "BR", label: "브라질", labelEn: "BR", flag: "🇧🇷" },
+  { value: "all", label: "전체",   labelEn: "All",    flag: "🌐" },
+  { value: "US",  label: "미국",   labelEn: "LGEUS",  flag: "🇺🇸" },
+  { value: "UK",  label: "영국",   labelEn: "LGEUK",  flag: "🇬🇧" },
+  { value: "DE",  label: "독일",   labelEn: "LGEDE",  flag: "🇩🇪" },
+  { value: "AU",  label: "호주",   labelEn: "LGEAP",  flag: "🇦🇺" },
+  { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
+  { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
+  { value: "JP",  label: "일본",   labelEn: "LGEJP",  flag: "🇯🇵" },
+  { value: "TH",  label: "태국",   labelEn: "LGETH",  flag: "🇹🇭" },
+  { value: "BR",  label: "브라질", labelEn: "LGESP",  flag: "🇧🇷" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
