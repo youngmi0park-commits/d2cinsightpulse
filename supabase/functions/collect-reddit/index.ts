@@ -264,14 +264,23 @@ async function firecrawlSearch(query: string, apiKey: string): Promise<FetchResu
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query, limit: 6, scrapeOptions: { formats: ["markdown"] } }),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.data || []).map((r: any) => ({
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[P0] Firecrawl HTTP ${res.status}: ${txt.slice(0, 200)}`);
+      return [];
+    }
+    const json = await res.json();
+    const rawCount = (json.data || []).length;
+    const mapped = (json.data || []).map((r: any) => ({
       content: r.markdown || r.description || "",
       url: r.url || "",
       source: "firecrawl_search",
-    })).filter((r: FetchResult) => r.content.length > 80);
-  } catch {
+    }));
+    const filtered = mapped.filter((r: FetchResult) => r.content.length > 80);
+    console.log(`[P0] Firecrawl raw=${rawCount} kept(content>80)=${filtered.length} q="${query.slice(0, 60)}"`);
+    return filtered;
+  } catch (e) {
+    console.warn(`[P0] Firecrawl exception: ${e}`);
     return [];
   }
 }
@@ -283,12 +292,16 @@ async function firecrawlScrapeOldReddit(url: string, apiKey: string): Promise<st
     const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ url: oldUrl, formats: ["markdown"], onlyMainContent: true }),
+      body: JSON.stringify({ url: oldUrl, formats: ["markdown"] }),
     });
-    if (!res.ok) return "";
-    const data = await res.json();
-    return data.data?.markdown || "";
-  } catch {
+    if (!res.ok) {
+      console.warn(`[P2] Firecrawl scrape HTTP ${res.status} ${oldUrl}`);
+      return "";
+    }
+    const json = await res.json();
+    return json.data?.markdown || "";
+  } catch (e) {
+    console.warn(`[P2] Firecrawl scrape exception: ${e}`);
     return "";
   }
 }
@@ -302,24 +315,32 @@ async function firecrawlBingFallback(query: string, apiKey: string): Promise<Fet
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query: bingQ, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.data || [])
-      .filter((r: any) => (r.url || "").includes("reddit.com"))
-      .map((r: any) => ({
-        content: r.markdown || r.description || "",
-        url: r.url || "",
-        source: "bing_fallback",
-      }));
-  } catch {
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[P3] Bing fallback HTTP ${res.status}: ${txt.slice(0, 200)}`);
+      return [];
+    }
+    const json = await res.json();
+    const rawCount = (json.data || []).length;
+    const mapped = (json.data || []).map((r: any) => ({
+      content: r.markdown || r.description || "",
+      url: r.url || "",
+      source: "bing_fallback",
+    }));
+    const filtered = mapped.filter((r: FetchResult) => r.content.length > 80);
+    console.log(`[P3] Bing raw=${rawCount} kept=${filtered.length}`);
+    return filtered;
+  } catch (e) {
+    console.warn(`[P3] Bing fallback exception: ${e}`);
     return [];
   }
 }
 
 // ─── Adaptive scheduler: try all phases, return whatever works ─
-async function adaptiveCollect(query: string, firecrawlKey: string): Promise<FetchResult[]> {
+async function adaptiveCollect(query: string, firecrawlKey: string, diag: Record<string, number>): Promise<FetchResult[]> {
   // Phase 0
   let results = await firecrawlSearch(query, firecrawlKey);
+  diag.p0_results = (diag.p0_results || 0) + results.length;
   if (results.length >= 3) {
     console.log(`[Phase0 ✓] Firecrawl: ${results.length}`);
     return results;
@@ -327,6 +348,8 @@ async function adaptiveCollect(query: string, firecrawlKey: string): Promise<Fet
 
   // Phase 1: Reddit native search
   const redditResults = await fetchRedditSearchJson(query);
+  diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+  console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
   if (redditResults.length >= 3) {
     console.log(`[Phase1 ✓] Reddit JSON search: ${redditResults.length}`);
     results = [...results, ...redditResults];
@@ -338,6 +361,7 @@ async function adaptiveCollect(query: string, firecrawlKey: string): Promise<Fet
   // Phase 3: Bing fallback
   if (results.length < 2) {
     const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
     console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
     results = [...results, ...bingResults];
   }
