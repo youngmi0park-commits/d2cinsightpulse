@@ -72,6 +72,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   "General": "📦",
 };
 
+// 영문 카테고리 → 한글 표시 라벨 통합 (DB 값 그대로, 표시만 합산)
 const CATEGORY_KO: Record<string, string> = {
   "TV": "TV", "세탁기": "세탁기", "냉장고": "냉장고", "건조기": "건조기",
   "모니터": "모니터", "오디오": "오디오", "에어컨": "에어컨", "노트북": "노트북",
@@ -80,7 +81,28 @@ const CATEGORY_KO: Record<string, string> = {
   "오븐/레인지": "오븐/레인지", "스타일러": "스타일러", "General": "미분류",
   "액세서리": "액세서리", "스마트폰": "스마트폰", "쿡탑": "쿡탑",
   "가전 번들": "가전 번들",
+  // 영문 표기를 동일 한글 라벨로 매핑 (DB 마이그레이션 없이 표시만 통합)
+  "Refrigerator": "냉장고", "Washer": "세탁기", "Dryer": "건조기",
+  "Dishwasher": "식기세척기", "Vacuum": "청소기",
+  "Air Conditioner": "에어컨", "Air Purifier": "공기청정기",
+  "Audio": "오디오", "Monitor": "모니터", "Microwave": "전자레인지",
+  "Range/Oven": "오븐/레인지", "Laptop": "노트북", "Projector": "프로젝터",
+  "Styler": "스타일러", "Accessory": "액세서리",
 };
+
+/** 영문/한글 카테고리 카운트를 한글 라벨 기준으로 병합 */
+function mergeCategoryCountsByKo(
+  rows: { category: string; count: number }[],
+): { category: string; count: number }[] {
+  const map = new Map<string, number>();
+  for (const r of rows) {
+    const koKey = CATEGORY_KO[r.category] || r.category;
+    map.set(koKey, (map.get(koKey) || 0) + r.count);
+  }
+  return Array.from(map.entries())
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count);
+}
 
 const PIE_COLORS = [
   "#A91D3A", "#0D9488", "#7C3AED", "#D97706", "#2563EB",
