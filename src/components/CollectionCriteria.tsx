@@ -860,6 +860,34 @@ function useCollectionLogs() {
   return logs;
 }
 
+// Hook: recent review counts per source within last N hours (based on reviews.collected_at)
+// Reuses the same source keys as useCumulativeSourceCounts so resolveCumulativeCount works.
+function useRecentSourceCounts(hours: number) {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase.rpc("get_recent_source_counts" as any, { p_hours: hours });
+      if (error || !data) { setCounts({}); return; }
+      const map: Record<string, number> = {};
+      (data as { source: string; count: number }[]).forEach(d => {
+        const src = d.source;
+        const n = Number(d.count || 0);
+        map[src] = (map[src] || 0) + n;
+        // Also bucket BV per-country sources under the normalized "lge_com_xx" key
+        // (resolveCumulativeCount expects this key).
+        if (src.startsWith("lge_com_")) {
+          // Already in correct shape
+        }
+      });
+      setCounts(map);
+    };
+    fetchData();
+    const interval = setInterval(fetchData, 60_000);
+    return () => clearInterval(interval);
+  }, [hours]);
+  return counts;
+}
+
 // Hook: cumulative review counts per source from DB (includes per-country BV counts)
 function useCumulativeSourceCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
