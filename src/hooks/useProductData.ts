@@ -109,10 +109,12 @@ export function useTrendingDataWindow(sourceLike?: string) {
     queryKey: ["trending-data-window", sourceLike || "all"],
     queryFn: async (): Promise<TrendingDataWindow> => {
       const weekAgo = getSinceISO(7);
+      // Reddit (Firecrawl-sourced) posts often have NULL published_at — fall back to collected_at
+      const dateField = sourceLike?.startsWith("reddit") ? "collected_at" : "published_at";
       let q = supabase
         .from("reviews")
         .select("id", { count: "exact", head: true })
-        .gte("published_at", weekAgo);
+        .gte(dateField, weekAgo);
       if (sourceLike) q = q.like("source", sourceLike);
       const { count } = await q;
       const weeklyCount = count || 0;

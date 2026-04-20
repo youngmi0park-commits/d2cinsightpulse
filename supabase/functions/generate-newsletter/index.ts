@@ -58,7 +58,8 @@ Deno.serve(async (req) => {
       const result = await conn.queryObject<{source: string; product_id: string; sentiment: string; cnt: number}>(
         `SELECT source, product_id::text, sentiment, COUNT(*)::int as cnt
          FROM reviews
-         WHERE published_at >= $1 AND published_at <= $2
+         WHERE COALESCE(published_at, collected_at) >= $1
+           AND COALESCE(published_at, collected_at) <= $2
          GROUP BY source, product_id, sentiment`,
         [weekStart + "T00:00:00+00", weekEnd + "T23:59:59+00"]
       );
