@@ -556,7 +556,7 @@ Deno.serve(async (req) => {
           if (results.length === 0) {
             diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -585,7 +585,7 @@ Deno.serve(async (req) => {
           if (batchedContent.length < 100) {
             diag.queries_short_batch += 1;
             console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -595,7 +595,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[${category}] AI extraction returned null`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           if (extracted.length === 0) {
@@ -616,7 +616,7 @@ Deno.serve(async (req) => {
           console.error(`[FAIL] [${category}] query "${String(query).slice(0, 50)}":`, queryErr);
         }
         // Rate limit between queries (avoid Reddit 429)
-        await sleep(REDDIT_RATE_LIMIT_MS);
+        await sleep(jitteredDelay());
       }
     }
 
@@ -637,7 +637,7 @@ Deno.serve(async (req) => {
           if (posts.length === 0) {
             diag.direct_subs_zero_posts += 1;
             errors.push(`Direct r/${sub}: 0 posts (after quality filter)`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           phaseStats["direct_subreddit"] = (phaseStats["direct_subreddit"] || 0) + posts.length;
@@ -655,7 +655,7 @@ Deno.serve(async (req) => {
 
           if (batched.length < 200) {
             console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -664,7 +664,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[Direct r/${sub}] AI extraction null`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           if (extracted.length === 0) {
@@ -682,7 +682,7 @@ Deno.serve(async (req) => {
           errors.push(`Direct r/${sub}: ${e}`);
           console.error(`[FAIL] r/${sub} + direct harvest:`, e);
         }
-        await sleep(REDDIT_RATE_LIMIT_MS);
+        await sleep(jitteredDelay());
       }
     }
   } catch (fatalErr) {
