@@ -493,11 +493,12 @@ Deno.serve(async (req) => {
         diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats);
 
           if (results.length === 0) {
             diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -526,6 +527,7 @@ Deno.serve(async (req) => {
           if (batchedContent.length < 100) {
             diag.queries_short_batch += 1;
             console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -535,6 +537,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[${category}] AI extraction returned null`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           if (extracted.length === 0) {
@@ -550,9 +553,12 @@ Deno.serve(async (req) => {
           totalSkipped += stats.skipped;
           console.log(`[${category}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (queryErr) {
+          phaseStats[`${category}_query_error`] = (phaseStats[`${category}_query_error`] || 0) + 1;
           errors.push(`Query ${category}: ${queryErr}`);
-          console.error(`[${category}] query error:`, queryErr);
+          console.error(`[FAIL] [${category}] query "${String(query).slice(0, 50)}":`, queryErr);
         }
+        // Rate limit between queries (avoid Reddit 429)
+        await sleep(REDDIT_RATE_LIMIT_MS);
       }
     }
 
