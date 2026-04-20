@@ -65,9 +65,26 @@ const RULES: RuleSpec[] = [
   { category: "Projector", nameRegex: /Projector|CineBeam|프로젝터/i },
 ];
 
+/**
+ * Many legacy products store an internal ID (e.g. "MD05015940") in `model_number`,
+ * while the *real* model code lives inside `display_name` (e.g. "LG Electronics DLE1101W").
+ * Extract the most likely model token from display_name as a fallback.
+ */
+function extractModelFromName(name: string): string {
+  if (!name) return "";
+  const cleaned = name.replace(/^LG(\s+Electronics)?\s+/i, "").trim();
+  const firstToken = cleaned.split(/\s+/)[0] ?? "";
+  return firstToken;
+}
+
 function classify(model: string, name: string): string | null {
+  const candidates = [model, extractModelFromName(name)].filter(Boolean);
   for (const rule of RULES) {
-    if (rule.modelRegex && rule.modelRegex.test(model)) return rule.category;
+    if (rule.modelRegex) {
+      for (const c of candidates) {
+        if (rule.modelRegex.test(c)) return rule.category;
+      }
+    }
     if (rule.nameRegex && rule.nameRegex.test(name)) return rule.category;
   }
   return null;
