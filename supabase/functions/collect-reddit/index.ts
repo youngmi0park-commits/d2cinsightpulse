@@ -430,46 +430,50 @@ async function adaptiveCollect(
 ): Promise<FetchResult[]> {
   let results: FetchResult[] = [];
 
-  // Phase 1 (PRIMARY): Reddit native search JSON — sort=new&t=week
-  try {
-    const redditResults = await fetchRedditSearchJson(query);
-    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
-    console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
-    results.push(...redditResults);
-  } catch (err) {
-    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
-    console.error(`[P1 FAIL] Reddit search "${query.slice(0, 50)}":`, err);
-  }
-
-  if (results.length >= 3) {
-    console.log(`[Phase1 ✓] Reddit JSON: ${results.length}`);
-    return results;
-  }
-
-  // Phase 0 (FALLBACK): Firecrawl search — only if Reddit JSON returned <3
+  // Phase 0 (PRIMARY): Firecrawl search — Reddit blocks Edge Function IPs (HTTP 403),
+  // so Firecrawl proxy is the only reliable Google-search path
   try {
     const fcResults = await firecrawlSearch(query, firecrawlKey);
     diag.p0_results = (diag.p0_results || 0) + fcResults.length;
-    if (fcResults.length > 0) {
-      console.log(`[Phase0 fallback ✓] Firecrawl: ${fcResults.length}`);
-      results.push(...fcResults);
-    }
+    console.log(`[P0] Firecrawl: ${fcResults.length} for "${query.slice(0, 60)}"`);
+    results.push(...fcResults);
   } catch (err) {
     phaseStats["firecrawl_search_error"] = (phaseStats["firecrawl_search_error"] || 0) + 1;
     console.error(`[P0 FAIL] Firecrawl "${query.slice(0, 50)}":`, err);
   }
 
-  // Phase 3 (LAST RESORT): Bing fallback
-  if (results.length < 2) {
-    try {
-      const bingResults = await firecrawlBingFallback(query, firecrawlKey);
-      diag.p3_results = (diag.p3_results || 0) + bingResults.length;
-      console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
-      results.push(...bingResults);
-    } catch (err) {
-      phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
-      console.error(`[P3 FAIL] Bing:`, err);
+  if (results.length >= 3) {
+    return results;
+  }
+
+  // Phase 3 (FALLBACK): Bing search via Firecrawl
+  try {
+    const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
+    console.log(`[P3] Bing fallback: ${bingResults.length}`);
+    results.push(...bingResults);
+  } catch (err) {
+    phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
+    console.error(`[P3 FAIL] Bing:`, err);
+  }
+
+  if (results.length >= 2) {
+    return results;
+  }
+
+  // Phase 1 (LAST TRY): Reddit native JSON — usually 403 from Edge Function IPs,
+  // but kept as a no-cost attempt in case Reddit lifts the block
+  try {
+    const redditResults = await fetchRedditSearchJson(query);
+    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+    if (redditResults.length > 0) {
+      console.log(`[P1 ✓] Reddit JSON unexpectedly worked: ${redditResults.length}`);
+      results.push(...redditResults);
     }
+  } catch (err) {
+    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
+    // Don't log full stack — 403 is expected
+    console.warn(`[P1 skip] Reddit JSON blocked (expected): ${String(err).slice(0, 80)}`);
   }
 
   return results;
