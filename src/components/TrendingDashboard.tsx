@@ -688,8 +688,12 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />
               <p className="text-[10px] text-muted-foreground font-medium mb-1">총 리뷰 수집</p>
               <p className="text-2xl font-extrabold tracking-tight leading-tight">{totalReviews.toLocaleString()}</p>
-              <p className={cn("text-[10px] font-semibold mt-1", weeklyDelta >= 0 ? "text-green-700" : "text-destructive")}>
-                {weeklyDelta >= 0 ? `▲ +${weeklyDelta.toLocaleString()} vs 전주` : `▼ ${weeklyDelta.toLocaleString()} vs 전주`}
+              <p className={cn("text-[10px] font-semibold mt-1", weeklyDelta > 0 ? "text-green-700" : weeklyDelta < 0 ? "text-destructive" : "text-muted-foreground")}>
+                {weeklyDelta > 0
+                  ? `▲ +${weeklyDelta.toLocaleString()} (${weeklyDeltaPct > 0 ? "+" : ""}${weeklyDeltaPct}%) vs 전주`
+                  : weeklyDelta < 0
+                  ? `▼ ${weeklyDelta.toLocaleString()} (${weeklyDeltaPct}%) vs 전주`
+                  : `— 변동 없음 vs 전주`}
               </p>
               <div className="absolute bottom-2 right-3 opacity-20">
                 <svg width="48" height="20" viewBox="0 0 48 20">
