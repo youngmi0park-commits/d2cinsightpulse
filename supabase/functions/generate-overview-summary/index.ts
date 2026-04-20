@@ -426,11 +426,34 @@ JSON 형태로 응답:
       );
     }
 
-    const aiData = await aiResponse.json();
+    // Read as text first — AI gateway can return empty/truncated bodies on timeout
+    const rawBody = await aiResponse.text();
+    if (!rawBody || !rawBody.trim()) {
+      console.error("AI returned empty body");
+      return new Response(
+        JSON.stringify({ overview: null, error: "AI returned empty response", fallback: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    let aiData: any;
+    try {
+      aiData = JSON.parse(rawBody);
+    } catch {
+      console.error("Failed to parse AI gateway response:", rawBody.slice(0, 300));
+      return new Response(
+        JSON.stringify({ overview: null, error: "Invalid AI gateway response", fallback: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     const content = aiData.choices?.[0]?.message?.content || "{}";
+    const finishReason = aiData.choices?.[0]?.finish_reason;
+    if (finishReason === "length") {
+      console.warn("AI response truncated (finish_reason=length)");
+    }
     let overview;
     try {
-      overview = JSON.parse(content);
+      const cleaned = content.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      overview = JSON.parse(cleaned);
     } catch {
       overview = { raw: content };
     }
