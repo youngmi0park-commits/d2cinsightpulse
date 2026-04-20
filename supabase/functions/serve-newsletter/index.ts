@@ -802,6 +802,19 @@ Deno.serve(async (req) => {
       : 0;
 
     const { data: sourceCounts } = await sb.rpc("get_source_counts");
+    const { data: weeklySourceCounts } = await sb.rpc("get_recent_source_counts", { p_hours: 168 });
+    const weeklyMap: Record<string, number> = {};
+    for (const w of (weeklySourceCounts || []) as any[]) {
+      let key = w.source as string;
+      if (key?.startsWith("reddit")) key = "reddit";
+      else if (key?.startsWith("youtube")) key = "youtube";
+      else if (key?.startsWith("lge_com")) key = "lge_com";
+      else if (key?.startsWith("shopee")) key = "shopee";
+      else if (key?.startsWith("lazada")) key = "lazada";
+      else if (key?.startsWith("amazon")) key = "amazon";
+      else if (key?.startsWith("web_review")) key = "web_review";
+      weeklyMap[key] = (weeklyMap[key] ?? 0) + Number(w.count ?? 0);
+    }
     const CHANNEL_COLORS: Record<string, { label: string; color: string }> = {
       lge_com: { label: "LG.com", color: "#A50034" },
       reddit: { label: "Reddit", color: "#FF4500" },
@@ -813,11 +826,12 @@ Deno.serve(async (req) => {
     const sortedSources = (sourceCounts || []).sort((a: any, b: any) => b.count - a.count);
     const topChannels = sortedSources.slice(0, 4).map((s: any) => {
       const cfg = CHANNEL_COLORS[s.source] || { label: s.source, color: "#888" };
-      return { name: cfg.label, count: s.count, color: cfg.color };
+      return { name: cfg.label, count: s.count, weeklyCount: weeklyMap[s.source] ?? 0, color: cfg.color };
     });
     const otherCount = sortedSources.slice(4).reduce((sum: number, s: any) => sum + s.count, 0);
+    const otherWeekly = sortedSources.slice(4).reduce((sum: number, s: any) => sum + (weeklyMap[s.source] ?? 0), 0);
     if (otherCount > 0) {
-      topChannels.push({ name: `+${sortedSources.length - 4}개 채널`, count: otherCount, color: "#999" });
+      topChannels.push({ name: `+${sortedSources.length - 4}개 채널`, count: otherCount, weeklyCount: otherWeekly, color: "#999" });
     }
 
     // Keywords
