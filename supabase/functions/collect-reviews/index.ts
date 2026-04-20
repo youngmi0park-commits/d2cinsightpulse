@@ -585,6 +585,91 @@ Deno.serve(async (req) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────────
+// SEARCH HELPERS — Firecrawl 기본 + Bing/DuckDuckGo HTML fallback + Seed URL
+// ──────────────────────────────────────────────────────────────────
+async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query, limit, scrapeOptions: { formats: ["markdown"] } }),
+    });
+    if (!res.ok) {
+      console.warn(`[firecrawlSearch] ${res.status}: ${(await res.text()).slice(0, 150)}`);
+      return [];
+    }
+    const data = await res.json();
+    return data.data || [];
+  } catch (e) {
+    console.warn(`[firecrawlSearch] error: ${(e as Error).message}`);
+    return [];
+  }
+}
+
+/** Bing HTML SERP를 Firecrawl scrape로 가져와 결과 URL 추출 */
+async function bingSearchFallback(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const bingUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}&count=${Math.min(limit * 3, 20)}`;
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: bingUrl,
+        formats: ["links", "markdown"],
+        onlyMainContent: false,
+        waitFor: 1500,
+        location: { country: "US", languages: ["en-US"] },
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const links: string[] = data.data?.links || data.links || [];
+    const siteMatch = query.match(/site:([^\s]+)/i);
+    const targetDomain = siteMatch ? siteMatch[1].replace(/^www\./, "") : null;
+    const filtered = links
+      .filter((u) => typeof u === "string" && u.startsWith("http"))
+      .filter((u) => !u.includes("bing.com") && !u.includes("microsoft.com"))
+      .filter((u) => (targetDomain ? u.includes(targetDomain) : true))
+      .slice(0, limit);
+    return filtered.map((url) => ({ url, markdown: "" }));
+  } catch (e) {
+    console.warn(`[bingSearchFallback] error: ${(e as Error).message}`);
+    return [];
+  }
+}
+
+/** DuckDuckGo HTML SERP fallback */
+async function ddgSearchFallback(apiKey: string, query: string, limit: number): Promise<any[]> {
+  try {
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: ddgUrl,
+        formats: ["links"],
+        onlyMainContent: false,
+        waitFor: 1000,
+      }),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const links: string[] = data.data?.links || data.links || [];
+    const siteMatch = query.match(/site:([^\s]+)/i);
+    const targetDomain = siteMatch ? siteMatch[1].replace(/^www\./, "") : null;
+    const filtered = links
+      .filter((u) => typeof u === "string" && u.startsWith("http"))
+      .filter((u) => !u.includes("duckduckgo.com"))
+      .filter((u) => (targetDomain ? u.includes(targetDomain) : true))
+      .slice(0, limit);
+    return filtered.map((url) => ({ url, markdown: "" }));
+  } catch (e) {
+    console.warn(`[ddgSearchFallback] error: ${(e as Error).message}`);
+    return [];
+  }
+}
+
 function parseAiReviews(rawText: string, channelLabel: string, category: string): any[] {
   try {
     const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
