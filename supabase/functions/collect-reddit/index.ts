@@ -340,7 +340,7 @@ async function firecrawlBingFallback(query: string, apiKey: string): Promise<Fet
     const res = await fetch("https://api.firecrawl.dev/v1/search", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query: bingQ, limit: 5, scrapeOptions: { formats: ["markdown"] } }),
+      body: JSON.stringify({ query: bingQ, limit: 5, tbs: "qdr:w", scrapeOptions: { formats: ["markdown"] } }),
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
