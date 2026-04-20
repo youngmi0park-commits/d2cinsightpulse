@@ -170,12 +170,32 @@ function buildFunnelInsight(
 }
 
 /* ── Helpers ── */
-function truncate(text: string, max: number): string {
-  return text.length <= max ? text : text.slice(0, max - 1) + "…";
+function cleanCopy(text: string): string {
+  return text
+    .replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.,!?])/g, "$1")
+    .trim();
 }
 
-function cleanCopy(text: string): string {
-  return text.replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "").replace(/\s{2,}/g, " ").trim();
+/**
+ * 광고 가이드 글자수에 맞춰 "기획된" 카피를 선택.
+ * 단순 자르기(truncate)가 아니라, 사전 작성된 다중 카피 후보 중
+ * max 한도 내에서 가장 풍부한 표현을 고른다.
+ * 모든 후보가 한도를 초과하면 단어 경계에서 안전하게 줄인다.
+ */
+function pickBestFit(candidates: string[], max: number): string {
+  const cleaned = candidates.map(cleanCopy).filter(Boolean);
+  // 한도 내 후보 중 가장 길고 풍부한 카피 선택 (정보량 ↑)
+  const fits = cleaned.filter((c) => c.length <= max).sort((a, b) => b.length - a.length);
+  if (fits.length > 0) return fits[0];
+  // 한도 초과 시: 가장 짧은 후보를 단어 경계에서 자연스럽게 다듬음
+  const shortest = cleaned.sort((a, b) => a.length - b.length)[0] || "";
+  if (shortest.length <= max) return shortest;
+  const sliced = shortest.slice(0, max);
+  const lastSpace = sliced.lastIndexOf(" ");
+  const safe = lastSpace > max * 0.6 ? sliced.slice(0, lastSpace) : sliced;
+  return safe.replace(/[,.\-:;]+$/, "").trim();
 }
 
 function quickComply(text: string): { ok: boolean; issues: string[] } {
