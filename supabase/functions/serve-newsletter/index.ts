@@ -826,10 +826,15 @@ Deno.serve(async (req) => {
 
     // Opportunities — Dashboard와 동일하게 amplify/fix/watch를 다양하게 구성
     // 주간 리뷰에서 product × source × sentiment 별로 집계해서 다양한 시그널 추출
+    // LGE 법인 코드 (RIS Subsidiary List 표준)
     const SOURCE_TO_FLAG: Record<string, string> = {
-      lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK", lge_com_de: "🇩🇪 DE",
-      lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN", lge_com_tw: "🇹🇼 TW",
-      lge_com_jp: "🇯🇵 JP", lge_com_th: "🇹🇭 TH", lge_com_br: "🇧🇷 BR",
+      lge_com_us: "🇺🇸 LGEUS", lge_com_uk: "🇬🇧 LGEUK", lge_com_de: "🇩🇪 LGEDE",
+      lge_com_au: "🇦🇺 LGEAP", lge_com_in: "🇮🇳 LGEIL", lge_com_tw: "🇹🇼 LGETT",
+      lge_com_jp: "🇯🇵 LGEJP", lge_com_th: "🇹🇭 LGETH", lge_com_br: "🇧🇷 LGESP",
+      lge_com_ca: "🇨🇦 LGECI", lge_com_mx: "🇲🇽 LGEMS", lge_com_fr: "🇫🇷 LGEFS",
+      lge_com_nl: "🇳🇱 LGEBN", lge_com_sg: "🇸🇬 LGESL", lge_com_my: "🇲🇾 LGEML",
+      lge_com_id: "🇮🇩 LGEIN", lge_com_ph: "🇵🇭 LGEPH", lge_com_vn: "🇻🇳 LGEVN",
+      lge_com_hk: "🇭🇰 LGEHK",
       reddit: "🌐 Global", youtube: "🌐 Global", trustpilot: "🌐 Global",
     };
     const sourceCountry = (s: string) => {
@@ -979,12 +984,18 @@ Deno.serve(async (req) => {
       });
 
     // ── Regional Marketing Signals — country-level snapshot for local marketers ──
+    // 법인 코드(name)는 RIS Subsidiary List 기준
     const COUNTRY_META: Record<string, { name: string; flag: string }> = {
-      lge_com_us: { name: "US", flag: "🇺🇸" }, lge_com_uk: { name: "UK", flag: "🇬🇧" },
-      lge_com_de: { name: "DE", flag: "🇩🇪" }, lge_com_au: { name: "AU", flag: "🇦🇺" },
-      lge_com_in: { name: "IN", flag: "🇮🇳" }, lge_com_tw: { name: "TW", flag: "🇹🇼" },
-      lge_com_jp: { name: "JP", flag: "🇯🇵" }, lge_com_th: { name: "TH", flag: "🇹🇭" },
-      lge_com_br: { name: "BR", flag: "🇧🇷" }, lge_com_es: { name: "ES", flag: "🇪🇸" },
+      lge_com_us: { name: "LGEUS", flag: "🇺🇸" }, lge_com_uk: { name: "LGEUK", flag: "🇬🇧" },
+      lge_com_de: { name: "LGEDE", flag: "🇩🇪" }, lge_com_au: { name: "LGEAP", flag: "🇦🇺" },
+      lge_com_in: { name: "LGEIL", flag: "🇮🇳" }, lge_com_tw: { name: "LGETT", flag: "🇹🇼" },
+      lge_com_jp: { name: "LGEJP", flag: "🇯🇵" }, lge_com_th: { name: "LGETH", flag: "🇹🇭" },
+      lge_com_br: { name: "LGESP", flag: "🇧🇷" }, lge_com_ca: { name: "LGECI", flag: "🇨🇦" },
+      lge_com_mx: { name: "LGEMS", flag: "🇲🇽" }, lge_com_fr: { name: "LGEFS", flag: "🇫🇷" },
+      lge_com_nl: { name: "LGEBN", flag: "🇳🇱" }, lge_com_sg: { name: "LGESL", flag: "🇸🇬" },
+      lge_com_my: { name: "LGEML", flag: "🇲🇾" }, lge_com_id: { name: "LGEIN", flag: "🇮🇩" },
+      lge_com_ph: { name: "LGEPH", flag: "🇵🇭" }, lge_com_vn: { name: "LGEVN", flag: "🇻🇳" },
+      lge_com_hk: { name: "LGEHK", flag: "🇭🇰" },
     };
     const countryAgg: Record<string, { total: number; pos: number; neg: number; cats: Record<string, number> }> = {};
     for (const r of (weeklyAgg ?? []) as any[]) {
