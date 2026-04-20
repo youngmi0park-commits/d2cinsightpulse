@@ -12,75 +12,83 @@ const corsHeaders = {
 
 const REDDIT_QUERIES: Record<string, string[]> = {
   TV: [
-    'site:reddit.com LG OLED (review OR "just bought" OR owner OR impression) 2025 OR 2026',
-    'site:reddit.com "LG C5" OR "LG C4" OR "LG G5" OR "LG G6" review OR worth OR recommend',
-    'site:reddit.com LG OLED (burn-in OR "picture quality" OR gaming OR "Dolby Vision")',
-    'site:reddit.com LG OLED (disappointed OR issue OR problem OR "not working" OR defective)',
-    'site:reddit.com "should I buy" LG OLED OR "LG TV" OR C5 OR G5 vs',
-    'site:reddit.com LG QNED OR NanoCell review OR recommendation',
-    'site:reddit.com LG OLED (calibration OR settings OR "best picture" OR tips)',
-    'site:reddit.com "LG C6H" OR "LG W6" OR "OLED evo" 2026 review',
-    'site:reddit.com/r/OLED LG (impression OR experience OR setup)',
-    'site:reddit.com/r/4kTV LG OLED OR QNED comparison',
-    'site:reddit.com/r/hometheater LG OLED OR projector setup',
-    'site:reddit.com LG OLED "webOS" (lag OR slow OR ads OR update)',
+    // Positive / ownership angle
+    'site:reddit.com LG OLED ("loving" OR "amazing" OR "best tv" OR "no regrets") 2025',
+    'site:reddit.com "LG C5" OR "LG G5" review worth recommend',
+    'site:reddit.com LG OLED ("just bought" OR "first impressions" OR "after a year")',
+    // Negative / VOC angle
+    'site:reddit.com LG OLED (burn-in OR "stuck pixel" OR flicker OR "picture quality" issue)',
+    'site:reddit.com LG OLED (disappointed OR defective OR "not working" OR "warranty claim")',
+    'site:reddit.com LG OLED webOS (ads OR lag OR slow OR "update broke")',
+    // Comparison / buying intent
+    'site:reddit.com "should I buy" LG OLED OR C5 OR G5 vs Sony OR Samsung',
+    'site:reddit.com LG QNED OR NanoCell ("worth it" OR "vs OLED" OR review)',
+    'site:reddit.com LG OLED (calibration OR settings OR "best picture mode")',
+    // Subreddit-specific
+    'site:reddit.com/r/OLED LG ("first night" OR experience OR setup)',
+    'site:reddit.com/r/4kTV LG (OLED OR QNED OR comparison)',
+    'site:reddit.com/r/hometheater LG OLED (Dolby Vision OR HDR OR setup)',
+    'site:reddit.com/r/OLED_Gaming LG ("response time" OR HDMI OR PS5 OR Xbox)',
     'site:reddit.com LG OLED "magic remote" (broken OR battery OR pairing)',
   ],
   Monitor: [
-    'site:reddit.com LG UltraGear (review OR "just bought" OR impression OR gaming)',
-    'site:reddit.com "27GR83Q" OR "32GS95UE" OR "27GP850" OR "LG monitor" review',
-    'site:reddit.com LG monitor (flickering OR issue OR problem OR calibration)',
-    'site:reddit.com "LG UltraWide" OR "LG UltraFine" review OR recommend',
-    'site:reddit.com/r/Monitors LG OLED OR UltraGear',
-    'site:reddit.com/r/buildapc LG monitor recommendation',
-    'site:reddit.com/r/buildapcsales LG (UltraGear OR monitor)',
-    'site:reddit.com/r/ultrawidemasterrace LG (review OR setup)',
-    'site:reddit.com LG monitor "DisplayPort" OR "HDMI 2.1" issue',
+    'site:reddit.com LG UltraGear ("just bought" OR review OR "1 month later")',
+    'site:reddit.com "27GR83Q" OR "32GS95UE" OR "27GP850" OR "45GR95QE" review',
+    'site:reddit.com LG monitor (flickering OR "dead pixel" OR "color shift" OR calibration)',
+    'site:reddit.com "LG UltraWide" OR "LG UltraFine" ("worth" OR review OR comparison)',
+    'site:reddit.com/r/Monitors LG (OLED OR UltraGear OR ultrawide)',
+    'site:reddit.com/r/buildapc LG monitor (recommend OR review OR setup)',
+    'site:reddit.com/r/buildapcsales LG (UltraGear OR monitor) (deal OR price)',
+    'site:reddit.com/r/ultrawidemasterrace LG (review OR setup OR "vs Samsung")',
+    'site:reddit.com LG monitor ("DisplayPort" OR "HDMI 2.1" OR "USB-C") issue',
+    'site:reddit.com LG OLED monitor ("burn in" OR "image retention" OR warranty)',
   ],
   Laptop: [
-    'site:reddit.com "LG Gram" (review OR "just bought" OR lightweight OR battery)',
-    'site:reddit.com "LG Gram Pro" OR "Gram 17" OR "Gram 16" 2025 OR 2026 review',
-    'site:reddit.com "LG Gram" (issue OR problem OR overheating OR keyboard)',
-    'site:reddit.com/r/LGgram (impression OR question OR setup)',
-    'site:reddit.com/r/SuggestALaptop "LG Gram" recommend',
-    'site:reddit.com "LG Gram" "thermal throttling" OR fan OR noise',
-    'site:reddit.com "LG Gram" battery life OR display OR build quality',
+    'site:reddit.com "LG Gram" ("just bought" OR review OR "real world" OR "after 6 months")',
+    'site:reddit.com "LG Gram Pro" OR "Gram 17" OR "Gram 16" 2025 review',
+    'site:reddit.com "LG Gram" (overheating OR "thermal throttling" OR fan OR noise)',
+    'site:reddit.com "LG Gram" (keyboard OR trackpad OR display OR "build quality")',
+    'site:reddit.com/r/LGgram (impression OR setup OR tips OR mod)',
+    'site:reddit.com/r/SuggestALaptop "LG Gram" (recommend OR vs MacBook)',
+    'site:reddit.com "LG Gram" battery life ("real world" OR test OR comparison)',
+    'site:reddit.com "LG Gram" (BIOS OR firmware OR update OR ThinQ)',
   ],
   Audio: [
-    'site:reddit.com "LG Soundbar" (review OR "just bought" OR "Dolby Atmos" OR setup)',
-    'site:reddit.com "S95TR" OR "S90TR" OR "S80QY" OR "XBOOM" review OR recommend',
-    'site:reddit.com LG soundbar (issue OR problem OR "no sound" OR sync OR connectivity)',
-    'site:reddit.com/r/Soundbars LG (S95 OR S90 OR S80 OR review)',
-    'site:reddit.com/r/hometheater LG soundbar setup OR comparison',
-    'site:reddit.com LG XBOOM (party OR speaker OR bluetooth review)',
-    'site:reddit.com LG "WOW Orchestra" OR "WOWCAST" experience',
+    'site:reddit.com "LG Soundbar" ("just bought" OR review OR "Dolby Atmos" setup)',
+    'site:reddit.com "S95TR" OR "S90TR" OR "S80QY" OR "S70TY" review',
+    'site:reddit.com LG soundbar ("no sound" OR sync OR HDMI OR connectivity issue)',
+    'site:reddit.com/r/Soundbars LG (S95 OR S90 OR S80 OR review OR comparison)',
+    'site:reddit.com/r/hometheater LG soundbar ("vs Sonos" OR "vs Samsung" OR setup)',
+    'site:reddit.com LG XBOOM (party OR bluetooth OR "loud enough" OR review)',
+    'site:reddit.com LG "WOW Orchestra" OR "WOWCAST" (experience OR setup OR worth)',
   ],
   HomeAppliance: [
-    'site:reddit.com LG WashTower OR "LG washer" OR "LG dryer" review OR recommend',
-    'site:reddit.com LG InstaView OR "LG refrigerator" OR "LG fridge" review',
-    'site:reddit.com LG CordZero OR "LG vacuum" OR "LG PuriCare" review',
-    'site:reddit.com LG washer OR dryer (issue OR problem OR vibration OR noise OR error)',
-    'site:reddit.com/r/Appliances LG (washer OR dryer OR fridge)',
-    'site:reddit.com/r/appliancerepair LG (error OR code OR repair)',
-    'site:reddit.com/r/refrigerators LG InstaView OR French door',
-    'site:reddit.com/r/BuyItForLife LG appliance experience',
-    'site:reddit.com LG "Smart Diagnosis" OR ThinQ app review',
-    'site:reddit.com LG dishwasher "QuadWash" OR review OR rack',
+    'site:reddit.com LG WashTower ("just installed" OR review OR "1 year later")',
+    'site:reddit.com LG InstaView OR "LG refrigerator" ("worth it" OR review OR issue)',
+    'site:reddit.com LG CordZero OR "LG vacuum" (review OR "vs Dyson" OR battery)',
+    'site:reddit.com LG washer OR dryer (vibration OR noise OR "error code" OR "not draining")',
+    'site:reddit.com/r/Appliances LG (washer OR dryer OR fridge OR "worth buying")',
+    'site:reddit.com/r/appliancerepair LG ("error code" OR repair OR "compressor failure")',
+    'site:reddit.com/r/refrigerators LG (InstaView OR "French door" OR "ice maker")',
+    'site:reddit.com/r/BuyItForLife LG appliance ("years later" OR experience)',
+    'site:reddit.com LG "Smart Diagnosis" OR ThinQ (app review OR connectivity)',
+    'site:reddit.com LG dishwasher "QuadWash" (review OR "vs Bosch" OR rack)',
   ],
   AirConditioner: [
-    'site:reddit.com "LG AC" OR "LG air conditioner" OR "dual inverter" review OR recommend',
-    'site:reddit.com LG AC (noise OR "energy saving" OR cooling OR installation OR issue)',
-    'site:reddit.com/r/AirConditioners LG (window OR portable OR mini-split)',
-    'site:reddit.com LG "Artcool" OR mini-split installation experience',
+    'site:reddit.com "LG AC" OR "LG air conditioner" ("dual inverter" OR review OR efficient)',
+    'site:reddit.com LG AC (noise OR "energy saving" OR cooling OR installation issue)',
+    'site:reddit.com/r/AirConditioners LG (window OR portable OR "mini-split" OR review)',
+    'site:reddit.com LG "Artcool" OR mini-split ("install cost" OR experience OR worth)',
+    'site:reddit.com LG AC ("error code" OR "not cooling" OR "leaking water")',
   ],
   StanbyME: [
-    'site:reddit.com StanbyME OR "Stand by Me" LG review OR recommend OR worth',
-    'site:reddit.com/r/StanbyME LG (review OR discussion OR setup OR tips)',
-    'site:reddit.com StanbyME (battery OR portable OR streaming OR setup)',
+    'site:reddit.com StanbyME OR "Stand by Me" LG (review OR worth OR "battery life")',
+    'site:reddit.com/r/StanbyME LG (setup OR tips OR streaming OR mod)',
+    'site:reddit.com StanbyME ("vs Samsung Freestyle" OR portable OR "for kids")',
   ],
   LG_UserHub: [
-    'site:reddit.com/r/LG_UserHub LG (review OR discussion OR announcement OR tips)',
-    'site:reddit.com/r/LG_UserHub (product OR firmware OR update OR feature)',
+    'site:reddit.com/r/LG_UserHub LG (review OR discussion OR firmware OR feature)',
+    'site:reddit.com/r/LG_UserHub (product OR ThinQ OR webOS OR update)',
   ],
 };
 
@@ -161,14 +169,35 @@ RULES:
 //  Phase 3: Bing search fallback via Firecrawl
 // ══════════════════════════════════════════════════════════════
 
+// Realistic browser UAs (rotated per request to evade fingerprint blocks)
 const UA_POOL = [
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
 ];
 
 function pickUA(): string {
   return UA_POOL[Math.floor(Math.random() * UA_POOL.length)];
+}
+
+// Realistic browser-like headers to avoid Reddit anti-bot heuristics
+function browserHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    "User-Agent": pickUA(),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    ...extra,
+  };
 }
 
 interface FetchResult {
@@ -177,10 +206,45 @@ interface FetchResult {
   source: string; // which phase succeeded
 }
 
-// ─── Rate limiting helper ─────────────────────────────────────
-const REDDIT_RATE_LIMIT_MS = 1000;
+// ─── Rate limiting helper (jittered 1.5–2.5s between Reddit calls) ─
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
+}
+function jitteredDelay(): number {
+  return 1500 + Math.floor(Math.random() * 1000); // 1500–2500 ms
+}
+const REDDIT_RATE_LIMIT_MS = 2000; // baseline (used where jitter not needed)
+
+// ─── Fetch with retry: 3 attempts, exponential backoff on 429/5xx ─
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  maxAttempts = 3,
+): Promise<Response> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(url, init);
+      // Retry on rate limit / server errors
+      if (res.status === 429 || res.status === 503 || res.status >= 500) {
+        if (attempt < maxAttempts) {
+          const backoff = 1000 * Math.pow(2, attempt - 1) + Math.random() * 500; // 1s, 2s, 4s + jitter
+          console.warn(`[retry ${attempt}/${maxAttempts}] HTTP ${res.status} on ${url.slice(0, 80)} — waiting ${Math.round(backoff)}ms`);
+          await sleep(backoff);
+          continue;
+        }
+      }
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < maxAttempts) {
+        const backoff = 1000 * Math.pow(2, attempt - 1) + Math.random() * 500;
+        console.warn(`[retry ${attempt}/${maxAttempts}] exception on ${url.slice(0, 80)} — waiting ${Math.round(backoff)}ms`, err);
+        await sleep(backoff);
+      }
+    }
+  }
+  throw lastErr ?? new Error(`fetchWithRetry exhausted for ${url}`);
 }
 
 // ─── Quality filter (loose: selftext>30 OR score>2) ───────────
@@ -196,9 +260,7 @@ async function fetchSubredditJson(
   timeFilter: "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-  });
+  const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
@@ -236,9 +298,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
     ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
     : `https://www.reddit.com/search.json?`;
   const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
-  const res = await fetch(url, {
-    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-  });
+  const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
@@ -264,9 +324,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
 async function fetchCommentsJson(permalink: string): Promise<string> {
   const url = `https://www.reddit.com${permalink.replace(/\/$/, "")}.json?limit=20&depth=2`;
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
+    const res = await fetchWithRetry(url, { headers: browserHeaders() }, 2);
     if (!res.ok) return "";
     const json = await res.json();
     if (!Array.isArray(json) || json.length < 2) return "";
@@ -372,46 +430,50 @@ async function adaptiveCollect(
 ): Promise<FetchResult[]> {
   let results: FetchResult[] = [];
 
-  // Phase 1 (PRIMARY): Reddit native search JSON — sort=new&t=week
-  try {
-    const redditResults = await fetchRedditSearchJson(query);
-    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
-    console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
-    results.push(...redditResults);
-  } catch (err) {
-    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
-    console.error(`[P1 FAIL] Reddit search "${query.slice(0, 50)}":`, err);
-  }
-
-  if (results.length >= 3) {
-    console.log(`[Phase1 ✓] Reddit JSON: ${results.length}`);
-    return results;
-  }
-
-  // Phase 0 (FALLBACK): Firecrawl search — only if Reddit JSON returned <3
+  // Phase 0 (PRIMARY): Firecrawl search — Reddit blocks Edge Function IPs (HTTP 403),
+  // so Firecrawl proxy is the only reliable Google-search path
   try {
     const fcResults = await firecrawlSearch(query, firecrawlKey);
     diag.p0_results = (diag.p0_results || 0) + fcResults.length;
-    if (fcResults.length > 0) {
-      console.log(`[Phase0 fallback ✓] Firecrawl: ${fcResults.length}`);
-      results.push(...fcResults);
-    }
+    console.log(`[P0] Firecrawl: ${fcResults.length} for "${query.slice(0, 60)}"`);
+    results.push(...fcResults);
   } catch (err) {
     phaseStats["firecrawl_search_error"] = (phaseStats["firecrawl_search_error"] || 0) + 1;
     console.error(`[P0 FAIL] Firecrawl "${query.slice(0, 50)}":`, err);
   }
 
-  // Phase 3 (LAST RESORT): Bing fallback
-  if (results.length < 2) {
-    try {
-      const bingResults = await firecrawlBingFallback(query, firecrawlKey);
-      diag.p3_results = (diag.p3_results || 0) + bingResults.length;
-      console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
-      results.push(...bingResults);
-    } catch (err) {
-      phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
-      console.error(`[P3 FAIL] Bing:`, err);
+  if (results.length >= 3) {
+    return results;
+  }
+
+  // Phase 3 (FALLBACK): Bing search via Firecrawl
+  try {
+    const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
+    console.log(`[P3] Bing fallback: ${bingResults.length}`);
+    results.push(...bingResults);
+  } catch (err) {
+    phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
+    console.error(`[P3 FAIL] Bing:`, err);
+  }
+
+  if (results.length >= 2) {
+    return results;
+  }
+
+  // Phase 1 (LAST TRY): Reddit native JSON — usually 403 from Edge Function IPs,
+  // but kept as a no-cost attempt in case Reddit lifts the block
+  try {
+    const redditResults = await fetchRedditSearchJson(query);
+    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+    if (redditResults.length > 0) {
+      console.log(`[P1 ✓] Reddit JSON unexpectedly worked: ${redditResults.length}`);
+      results.push(...redditResults);
     }
+  } catch (err) {
+    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
+    // Don't log full stack — 403 is expected
+    console.warn(`[P1 skip] Reddit JSON blocked (expected): ${String(err).slice(0, 80)}`);
   }
 
   return results;
@@ -498,7 +560,7 @@ Deno.serve(async (req) => {
           if (results.length === 0) {
             diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -527,7 +589,7 @@ Deno.serve(async (req) => {
           if (batchedContent.length < 100) {
             diag.queries_short_batch += 1;
             console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -537,7 +599,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[${category}] AI extraction returned null`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           if (extracted.length === 0) {
@@ -558,7 +620,7 @@ Deno.serve(async (req) => {
           console.error(`[FAIL] [${category}] query "${String(query).slice(0, 50)}":`, queryErr);
         }
         // Rate limit between queries (avoid Reddit 429)
-        await sleep(REDDIT_RATE_LIMIT_MS);
+        await sleep(jitteredDelay());
       }
     }
 
@@ -579,7 +641,7 @@ Deno.serve(async (req) => {
           if (posts.length === 0) {
             diag.direct_subs_zero_posts += 1;
             errors.push(`Direct r/${sub}: 0 posts (after quality filter)`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           phaseStats["direct_subreddit"] = (phaseStats["direct_subreddit"] || 0) + posts.length;
@@ -597,7 +659,7 @@ Deno.serve(async (req) => {
 
           if (batched.length < 200) {
             console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
 
@@ -606,7 +668,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[Direct r/${sub}] AI extraction null`);
-            await sleep(REDDIT_RATE_LIMIT_MS);
+            await sleep(jitteredDelay());
             continue;
           }
           if (extracted.length === 0) {
@@ -624,7 +686,7 @@ Deno.serve(async (req) => {
           errors.push(`Direct r/${sub}: ${e}`);
           console.error(`[FAIL] r/${sub} + direct harvest:`, e);
         }
-        await sleep(REDDIT_RATE_LIMIT_MS);
+        await sleep(jitteredDelay());
       }
     }
   } catch (fatalErr) {
