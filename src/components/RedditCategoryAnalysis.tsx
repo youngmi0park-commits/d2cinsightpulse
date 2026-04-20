@@ -186,12 +186,34 @@ export function RedditCategoryAnalysis({ country = "all" }: { country?: string }
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <LayoutGrid className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base font-semibold">제품군별 Reddit VOC 분석</CardTitle>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <LayoutGrid className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold">제품군별 Reddit VOC 분석</CardTitle>
+          </div>
+          <div className="inline-flex rounded-md border border-border p-0.5 bg-secondary/30">
+            <Button
+              size="sm"
+              variant={range === "weekly" ? "default" : "ghost"}
+              className="h-6 px-2.5 text-[11px]"
+              onClick={() => setRange("weekly")}
+            >
+              주간
+            </Button>
+            <Button
+              size="sm"
+              variant={range === "all" ? "default" : "ghost"}
+              className="h-6 px-2.5 text-[11px]"
+              onClick={() => setRange("all")}
+            >
+              전체
+            </Button>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Reddit에서 언급된 LG 제품을 카테고리별로 분류하여 긍/부정 의견을 요약합니다.
+          {range === "weekly"
+            ? "최근 7일간 Reddit에서 언급된 LG 제품을 카테고리별로 분류하여 긍/부정 의견을 요약합니다."
+            : "전체 기간 Reddit에서 언급된 LG 제품을 카테고리별로 분류하여 긍/부정 의견을 요약합니다."}
         </p>
       </CardHeader>
       <CardContent className="pt-0">
