@@ -1613,7 +1613,7 @@ export const CollectionCriteria = () => {
 
         {/* ─── 국가×채널 상세 수집 현황 테이블 (수집 방식 위에 배치) ─── */}
         <section>
-          <CollectionDetailTable t={t} />
+          <CollectionDetailTable t={t} dbCountryCounts={countryCounts} />
         </section>
 
         {/* ─── 3. 수집 방식 (Schedule + Regions + Logic) ─── */}
