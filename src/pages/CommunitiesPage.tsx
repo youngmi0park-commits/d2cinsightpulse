@@ -125,7 +125,7 @@ function useBasicStats(country: string, range: "all" | "weekly") {
       const byKey: Record<string, { channel: string; country: string; total: number; positive: number; negative: number }> = {};
       for (const r of data || []) {
         const ch = sourceLabel(r.source);
-        const co = inferCountryFromSource(r.source);
+        const co = toLgeCode(inferCountryFromSource(r.source));
         const key = ch + "|" + co;
         if (!byKey[key]) byKey[key] = { channel: ch, country: co, total: 0, positive: 0, negative: 0 };
         byKey[key].total++;
