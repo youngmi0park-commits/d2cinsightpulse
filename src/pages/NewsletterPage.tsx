@@ -1,8 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
-import { Mail, Calendar, Loader2, Sparkles, ExternalLink, Copy } from "lucide-react";
+import { Mail, Calendar, Loader2, Sparkles, ExternalLink, Copy, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -76,7 +76,7 @@ const NewsletterPage = () => {
 
   // (archive selector handles open state inline)
 
-  // ── Fetch full newsletter HTML from serve-newsletter ──
+  // ── Fetch full newsletter HTML from serve-newsletter (same renderer as final send) ──
   const fetchNewsletterHtml = useCallback(async () => {
     setLoadingHtml(true);
     try {
@@ -86,13 +86,20 @@ const NewsletterPage = () => {
       if (error) throw error;
       if (result?.html) {
         setNewsletterHtml(result.html);
+      } else {
+        toast.error("뉴스레터 HTML을 가져오지 못했습니다");
       }
-    } catch {
-      // silently fail — preview falls back to static template
+    } catch (e) {
+      toast.error("미리보기 로드 실패: " + (e instanceof Error ? e.message : "Unknown"));
     } finally {
       setLoadingHtml(false);
     }
   }, []);
+
+  // Auto-load preview on mount so the preview always matches the final-send format
+  useEffect(() => {
+    fetchNewsletterHtml();
+  }, [fetchNewsletterHtml]);
 
   // ── AI Generate ──
   const handleGenerate = useCallback(async (forceRegen = false) => {
@@ -135,18 +142,19 @@ const NewsletterPage = () => {
     }
   }, [weekStart, weekEnd, refetchArchive, refetchIssue, fetchNewsletterHtml]);
 
-  // ── Outlook Copy ──
+  // ── Outlook Copy (always use live serve-newsletter HTML) ──
   const handleCopyForOutlook = useCallback(async () => {
     setCopying(true);
     try {
-      // Use AI-generated HTML if available, otherwise fall back to static template
-      let htmlContent: string;
-      if (newsletterHtml) {
-        htmlContent = newsletterHtml;
-      } else {
-        const res = await fetch("/newsletter-template.html");
-        htmlContent = await res.text();
+      let htmlContent = newsletterHtml;
+      if (!htmlContent) {
+        const { data: result, error } = await supabase.functions.invoke("serve-newsletter", {
+          body: { format: "json", baseUrl: window.location.origin },
+        });
+        if (error) throw error;
+        htmlContent = result?.html || "";
       }
+      if (!htmlContent) throw new Error("뉴스레터 HTML이 비어있습니다");
 
       const bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
       const bodyContent = bodyMatch ? bodyMatch[1] : htmlContent;
@@ -242,12 +250,21 @@ const NewsletterPage = () => {
           {copying ? "복사 중..." : "Outlook 복사"}
         </button>
         <button
+          onClick={fetchNewsletterHtml}
+          disabled={loadingHtml}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border
+                     text-xs font-medium hover:bg-muted/50 transition-all disabled:opacity-50"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loadingHtml ? "animate-spin" : ""}`} />
+          새로고침
+        </button>
+        <button
           onClick={() => {
             if (newsletterHtml) {
               const win = window.open("", "_blank");
               if (win) { win.document.write(newsletterHtml); win.document.close(); }
             } else {
-              window.open("/newsletter-template.html", "_blank", "noopener,noreferrer");
+              toast.error("미리보기가 아직 로드되지 않았습니다");
             }
           }}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border
@@ -266,28 +283,39 @@ const NewsletterPage = () => {
         </div>
       )}
 
-      {/* ── HTML Template Preview ── */}
+      {/* ── HTML Template Preview (same renderer as final send) ── */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 bg-primary rounded-full" />
-          <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기</h2>
-          {newsletterHtml && (
-            <Badge variant="outline" className="text-[10px] text-green-700 border-green-300 bg-green-50">
-              ✅ AI 생성 반영됨
-            </Badge>
-          )}
+          <h2 className="text-sm font-bold tracking-widest uppercase">📮 뉴스레터 미리보기 (최종 발송 포맷)</h2>
+          <Badge variant="outline" className="text-[10px] text-green-700 border-green-300 bg-green-50">
+            ✅ 발송 동일 렌더러
+          </Badge>
           {loadingHtml && (
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" /> HTML 렌더링 중...
+              <Loader2 className="h-3 w-3 animate-spin" /> 렌더링 중...
             </span>
           )}
         </div>
-        <iframe
-          {...(newsletterHtml ? { srcDoc: newsletterHtml } : { src: "/newsletter-template.html" })}
-          className="w-full border border-border rounded-xl bg-white"
-          style={{ height: "70vh" }}
-          title="Newsletter Preview"
-        />
+        {newsletterHtml ? (
+          <iframe
+            srcDoc={newsletterHtml}
+            className="w-full border border-border rounded-xl bg-white"
+            style={{ height: "70vh" }}
+            title="Newsletter Preview"
+          />
+        ) : (
+          <div
+            className="w-full border border-border rounded-xl bg-white flex items-center justify-center text-xs text-muted-foreground"
+            style={{ height: "70vh" }}
+          >
+            {loadingHtml ? (
+              <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> 최종 발송 포맷으로 렌더링 중...</span>
+            ) : (
+              <span>미리보기를 불러오지 못했습니다 — 새로고침 버튼을 눌러주세요</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Archive (date selector) ── */}
