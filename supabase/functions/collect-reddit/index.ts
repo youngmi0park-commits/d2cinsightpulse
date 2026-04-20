@@ -363,34 +363,55 @@ async function firecrawlBingFallback(query: string, apiKey: string): Promise<Fet
   }
 }
 
-// ─── Adaptive scheduler: try all phases, return whatever works ─
-async function adaptiveCollect(query: string, firecrawlKey: string, diag: Record<string, number>): Promise<FetchResult[]> {
-  // Phase 0
-  let results = await firecrawlSearch(query, firecrawlKey);
-  diag.p0_results = (diag.p0_results || 0) + results.length;
+// ─── Adaptive scheduler: Reddit JSON FIRST, Firecrawl as fallback ─
+async function adaptiveCollect(
+  query: string,
+  firecrawlKey: string,
+  diag: Record<string, number>,
+  phaseStats: Record<string, number>,
+): Promise<FetchResult[]> {
+  let results: FetchResult[] = [];
+
+  // Phase 1 (PRIMARY): Reddit native search JSON — sort=new&t=week
+  try {
+    const redditResults = await fetchRedditSearchJson(query);
+    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+    console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
+    results.push(...redditResults);
+  } catch (err) {
+    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
+    console.error(`[P1 FAIL] Reddit search "${query.slice(0, 50)}":`, err);
+  }
+
   if (results.length >= 3) {
-    console.log(`[Phase0 ✓] Firecrawl: ${results.length}`);
+    console.log(`[Phase1 ✓] Reddit JSON: ${results.length}`);
     return results;
   }
 
-  // Phase 1: Reddit native search
-  const redditResults = await fetchRedditSearchJson(query);
-  diag.p1_results = (diag.p1_results || 0) + redditResults.length;
-  console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
-  if (redditResults.length >= 3) {
-    console.log(`[Phase1 ✓] Reddit JSON search: ${redditResults.length}`);
-    results = [...results, ...redditResults];
-    return results;
+  // Phase 0 (FALLBACK): Firecrawl search — only if Reddit JSON returned <3
+  try {
+    const fcResults = await firecrawlSearch(query, firecrawlKey);
+    diag.p0_results = (diag.p0_results || 0) + fcResults.length;
+    if (fcResults.length > 0) {
+      console.log(`[Phase0 fallback ✓] Firecrawl: ${fcResults.length}`);
+      results.push(...fcResults);
+    }
+  } catch (err) {
+    phaseStats["firecrawl_search_error"] = (phaseStats["firecrawl_search_error"] || 0) + 1;
+    console.error(`[P0 FAIL] Firecrawl "${query.slice(0, 50)}":`, err);
   }
 
-  results = [...results, ...redditResults];
-
-  // Phase 3: Bing fallback
+  // Phase 3 (LAST RESORT): Bing fallback
   if (results.length < 2) {
-    const bingResults = await firecrawlBingFallback(query, firecrawlKey);
-    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
-    console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
-    results = [...results, ...bingResults];
+    try {
+      const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+      diag.p3_results = (diag.p3_results || 0) + bingResults.length;
+      console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
+      results.push(...bingResults);
+    } catch (err) {
+      phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
+      console.error(`[P3 FAIL] Bing:`, err);
+    }
   }
 
   return results;
