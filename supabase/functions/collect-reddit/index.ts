@@ -177,32 +177,48 @@ interface FetchResult {
   source: string; // which phase succeeded
 }
 
-// ─── Phase 1: Reddit public JSON ───────────────────────────────
-async function fetchSubredditJson(sub: string, listing: "hot" | "new" | "top" = "hot"): Promise<FetchResult[]> {
-  const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const posts = json?.data?.children || [];
-    const results: FetchResult[] = [];
-    for (const p of posts) {
-      const d = p.data;
-      if (!d) continue;
-      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || sub}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
-      results.push({
-        content: block.slice(0, 4500),
-        url: `https://reddit.com${d.permalink || ""}`,
-        source: "reddit_json",
-      });
-    }
-    return results;
-  } catch (e) {
-    console.warn(`Phase1 JSON failed for r/${sub}:`, e);
-    return [];
+// ─── Rate limiting helper ─────────────────────────────────────
+const REDDIT_RATE_LIMIT_MS = 1000;
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// ─── Quality filter (loose: selftext>30 OR score>2) ───────────
+function passesQualityFilter(selftext: string, score: number): boolean {
+  return (selftext && selftext.length > 30) || (score || 0) > 2;
+}
+
+// ─── Phase 1: Reddit public JSON (per-subreddit listing) ──────
+// Returns posts AND raw metadata so caller can apply quality filter
+async function fetchSubredditJson(
+  sub: string,
+  listing: "hot" | "new" | "top" = "new",
+  timeFilter: "week" | "month" | "year" | "all" = "week",
+): Promise<FetchResult[]> {
+  const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
+  const json = await res.json();
+  const posts = json?.data?.children || [];
+  const results: FetchResult[] = [];
+  for (const p of posts) {
+    const d = p.data;
+    if (!d) continue;
+    const selftext = d.selftext || "";
+    const score = d.ups || d.score || 0;
+    if (!passesQualityFilter(selftext, score)) continue;
+    const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${score}\nSubreddit: r/${d.subreddit || sub}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${selftext}`;
+    results.push({
+      content: block.slice(0, 4500),
+      url: `https://reddit.com${d.permalink || ""}`,
+      source: "reddit_json",
+    });
+  }
+  return results;
 }
 
 // ─── Phase 1b: Reddit search JSON ──────────────────────────────
