@@ -170,12 +170,32 @@ function buildFunnelInsight(
 }
 
 /* ── Helpers ── */
-function truncate(text: string, max: number): string {
-  return text.length <= max ? text : text.slice(0, max - 1) + "…";
+function cleanCopy(text: string): string {
+  return text
+    .replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.,!?])/g, "$1")
+    .trim();
 }
 
-function cleanCopy(text: string): string {
-  return text.replace(/\b(best|#1|unprecedented|most reliable|top-rated|number one|world's first|unmatched|ultimate)\b/gi, "").replace(/\s{2,}/g, " ").trim();
+/**
+ * 광고 가이드 글자수에 맞춰 "기획된" 카피를 선택.
+ * 단순 자르기(truncate)가 아니라, 사전 작성된 다중 카피 후보 중
+ * max 한도 내에서 가장 풍부한 표현을 고른다.
+ * 모든 후보가 한도를 초과하면 단어 경계에서 안전하게 줄인다.
+ */
+function pickBestFit(candidates: string[], max: number): string {
+  const cleaned = candidates.map(cleanCopy).filter(Boolean);
+  // 한도 내 후보 중 가장 길고 풍부한 카피 선택 (정보량 ↑)
+  const fits = cleaned.filter((c) => c.length <= max).sort((a, b) => b.length - a.length);
+  if (fits.length > 0) return fits[0];
+  // 한도 초과 시: 가장 짧은 후보를 단어 경계에서 자연스럽게 다듬음
+  const shortest = cleaned.sort((a, b) => a.length - b.length)[0] || "";
+  if (shortest.length <= max) return shortest;
+  const sliced = shortest.slice(0, max);
+  const lastSpace = sliced.lastIndexOf(" ");
+  const safe = lastSpace > max * 0.6 ? sliced.slice(0, lastSpace) : sliced;
+  return safe.replace(/[,.\-:;]+$/, "").trim();
 }
 
 function quickComply(text: string): { ok: boolean; issues: string[] } {
@@ -237,47 +257,125 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
 
   const fieldValues: Record<string, string> = {};
   for (const f of channel.fields) {
-    let val = "";
+    // 각 필드별 다중 카피 후보 — 가장 풍부하면서 한도 내인 표현이 자동 선택됨
+    let candidates: string[] = [];
     switch (f.name) {
       case "Short Headline":
-        // Benefit-led, no SKU
-        val = `${capitalize(s1)}, Redefined`; break;
+        candidates = [
+          `${capitalize(s1)} Meets ${capitalize(s2)}`,
+          `${capitalize(s1)}, Redefined`,
+          `True ${capitalize(s1)}`,
+          `Feel the ${capitalize(s1)}`,
+          capitalize(s1),
+        ];
+        break;
       case "Headline":
-        val = ownedChannel ? `${capitalize(s1)} You Can Feel` : `${capitalize(s1)} Meets ${capitalize(s2)}`; break;
+        candidates = ownedChannel ? [
+          `${capitalize(s1)} You Can Feel Every Day`,
+          `${capitalize(s1)} You Can Feel`,
+          `Designed Around ${capitalize(s1)}`,
+          `${capitalize(s1)}, Made Personal`,
+          `${capitalize(s1)}, Refined`,
+        ] : [
+          `Where ${capitalize(s1)} Meets ${capitalize(s2)}`,
+          `${capitalize(s1)} & ${capitalize(s2)}, Together`,
+          `${capitalize(s1)} Meets ${capitalize(s2)}`,
+          `${capitalize(s1)} + ${capitalize(s2)}`,
+          `True ${capitalize(s1)}`,
+        ];
+        break;
       case "Long Headline":
-        val = `Experience ${s1} and ${s2} in your ${scene}. A new standard.`; break;
+        candidates = [
+          `Experience ${s1} and ${s2} in your ${scene} — a new everyday standard.`,
+          `Bring ${s1} and ${s2} into your ${scene}, every single day.`,
+          `Your ${scene}, upgraded with ${s1} and ${s2}.`,
+          `${capitalize(s1)} and ${s2}, made for your ${scene}.`,
+          `${capitalize(s1)} & ${s2} for your ${scene}.`,
+        ];
+        break;
       case "Description": case "Body": case "Primary Text":
-        val = pain
-          ? `Worried about "${pain}"? Real users say otherwise — ${s1} praised consistently.`
-          : `Praised for outstanding ${s1} and ${s2}. See what real users say.`; break;
+        candidates = pain ? [
+          `Worried about ${pain}? Real users praise the ${s1} and ${s2} — see why.`,
+          `Concerned about ${pain}? Owners highlight ${s1} and ${s2}.`,
+          `${capitalize(s1)} that solves ${pain}. Loved by real owners.`,
+          `Real owners praise the ${s1}. ${capitalize(s2)} included.`,
+          `Praised for ${s1} and ${s2}.`,
+        ] : [
+          `Praised for outstanding ${s1} and reliable ${s2} — hear from real owners.`,
+          `Owners highlight the ${s1} and ${s2} they use every day.`,
+          `${capitalize(s1)} and ${s2}, praised by real owners.`,
+          `Loved for ${s1} and ${s2}.`,
+          `${capitalize(s1)}. ${capitalize(s2)}. Proven.`,
+        ];
+        break;
       case "CTA":
-        val = "Shop Now"; break;
+        candidates = ["Shop Now & Save", "Discover More", "Shop Now", "Learn More", "Buy Now", "Shop"];
+        break;
       case "Eyebrow":
-        val = "New Arrival"; break;
+        candidates = ["Just Arrived — Limited Stock", "New Arrival", "New", "Now Available"];
+        break;
       case "Subheadline":
-        val = `${capitalize(s1)} and ${s2} — praised by real users`; break;
+        candidates = [
+          `${capitalize(s1)} and ${s2} — praised by real owners worldwide.`,
+          `${capitalize(s1)} and ${s2}, praised by real owners.`,
+          `${capitalize(s1)} & ${s2}, owner-approved.`,
+          `Praised for ${s1} and ${s2}.`,
+        ];
+        break;
       case "Subject":
-        // Owned CRM channel — generic category, no SKU
-        val = `Your Next ${noun}: An Exclusive Offer Inside`; break;
+        candidates = [
+          `Your Next ${noun}: An Exclusive Offer Inside`,
+          `A Smarter ${noun} — Just for You`,
+          `Inside: Your ${noun} Upgrade`,
+          `Your ${noun} Offer`,
+        ];
+        break;
       case "Caption":
-        // Lifestyle scene + benefit, no SKU
-        val = `Bring ${s1} into your ${scene}. "${capitalize(s1)}" — the feature customers love.`; break;
+        candidates = [
+          `Bring ${s1} into your ${scene}. Real owners love the ${s2} every single day. ✨`,
+          `${capitalize(s1)} in your ${scene}. The ${s2} owners love.`,
+          `Make your ${scene} feel new — ${s1} & ${s2}.`,
+          `${capitalize(s1)} for your ${scene}.`,
+        ];
+        break;
       case "Script":
-        // 6-sec bumper — benefit hook only
-        val = `${capitalize(s1)}. In every ${scene}.`; break;
+        candidates = [
+          `${capitalize(s1)}. In every ${scene}.`,
+          `${capitalize(s1)}, every day.`,
+          `Feel the ${s1}.`,
+          capitalize(s1),
+        ];
+        break;
       case "Visual Note":
-        val = `Lifestyle ${scene} → benefit text overlay (${s1}) → CTA`; break;
+        candidates = [
+          `Lifestyle ${scene} → close-up product detail → benefit overlay (${s1}) → CTA card`,
+          `${capitalize(scene)} scene → ${s1} overlay → CTA`,
+          `${capitalize(scene)} → ${s1} → CTA`,
+        ];
+        break;
       case "Hook":
-        val = pain
-          ? `What if "${pain}" wasn't an issue anymore?`
-          : `Imagine ${s1} in your ${scene}.`; break;
+        candidates = pain ? [
+          `What if ${pain} wasn't an issue anymore?`,
+          `Tired of ${pain}? Watch this.`,
+          `End ${pain}, today.`,
+        ] : [
+          `Imagine ${s1} in your ${scene} — every single day.`,
+          `Imagine ${s1} in your ${scene}.`,
+          `Picture ${s1} at home.`,
+        ];
+        break;
       case "Key Point":
-        val = `✓ ${capitalize(s1)} ✓ ${capitalize(s2)} ✓ Trusted by real users`; break;
+        candidates = [
+          `✓ ${capitalize(s1)}  ✓ ${capitalize(s2)}  ✓ Trusted by owners`,
+          `✓ ${capitalize(s1)} ✓ ${capitalize(s2)} ✓ Owner-loved`,
+          `✓ ${capitalize(s1)} ✓ ${capitalize(s2)}`,
+        ];
+        break;
       default:
-        val = `${capitalize(s1)} ${capitalize(s2)}`;
+        candidates = [`${capitalize(s1)} & ${capitalize(s2)}`, `${capitalize(s1)}`];
     }
-    // 채널별 max 글자수 가이드 엄격 준수 — 전매체 모두 한도 내로 자동 단축
-    fieldValues[f.name] = truncate(cleanCopy(val), f.max);
+    // 가이드 글자수 한도 내에서 가장 풍부한 표현을 선택 (단순 자르기 X)
+    fieldValues[f.name] = pickBestFit(candidates, f.max);
   }
 
   const fullText = Object.entries(fieldValues).map(([k, v]) => `${k}: ${v}`).join("\n");
