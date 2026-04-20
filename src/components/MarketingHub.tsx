@@ -202,44 +202,78 @@ function SectionHeader({ title, subtitle, collapsible, isOpen }: { title: string
   );
 }
 
-/* ── Generate channel copy ── */
+/* ── Derive a generic category noun (no SKU/model) ── */
+function deriveCategoryNoun(pName: string): string {
+  const s = (pName || "").toLowerCase();
+  if (/oled|qned|nanocell|uhd|smart\s*tv|\btv\b/.test(s)) return "OLED TV";
+  if (/soundbar|sound\s*bar/.test(s)) return "Soundbar";
+  if (/xboom|speaker|bluetooth/.test(s)) return "Speaker";
+  if (/gram|laptop|ultrapc|notebook/.test(s)) return "Laptop";
+  if (/monitor|ultragear|ultrafine|ultrawide/.test(s)) return "Monitor";
+  if (/refriger|fridge|instaview/.test(s)) return "Refrigerator";
+  if (/washer|washing/.test(s)) return "Washer";
+  if (/dryer/.test(s)) return "Dryer";
+  if (/dishwash|quadwash/.test(s)) return "Dishwasher";
+  if (/vacuum|cordzero/.test(s)) return "Vacuum";
+  if (/air\s*purifi|puricare/.test(s)) return "Air Purifier";
+  if (/air\s*condition|artcool|\bac\b/.test(s)) return "Air Conditioner";
+  if (/range|oven/.test(s)) return "Oven";
+  if (/stanbyme/.test(s)) return "Lifestyle Screen";
+  if (/projector|cinebeam/.test(s)) return "Projector";
+  return "Product";
+}
+
+/* ── Generate channel copy (NO product/SKU mentions in ad surfaces) ── */
 function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
   const s2 = sentiment.keywords.positive?.[1] || "performance";
   const pain = sentiment.keywords.negative?.[0] || "";
   const scene = sentiment.usageScenes?.[0] || "living room";
+  // Generic category noun replaces SKU/model in all ad-facing fields
+  const noun = deriveCategoryNoun(pName);
+  // Owned channels (LG.com, CRM email) may keep brand context — but still no model code
+  const ownedChannel = channel.key.startsWith("lgcom_") || channel.key === "lgcom_email";
 
   const fieldValues: Record<string, string> = {};
   for (const f of channel.fields) {
     let val = "";
     switch (f.name) {
-      case "Headline": case "Short Headline":
-        val = `${pName} — ${s1} Redefined`; break;
+      case "Short Headline":
+        // Benefit-led, no SKU
+        val = `${capitalize(s1)}, Redefined`; break;
+      case "Headline":
+        val = ownedChannel ? `${capitalize(s1)} You Can Feel` : `${capitalize(s1)} Meets ${capitalize(s2)}`; break;
       case "Long Headline":
-        val = `Experience ${s1} and ${s2} with ${pName}. A new standard.`; break;
+        val = `Experience ${s1} and ${s2} in your ${scene}. A new standard.`; break;
       case "Description": case "Body": case "Primary Text":
-        val = pain ? `Worried about "${pain}"? Real users say otherwise. ${s1} praised consistently.`
-          : `Praised for outstanding ${s1} and ${s2}. See why.`; break;
+        val = pain
+          ? `Worried about "${pain}"? Real users say otherwise — ${s1} praised consistently.`
+          : `Praised for outstanding ${s1} and ${s2}. See what real users say.`; break;
       case "CTA":
         val = "Shop Now"; break;
       case "Eyebrow":
         val = "New Arrival"; break;
       case "Subheadline":
-        val = `${s1} and ${s2} — praised by real users`; break;
+        val = `${capitalize(s1)} and ${s2} — praised by real users`; break;
       case "Subject":
-        val = `${pName}: Exclusive Offer Inside`; break;
+        // Owned CRM channel — generic category, no SKU
+        val = `Your Next ${noun}: An Exclusive Offer Inside`; break;
       case "Caption":
-        val = `Meet ${pName} in your ${scene}. "${s1}" — the feature customers love.`; break;
+        // Lifestyle scene + benefit, no SKU
+        val = `Bring ${s1} into your ${scene}. "${capitalize(s1)}" — the feature customers love.`; break;
       case "Script":
-        val = `${pName} — ${s1}. Experience it.`; break;
+        // 6-sec bumper — benefit hook only
+        val = `${capitalize(s1)}. In every ${scene}.`; break;
       case "Visual Note":
-        val = `Product hero → lifestyle scene in ${scene} → CTA overlay`; break;
+        val = `Lifestyle ${scene} → benefit text overlay (${s1}) → CTA`; break;
       case "Hook":
-        val = `What if ${pain || "your concern"} wasn't an issue? Meet ${pName}.`; break;
+        val = pain
+          ? `What if "${pain}" wasn't an issue anymore?`
+          : `Imagine ${s1} in your ${scene}.`; break;
       case "Key Point":
-        val = `✓ ${s1} ✓ ${s2} ✓ Trusted by real users`; break;
+        val = `✓ ${capitalize(s1)} ✓ ${capitalize(s2)} ✓ Trusted by real users`; break;
       default:
-        val = `${pName} — ${s1}`;
+        val = `${capitalize(s1)} ${capitalize(s2)}`;
     }
     fieldValues[f.name] = truncate(cleanCopy(val), f.max);
   }
@@ -247,6 +281,11 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
   const fullText = Object.entries(fieldValues).map(([k, v]) => `${k}: ${v}`).join("\n");
   const compliance = quickComply(fullText);
   return { fieldValues, compliance, fullText: `[${channel.label}]\n${fullText}` };
+}
+
+function capitalize(s: string): string {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /* ── Generate SEO/GEO script ── */
