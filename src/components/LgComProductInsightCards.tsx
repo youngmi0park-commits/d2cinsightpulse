@@ -25,7 +25,7 @@ function useProductReviewDetails(productId: string | null, country: CountryFilte
 
       let query = supabase
         .from("reviews")
-        .select("id, title, content, sentiment, sentiment_score, rating, source, published_at")
+        .select("id, title, content, sentiment, sentiment_score, rating, source, published_at, product_id")
         .eq("product_id", productId)
         .order("published_at", { ascending: false });
 
