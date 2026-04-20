@@ -35,3 +35,9 @@ verify_jwt = false
 
 [functions.generate-overview-summary]
 verify_jwt = false
+
+[functions.reddit-test]
+verify_jwt = false
+
+[functions.collect-reddit]
+verify_jwt = false

@@ -177,60 +177,87 @@ interface FetchResult {
   source: string; // which phase succeeded
 }
 
-// ─── Phase 1: Reddit public JSON ───────────────────────────────
-async function fetchSubredditJson(sub: string, listing: "hot" | "new" | "top" = "hot"): Promise<FetchResult[]> {
-  const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const posts = json?.data?.children || [];
-    const results: FetchResult[] = [];
-    for (const p of posts) {
-      const d = p.data;
-      if (!d) continue;
-      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || sub}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
-      results.push({
-        content: block.slice(0, 4500),
-        url: `https://reddit.com${d.permalink || ""}`,
-        source: "reddit_json",
-      });
-    }
-    return results;
-  } catch (e) {
-    console.warn(`Phase1 JSON failed for r/${sub}:`, e);
-    return [];
-  }
+// ─── Rate limiting helper ─────────────────────────────────────
+const REDDIT_RATE_LIMIT_MS = 1000;
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
-// ─── Phase 1b: Reddit search JSON ──────────────────────────────
-async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
-  // Strip "site:reddit.com" prefix for the native search
-  const q = query.replace(/site:reddit\.com\/?(r\/[\w_]+)?/i, "").trim();
-  if (!q) return [];
-  const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&limit=15&sort=relevance&t=year`;
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": pickUA(), "Accept": "application/json" },
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    const posts = json?.data?.children || [];
-    return posts.slice(0, 12).map((p: any) => {
-      const d = p.data || {};
-      const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${d.ups || 0}\nSubreddit: r/${d.subreddit || ""}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${d.selftext || ""}`;
-      return {
-        content: block.slice(0, 4500),
-        url: `https://reddit.com${d.permalink || ""}`,
-        source: "reddit_search_json",
-      };
-    });
-  } catch (e) {
-    console.warn(`Phase1b search JSON failed:`, e);
-    return [];
+// ─── Quality filter (loose: selftext>30 OR score>2) ───────────
+function passesQualityFilter(selftext: string, score: number): boolean {
+  return (selftext && selftext.length > 30) || (score || 0) > 2;
+}
+
+// ─── Phase 1: Reddit public JSON (per-subreddit listing) ──────
+// Returns posts AND raw metadata so caller can apply quality filter
+async function fetchSubredditJson(
+  sub: string,
+  listing: "hot" | "new" | "top" = "new",
+  timeFilter: "week" | "month" | "year" | "all" = "week",
+): Promise<FetchResult[]> {
+  const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText}`);
   }
+  const json = await res.json();
+  const posts = json?.data?.children || [];
+  const results: FetchResult[] = [];
+  for (const p of posts) {
+    const d = p.data;
+    if (!d) continue;
+    const selftext = d.selftext || "";
+    const score = d.ups || d.score || 0;
+    if (!passesQualityFilter(selftext, score)) continue;
+    const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${score}\nSubreddit: r/${d.subreddit || sub}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${selftext}`;
+    results.push({
+      content: block.slice(0, 4500),
+      url: `https://reddit.com${d.permalink || ""}`,
+      source: "reddit_json",
+    });
+  }
+  return results;
+}
+
+// ─── Phase 1b: Reddit search JSON (sort=new, t=week for fresh) ─
+async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
+  // Strip "site:reddit.com" and any "r/<sub>" hint, plus operators
+  const cleanedQ = query
+    .replace(/site:reddit\.com\/?(r\/[\w_]+)?/gi, "")
+    .replace(/[()"]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleanedQ) return [];
+  // Detect optional subreddit restriction in original query
+  const subMatch = query.match(/site:reddit\.com\/r\/([\w_]+)/i);
+  const baseUrl = subMatch
+    ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
+    : `https://www.reddit.com/search.json?`;
+  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": pickUA(), "Accept": "application/json" },
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  }
+  const json = await res.json();
+  const posts = json?.data?.children || [];
+  const results: FetchResult[] = [];
+  for (const p of posts.slice(0, 20)) {
+    const d = p.data || {};
+    const selftext = d.selftext || "";
+    const score = d.ups || d.score || 0;
+    if (!passesQualityFilter(selftext, score)) continue;
+    const block = `Title: ${d.title || ""}\nAuthor: ${d.author || ""}\nUpvotes: ${score}\nSubreddit: r/${d.subreddit || ""}\nURL: https://reddit.com${d.permalink || ""}\nCreated: ${new Date((d.created_utc || 0) * 1000).toISOString()}\n\n${selftext}`;
+    results.push({
+      content: block.slice(0, 4500),
+      url: `https://reddit.com${d.permalink || ""}`,
+      source: "reddit_search_json",
+    });
+  }
+  return results;
 }
 
 // ─── Phase 1c: Comments JSON for a specific post ───────────────
@@ -336,34 +363,55 @@ async function firecrawlBingFallback(query: string, apiKey: string): Promise<Fet
   }
 }
 
-// ─── Adaptive scheduler: try all phases, return whatever works ─
-async function adaptiveCollect(query: string, firecrawlKey: string, diag: Record<string, number>): Promise<FetchResult[]> {
-  // Phase 0
-  let results = await firecrawlSearch(query, firecrawlKey);
-  diag.p0_results = (diag.p0_results || 0) + results.length;
+// ─── Adaptive scheduler: Reddit JSON FIRST, Firecrawl as fallback ─
+async function adaptiveCollect(
+  query: string,
+  firecrawlKey: string,
+  diag: Record<string, number>,
+  phaseStats: Record<string, number>,
+): Promise<FetchResult[]> {
+  let results: FetchResult[] = [];
+
+  // Phase 1 (PRIMARY): Reddit native search JSON — sort=new&t=week
+  try {
+    const redditResults = await fetchRedditSearchJson(query);
+    diag.p1_results = (diag.p1_results || 0) + redditResults.length;
+    console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
+    results.push(...redditResults);
+  } catch (err) {
+    phaseStats["reddit_search_error"] = (phaseStats["reddit_search_error"] || 0) + 1;
+    console.error(`[P1 FAIL] Reddit search "${query.slice(0, 50)}":`, err);
+  }
+
   if (results.length >= 3) {
-    console.log(`[Phase0 ✓] Firecrawl: ${results.length}`);
+    console.log(`[Phase1 ✓] Reddit JSON: ${results.length}`);
     return results;
   }
 
-  // Phase 1: Reddit native search
-  const redditResults = await fetchRedditSearchJson(query);
-  diag.p1_results = (diag.p1_results || 0) + redditResults.length;
-  console.log(`[P1] Reddit JSON search: ${redditResults.length} for "${query.slice(0, 60)}"`);
-  if (redditResults.length >= 3) {
-    console.log(`[Phase1 ✓] Reddit JSON search: ${redditResults.length}`);
-    results = [...results, ...redditResults];
-    return results;
+  // Phase 0 (FALLBACK): Firecrawl search — only if Reddit JSON returned <3
+  try {
+    const fcResults = await firecrawlSearch(query, firecrawlKey);
+    diag.p0_results = (diag.p0_results || 0) + fcResults.length;
+    if (fcResults.length > 0) {
+      console.log(`[Phase0 fallback ✓] Firecrawl: ${fcResults.length}`);
+      results.push(...fcResults);
+    }
+  } catch (err) {
+    phaseStats["firecrawl_search_error"] = (phaseStats["firecrawl_search_error"] || 0) + 1;
+    console.error(`[P0 FAIL] Firecrawl "${query.slice(0, 50)}":`, err);
   }
 
-  results = [...results, ...redditResults];
-
-  // Phase 3: Bing fallback
+  // Phase 3 (LAST RESORT): Bing fallback
   if (results.length < 2) {
-    const bingResults = await firecrawlBingFallback(query, firecrawlKey);
-    diag.p3_results = (diag.p3_results || 0) + bingResults.length;
-    console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
-    results = [...results, ...bingResults];
+    try {
+      const bingResults = await firecrawlBingFallback(query, firecrawlKey);
+      diag.p3_results = (diag.p3_results || 0) + bingResults.length;
+      console.log(`[Phase3 ${bingResults.length > 0 ? "✓" : "✗"}] Bing fallback: ${bingResults.length}`);
+      results.push(...bingResults);
+    } catch (err) {
+      phaseStats["bing_fallback_error"] = (phaseStats["bing_fallback_error"] || 0) + 1;
+      console.error(`[P3 FAIL] Bing:`, err);
+    }
   }
 
   return results;
@@ -445,11 +493,12 @@ Deno.serve(async (req) => {
         diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats);
 
           if (results.length === 0) {
             diag.queries_zero_results += 1;
             errors.push(`No results: ${category} / ${query.slice(0, 50)}`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -478,6 +527,7 @@ Deno.serve(async (req) => {
           if (batchedContent.length < 100) {
             diag.queries_short_batch += 1;
             console.warn(`[${category}] batched content too short (${batchedContent.length} chars), skipping AI`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -487,6 +537,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[${category}] AI extraction returned null`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           if (extracted.length === 0) {
@@ -502,9 +553,12 @@ Deno.serve(async (req) => {
           totalSkipped += stats.skipped;
           console.log(`[${category}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (queryErr) {
+          phaseStats[`${category}_query_error`] = (phaseStats[`${category}_query_error`] || 0) + 1;
           errors.push(`Query ${category}: ${queryErr}`);
-          console.error(`[${category}] query error:`, queryErr);
+          console.error(`[FAIL] [${category}] query "${String(query).slice(0, 50)}":`, queryErr);
         }
+        // Rate limit between queries (avoid Reddit 429)
+        await sleep(REDDIT_RATE_LIMIT_MS);
       }
     }
 
@@ -517,11 +571,15 @@ Deno.serve(async (req) => {
       for (const { sub, category } of subsToFetch) {
         diag.direct_subs_attempted += 1;
         try {
-          console.log(`[Direct] r/${sub} (${category})`);
-          const posts = await fetchSubredditJson(sub, "hot");
+          console.log(`[Direct] r/${sub} (${category}) — sort=new&t=week`);
+          // Use sort=new with t=week to capture only fresh posts
+          const posts = await fetchSubredditJson(sub, "new", "week");
+          phaseStats[sub] = (phaseStats[sub] || 0) + posts.length;
+
           if (posts.length === 0) {
             diag.direct_subs_zero_posts += 1;
-            errors.push(`Direct r/${sub}: 0 posts`);
+            errors.push(`Direct r/${sub}: 0 posts (after quality filter)`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           phaseStats["direct_subreddit"] = (phaseStats["direct_subreddit"] || 0) + posts.length;
@@ -539,6 +597,7 @@ Deno.serve(async (req) => {
 
           if (batched.length < 200) {
             console.warn(`[Direct r/${sub}] batched too short (${batched.length})`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
 
@@ -547,6 +606,7 @@ Deno.serve(async (req) => {
           if (!extracted) {
             diag.ai_extractions_failed += 1;
             console.warn(`[Direct r/${sub}] AI extraction null`);
+            await sleep(REDDIT_RATE_LIMIT_MS);
             continue;
           }
           if (extracted.length === 0) {
@@ -560,9 +620,11 @@ Deno.serve(async (req) => {
           totalSkipped += stats.skipped;
           console.log(`[Direct r/${sub}] persisted=${stats.collected} skipped=${stats.skipped}`);
         } catch (e) {
+          phaseStats[`${sub}_error`] = (phaseStats[`${sub}_error`] || 0) + 1;
           errors.push(`Direct r/${sub}: ${e}`);
-          console.error(`[Direct r/${sub}] error:`, e);
+          console.error(`[FAIL] r/${sub} + direct harvest:`, e);
         }
+        await sleep(REDDIT_RATE_LIMIT_MS);
       }
     }
   } catch (fatalErr) {
