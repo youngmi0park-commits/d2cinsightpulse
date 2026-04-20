@@ -222,14 +222,32 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
   const topNegKw = negKeywords[0];
   const topProduct = uniqueProducts[0];
 
-  // Weekly delta estimation (simulate from change_percent)
+  // Weekly delta: 실제 collected_at 기준 (이번 주 - 지난 주) 신규 수집 건수
+  const { data: wowData } = useQuery({
+    queryKey: ["trending-wow-delta"],
+    queryFn: async () => {
+      const now = new Date();
+      const d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const d14 = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
+      const [{ count: thisWeek }, { count: lastWeek }] = await Promise.all([
+        supabase.from("reviews").select("id", { count: "exact", head: true }).gte("collected_at", d7),
+        supabase.from("reviews").select("id", { count: "exact", head: true }).gte("collected_at", d14).lt("collected_at", d7),
+      ]);
+      return { thisWeek: thisWeek || 0, lastWeek: lastWeek || 0 };
+    },
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 5,
+  });
+
   const weeklyDelta = useMemo(() => {
-    if (totalReviews === 0) return 0;
-    const avgChange = allTrendingProducts.length > 0
-      ? allTrendingProducts.reduce((s, p) => s + p.changePercent, 0) / allTrendingProducts.length
-      : 0;
-    return Math.round(totalReviews * (avgChange / 100));
-  }, [totalReviews, allTrendingProducts]);
+    if (!wowData) return 0;
+    return wowData.thisWeek - wowData.lastWeek;
+  }, [wowData]);
+
+  const weeklyDeltaPct = useMemo(() => {
+    if (!wowData || wowData.lastWeek === 0) return 0;
+    return Math.round(((wowData.thisWeek - wowData.lastWeek) / wowData.lastWeek) * 1000) / 10;
+  }, [wowData]);
 
   const sentimentDelta = useMemo(() => {
     if (allTrendingProducts.length === 0) return 0;
@@ -670,8 +688,12 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-primary" />
               <p className="text-[10px] text-muted-foreground font-medium mb-1">총 리뷰 수집</p>
               <p className="text-2xl font-extrabold tracking-tight leading-tight">{totalReviews.toLocaleString()}</p>
-              <p className={cn("text-[10px] font-semibold mt-1", weeklyDelta >= 0 ? "text-green-700" : "text-destructive")}>
-                {weeklyDelta >= 0 ? `▲ +${weeklyDelta.toLocaleString()} vs 전주` : `▼ ${weeklyDelta.toLocaleString()} vs 전주`}
+              <p className={cn("text-[10px] font-semibold mt-1", weeklyDelta > 0 ? "text-green-700" : weeklyDelta < 0 ? "text-destructive" : "text-muted-foreground")}>
+                {weeklyDelta > 0
+                  ? `▲ +${weeklyDelta.toLocaleString()} (${weeklyDeltaPct > 0 ? "+" : ""}${weeklyDeltaPct}%) vs 전주`
+                  : weeklyDelta < 0
+                  ? `▼ ${weeklyDelta.toLocaleString()} (${weeklyDeltaPct}%) vs 전주`
+                  : `— 변동 없음 vs 전주`}
               </p>
               <div className="absolute bottom-2 right-3 opacity-20">
                 <svg width="48" height="20" viewBox="0 0 48 20">
