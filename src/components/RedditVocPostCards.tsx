@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { classifyRedditPost, type ClassifiedPost } from "@/lib/redditBucketClassifier";
+import { classifyRedditPost } from "@/lib/redditBucketClassifier";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import { countryToSourceFilter } from "@/components/CountryFilterBar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
