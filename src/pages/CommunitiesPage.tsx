@@ -45,6 +45,14 @@ interface InsightsResponse {
 
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
+/* ── country flag map ── */
+const COUNTRY_FLAGS: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", CA: "🇨🇦", DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺",
+  BR: "🇧🇷", MX: "🇲🇽", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", TH: "🇹🇭",
+  PH: "🇵🇭", ID: "🇮🇩", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  Global: "🌍",
+};
+
 /* ── source label map ── */
 function sourceLabel(source: string): string {
   if (source.startsWith("amazon")) return "Amazon";
@@ -54,6 +62,7 @@ function sourceLabel(source: string): string {
   if (source.startsWith("shopee")) return "Shopee";
   if (source.startsWith("lazada")) return "Lazada";
   if (source.startsWith("trustpilot")) return "Trustpilot";
+  if (source.startsWith("web_review")) return "Web Reviews";
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
