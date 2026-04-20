@@ -1107,7 +1107,7 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   Global: "글로벌", Other: "기타",
 };
 
-function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string }) {
+function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: string) => string; dbCountryCounts: Record<string, number> }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
@@ -1115,6 +1115,15 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
   const collectionLogs = useCollectionLogs();
   const sourceCounts = useCumulativeSourceCounts();
   const recentCounts = useRecentSourceCounts(recentWindow);
+
+  // ✅ Real DB-backed totals (single source of truth)
+  // Only count countries that actually have data in the DB.
+  const dbActiveCountries = Object.keys(dbCountryCounts).filter(
+    (c) => c !== "Other" && (dbCountryCounts[c] || 0) > 0,
+  );
+  const dbTotalReviews = Object.entries(dbCountryCounts)
+    .filter(([k]) => k !== "Other")
+    .reduce((s, [, v]) => s + v, 0);
 
   const countries = [...new Set(COLLECTION_DETAIL.map(r => r.country))];
   const filtered = filterCountry === "all" ? COLLECTION_DETAIL : COLLECTION_DETAIL.filter(r => r.country === filterCountry);
