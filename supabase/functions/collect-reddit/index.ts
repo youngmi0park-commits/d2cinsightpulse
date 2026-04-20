@@ -619,14 +619,23 @@ async function extractWithAI(content: string, category: string, apiKey: string):
         max_tokens: 8000,
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn(`[AI] extraction HTTP ${res.status} for ${category}: ${txt.slice(0, 200)}`);
+      return null;
+    }
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content || "[]";
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    return Array.isArray(parsed) ? parsed : null;
+    try {
+      const parsed = JSON.parse(cleaned);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch (parseErr) {
+      console.warn(`[AI] JSON parse failed for ${category}: ${parseErr} | raw="${cleaned.slice(0, 200)}"`);
+      return null;
+    }
   } catch (e) {
-    console.error(`AI extraction failed for ${category}:`, e);
+    console.error(`[AI] extraction exception for ${category}:`, e);
     return null;
   }
 }
