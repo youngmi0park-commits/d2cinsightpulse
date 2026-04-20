@@ -1509,12 +1509,13 @@ export const CollectionCriteria = () => {
               );
             })()}
 
-            {/* ── 카테고리별 (card grid, matching country tab style) ── */}
+            {/* ── 카테고리별 (영/한 표기를 한글 라벨 기준으로 합산) ── */}
             {statusTab === "category" && categoryCounts.length > 0 && (() => {
-              const grandTotal = categoryCounts.reduce((s, c) => s + c.count, 0);
-              const filtered = categoryCounts.filter(c => c.category !== "General");
+              const merged = mergeCategoryCountsByKo(categoryCounts);
+              const grandTotal = merged.reduce((s, c) => s + c.count, 0);
+              const filtered = merged.filter(c => c.category !== "General" && c.category !== "미분류");
               const classifiedTotal = filtered.reduce((s, c) => s + c.count, 0);
-              const generalCount = categoryCounts.find(c => c.category === "General")?.count || 0;
+              const generalCount = merged.find(c => c.category === "General" || c.category === "미분류")?.count || 0;
               const maxCount = filtered.length > 0 ? filtered[0].count : 1;
 
               return (
