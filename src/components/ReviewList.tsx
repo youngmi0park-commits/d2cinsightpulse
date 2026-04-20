@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { maskCompetitorNames } from "@/lib/sentiment";
+import { extractKeyPhrases, isPrivacyPlaceholder } from "@/lib/reviewUtils";
 import type { Review } from "@/data/dummyData";
-import { Star, Calendar, TrendingUp, Languages, Loader2 } from "lucide-react";
+import { Star, Calendar, TrendingUp, Languages, Loader2, Quote } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -133,6 +134,14 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
     return displayTitle ? `${sentPrefix} — ${displayTitle}` : fallback;
   };
 
+  /** LG.com 본문에서 PII 강력 마스킹 후 핵심 키프레이즈 2~3개 추출 */
+  const lgComKeyPhrases = useMemo(() => {
+    if (!isLgCom) return [];
+    const body = review.text;
+    if (!body || isPrivacyPlaceholder(body)) return [];
+    return extractKeyPhrases(body, review.sentiment, 3);
+  }, [isLgCom, review.text, review.sentiment]);
+
   return (
     <div className={`p-4 rounded-lg border transition-all hover:scale-[1.01] ${sentimentStyle(review.sentiment)}`}>
       <div className="flex items-center justify-between mb-2">
@@ -166,15 +175,41 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
       </div>
 
       {isLgCom ? (
-        <>
+        <div className="space-y-2">
           <p className="text-sm leading-relaxed italic text-muted-foreground">{lgComSummary()}</p>
+
+          {/* 핵심 키프레이즈 (PII 마스킹 처리됨) */}
+          {lgComKeyPhrases.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center gap-1.5">
+                <Quote className="h-3 w-3 text-primary/70" />
+                <span className="text-[10px] font-semibold text-primary/80 uppercase tracking-wide">
+                  Key Phrases · PII 자동 마스킹
+                </span>
+              </div>
+              <ul className="space-y-1 pl-1">
+                {lgComKeyPhrases.map((phrase, i) => (
+                  <li
+                    key={i}
+                    className="text-xs leading-relaxed text-foreground/85 border-l-2 border-primary/30 pl-2"
+                  >
+                    "{maskCompetitorNames(phrase)}"
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[9px] text-muted-foreground/70">
+                ※ 이름·이메일·전화·주소·시리얼·URL 등 식별 정보는 모두 자동 치환되었습니다.
+              </p>
+            </div>
+          )}
+
           {/* JP: show original Japanese title as small reference */}
           {isJP && translatedTitle && (review as any).title && (
             <p className="text-[10px] text-muted-foreground/60 mt-0.5">
               (原文: {(review as any).title})
             </p>
           )}
-        </>
+        </div>
       ) : (
         <p className="text-sm leading-relaxed">{maskCompetitorNames(review.text)}</p>
       )}
