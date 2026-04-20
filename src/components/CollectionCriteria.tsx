@@ -1233,6 +1233,7 @@ function CollectionDetailTable({ t }: { t: (en: string, ko: string) => string })
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
                     const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
+                    const recent = resolveCumulativeCount(row.channel, row.country, recentCounts);
                     return (
                     <tr
                       key={`${country}-${ri}`}
