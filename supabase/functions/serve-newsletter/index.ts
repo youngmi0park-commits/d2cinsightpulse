@@ -308,6 +308,14 @@ function buildNewsletterHTML(d: {
     return `<span class="lg-ko">${ko}</span><span class="lg-en" style="display:none;">${enText}</span>`;
   };
 
+  // Format date range for header weekly meta — "APR 14 — APR 21, 2026" + compact "04.14 — 04.21"
+  const MONTHS_EN = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const _now = new Date();
+  const _weekAgo = new Date(_now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const _pad = (n: number) => String(n).padStart(2, "0");
+  const weeklyDateFull = `${MONTHS_EN[_weekAgo.getMonth()]} ${_pad(_weekAgo.getDate())} — ${MONTHS_EN[_now.getMonth()]} ${_pad(_now.getDate())}, ${_now.getFullYear()}`;
+  const weeklyDateCompact = `${_pad(_weekAgo.getMonth() + 1)}.${_pad(_weekAgo.getDate())} — ${_pad(_now.getMonth() + 1)}.${_pad(_now.getDate())}`;
+
   /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const raw = insight?.key_takeaway;
