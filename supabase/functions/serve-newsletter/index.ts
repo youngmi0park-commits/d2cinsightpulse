@@ -1233,15 +1233,22 @@ Deno.serve(async (req) => {
 
     // ── Generate AI insights ──
     console.log("Generating AI channel insights...");
-    const [lgcomInsight, redditInsight, communityInsight, allChannelSummary] = await Promise.all([
+    let [lgcomInsight, redditInsight, communityInsight, allChannelSummary] = await Promise.all([
       generateChannelInsight(sb, lovableApiKey, "lgcom"),
       generateChannelInsight(sb, lovableApiKey, "reddit"),
       generateChannelInsight(sb, lovableApiKey, "community"),
       generateAllChannelSummary(sb, lovableApiKey),
     ]);
-    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, community: !!communityInsight, allChannel: !!allChannelSummary });
+    // Deterministic fallback so sections never go blank when AI fails
+    if (!lgcomInsight) lgcomInsight = await buildFallbackInsight(sb, "lgcom");
+    if (!redditInsight) redditInsight = await buildFallbackInsight(sb, "reddit");
+    if (!communityInsight) communityInsight = await buildFallbackInsight(sb, "community");
+    // Merge Reddit + Community into a single combined overview
+    let combinedRedditCommunity = mergeChannelInsights(redditInsight, communityInsight);
+    if (!combinedRedditCommunity) combinedRedditCommunity = await buildFallbackInsight(sb, "reddit_plus_community");
+    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, community: !!communityInsight, combined: !!combinedRedditCommunity, allChannel: !!allChannelSummary });
 
-    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl, allChannelSummary, communityInsight);
+    const html = buildNewsletterHTML(newsletterData, lgcomInsight, combinedRedditCommunity, baseUrl, allChannelSummary, null);
 
     if (format === "json") {
       return new Response(JSON.stringify({ html, data: newsletterData, lgcomInsight, redditInsight }), {
