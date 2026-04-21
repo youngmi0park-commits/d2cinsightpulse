@@ -111,8 +111,9 @@ ${productSummary}
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
 - rank, name, category, mention_count
-- pos_summary (한 문장 60자 이내) + pos_summary_en (한 문장 90자 이내, 영어)
-- neg_summary (50자 이내) + neg_summary_en (80자 이내) — 또는 빈문자열
+- countries: 위 데이터 [국가: ...] 정보 기반 상위 1~3개 국가 코드 배열 (예: ["US","UK"])
+- pos_summary (한 문장 90자 이내) + pos_summary_en (한 문장 140자 이내, 영어) — 짤리지 말 것
+- neg_summary (80자 이내) + neg_summary_en (130자 이내) — 또는 빈문자열
 - praise_points: 정확히 3개, 각 8자 이내 짧은 한국어 키워드
 - praise_points_en: 정확히 3개, 각 14자 이내 짧은 영어 키워드
 
@@ -131,7 +132,7 @@ ${productSummary}
 - related_countries: 해당 이슈가 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","DE"])
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
+- 각 항목 { "text": "30자 이내 한국어 칭찬", "text_en": "≤48 chars English praise", "product": "실제 제품 display_name", "category": "카테고리", "countries": ["US"] (1~2개) }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
 - **카테고리별로 1개씩** (실제 데이터에 존재하는 카테고리만), 동일 카테고리 중복 금지
