@@ -1405,7 +1405,9 @@ export const CollectionCriteria = () => {
     const order = ["Selection Logic", "Collection Schedule & Dashboard Sync"];
     return order.indexOf(a.titleEn) - order.indexOf(b.titleEn);
   });
-  const secondaryCriteria = criteria.filter((c) => !priorityCriteria.includes(c));
+  const secondaryCriteria = criteria.filter(
+    (c) => !priorityCriteria.includes(c) && !belowCriteria.includes(c)
+  );
 
   return (
     <div className="space-y-0">
