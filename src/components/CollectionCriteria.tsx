@@ -1136,6 +1136,24 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   Global: "글로벌", Other: "기타",
 };
 
+const COUNTRY_EN_NAME: Record<string, string> = {
+  US: "USA", UK: "UK", DE: "Germany", AU: "Australia", IN: "India",
+  JP: "Japan", TW: "Taiwan", TH: "Thailand", SG: "Singapore", VN: "Vietnam",
+  ID: "Indonesia", HK: "Hong Kong", PH: "Philippines", MY: "Malaysia",
+  CA: "Canada", BR: "Brazil", MX: "Mexico", FR: "France",
+  Global: "Global", Other: "Other",
+};
+
+const CATEGORY_EN: Record<string, string> = {
+  "TV": "TV", "세탁기": "Washer", "냉장고": "Refrigerator", "건조기": "Dryer",
+  "모니터": "Monitor", "오디오": "Audio", "에어컨": "Air Conditioner", "노트북": "Laptop",
+  "공기청정기": "Air Purifier", "전자레인지": "Microwave", "프로젝터": "Projector",
+  "식기세척기": "Dishwasher", "청소기": "Vacuum", "세탁건조기": "Washer/Dryer",
+  "오븐/레인지": "Oven/Range", "스타일러": "Styler", "General": "General",
+  "액세서리": "Accessory", "스마트폰": "Smartphone", "쿡탑": "Cooktop",
+  "가전 번들": "Appliance Bundle",
+};
+
 function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: string) => string; dbCountryCounts: Record<string, number> }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
