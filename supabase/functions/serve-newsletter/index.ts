@@ -127,7 +127,104 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
   if (!aiResponse.ok) return null;
   const aiData = await aiResponse.json();
   const content = aiData.choices?.[0]?.message?.content || "{}";
-  try { return JSON.parse(content); } catch { return null; }
+  return safeParseInsight(content);
+}
+
+/* ── Robust JSON extractor (handles markdown fences, trailing commas, truncation) ── */
+function safeParseInsight(raw: string): ChannelInsight | null {
+  if (!raw) return null;
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  if (!cleaned) return null;
+  const start = cleaned.search(/[\{\[]/);
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) return null;
+  cleaned = cleaned.substring(start, end + 1);
+  try { return JSON.parse(cleaned); }
+  catch {
+    try {
+      const fixed = cleaned
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/[\x00-\x1F\x7F]/g, "");
+      return JSON.parse(fixed);
+    } catch { return null; }
+  }
+}
+
+/* ── Deterministic fallback insight from raw reviews (used when AI fails) ── */
+async function buildFallbackInsight(sb: any, channel: "lgcom" | "reddit" | "community" | "reddit_plus_community"): Promise<ChannelInsight | null> {
+  const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
+  let q = sb.from("reviews")
+    .select("title, content, sentiment, source, products!inner(display_name, category)")
+    .gte("published_at", weekAgoStr)
+    .order("published_at", { ascending: false })
+    .limit(600);
+  if (channel === "lgcom") q = q.like("source", "lge_com%");
+  else if (channel === "reddit") q = q.like("source", "reddit%");
+  else if (channel === "community") q = q.not("source", "like", "lge_com%").not("source", "like", "reddit%");
+  else q = q.not("source", "like", "lge_com%"); // reddit + community
+
+  const { data: reviews } = await q;
+  if (!reviews?.length) return null;
+
+  const byProduct: Record<string, { name: string; cat: string; pos: number; neg: number; posT: string[]; negT: string[] }> = {};
+  for (const r of reviews as any[]) {
+    const name = r.products?.display_name || "Unknown";
+    const cat = r.products?.category || "General";
+    if (!byProduct[name]) byProduct[name] = { name, cat, pos: 0, neg: 0, posT: [], negT: [] };
+    const p = byProduct[name];
+    if (r.sentiment === "positive") { p.pos++; if (r.title && p.posT.length < 5) p.posT.push(r.title); }
+    else if (r.sentiment === "negative") { p.neg++; if (r.title && p.negT.length < 5) p.negT.push(r.title); }
+  }
+  const top = Object.values(byProduct).sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 5);
+  return {
+    top_products: top.map((p, i) => ({
+      rank: i + 1,
+      name: p.name,
+      category: p.cat,
+      mention_count: p.pos + p.neg,
+      pos_summary: p.posT[0] || "긍정 코멘트 수집 중",
+      neg_summary: p.negT[0] || "",
+      praise_points: p.posT.slice(0, 3).map(t => t.slice(0, 12)),
+    })),
+    top_topics: [],
+    urgent_issues: [],
+    recurring_praise: top.flatMap(p => p.posT.slice(0, 1).map(t => ({ text: t.slice(0, 24), product: p.name, category: p.cat }))).slice(0, 5),
+  };
+}
+
+/* ── Merge two ChannelInsights into one combined view (reddit + community) ── */
+function mergeChannelInsights(a: ChannelInsight | null, b: ChannelInsight | null): ChannelInsight | null {
+  if (!a && !b) return null;
+  if (!a) return b;
+  if (!b) return a;
+  const mergedProducts = [...(a.top_products || []), ...(b.top_products || [])]
+    .reduce((acc: any[], p) => {
+      const existing = acc.find(x => x.name === p.name);
+      if (existing) existing.mention_count += p.mention_count;
+      else acc.push({ ...p });
+      return acc;
+    }, [])
+    .sort((x, y) => (y.mention_count || 0) - (x.mention_count || 0))
+    .slice(0, 5)
+    .map((p, i) => ({ ...p, rank: i + 1 }));
+  const mergedTopics = [...(a.top_topics || []), ...(b.top_topics || [])]
+    .sort((x, y) => (y.mention_pct || 0) - (x.mention_pct || 0))
+    .slice(0, 3)
+    .map((t, i) => ({ ...t, rank: i + 1 }));
+  const mergedIssues = [...(a.urgent_issues || []), ...(b.urgent_issues || [])]
+    .sort((x, y) => (y.mention_pct || 0) - (x.mention_pct || 0))
+    .slice(0, 3)
+    .map((iss, i) => ({ ...iss, rank: i + 1 }));
+  const mergedPraise = [...(a.recurring_praise || []), ...(b.recurring_praise || [])].slice(0, 5);
+  const mergedKT = [...(a.key_takeaway || []), ...(b.key_takeaway || [])];
+  return {
+    top_products: mergedProducts,
+    top_topics: mergedTopics,
+    urgent_issues: mergedIssues,
+    recurring_praise: mergedPraise,
+    key_takeaway: mergedKT,
+  };
 }
 
 /* ── All-channel summary ── */
@@ -172,7 +269,18 @@ async function generateAllChannelSummary(sb: any, lovableApiKey: string): Promis
   });
   if (!resp.ok) return null;
   const aiData = await resp.json();
-  try { return JSON.parse(aiData.choices?.[0]?.message?.content || "{}"); } catch { return null; }
+  const raw = aiData.choices?.[0]?.message?.content || "{}";
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  if (!cleaned) return null;
+  const start = cleaned.search(/[\{\[]/);
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) return null;
+  cleaned = cleaned.substring(start, end + 1);
+  try { return JSON.parse(cleaned); }
+  catch {
+    try { return JSON.parse(cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "")); }
+    catch { return null; }
+  }
 }
 
 /* ── Newsletter HTML builder ── */
@@ -603,8 +711,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
   </table>
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
-  ${renderKeyTakeaway("REDDIT", "💬", "#FF4500", reddit)}
-  ${renderKeyTakeaway(bi("커뮤니티 (Amazon/YouTube/기타)", "Communities (Amazon/YouTube/Others)"), "🌐", "#0D9488", community)}
+  ${renderKeyTakeaway(bi("REDDIT & 커뮤니티", "REDDIT & Communities"), "💬", "#FF4500", reddit)}
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
@@ -697,16 +804,8 @@ ${channelSectionHTML(bi("LG.COM 주간 오버뷰", "LG.COM Weekly Overview"), "�
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
 </td></tr>
 
-<!-- Reddit Section -->
-${channelSectionHTML(bi("REDDIT 주간 오버뷰", "REDDIT Weekly Overview"), "💬", reddit)}
-
-<!-- Divider -->
-<tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
-</td></tr>
-
-<!-- Community Section (Amazon/YouTube/Trustpilot/etc) -->
-${channelSectionHTML(bi("커뮤니티 & 외부 채널 주간 오버뷰 (Amazon · YouTube · Trustpilot · etc)", "Communities & External Channels Weekly Overview (Amazon · YouTube · Trustpilot · etc)"), "🌐", community)}
+<!-- Reddit + Community 통합 Section -->
+${channelSectionHTML(bi("REDDIT & 커뮤니티 통합 주간 오버뷰 (Reddit · Amazon · YouTube · Trustpilot · etc)", "REDDIT & Communities — Combined Weekly Overview (Reddit · Amazon · YouTube · Trustpilot · etc)"), "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
@@ -1125,15 +1224,22 @@ Deno.serve(async (req) => {
 
     // ── Generate AI insights ──
     console.log("Generating AI channel insights...");
-    const [lgcomInsight, redditInsight, communityInsight, allChannelSummary] = await Promise.all([
+    let [lgcomInsight, redditInsight, communityInsight, allChannelSummary] = await Promise.all([
       generateChannelInsight(sb, lovableApiKey, "lgcom"),
       generateChannelInsight(sb, lovableApiKey, "reddit"),
       generateChannelInsight(sb, lovableApiKey, "community"),
       generateAllChannelSummary(sb, lovableApiKey),
     ]);
-    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, community: !!communityInsight, allChannel: !!allChannelSummary });
+    // Deterministic fallback so sections never go blank when AI fails
+    if (!lgcomInsight) lgcomInsight = await buildFallbackInsight(sb, "lgcom");
+    if (!redditInsight) redditInsight = await buildFallbackInsight(sb, "reddit");
+    if (!communityInsight) communityInsight = await buildFallbackInsight(sb, "community");
+    // Merge Reddit + Community into a single combined overview
+    let combinedRedditCommunity = mergeChannelInsights(redditInsight, communityInsight);
+    if (!combinedRedditCommunity) combinedRedditCommunity = await buildFallbackInsight(sb, "reddit_plus_community");
+    console.log("AI insights generated:", { lgcom: !!lgcomInsight, reddit: !!redditInsight, community: !!communityInsight, combined: !!combinedRedditCommunity, allChannel: !!allChannelSummary });
 
-    const html = buildNewsletterHTML(newsletterData, lgcomInsight, redditInsight, baseUrl, allChannelSummary, communityInsight);
+    const html = buildNewsletterHTML(newsletterData, lgcomInsight, combinedRedditCommunity, baseUrl, allChannelSummary, null);
 
     if (format === "json") {
       return new Response(JSON.stringify({ html, data: newsletterData, lgcomInsight, redditInsight }), {
