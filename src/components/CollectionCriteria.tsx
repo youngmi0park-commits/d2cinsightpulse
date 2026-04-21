@@ -1566,9 +1566,9 @@ export const CollectionCriteria = () => {
 
                   {/* Legend */}
                   <div className="flex items-center gap-4 text-[9px] text-muted-foreground border-t border-border/50 pt-1.5">
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-primary" /> 바자보이스 (LG.com)</span>
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> 커뮤니티 (Reddit·Amazon·YouTube 등)</span>
-                    <span className="ml-auto font-semibold">누적 총계: <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>건</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-primary" /> {t("Bazaarvoice (LG.com)", "바자보이스 (LG.com)")}</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> {t("Community (Reddit · Amazon · YouTube etc.)", "커뮤니티 (Reddit·Amazon·YouTube 등)")}</span>
+                    <span className="ml-auto font-semibold">{t("Cumulative total:", "누적 총계:")} <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>{t("", "건")}</span>
                   </div>
                 </div>
               );
