@@ -8,8 +8,8 @@ const corsHeaders = {
 
 interface ChannelInsight {
   top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[] }[];
-  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[] }[];
-  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[] }[];
+  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[]; related_countries?: string[] }[];
+  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[]; related_countries?: string[] }[];
   recurring_praise: { text: string; product?: string; category?: string }[];
   key_takeaway?: { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
 }
