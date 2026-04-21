@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 interface ChannelInsight {
-  top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[]; countries?: string[] }[];
-  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[]; related_countries?: string[] }[];
-  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[]; related_countries?: string[] }[];
+  top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[] }[];
+  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[] }[];
+  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[] }[];
   recurring_praise: { text: string; product?: string; category?: string }[];
   key_takeaway?: { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
 }
@@ -19,27 +19,6 @@ interface AllChannelSummary {
   key_takeaway: string;
   community_weekly: string;
 }
-
-/* ── Helpers: source → country code & flag ── */
-function sourceToCountry(src: string): string {
-  const s = (src || "").toLowerCase();
-  const m = s.match(/_([a-z]{2})$/);
-  if (m) {
-    const cc = m[1].toUpperCase();
-    if (["US","UK","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN"].includes(cc)) return cc;
-  }
-  if (s === "lge_com" || /^(amazon|youtube|bestbuy|walmart|costco|target|consumeraffairs|consumer_reports|bestreviews|houzz|web_review|reddit)$/.test(s)) return "US";
-  if (s === "trusted_reviews") return "UK";
-  if (s.startsWith("reddit")) return "US";
-  return "Global";
-}
-const FLAG: Record<string, string> = {
-  US: "🇺🇸", UK: "🇬🇧", CA: "🇨🇦", DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺",
-  BR: "🇧🇷", MX: "🇲🇽", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", TH: "🇹🇭",
-  PH: "🇵🇭", ID: "🇮🇩", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
-  Global: "🌐",
-};
-const flagFor = (cc: string) => FLAG[cc] || "🌐";
 
 /* ── AI insight generation per channel ── */
 async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit" | "community"): Promise<ChannelInsight | null> {
@@ -68,11 +47,9 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   for (const r of reviews as any[]) {
     const pName = r.products?.display_name || "Unknown";
     if (!productMap[pName]) {
-      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[], countries: {} as Record<string, number> };
+      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[] };
     }
     const p = productMap[pName];
-    const cc = sourceToCountry(r.source);
-    p.countries[cc] = (p.countries[cc] || 0) + 1;
     if (r.sentiment === "positive") {
       p.pos++;
       if (r.title && p.posTitles.length < 8) p.posTitles.push(r.title);
@@ -86,10 +63,9 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   }
 
   const topProducts = Object.values(productMap).sort((a: any, b: any) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 10);
-  const productSummary = topProducts.map((p: any) => {
-    const topCountries = Object.entries(p.countries).sort((a: any, b: any) => b[1] - a[1]).slice(0, 3).map(([c, n]) => `${c}(${n})`).join(", ");
-    return `${p.name} (${p.category}) [국가: ${topCountries}]: 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`;
-  }).join("\n\n");
+  const productSummary = topProducts.map((p: any) =>
+    `${p.name} (${p.category}): 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`
+  ).join("\n\n");
 
   const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
@@ -111,28 +87,25 @@ ${productSummary}
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
 - rank, name, category, mention_count
-- countries: 위 데이터 [국가: ...] 정보 기반 상위 1~3개 국가 코드 배열 (예: ["US","UK"])
-- pos_summary (한 문장 90자 이내) + pos_summary_en (한 문장 140자 이내, 영어) — 짤리지 말 것
-- neg_summary (80자 이내) + neg_summary_en (130자 이내) — 또는 빈문자열
+- pos_summary (한 문장 60자 이내) + pos_summary_en (한 문장 90자 이내, 영어)
+- neg_summary (50자 이내) + neg_summary_en (80자 이내) — 또는 빈문자열
 - praise_points: 정확히 3개, 각 8자 이내 짧은 한국어 키워드
 - praise_points_en: 정확히 3개, 각 14자 이내 짧은 영어 키워드
 
 ## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (한국어 18자 이내), topic_en (English, ≤32 chars), mention_pct, positive_pct, negative_pct
-- representative_comment (한 문장 80자 이내) + representative_comment_en (≤140 chars)
-- related_products: 실제 제품 display_name 1~3개 배열
-- related_countries: 해당 토픽이 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","UK","DE"]) — 위 데이터의 [국가: ...] 정보 활용
+- rank, topic (한국어 12자 이내), topic_en (English, ≤22 chars), mention_pct, positive_pct, negative_pct
+- representative_comment (한 문장 45자 이내) + representative_comment_en (≤80 chars)
+- related_products
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue + issue_en (각 24/40자 이내), mention_pct
-- pattern + pattern_en (각 60/100자 이내)
-- cause + cause_en (각 60/100자 이내)
-- related_products: 실제 제품 display_name 1~3개 배열
-- related_countries: 해당 이슈가 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","DE"])
+- rank, issue + issue_en (각 15/25자 이내), mention_pct
+- pattern + pattern_en (각 25/45자 이내)
+- cause + cause_en (각 25/45자 이내)
+- related_products
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목 { "text": "30자 이내 한국어 칭찬", "text_en": "≤48 chars English praise", "product": "실제 제품 display_name", "category": "카테고리", "countries": ["US"] (1~2개) }
+- 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
 - **카테고리별로 1개씩** (실제 데이터에 존재하는 카테고리만), 동일 카테고리 중복 금지
@@ -420,16 +393,16 @@ function buildNewsletterHTML(d: {
           </td>
           <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;line-height:17px;word-break:break-word;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span>${(p.countries && p.countries.length) ? ` <span style="font-size:10px;color:#6B6A6E;font-weight:500;white-space:nowrap;">· ${p.countries.slice(0,3).map(c => `${flagFor(c)} ${c}`).join(" ")}</span>` : ""}</td></tr>
+              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span></td></tr>
               <tr><td style="padding-top:6px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border-left:3px solid #0D9488;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:8px 12px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};word-break:break-word;"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(p.pos_summary || "", (p as any).pos_summary_en || p.pos_summary || "")}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(trim(p.pos_summary, 70), trim((p as any).pos_summary_en, 110))}</td></tr>
                 </table>
               </td></tr>
               ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
               <tr><td style="padding-top:5px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F2;border-left:3px solid #EA1917;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:8px 12px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};word-break:break-word;"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(p.neg_summary || "", (p as any).neg_summary_en || p.neg_summary || "")}</td></tr>
+                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(trim(p.neg_summary, 60), trim((p as any).neg_summary_en, 100))}</td></tr>
                 </table>
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
@@ -444,46 +417,32 @@ function buildNewsletterHTML(d: {
         </tr></table>
       </td></tr>`).join("");
 
-    // Helper: render country flags + product chips meta line
-    const metaLine = (countries?: string[], products?: string[]) => {
-      const cc = (countries || []).slice(0, 3);
-      const pp = (products || []).slice(0, 3);
-      const flags = cc.length ? cc.map(c => `<span style="font-size:11px;">${flagFor(c)}</span> <span style="color:#6B6A6E;">${c}</span>`).join(" · ") : "";
-      const prods = pp.length ? pp.map(name => `<span style="background:#F0ECE4;border:1px solid #E5DFD3;color:#1B1A1E;font-size:10px;font-weight:600;padding:1px 7px;border-radius:50px;display:inline-block;margin:1px 3px 1px 0;">📦 ${name}</span>`).join("") : "";
-      if (!flags && !prods) return "";
-      return `<tr><td colspan="2" style="padding-top:6px;font-size:10.5px;color:#1B1A1E;font-family:${FONT};line-height:18px;">${flags ? `<span style="margin-right:8px;">${flags}</span>` : ""}${prods}</td></tr>`;
-    };
-
-    // Top topics — full text, no truncation
-    const topicsList = (insight.top_topics || []).slice(0, 5);
+    // Top topics — rounded
+    const topicsList = (insight.top_topics || []).slice(0, 3);
     const topicsHTML = topicsList.map((t, idx) => `
-      <tr><td style="padding:12px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
+      <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">${t.rank}. ${bi(t.topic || "", (t as any).topic_en || t.topic || "")}</td>
-            <td align="right" valign="top" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;padding-left:8px;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${bi(trim(t.topic, 18), trim((t as any).topic_en, 28))}</td>
+            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:6px;"><div style="font-size:11px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:8px 11px;line-height:17px;border-radius:8px;font-weight:400;word-break:break-word;">"${bi(t.representative_comment || "", (t as any).representative_comment_en || t.representative_comment || "")}"</div></td></tr>
-          ${metaLine((t as any).related_countries, t.related_products)}
+          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${bi(trim(t.representative_comment, 55), trim((t as any).representative_comment_en, 90))}"</div></td></tr>
         </table>
       </td></tr>`).join("");
 
-    // Urgent issues — full text, no truncation
-    const issuesList = (insight.urgent_issues || []).slice(0, 5);
+    // Urgent issues
+    const issuesList = (insight.urgent_issues || []).slice(0, 3);
     const issuesHTML = issuesList.map((iss, idx) => `
-      <tr><td style="padding:12px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
+      <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:4px;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">⚠️ ${iss.rank}. ${bi(iss.issue || "", (iss as any).issue_en || iss.issue || "")} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;word-break:break-word;">${bi(iss.pattern || "", (iss as any).pattern_en || iss.pattern || "")} <span style="color:#6B6A6E;">· ${bi(iss.cause || "", (iss as any).cause_en || iss.cause || "")}</span></td></tr>
-          ${metaLine((iss as any).related_countries, iss.related_products)}
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${bi(trim(iss.issue, 20), trim((iss as any).issue_en, 32))} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${bi(trim(iss.pattern, 35), trim((iss as any).pattern_en, 55))} · <span style="color:#6B6A6E;">${bi(trim(iss.cause, 35), trim((iss as any).cause_en, 55))}</span></td></tr>
         </table>
       </td></tr>`).join("");
 
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      const cc = (item.countries || item.related_countries || []) as string[];
-      const flagStr = cc.length ? `<span style="margin-left:6px;font-size:10px;color:#6B6A6E;">${cc.slice(0,2).map(flagFor).join(" ")}</span>` : "";
-      return `<tr><td style="padding:4px 0;font-size:11px;color:#0D9488;line-height:17px;font-family:${FONT};font-weight:500;word-break:break-word;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong>${item.category ? ` <span style="color:#8B8A8E;font-weight:400;">(${item.category})</span>` : ""} — ` : ""}${bi(item.text || "", item.text_en || item.text || "")}${flagStr}</td></tr>`;
+      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${bi(trim(item.text, 30), trim(item.text_en, 48))}</td></tr>`;
     }).join("");
 
     return `
@@ -567,27 +526,30 @@ a {text-decoration:none;}
   body:not(.lang-en) .lg-ko { display:inline; }
   body:not(.lang-en) .lg-en { display:none !important; }
   /* Segmented language toggle */
-  .lg-seg { position:relative; display:inline-block; background:#FFFFFF; border:1px solid #ECECEE; border-radius:9px; padding:2px; height:32px; box-sizing:border-box; vertical-align:middle; }
+  .lg-seg { position:relative; display:inline-block; background:#FFFFFF; border:1px solid #ECECEE; border-radius:12px; padding:3px; height:44px; box-sizing:border-box; vertical-align:middle; }
   .lg-seg-track { position:relative; display:flex; height:100%; }
-  .lg-seg-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:34px; padding:0 10px; height:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#6B6B74; background:transparent; border:0; cursor:pointer; transition:color .18s ease; outline:none; }
+  .lg-seg-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:28px; padding:0 7px; height:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#6B6B74; background:transparent; border:0; cursor:pointer; transition:color .18s ease; outline:none; }
   .lg-seg-btn:hover { color:#0F0F12; }
   .lg-seg-btn[aria-selected="true"] { color:#0F0F12; }
-  .lg-seg-underline { position:absolute; bottom:3px; left:0; height:2px; width:calc(50% - 8px); margin:0 8px; background:#EF2A3C; border-radius:2px; transform:translateX(0); transition:transform 220ms cubic-bezier(.2,.7,.2,1); pointer-events:none; }
+  .lg-seg-underline { position:absolute; bottom:3px; left:0; height:2px; width:calc(50% - 6px); margin:0 6px; background:#EF2A3C; border-radius:2px; transform:translateX(0); transition:transform 220ms cubic-bezier(.2,.7,.2,1); pointer-events:none; }
   body.lang-en .lg-seg-underline { transform:translateX(100%); }
   /* Weekly meta pill */
-  .lg-weekly { display:inline-flex; align-items:center; height:32px; padding:0 12px; background:#FFFFFF; border:1px solid #ECECEE; border-radius:9px; font-family:'Inter',sans-serif; vertical-align:middle; box-sizing:border-box; }
-  .lg-weekly-dot { width:5px; height:5px; border-radius:50%; background:#EF2A3C; box-shadow:0 0 0 3px rgba(239,42,60,.15); margin-right:8px; animation:lgPulse 2s ease-in-out infinite; }
-  .lg-weekly-label { font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#0F0F12; }
-  .lg-weekly-divider { display:inline-block; width:1px; height:12px; background:#ECECEE; margin:0 9px; vertical-align:middle; }
-  .lg-weekly-date { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:10px; color:#6B6B74; }
+  .lg-weekly { display:inline-flex; align-items:center; height:32px; padding:0 10px; background:#FFFFFF; border:1px solid #ECECEE; border-radius:9px; font-family:'Inter',sans-serif; vertical-align:middle; box-sizing:border-box; }
+  .lg-weekly-dot { width:5px; height:5px; border-radius:50%; background:#EF2A3C; box-shadow:0 0 0 3px rgba(239,42,60,.15); margin-right:6px; animation:lgPulse 2s ease-in-out infinite; }
+  .lg-weekly-label { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#0F0F12; }
+  .lg-weekly-divider { display:inline-block; width:1px; height:11px; background:#ECECEE; margin:0 7px; vertical-align:middle; }
+  .lg-weekly-date { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:10px; color:#6B6B74; white-space:nowrap; }
   @keyframes lgPulse { 0%,100% { box-shadow:0 0 0 0 rgba(239,42,60,.25); } 50% { box-shadow:0 0 0 6px rgba(239,42,60,.05); } }
-  .lg-header-controls { display:inline-flex; gap:8px; align-items:center; }
+  .lg-header-controls { display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  /* Mid-width: switch to compact date to keep one-line */
+  @media only screen and (max-width:960px) {
+    .lg-weekly-date.full { display:none !important; }
+    .lg-weekly-date.compact { display:inline !important; }
+  }
   @media only screen and (max-width:699px) {
     .email-container { width:100% !important; max-width:100% !important; }
     .stack-column { display:block !important; width:100% !important; }
     .lg-header-controls { margin-top:14px; }
-    .lg-weekly-date.full { display:none; }
-    .lg-weekly-date.compact { display:inline !important; }
   }
   .lg-weekly-date.compact { display:none; }
 </style>
@@ -607,7 +569,7 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
-      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
+      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")}<br/><span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
     <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
       <!-- Language Toggle + Weekly Meta (browser-only; Outlook fallback below) -->
