@@ -1594,7 +1594,7 @@ export const CollectionCriteria = () => {
                         <div key={c.category} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-[10px]">
-                              {CATEGORY_ICONS[c.category] || "📦"} {CATEGORY_KO[c.category] || c.category}
+                              {CATEGORY_ICONS[c.category] || "📦"} {t(CATEGORY_EN[c.category] || c.category, CATEGORY_KO[c.category] || c.category)}
                             </span>
                             <span className="text-[9px] text-muted-foreground">{pct}%</span>
                           </div>
@@ -1613,18 +1613,18 @@ export const CollectionCriteria = () => {
                   {generalCount > 0 && (
                     <div className="rounded border border-border bg-muted/30 px-3 py-2 flex items-center justify-between">
                       <div>
-                        <p className="text-[11px] font-semibold text-muted-foreground">📦 미분류 (General)</p>
-                        <p className="text-[9px] text-muted-foreground">카테고리 미지정 리뷰 · 분석 제외 · 분모에서 제외</p>
+                        <p className="text-[11px] font-semibold text-muted-foreground">📦 {t("General (Unclassified)", "미분류 (General)")}</p>
+                        <p className="text-[9px] text-muted-foreground">{t("Uncategorized reviews · excluded from analysis · excluded from denominator", "카테고리 미지정 리뷰 · 분석 제외 · 분모에서 제외")}</p>
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-bold text-muted-foreground">{generalCount.toLocaleString()}</span>
-                        <p className="text-[9px] text-muted-foreground">전체 {grandTotal.toLocaleString()} 중 {grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}%</p>
+                        <p className="text-[9px] text-muted-foreground">{t(`${grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}% of total ${grandTotal.toLocaleString()}`, `전체 ${grandTotal.toLocaleString()} 중 ${grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}%`)}</p>
                       </div>
                     </div>
                   )}
 
                   <p className="text-[9px] text-muted-foreground text-right">
-                    분류된 리뷰 {classifiedTotal.toLocaleString()}건 기준 · 출처: Bazaarvoice API + 커뮤니티 통합
+                    {t(`Based on ${classifiedTotal.toLocaleString()} classified reviews · Source: Bazaarvoice API + Community combined`, `분류된 리뷰 ${classifiedTotal.toLocaleString()}건 기준 · 출처: Bazaarvoice API + 커뮤니티 통합`)}
                   </p>
                 </div>
               );
