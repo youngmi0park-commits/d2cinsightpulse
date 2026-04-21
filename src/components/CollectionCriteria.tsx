@@ -1527,7 +1527,7 @@ export const CollectionCriteria = () => {
                       return (
                         <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-[10px]">{isGlobal ? "🌐 글로벌" : `${LGE_FLAGS[lgeCode] || "🔹"} ${COUNTRY_KO_NAME[iso] || iso}`}</span>
+                            <span className="font-semibold text-[10px]">{isGlobal ? `🌐 ${t("Global", "글로벌")}` : `${LGE_FLAGS[lgeCode] || "🔹"} ${t(COUNTRY_EN_NAME[iso] || iso, COUNTRY_KO_NAME[iso] || iso)}`}</span>
                             <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
                           {/* Stacked bar: BV (primary) + Community (teal) */}
@@ -1543,7 +1543,7 @@ export const CollectionCriteria = () => {
                               <div
                                 className="h-full bg-teal-500 transition-all"
                                 style={{ width: `${Math.max((communityCount / maxCount) * 100, isGlobal ? 4 : 0)}%` }}
-                                title={`커뮤니티 ${communityCount.toLocaleString()}`}
+                                title={`${t("Community", "커뮤니티")} ${communityCount.toLocaleString()}`}
                               />
                             )}
                           </div>
@@ -1555,7 +1555,7 @@ export const CollectionCriteria = () => {
                             )}
                             {communityCount > 0 && (
                               <span className="flex items-center gap-0.5">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />커뮤니티 {communityCount.toLocaleString()}
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />{t("Community", "커뮤니티")} {communityCount.toLocaleString()}
                               </span>
                             )}
                           </div>
