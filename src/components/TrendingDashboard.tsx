@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrendingProducts, useTrendingKeywords, useProductStats, useSourceCounts, useTrendingDataWindow, type DBTrendingKeyword } from "@/hooks/useProductData";
+import { useExternalChannelInsights, type ExternalBadge } from "@/hooks/useExternalChannelInsights";
 import { maskCompetitorNames } from "@/lib/sentiment";
 
 /* ───── Types ───── */
@@ -188,6 +189,46 @@ const CHANNEL_DISPLAY: Record<string, { label: string; desc: string; color: stri
   web_review:       { label: "🌐 Web Review",         color: "#6B7280", desc: "기타 웹" },
 };
 
+const SOURCE_COUNTRY: Record<string, string> = {
+  consumer_reports: "🇺🇸 US", bestreviews: "🇺🇸 US", consumeraffairs: "🇺🇸 US",
+  bestbuy: "🇺🇸 US", walmart: "🇺🇸 US", costco: "🇺🇸 US", target: "🇺🇸 US",
+  trustpilot: "🌐 Global", reviews_io: "🌐 Global", complaintsboard: "🌐 Global",
+  pcmag: "🌐 Global", rtings: "🌐 Global", techradar: "🌐 Global",
+  soundguys: "🌐 Global", cnet: "🌐 Global", houzz: "🌐 Global",
+  reddit: "🌐 Reddit", lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK",
+  lge_com_de: "🇩🇪 DE", lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN",
+  lge_com_jp: "🇯🇵 JP", lge_com_tw: "🇹🇼 TW", lge_com_th: "🇹🇭 TH",
+  lge_com_br: "🇧🇷 BR",
+};
+const SOURCE_CHANNEL: Record<string, string> = {
+  consumer_reports: "Consumer Reports", bestreviews: "BestReviews",
+  consumeraffairs: "ConsumerAffairs", trustpilot: "Trustpilot",
+  reviews_io: "Reviews.io", complaintsboard: "ComplaintsBoard",
+  bestbuy: "Best Buy", walmart: "Walmart", reddit: "Reddit",
+  pcmag: "PCMag", rtings: "RTINGS", techradar: "TechRadar",
+  soundguys: "SoundGuys", lge_com_us: "LG.com US", lge_com_uk: "LG.com UK",
+  amazon: "Amazon", amazon_us: "Amazon US", amazon_uk: "Amazon UK",
+  youtube: "YouTube", shopee: "Shopee", lazada: "Lazada",
+  cnet: "CNET", houzz: "Houzz",
+};
+const getCountryLabel = (src?: string) => (src && SOURCE_COUNTRY[src]) || "🌐 Global";
+const getChannelLabel = (src?: string) =>
+  (src && SOURCE_CHANNEL[src]) || (src ? src.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "");
+
+/** Badge styles for the opportunity matrix.
+ *  First three (amplify/fix/watch) drive LG.com + Reddit items.
+ *  Last five (ON/DEFEND/SEASON/WATCH/READY) drive external-channel items. */
+const BADGE_STYLE: Record<string, { bar: string; pill: string; label: string }> = {
+  amplify: { bar: "bg-green-600",  pill: "bg-green-50 text-green-700 border border-green-200", label: "📣 AMPLIFY" },
+  fix:     { bar: "bg-destructive", pill: "bg-red-50 text-red-700 border border-red-200",      label: "🔧 FIX URGENT" },
+  watch:   { bar: "bg-amber-500",  pill: "bg-amber-50 text-amber-700 border border-amber-200", label: "👀 WATCH" },
+  ON:      { bar: "bg-green-600",  pill: "bg-green-50 text-green-700 border border-green-200", label: "✅ ON" },
+  DEFEND:  { bar: "bg-destructive", pill: "bg-red-50 text-red-700 border border-red-200",      label: "🛡️ DEFEND" },
+  SEASON:  { bar: "bg-sky-500",    pill: "bg-sky-50 text-sky-700 border border-sky-200",       label: "🌡️ SEASON" },
+  WATCH:   { bar: "bg-amber-500",  pill: "bg-amber-50 text-amber-700 border border-amber-200", label: "👀 WATCH" },
+  READY:   { bar: "bg-gray-400",   pill: "bg-gray-50 text-gray-600 border border-gray-200",    label: "⏳ READY" },
+};
+
 /* ───── Main Component ───── */
 
 export function TrendingDashboard({ onProductClick, country: _country }: TrendingDashboardProps) {
@@ -203,6 +244,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
   const { data: lgcomNegRaw, isLoading: lgcomNegL } = useChannelTopProducts("lge_com", "negative");
   const { data: redditPosRaw, isLoading: redditPosL } = useChannelTopProducts("reddit", "positive");
   const { data: redditNegRaw, isLoading: redditNegL } = useChannelTopProducts("reddit", "negative");
+  const { data: externalInsightsData, isLoading: externalInsightsL } = useExternalChannelInsights({ limit: 1 });
 
   const lgcomPos = lgcomPosRaw?.products ?? [];
   const lgcomNeg = lgcomNegRaw?.products ?? [];
@@ -216,7 +258,7 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
   const { data: lgcomTakeaway = [], isLoading: lgcomTakeawayL } = useChannelKeyTakeaway("lgcom");
   const { data: redditTakeaway = [], isLoading: redditTakeawayL } = useChannelKeyTakeaway("reddit");
-  const { data: otherTakeaway = [], isLoading: otherTakeawayL } = useChannelKeyTakeaway("other" as "lgcom" | "reddit");
+  const { isLoading: otherTakeawayL } = useChannelKeyTakeaway("other" as "lgcom" | "reddit");
 
   const lastCollection = stats?.lastCollection;
   const lastCollectedAt = lastCollection?.completed_at ? new Date(lastCollection.completed_at) : null;
@@ -468,6 +510,10 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       delta: string;
       deltaPositive: boolean;
       modelNumber: string;
+      /** Overrides the default tag-based badge when set (external-channel items). */
+      externalBadge?: ExternalBadge;
+      /** When true, the tile is a no-data placeholder (skeleton/notice). */
+      isPlaceholder?: boolean;
     }[] = [];
 
     // Positive amplify opportunities from LG.com
@@ -519,24 +565,49 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
       });
     }
 
-    // Other channels (Amazon, YouTube, Best Buy, Shopee, etc.)
-    for (const item of otherTakeaway.slice(0, 1)) {
+    // External channels (Trustpilot, Reddit, Best Buy, RTINGS, …) — real collected cases
+    // with dynamic insight text + classification badge (ON / DEFEND / SEASON / WATCH / READY).
+    if (externalInsightsData && externalInsightsData.insights.length > 0) {
+      const top = externalInsightsData.insights[0];
+      const countryLabel = getCountryLabel(top.topSource);
+      items.push({
+        tag: top.badge === "DEFEND" ? "fix" : top.badge === "ON" ? "amplify" : "watch",
+        channel: `${top.channel} · ${top.categoryKo}`,
+        country: countryLabel,
+        title: `${top.channel} ${top.categoryKo} — ${top.totalCount}건 수집`,
+        description: top.insightText,
+        count: top.totalCount,
+        countLabel: `${top.channel} 리뷰`,
+        delta: top.badge === "DEFEND" ? "▼ 부정 비중 ↑" : top.badge === "ON" ? "▲ 긍정 비중 ↑" : "— 모니터링",
+        deltaPositive: top.positivePct >= 50,
+        modelNumber: "",
+        externalBadge: top.badge,
+      });
+    } else if (externalInsightsData && !externalInsightsData.hasExternalData) {
+      // Empty state: show a READY placeholder so the slot doesn't go hollow.
+      const message = externalInsightsData.onlyLgComData
+        ? "LG.com 전용 수집 — 외부 채널(Reddit·Trustpilot·YouTube 등) 확장 필요"
+        : "외부 채널 리뷰 수집 중… 7일 내 집계 데이터 없음";
       items.push({
         tag: "watch",
-        channel: `기타채널 · ${item.category}`,
-        country: "🌐 Multi",
-        title: `${item.product} 외부 채널 인사이트`,
-        description: item.marketer_action || item.positive_msg,
+        channel: "외부 채널 · 전체",
+        country: "🌐 Global",
+        title: "외부 채널 인사이트 대기 중",
+        description: message,
         count: 0,
-        countLabel: "외부 리뷰",
-        delta: `— 모니터링`,
+        countLabel: "수집 대기",
+        delta: `— 대기`,
         deltaPositive: true,
         modelNumber: "",
+        externalBadge: "READY",
+        isPlaceholder: true,
       });
     }
+    // If the hook is still loading (externalInsightsData is undefined), skip — the header spinner
+    // already conveys loading state.
 
     return items.slice(0, 6);
-  }, [lgcomTakeaway, redditTakeaway, otherTakeaway, lgcomPos, lgcomNeg, redditPos, redditNeg, topPosKw, topNegKw]);
+  }, [lgcomTakeaway, redditTakeaway, lgcomPos, lgcomNeg, redditPos, redditNeg, externalInsightsData, topPosKw, topNegKw]);
 
   // LG.com products for heatmap — diversified across categories so TV doesn't dominate
   const lgcomProducts = useMemo(() => {
@@ -656,28 +727,6 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
 
       {/* ═══ [C] KPI PULSE ROW ═══ */}
       {(() => {
-        // Source → country/channel label helper
-        const SOURCE_COUNTRY: Record<string, string> = {
-          consumer_reports: "🇺🇸 US", bestreviews: "🇺🇸 US", consumeraffairs: "🇺🇸 US",
-          bestbuy: "🇺🇸 US", walmart: "🇺🇸 US", costco: "🇺🇸 US", target: "🇺🇸 US",
-          trustpilot: "🌐 Global", reviews_io: "🌐 Global", complaintsboard: "🌐 Global",
-          pcmag: "🌐 Global", rtings: "🌐 Global", techradar: "🌐 Global",
-          soundguys: "🌐 Global", cnet: "🌐 Global", houzz: "🌐 Global",
-          reddit: "🌐 Reddit", lge_com_us: "🇺🇸 US", lge_com_uk: "🇬🇧 UK",
-          lge_com_de: "🇩🇪 DE", lge_com_au: "🇦🇺 AU", lge_com_in: "🇮🇳 IN",
-          lge_com_jp: "🇯🇵 JP", lge_com_tw: "🇹🇼 TW", lge_com_th: "🇹🇭 TH",
-          lge_com_br: "🇧🇷 BR",
-        };
-        const SOURCE_CHANNEL: Record<string, string> = {
-          consumer_reports: "Consumer Reports", bestreviews: "BestReviews",
-          consumeraffairs: "ConsumerAffairs", trustpilot: "Trustpilot",
-          reviews_io: "Reviews.io", complaintsboard: "ComplaintsBoard",
-          bestbuy: "Best Buy", walmart: "Walmart", reddit: "Reddit",
-          pcmag: "PCMag", rtings: "RTINGS", techradar: "TechRadar",
-          soundguys: "SoundGuys", lge_com_us: "LG.com US", lge_com_uk: "LG.com UK",
-        };
-        const getCountryLabel = (src?: string) => (src && SOURCE_COUNTRY[src]) || "🌐 Global";
-        const getChannelLabel = (src?: string) => (src && SOURCE_CHANNEL[src]) || src || "";
         const CAT_KO: Record<string, string> = {
           TV: "TV", Monitor: "모니터", Refrigerator: "냉장고", Washer: "세탁기",
           Dryer: "건조기", Dishwasher: "식세기", Kitchen: "주방가전", Vacuum: "청소기",
@@ -817,47 +866,48 @@ export function TrendingDashboard({ onProductClick, country: _country }: Trendin
         <div className="flex items-center justify-between bg-muted/40 border-b border-border p-3 px-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-extrabold">🎯 마케팅 기회 매트릭스</span>
-            {(lgcomTakeawayL || redditTakeawayL || otherTakeawayL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+            {(lgcomTakeawayL || redditTakeawayL || otherTakeawayL || externalInsightsL) && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
           </div>
           <span className="text-[9px] text-muted-foreground">리뷰 인사이트 기반 자동 분류</span>
         </div>
         {opportunities.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border/40">
-            {opportunities.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-stretch border-b border-border/40 last:border-0 md:[&:nth-last-child(2)]:border-0 cursor-pointer hover:bg-muted/20 transition-colors"
-                onClick={() => handleProductClick(item.modelNumber)}
-              >
-                <div className={cn("w-1 flex-shrink-0", {
-                  "bg-green-600": item.tag === "amplify",
-                  "bg-destructive": item.tag === "fix",
-                  "bg-amber-500": item.tag === "watch",
-                })} />
-                <div className="flex-1 p-3 px-4">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded",
-                      item.tag === "amplify" && "bg-green-50 text-green-700 border border-green-200",
-                      item.tag === "fix" && "bg-red-50 text-red-700 border border-red-200",
-                      item.tag === "watch" && "bg-amber-50 text-amber-700 border border-amber-200",
-                    )}>
-                      {item.tag === "amplify" ? "📣 AMPLIFY" : item.tag === "fix" ? "🔧 FIX URGENT" : "👀 WATCH"}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground">{item.channel}</span>
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
-                    <span className={cn("ml-auto text-sm font-extrabold tracking-tight",
-                      item.deltaPositive ? "text-green-700" : "text-destructive"
-                    )}>{item.count}</span>
-                    <span className="text-[8px] text-muted-foreground">{item.countLabel}</span>
-                    <span className={cn("text-[9px] font-bold",
-                      item.deltaPositive ? "text-green-600" : "text-red-500"
-                    )}>{item.delta}</span>
+            {opportunities.map((item, i) => {
+              const styleKey = item.externalBadge ?? item.tag;
+              const style = BADGE_STYLE[styleKey] ?? BADGE_STYLE.watch;
+              const clickable = !item.isPlaceholder && !!item.modelNumber;
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex items-stretch border-b border-border/40 last:border-0 md:[&:nth-last-child(2)]:border-0 transition-colors",
+                    clickable ? "cursor-pointer hover:bg-muted/20" : "cursor-default",
+                    item.isPlaceholder && "opacity-70"
+                  )}
+                  onClick={() => clickable && handleProductClick(item.modelNumber)}
+                >
+                  <div className={cn("w-1 flex-shrink-0", style.bar)} />
+                  <div className="flex-1 p-3 px-4">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded", style.pill)}>
+                        {style.label}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground">{item.channel}</span>
+                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-muted border border-border text-foreground">{item.country}</span>
+                      <span className={cn("ml-auto text-sm font-extrabold tracking-tight",
+                        item.deltaPositive ? "text-green-700" : "text-destructive"
+                      )}>{item.count}</span>
+                      <span className="text-[8px] text-muted-foreground">{item.countLabel}</span>
+                      <span className={cn("text-[9px] font-bold",
+                        item.deltaPositive ? "text-green-600" : "text-red-500"
+                      )}>{item.delta}</span>
+                    </div>
+                    <p className="text-[12px] font-bold mb-1 leading-snug">{maskCompetitorNames(item.title)}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">{maskCompetitorNames(item.description)}</p>
                   </div>
-                  <p className="text-[12px] font-bold mb-1 leading-snug">{maskCompetitorNames(item.title)}</p>
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{maskCompetitorNames(item.description)}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="p-6 text-center text-[11px] text-muted-foreground">
