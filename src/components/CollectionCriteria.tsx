@@ -1688,6 +1688,29 @@ export const CollectionCriteria = () => {
               );
             })}
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {belowCriteria.map((c) => {
+              const Icon = c.icon;
+              const title = t(c.titleEn, c.titleKo);
+              const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
+              return (
+                <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-4 w-4 text-primary shrink-0" />
+                    <h5 className="font-semibold text-xs">{title}</h5>
+                  </div>
+                  <ul className="space-y-1">
+                    {items.map((item, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                        <span className="text-primary mt-0.5 shrink-0">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* ─── 4. 나머지 기준 (접기/펼치기) ─── */}
