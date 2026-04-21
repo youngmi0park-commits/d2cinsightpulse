@@ -797,7 +797,7 @@ ${d.actionChecklist.length > 0 ? `<!-- Weekly Action Checklist -->
 </td></tr>
 
 <!-- LG.com Section -->
-${channelSectionHTML(bi("LG.COM 주간 오버뷰", "LG.COM Weekly Overview"), "🏪", lgcom)}
+${channelSectionHTML(bi("LG.COM 주간 Overview", "LG.COM Weekly Overview"), "🏪", lgcom)}
 
 <!-- Divider -->
 <tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
@@ -805,7 +805,7 @@ ${channelSectionHTML(bi("LG.COM 주간 오버뷰", "LG.COM Weekly Overview"), "�
 </td></tr>
 
 <!-- Reddit + Community 통합 Section -->
-${channelSectionHTML(bi("REDDIT & 커뮤니티 통합 주간 오버뷰 (Reddit · Amazon · YouTube · Trustpilot · etc)", "REDDIT & Communities — Combined Weekly Overview (Reddit · Amazon · YouTube · Trustpilot · etc)"), "💬", reddit)}
+${channelSectionHTML(bi("커뮤니티 통합 주간 Overview (Reddit · Amazon · YouTube · Trustpilot · etc)", "Communities — Combined Weekly Overview (Reddit · Amazon · YouTube · Trustpilot · etc)"), "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
