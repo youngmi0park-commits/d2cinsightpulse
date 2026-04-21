@@ -558,22 +558,48 @@ a {text-decoration:none;}
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
       <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
-    <td width="180" style="text-align:right;vertical-align:top;">
-      <!-- Language Toggle (browser-only, hidden in email via mso conditional) -->
+    <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
+      <!-- Language Toggle + Weekly Meta (browser-only; Outlook fallback below) -->
       <!--[if !mso]><!-->
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right" style="margin-bottom:8px;">
-        <tr>
-          <td id="lg-btn-ko" class="lg-toggle-btn active" onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').classList.add('active');document.getElementById('lg-btn-en').classList.remove('active');document.getElementById('lg-btn-ko').style.background='#EA1917';document.getElementById('lg-btn-ko').style.color='#FFFFFF';document.getElementById('lg-btn-en').style.background='#FFFFFF';document.getElementById('lg-btn-en').style.color='#EA1917';" style="background:#EA1917;color:#FFFFFF;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:50px 0 0 50px;letter-spacing:0.5px;border:1px solid #EA1917;cursor:pointer;">KO</td>
-          <td id="lg-btn-en" class="lg-toggle-btn" onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').classList.add('active');document.getElementById('lg-btn-ko').classList.remove('active');document.getElementById('lg-btn-en').style.background='#EA1917';document.getElementById('lg-btn-en').style.color='#FFFFFF';document.getElementById('lg-btn-ko').style.background='#FFFFFF';document.getElementById('lg-btn-ko').style.color='#EA1917';" style="background:#FFFFFF;color:#EA1917;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:0 50px 50px 0;letter-spacing:0.5px;border:1px solid #EA1917;border-left:none;cursor:pointer;">EN</td>
-        </tr>
-      </table>
+      <span class="lg-header-controls">
+        <span class="lg-seg" role="tablist" aria-label="Language">
+          <span class="lg-seg-track">
+            <button type="button" id="lg-btn-ko" role="tab" aria-selected="true" class="lg-seg-btn"
+              onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').setAttribute('aria-selected','true');document.getElementById('lg-btn-en').setAttribute('aria-selected','false');">KO</button>
+            <button type="button" id="lg-btn-en" role="tab" aria-selected="false" class="lg-seg-btn"
+              onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').setAttribute('aria-selected','true');document.getElementById('lg-btn-ko').setAttribute('aria-selected','false');">EN</button>
+          </span>
+          <span class="lg-seg-underline" aria-hidden="true"></span>
+        </span>
+        <span class="lg-weekly">
+          <span class="lg-weekly-dot" aria-hidden="true"></span>
+          <span class="lg-weekly-label">WEEKLY</span>
+          <span class="lg-weekly-divider" aria-hidden="true"></span>
+          <time class="lg-weekly-date full" datetime="${_weekAgo.toISOString().slice(0,10)}/${_now.toISOString().slice(0,10)}">${weeklyDateFull}</time>
+          <time class="lg-weekly-date compact" datetime="${_weekAgo.toISOString().slice(0,10)}/${_now.toISOString().slice(0,10)}">${weeklyDateCompact}</time>
+        </span>
+      </span>
+      <script>
+        (function(){
+          var ko=document.getElementById('lg-btn-ko'), en=document.getElementById('lg-btn-en');
+          if(!ko||!en) return;
+          function onKey(e){
+            if(e.key==='ArrowRight'){en.click();en.focus();}
+            else if(e.key==='ArrowLeft'){ko.click();ko.focus();}
+          }
+          ko.addEventListener('keydown',onKey); en.addEventListener('keydown',onKey);
+        })();
+      </script>
       <!--<![endif]-->
+      <!--[if mso]>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
-        <tr><td style="background:#1B1A1E;padding:8px 16px;text-align:center;font-family:${INTER};border-radius:50px;">
-          <div style="font-size:10px;font-weight:700;color:#FFFFFF;letter-spacing:1.2px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
-          <div style="font-size:9px;color:#B5B4B8;margin-top:3px;mso-line-height-rule:exactly;line-height:13px;font-weight:400;">${d.dateRange}</div>
+        <tr><td style="background:#FFFFFF;border:1px solid #ECECEE;padding:10px 16px;text-align:center;font-family:${INTER};border-radius:12px;">
+          <span style="font-size:11px;font-weight:600;color:#0F0F12;letter-spacing:1.4px;">WEEKLY</span>
+          <span style="display:inline-block;width:1px;height:10px;background:#ECECEE;margin:0 10px;"></span>
+          <span style="font-size:11px;color:#6B6B74;">${d.dateRange}</span>
         </td></tr>
       </table>
+      <![endif]-->
     </td>
   </tr></table>
 </td></tr>
