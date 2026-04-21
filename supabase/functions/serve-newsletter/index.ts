@@ -443,32 +443,46 @@ function buildNewsletterHTML(d: {
         </tr></table>
       </td></tr>`).join("");
 
-    // Top topics — rounded
-    const topicsList = (insight.top_topics || []).slice(0, 3);
+    // Helper: render country flags + product chips meta line
+    const metaLine = (countries?: string[], products?: string[]) => {
+      const cc = (countries || []).slice(0, 3);
+      const pp = (products || []).slice(0, 3);
+      const flags = cc.length ? cc.map(c => `<span style="font-size:11px;">${flagFor(c)}</span> <span style="color:#6B6A6E;">${c}</span>`).join(" · ") : "";
+      const prods = pp.length ? pp.map(name => `<span style="background:#F0ECE4;border:1px solid #E5DFD3;color:#1B1A1E;font-size:10px;font-weight:600;padding:1px 7px;border-radius:50px;display:inline-block;margin:1px 3px 1px 0;">📦 ${name}</span>`).join("") : "";
+      if (!flags && !prods) return "";
+      return `<tr><td colspan="2" style="padding-top:6px;font-size:10.5px;color:#1B1A1E;font-family:${FONT};line-height:18px;">${flags ? `<span style="margin-right:8px;">${flags}</span>` : ""}${prods}</td></tr>`;
+    };
+
+    // Top topics — full text, no truncation
+    const topicsList = (insight.top_topics || []).slice(0, 5);
     const topicsHTML = topicsList.map((t, idx) => `
-      <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
+      <tr><td style="padding:12px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${bi(trim(t.topic, 18), trim((t as any).topic_en, 28))}</td>
-            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">${t.rank}. ${bi(t.topic || "", (t as any).topic_en || t.topic || "")}</td>
+            <td align="right" valign="top" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;padding-left:8px;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${bi(trim(t.representative_comment, 55), trim((t as any).representative_comment_en, 90))}"</div></td></tr>
+          <tr><td colspan="2" style="padding-top:6px;"><div style="font-size:11px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:8px 11px;line-height:17px;border-radius:8px;font-weight:400;word-break:break-word;">"${bi(t.representative_comment || "", (t as any).representative_comment_en || t.representative_comment || "")}"</div></td></tr>
+          ${metaLine((t as any).related_countries, t.related_products)}
         </table>
       </td></tr>`).join("");
 
-    // Urgent issues
-    const issuesList = (insight.urgent_issues || []).slice(0, 3);
+    // Urgent issues — full text, no truncation
+    const issuesList = (insight.urgent_issues || []).slice(0, 5);
     const issuesHTML = issuesList.map((iss, idx) => `
-      <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
+      <tr><td style="padding:12px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${bi(trim(iss.issue, 20), trim((iss as any).issue_en, 32))} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${bi(trim(iss.pattern, 35), trim((iss as any).pattern_en, 55))} · <span style="color:#6B6A6E;">${bi(trim(iss.cause, 35), trim((iss as any).cause_en, 55))}</span></td></tr>
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:4px;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">⚠️ ${iss.rank}. ${bi(iss.issue || "", (iss as any).issue_en || iss.issue || "")} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;word-break:break-word;">${bi(iss.pattern || "", (iss as any).pattern_en || iss.pattern || "")} <span style="color:#6B6A6E;">· ${bi(iss.cause || "", (iss as any).cause_en || iss.cause || "")}</span></td></tr>
+          ${metaLine((iss as any).related_countries, iss.related_products)}
         </table>
       </td></tr>`).join("");
 
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${bi(trim(item.text, 30), trim(item.text_en, 48))}</td></tr>`;
+      const cc = (item.countries || item.related_countries || []) as string[];
+      const flagStr = cc.length ? `<span style="margin-left:6px;font-size:10px;color:#6B6A6E;">${cc.slice(0,2).map(flagFor).join(" ")}</span>` : "";
+      return `<tr><td style="padding:4px 0;font-size:11px;color:#0D9488;line-height:17px;font-family:${FONT};font-weight:500;word-break:break-word;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong>${item.category ? ` <span style="color:#8B8A8E;font-weight:400;">(${item.category})</span>` : ""} — ` : ""}${bi(item.text || "", item.text_en || item.text || "")}${flagStr}</td></tr>`;
     }).join("");
 
     return `
