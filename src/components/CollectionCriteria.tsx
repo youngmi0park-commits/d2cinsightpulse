@@ -1454,7 +1454,7 @@ export const CollectionCriteria = () => {
                 </h4>
                 <div className="flex flex-wrap gap-3 ml-auto text-[11px]">
                   <span className="inline-flex items-center gap-1 font-semibold">
-                    📊 {t("Total", "총 리뷰")} <span className="text-primary font-bold">{totalCountry.toLocaleString()}</span>
+                    📊 {t("Total Reviews", "총 리뷰")} <span className="text-primary font-bold">{totalCountry.toLocaleString()}</span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
                     🌏 {activeCountries.length + (countryCounts["Global"] ? 1 : 0)} {t("countries", "개국")}
@@ -1640,7 +1640,7 @@ export const CollectionCriteria = () => {
                         <span className="font-semibold text-[11px]">
                           {cat.icon} {t(cat.labelEn, cat.labelKo).split("·")[0].trim()}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">{cat.channels.length}개</span>
+                        <span className="text-[10px] text-muted-foreground">{cat.channels.length}{t("", "개")}</span>
                       </div>
                       <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-1">
                         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min((cat.channels.length / 8) * 100, 100)}%` }} />
@@ -1657,7 +1657,10 @@ export const CollectionCriteria = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-right">
-                  총 {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · {CATEGORY_CHANNELS.length}개 카테고리
+                  {t(
+                    `Total ${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} channels · ${CATEGORY_CHANNELS.length} categories`,
+                    `총 ${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · ${CATEGORY_CHANNELS.length}개 카테고리`
+                  )}
                 </p>
               </div>
             )}
