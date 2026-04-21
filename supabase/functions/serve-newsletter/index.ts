@@ -528,25 +528,28 @@ a {text-decoration:none;}
   /* Segmented language toggle */
   .lg-seg { position:relative; display:inline-block; background:#FFFFFF; border:1px solid #ECECEE; border-radius:12px; padding:3px; height:44px; box-sizing:border-box; vertical-align:middle; }
   .lg-seg-track { position:relative; display:flex; height:100%; }
-  .lg-seg-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; padding:0 14px; height:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#6B6B74; background:transparent; border:0; cursor:pointer; transition:color .18s ease; outline:none; }
+  .lg-seg-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:28px; padding:0 7px; height:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#6B6B74; background:transparent; border:0; cursor:pointer; transition:color .18s ease; outline:none; }
   .lg-seg-btn:hover { color:#0F0F12; }
   .lg-seg-btn[aria-selected="true"] { color:#0F0F12; }
-  .lg-seg-underline { position:absolute; bottom:4px; left:0; height:2px; width:calc(50% - 10px); margin:0 10px; background:#EF2A3C; border-radius:2px; transform:translateX(0); transition:transform 220ms cubic-bezier(.2,.7,.2,1); pointer-events:none; }
+  .lg-seg-underline { position:absolute; bottom:3px; left:0; height:2px; width:calc(50% - 6px); margin:0 6px; background:#EF2A3C; border-radius:2px; transform:translateX(0); transition:transform 220ms cubic-bezier(.2,.7,.2,1); pointer-events:none; }
   body.lang-en .lg-seg-underline { transform:translateX(100%); }
   /* Weekly meta pill */
-  .lg-weekly { display:inline-flex; align-items:center; height:44px; padding:0 16px; background:#FFFFFF; border:1px solid #ECECEE; border-radius:12px; font-family:'Inter',sans-serif; vertical-align:middle; box-sizing:border-box; }
-  .lg-weekly-dot { width:6px; height:6px; border-radius:50%; background:#EF2A3C; box-shadow:0 0 0 4px rgba(239,42,60,.15); margin-right:10px; animation:lgPulse 2s ease-in-out infinite; }
-  .lg-weekly-label { font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#0F0F12; }
-  .lg-weekly-divider { display:inline-block; width:1px; height:16px; background:#ECECEE; margin:0 12px; vertical-align:middle; }
-  .lg-weekly-date { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:11px; color:#6B6B74; }
+  .lg-weekly { display:inline-flex; align-items:center; height:32px; padding:0 10px; background:#FFFFFF; border:1px solid #ECECEE; border-radius:9px; font-family:'Inter',sans-serif; vertical-align:middle; box-sizing:border-box; }
+  .lg-weekly-dot { width:5px; height:5px; border-radius:50%; background:#EF2A3C; box-shadow:0 0 0 3px rgba(239,42,60,.15); margin-right:6px; animation:lgPulse 2s ease-in-out infinite; }
+  .lg-weekly-label { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#0F0F12; }
+  .lg-weekly-divider { display:inline-block; width:1px; height:11px; background:#ECECEE; margin:0 7px; vertical-align:middle; }
+  .lg-weekly-date { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:10px; color:#6B6B74; white-space:nowrap; }
   @keyframes lgPulse { 0%,100% { box-shadow:0 0 0 0 rgba(239,42,60,.25); } 50% { box-shadow:0 0 0 6px rgba(239,42,60,.05); } }
-  .lg-header-controls { display:inline-flex; gap:10px; align-items:center; }
+  .lg-header-controls { display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  /* Mid-width: switch to compact date to keep one-line */
+  @media only screen and (max-width:960px) {
+    .lg-weekly-date.full { display:none !important; }
+    .lg-weekly-date.compact { display:inline !important; }
+  }
   @media only screen and (max-width:699px) {
     .email-container { width:100% !important; max-width:100% !important; }
     .stack-column { display:block !important; width:100% !important; }
     .lg-header-controls { margin-top:14px; }
-    .lg-weekly-date.full { display:none; }
-    .lg-weekly-date.compact { display:inline !important; }
   }
   .lg-weekly-date.compact { display:none; }
 </style>
