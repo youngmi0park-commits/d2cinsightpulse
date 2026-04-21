@@ -318,6 +318,14 @@ function buildNewsletterHTML(d: {
     return `<span class="lg-ko">${ko}</span><span class="lg-en" style="display:none;">${enText}</span>`;
   };
 
+  // Format date range for header weekly meta — "APR 14 — APR 21, 2026" + compact "04.14 — 04.21"
+  const MONTHS_EN = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const _now = new Date();
+  const _weekAgo = new Date(_now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const _pad = (n: number) => String(n).padStart(2, "0");
+  const weeklyDateFull = `${MONTHS_EN[_weekAgo.getMonth()]} ${_pad(_weekAgo.getDate())} — ${MONTHS_EN[_now.getMonth()]} ${_pad(_now.getDate())}, ${_now.getFullYear()}`;
+  const weeklyDateCompact = `${_pad(_weekAgo.getMonth() + 1)}.${_pad(_weekAgo.getDate())} — ${_pad(_now.getMonth() + 1)}.${_pad(_now.getDate())}`;
+
   /* ── Key Takeaway block — 카테고리별 1개씩 (중복 제거) ── */
   function renderKeyTakeaway(label: string, icon: string, borderColor: string, insight: ChannelInsight | null) {
     const raw = insight?.key_takeaway;
@@ -508,7 +516,7 @@ a {text-decoration:none;}
 </style>
 <![endif]-->
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
   body, table, td, p, a, li { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
   table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
   img { -ms-interpolation-mode:bicubic; border:0; height:auto; line-height:100%; outline:none; text-decoration:none; }
@@ -517,13 +525,30 @@ a {text-decoration:none;}
   body.lang-en .lg-en { display:inline !important; }
   body:not(.lang-en) .lg-ko { display:inline; }
   body:not(.lang-en) .lg-en { display:none !important; }
-  .lg-toggle-btn { cursor:pointer; user-select:none; transition:all 0.2s ease; }
-  .lg-toggle-btn:hover { opacity:0.85; }
-  .lg-toggle-btn.active { background:#1B1A1E !important; color:#FFFFFF !important; }
+  /* Segmented language toggle */
+  .lg-seg { position:relative; display:inline-block; background:#FFFFFF; border:1px solid #ECECEE; border-radius:12px; padding:3px; height:44px; box-sizing:border-box; vertical-align:middle; }
+  .lg-seg-track { position:relative; display:flex; height:100%; }
+  .lg-seg-btn { position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; padding:0 14px; height:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#6B6B74; background:transparent; border:0; cursor:pointer; transition:color .18s ease; outline:none; }
+  .lg-seg-btn:hover { color:#0F0F12; }
+  .lg-seg-btn[aria-selected="true"] { color:#0F0F12; }
+  .lg-seg-underline { position:absolute; bottom:4px; left:0; height:2px; width:calc(50% - 10px); margin:0 10px; background:#EF2A3C; border-radius:2px; transform:translateX(0); transition:transform 220ms cubic-bezier(.2,.7,.2,1); pointer-events:none; }
+  body.lang-en .lg-seg-underline { transform:translateX(100%); }
+  /* Weekly meta pill */
+  .lg-weekly { display:inline-flex; align-items:center; height:44px; padding:0 16px; background:#FFFFFF; border:1px solid #ECECEE; border-radius:12px; font-family:'Inter',sans-serif; vertical-align:middle; box-sizing:border-box; }
+  .lg-weekly-dot { width:6px; height:6px; border-radius:50%; background:#EF2A3C; box-shadow:0 0 0 4px rgba(239,42,60,.15); margin-right:10px; animation:lgPulse 2s ease-in-out infinite; }
+  .lg-weekly-label { font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#0F0F12; }
+  .lg-weekly-divider { display:inline-block; width:1px; height:16px; background:#ECECEE; margin:0 12px; vertical-align:middle; }
+  .lg-weekly-date { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:11px; color:#6B6B74; }
+  @keyframes lgPulse { 0%,100% { box-shadow:0 0 0 0 rgba(239,42,60,.25); } 50% { box-shadow:0 0 0 6px rgba(239,42,60,.05); } }
+  .lg-header-controls { display:inline-flex; gap:10px; align-items:center; }
   @media only screen and (max-width:699px) {
     .email-container { width:100% !important; max-width:100% !important; }
     .stack-column { display:block !important; width:100% !important; }
+    .lg-header-controls { margin-top:14px; }
+    .lg-weekly-date.full { display:none; }
+    .lg-weekly-date.compact { display:inline !important; }
   }
+  .lg-weekly-date.compact { display:none; }
 </style>
 </head>
 <body style="margin:0;padding:0;background-color:#F0ECE4;font-family:${FONT};word-spacing:normal;color:#1B1A1E;">
@@ -543,22 +568,48 @@ a {text-decoration:none;}
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
       <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
-    <td width="180" style="text-align:right;vertical-align:top;">
-      <!-- Language Toggle (browser-only, hidden in email via mso conditional) -->
+    <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
+      <!-- Language Toggle + Weekly Meta (browser-only; Outlook fallback below) -->
       <!--[if !mso]><!-->
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right" style="margin-bottom:8px;">
-        <tr>
-          <td id="lg-btn-ko" class="lg-toggle-btn active" onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').classList.add('active');document.getElementById('lg-btn-en').classList.remove('active');document.getElementById('lg-btn-ko').style.background='#EA1917';document.getElementById('lg-btn-ko').style.color='#FFFFFF';document.getElementById('lg-btn-en').style.background='#FFFFFF';document.getElementById('lg-btn-en').style.color='#EA1917';" style="background:#EA1917;color:#FFFFFF;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:50px 0 0 50px;letter-spacing:0.5px;border:1px solid #EA1917;cursor:pointer;">KO</td>
-          <td id="lg-btn-en" class="lg-toggle-btn" onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').classList.add('active');document.getElementById('lg-btn-ko').classList.remove('active');document.getElementById('lg-btn-en').style.background='#EA1917';document.getElementById('lg-btn-en').style.color='#FFFFFF';document.getElementById('lg-btn-ko').style.background='#FFFFFF';document.getElementById('lg-btn-ko').style.color='#EA1917';" style="background:#FFFFFF;color:#EA1917;padding:5px 12px;font-family:${INTER};font-size:10px;font-weight:700;border-radius:0 50px 50px 0;letter-spacing:0.5px;border:1px solid #EA1917;border-left:none;cursor:pointer;">EN</td>
-        </tr>
-      </table>
+      <span class="lg-header-controls">
+        <span class="lg-seg" role="tablist" aria-label="Language">
+          <span class="lg-seg-track">
+            <button type="button" id="lg-btn-ko" role="tab" aria-selected="true" class="lg-seg-btn"
+              onclick="document.body.classList.remove('lang-en');document.getElementById('lg-btn-ko').setAttribute('aria-selected','true');document.getElementById('lg-btn-en').setAttribute('aria-selected','false');">KO</button>
+            <button type="button" id="lg-btn-en" role="tab" aria-selected="false" class="lg-seg-btn"
+              onclick="document.body.classList.add('lang-en');document.getElementById('lg-btn-en').setAttribute('aria-selected','true');document.getElementById('lg-btn-ko').setAttribute('aria-selected','false');">EN</button>
+          </span>
+          <span class="lg-seg-underline" aria-hidden="true"></span>
+        </span>
+        <span class="lg-weekly">
+          <span class="lg-weekly-dot" aria-hidden="true"></span>
+          <span class="lg-weekly-label">WEEKLY</span>
+          <span class="lg-weekly-divider" aria-hidden="true"></span>
+          <time class="lg-weekly-date full" datetime="${_weekAgo.toISOString().slice(0,10)}/${_now.toISOString().slice(0,10)}">${weeklyDateFull}</time>
+          <time class="lg-weekly-date compact" datetime="${_weekAgo.toISOString().slice(0,10)}/${_now.toISOString().slice(0,10)}">${weeklyDateCompact}</time>
+        </span>
+      </span>
+      <script>
+        (function(){
+          var ko=document.getElementById('lg-btn-ko'), en=document.getElementById('lg-btn-en');
+          if(!ko||!en) return;
+          function onKey(e){
+            if(e.key==='ArrowRight'){en.click();en.focus();}
+            else if(e.key==='ArrowLeft'){ko.click();ko.focus();}
+          }
+          ko.addEventListener('keydown',onKey); en.addEventListener('keydown',onKey);
+        })();
+      </script>
       <!--<![endif]-->
+      <!--[if mso]>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="right">
-        <tr><td style="background:#1B1A1E;padding:8px 16px;text-align:center;font-family:${INTER};border-radius:50px;">
-          <div style="font-size:10px;font-weight:700;color:#FFFFFF;letter-spacing:1.2px;mso-line-height-rule:exactly;line-height:14px;">WEEKLY REPORT</div>
-          <div style="font-size:9px;color:#B5B4B8;margin-top:3px;mso-line-height-rule:exactly;line-height:13px;font-weight:400;">${d.dateRange}</div>
+        <tr><td style="background:#FFFFFF;border:1px solid #ECECEE;padding:10px 16px;text-align:center;font-family:${INTER};border-radius:12px;">
+          <span style="font-size:11px;font-weight:600;color:#0F0F12;letter-spacing:1.4px;">WEEKLY</span>
+          <span style="display:inline-block;width:1px;height:10px;background:#ECECEE;margin:0 10px;"></span>
+          <span style="font-size:11px;color:#6B6B74;">${d.dateRange}</span>
         </td></tr>
       </table>
+      <![endif]-->
     </td>
   </tr></table>
 </td></tr>
