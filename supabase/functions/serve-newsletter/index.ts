@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 interface ChannelInsight {
-  top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[] }[];
-  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[] }[];
-  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[] }[];
+  top_products: { rank: number; name: string; category: string; mention_count: number; pos_summary: string; neg_summary: string; praise_points: string[]; countries?: string[] }[];
+  top_topics: { rank: number; topic: string; mention_pct: number; positive_pct: number; negative_pct: number; representative_comment: string; related_products: string[]; related_countries?: string[] }[];
+  urgent_issues: { rank: number; issue: string; mention_pct: number; pattern: string; cause: string; related_products: string[]; related_countries?: string[] }[];
   recurring_praise: { text: string; product?: string; category?: string }[];
   key_takeaway?: { product: string; category: string; positive_msg: string; negative_msg: string; marketer_action: string }[];
 }
@@ -19,6 +19,27 @@ interface AllChannelSummary {
   key_takeaway: string;
   community_weekly: string;
 }
+
+/* ── Helpers: source → country code & flag ── */
+function sourceToCountry(src: string): string {
+  const s = (src || "").toLowerCase();
+  const m = s.match(/_([a-z]{2})$/);
+  if (m) {
+    const cc = m[1].toUpperCase();
+    if (["US","UK","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN"].includes(cc)) return cc;
+  }
+  if (s === "lge_com" || /^(amazon|youtube|bestbuy|walmart|costco|target|consumeraffairs|consumer_reports|bestreviews|houzz|web_review|reddit)$/.test(s)) return "US";
+  if (s === "trusted_reviews") return "UK";
+  if (s.startsWith("reddit")) return "US";
+  return "Global";
+}
+const FLAG: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", CA: "🇨🇦", DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺",
+  BR: "🇧🇷", MX: "🇲🇽", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", TH: "🇹🇭",
+  PH: "🇵🇭", ID: "🇮🇩", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  Global: "🌐",
+};
+const flagFor = (cc: string) => FLAG[cc] || "🌐";
 
 /* ── AI insight generation per channel ── */
 async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit" | "community"): Promise<ChannelInsight | null> {
@@ -47,9 +68,11 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   for (const r of reviews as any[]) {
     const pName = r.products?.display_name || "Unknown";
     if (!productMap[pName]) {
-      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[] };
+      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[], countries: {} as Record<string, number> };
     }
     const p = productMap[pName];
+    const cc = sourceToCountry(r.source);
+    p.countries[cc] = (p.countries[cc] || 0) + 1;
     if (r.sentiment === "positive") {
       p.pos++;
       if (r.title && p.posTitles.length < 8) p.posTitles.push(r.title);
@@ -63,9 +86,10 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   }
 
   const topProducts = Object.values(productMap).sort((a: any, b: any) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 10);
-  const productSummary = topProducts.map((p: any) =>
-    `${p.name} (${p.category}): 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`
-  ).join("\n\n");
+  const productSummary = topProducts.map((p: any) => {
+    const topCountries = Object.entries(p.countries).sort((a: any, b: any) => b[1] - a[1]).slice(0, 3).map(([c, n]) => `${c}(${n})`).join(", ");
+    return `${p.name} (${p.category}) [국가: ${topCountries}]: 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`;
+  }).join("\n\n");
 
   const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
@@ -87,25 +111,28 @@ ${productSummary}
 ## 1. 가장 많이 언급된 제품 TOP 5 (top_products)
 각 제품별:
 - rank, name, category, mention_count
-- pos_summary (한 문장 60자 이내) + pos_summary_en (한 문장 90자 이내, 영어)
-- neg_summary (50자 이내) + neg_summary_en (80자 이내) — 또는 빈문자열
+- countries: 위 데이터 [국가: ...] 정보 기반 상위 1~3개 국가 코드 배열 (예: ["US","UK"])
+- pos_summary (한 문장 90자 이내) + pos_summary_en (한 문장 140자 이내, 영어) — 짤리지 말 것
+- neg_summary (80자 이내) + neg_summary_en (130자 이내) — 또는 빈문자열
 - praise_points: 정확히 3개, 각 8자 이내 짧은 한국어 키워드
 - praise_points_en: 정확히 3개, 각 14자 이내 짧은 영어 키워드
 
 ## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (한국어 12자 이내), topic_en (English, ≤22 chars), mention_pct, positive_pct, negative_pct
-- representative_comment (한 문장 45자 이내) + representative_comment_en (≤80 chars)
-- related_products
+- rank, topic (한국어 18자 이내), topic_en (English, ≤32 chars), mention_pct, positive_pct, negative_pct
+- representative_comment (한 문장 80자 이내) + representative_comment_en (≤140 chars)
+- related_products: 실제 제품 display_name 1~3개 배열
+- related_countries: 해당 토픽이 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","UK","DE"]) — 위 데이터의 [국가: ...] 정보 활용
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue + issue_en (각 15/25자 이내), mention_pct
-- pattern + pattern_en (각 25/45자 이내)
-- cause + cause_en (각 25/45자 이내)
-- related_products
+- rank, issue + issue_en (각 24/40자 이내), mention_pct
+- pattern + pattern_en (각 60/100자 이내)
+- cause + cause_en (각 60/100자 이내)
+- related_products: 실제 제품 display_name 1~3개 배열
+- related_countries: 해당 이슈가 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","DE"])
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
-- 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
+- 각 항목 { "text": "30자 이내 한국어 칭찬", "text_en": "≤48 chars English praise", "product": "실제 제품 display_name", "category": "카테고리", "countries": ["US"] (1~2개) }
 
 ## 5. KEY TAKEAWAY — 카테고리별 마케터 인사이트 (key_takeaway)
 - **카테고리별로 1개씩** (실제 데이터에 존재하는 카테고리만), 동일 카테고리 중복 금지
@@ -393,16 +420,16 @@ function buildNewsletterHTML(d: {
           </td>
           <td style="padding-left:12px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span></td></tr>
+              <tr><td style="font-weight:700;font-size:12.5px;color:#1B1A1E;padding-bottom:2px;font-family:${FONT};letter-spacing:-0.1px;line-height:17px;word-break:break-word;">${p.name} <span style="font-weight:500;font-size:10px;color:#6B6A6E;">· ${p.category} · ${String(p.mention_count).replace(/건/g, "")} ${bi("건", "mentions")}</span>${(p.countries && p.countries.length) ? ` <span style="font-size:10px;color:#6B6A6E;font-weight:500;white-space:nowrap;">· ${p.countries.slice(0,3).map(c => `${flagFor(c)} ${c}`).join(" ")}</span>` : ""}</td></tr>
               <tr><td style="padding-top:6px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F0FDFA;border-left:3px solid #0D9488;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(trim(p.pos_summary, 70), trim((p as any).pos_summary_en, 110))}</td></tr>
+                  <tr><td style="padding:8px 12px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};word-break:break-word;"><span style="color:#0D9488;font-weight:700;">👍</span> ${bi(p.pos_summary || "", (p as any).pos_summary_en || p.pos_summary || "")}</td></tr>
                 </table>
               </td></tr>
               ${p.neg_summary && p.neg_summary !== "특이 불만 없음" ? `
               <tr><td style="padding-top:5px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F2;border-left:3px solid #EA1917;border-radius:8px;overflow:hidden;">
-                  <tr><td style="padding:7px 11px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(trim(p.neg_summary, 60), trim((p as any).neg_summary_en, 100))}</td></tr>
+                  <tr><td style="padding:8px 12px;font-size:11px;color:#1B1A1E;line-height:17px;font-family:${FONT};word-break:break-word;"><span style="color:#EA1917;font-weight:700;">👎</span> ${bi(p.neg_summary || "", (p as any).neg_summary_en || p.neg_summary || "")}</td></tr>
                 </table>
               </td></tr>` : ""}
               ${(p.praise_points || []).length > 0 ? `
@@ -417,32 +444,46 @@ function buildNewsletterHTML(d: {
         </tr></table>
       </td></tr>`).join("");
 
-    // Top topics — rounded
-    const topicsList = (insight.top_topics || []).slice(0, 3);
+    // Helper: render country flags + product chips meta line
+    const metaLine = (countries?: string[], products?: string[]) => {
+      const cc = (countries || []).slice(0, 3);
+      const pp = (products || []).slice(0, 3);
+      const flags = cc.length ? cc.map(c => `<span style="font-size:11px;">${flagFor(c)}</span> <span style="color:#6B6A6E;">${c}</span>`).join(" · ") : "";
+      const prods = pp.length ? pp.map(name => `<span style="background:#F0ECE4;border:1px solid #E5DFD3;color:#1B1A1E;font-size:10px;font-weight:600;padding:1px 7px;border-radius:50px;display:inline-block;margin:1px 3px 1px 0;">📦 ${name}</span>`).join("") : "";
+      if (!flags && !prods) return "";
+      return `<tr><td colspan="2" style="padding-top:6px;font-size:10.5px;color:#1B1A1E;font-family:${FONT};line-height:18px;">${flags ? `<span style="margin-right:8px;">${flags}</span>` : ""}${prods}</td></tr>`;
+    };
+
+    // Top topics — full text, no truncation
+    const topicsList = (insight.top_topics || []).slice(0, 5);
     const topicsHTML = topicsList.map((t, idx) => `
-      <tr><td style="padding:10px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
+      <tr><td style="padding:12px 16px;${idx < topicsList.length - 1 ? "border-bottom:1px solid #F0ECE4;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;">${t.rank}. ${bi(trim(t.topic, 18), trim((t as any).topic_en, 28))}</td>
-            <td align="right" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
+            <td style="font-weight:700;font-size:12px;color:#1B1A1E;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">${t.rank}. ${bi(t.topic || "", (t as any).topic_en || t.topic || "")}</td>
+            <td align="right" valign="top" style="font-size:10px;color:#6B6A6E;white-space:nowrap;font-weight:500;padding-left:8px;"><span style="color:#0D9488;font-weight:700;">${bi("긍정", "Pos")} ${String(t.positive_pct).replace(/%/g, "")}%</span> · ${String(t.mention_pct).replace(/%/g, "")}%</td>
           </tr>
-          <tr><td colspan="2" style="padding-top:5px;"><div style="font-size:10.5px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:6px 10px;line-height:15px;border-radius:8px;font-weight:400;">"${bi(trim(t.representative_comment, 55), trim((t as any).representative_comment_en, 90))}"</div></td></tr>
+          <tr><td colspan="2" style="padding-top:6px;"><div style="font-size:11px;color:#4A4A4A;font-style:italic;background:#F0ECE4;padding:8px 11px;line-height:17px;border-radius:8px;font-weight:400;word-break:break-word;">"${bi(t.representative_comment || "", (t as any).representative_comment_en || t.representative_comment || "")}"</div></td></tr>
+          ${metaLine((t as any).related_countries, t.related_products)}
         </table>
       </td></tr>`).join("");
 
-    // Urgent issues
-    const issuesList = (insight.urgent_issues || []).slice(0, 3);
+    // Urgent issues — full text, no truncation
+    const issuesList = (insight.urgent_issues || []).slice(0, 5);
     const issuesHTML = issuesList.map((iss, idx) => `
-      <tr><td style="padding:10px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
+      <tr><td style="padding:12px 16px;${idx < issuesList.length - 1 ? "border-bottom:1px solid #FEE2E2;" : ""}font-family:${FONT};">
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:3px;letter-spacing:-0.1px;">⚠️ ${iss.rank}. ${bi(trim(iss.issue, 20), trim((iss as any).issue_en, 32))} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
-          <tr><td style="font-size:10.5px;color:#1B1A1E;line-height:15px;font-weight:400;">${bi(trim(iss.pattern, 35), trim((iss as any).pattern_en, 55))} · <span style="color:#6B6A6E;">${bi(trim(iss.cause, 35), trim((iss as any).cause_en, 55))}</span></td></tr>
+          <tr><td style="font-weight:700;font-size:12px;color:#EA1917;padding-bottom:4px;letter-spacing:-0.1px;line-height:17px;word-break:break-word;">⚠️ ${iss.rank}. ${bi(iss.issue || "", (iss as any).issue_en || iss.issue || "")} <span style="color:#8B8A8E;font-weight:500;">(${iss.mention_pct}%)</span></td></tr>
+          <tr><td style="font-size:11px;color:#1B1A1E;line-height:17px;font-weight:400;word-break:break-word;">${bi(iss.pattern || "", (iss as any).pattern_en || iss.pattern || "")} <span style="color:#6B6A6E;">· ${bi(iss.cause || "", (iss as any).cause_en || iss.cause || "")}</span></td></tr>
+          ${metaLine((iss as any).related_countries, iss.related_products)}
         </table>
       </td></tr>`).join("");
 
     const praiseRows = (insight.recurring_praise || []).slice(0, 5).map(p => {
       const item = typeof p === "string" ? ({ text: p } as any) : p;
-      return `<tr><td style="padding:3px 0;font-size:11px;color:#0D9488;line-height:16px;font-family:${FONT};font-weight:500;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong> — ` : ""}${bi(trim(item.text, 30), trim(item.text_en, 48))}</td></tr>`;
+      const cc = (item.countries || item.related_countries || []) as string[];
+      const flagStr = cc.length ? `<span style="margin-left:6px;font-size:10px;color:#6B6A6E;">${cc.slice(0,2).map(flagFor).join(" ")}</span>` : "";
+      return `<tr><td style="padding:4px 0;font-size:11px;color:#0D9488;line-height:17px;font-family:${FONT};font-weight:500;word-break:break-word;">✅ ${item.product ? `<strong style="color:#1B1A1E;">${item.product}</strong>${item.category ? ` <span style="color:#8B8A8E;font-weight:400;">(${item.category})</span>` : ""} — ` : ""}${bi(item.text || "", item.text_en || item.text || "")}${flagStr}</td></tr>`;
     }).join("");
 
     return `
