@@ -834,7 +834,7 @@ ${channelSectionHTML(bi("REDDIT & 커뮤니티 통합 주간 오버뷰 (Reddit �
 <!-- Footer -->
 <tr><td style="padding:24px 32px 28px;border-top:1px solid #F0ECE4;background:#FAF9F6;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1B1A1E;mso-line-height-rule:exactly;line-height:16px;letter-spacing:-0.1px;">Review-to-Asset Studio</div><div style="font-size:9px;color:#8B8A8E;margin-top:3px;mso-line-height-rule:exactly;line-height:14px;font-weight:400;">Produced by LG전자 D2C마케팅전략팀</div></td>
+    <td style="font-family:${INTER};"><div style="font-size:11px;font-weight:700;color:#1B1A1E;mso-line-height-rule:exactly;line-height:16px;letter-spacing:-0.1px;">Review-to-Asset Studio</div><div style="font-size:9px;color:#8B8A8E;margin-top:3px;mso-line-height-rule:exactly;line-height:14px;font-weight:400;">AI-Generated Weekly Insights · Provided by LG전자 D2C마케팅전략팀</div></td>
     <td style="text-align:right;font-family:${FONT};"><div style="font-size:9px;color:#B5B4B8;line-height:14px;font-weight:400;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
   </tr></table>
 </td></tr>

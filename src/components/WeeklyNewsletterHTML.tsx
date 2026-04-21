@@ -548,7 +548,7 @@ ${d.trendingSignals.length > 0 ? `<tr><td style="padding:20px 40px 0;">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr><td style="padding:20px 40px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-family:${INTER};"><div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:18px;">Review-to-Asset Studio</div><div style="font-size:10px;color:#999;margin-top:3px;line-height:15px;">Produced by LG전자 D2C마케팅전략팀</div></td>
+        <td style="font-family:${INTER};"><div style="font-size:12px;font-weight:700;color:#1a1a1a;line-height:18px;">Review-to-Asset Studio</div><div style="font-size:10px;color:#999;margin-top:3px;line-height:15px;">AI-Generated Weekly Insights · Provided by LG전자 D2C마케팅전략팀</div></td>
         <td style="text-align:right;font-family:${FONT};"><div style="font-size:10px;color:#bbb;line-height:15px;">본 뉴스레터는 사내 배포용으로<br/>외부 공유를 금합니다.</div></td>
       </tr></table>
     </td></tr>
