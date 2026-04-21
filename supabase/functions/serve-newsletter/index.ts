@@ -804,16 +804,8 @@ ${channelSectionHTML(bi("LG.COM 주간 오버뷰", "LG.COM Weekly Overview"), "�
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
 </td></tr>
 
-<!-- Reddit Section -->
-${channelSectionHTML(bi("REDDIT 주간 오버뷰", "REDDIT Weekly Overview"), "💬", reddit)}
-
-<!-- Divider -->
-<tr><td style="padding:16px 32px 0;font-size:0;line-height:0;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="border-top:2px solid #E8E4DC;font-size:0;line-height:0;">&nbsp;</td></tr></table>
-</td></tr>
-
-<!-- Community Section (Amazon/YouTube/Trustpilot/etc) -->
-${channelSectionHTML(bi("커뮤니티 & 외부 채널 주간 오버뷰 (Amazon · YouTube · Trustpilot · etc)", "Communities & External Channels Weekly Overview (Amazon · YouTube · Trustpilot · etc)"), "🌐", community)}
+<!-- Reddit + Community 통합 Section -->
+${channelSectionHTML(bi("REDDIT & 커뮤니티 통합 주간 오버뷰 (Reddit · Amazon · YouTube · Trustpilot · etc)", "REDDIT & Communities — Combined Weekly Overview (Reddit · Amazon · YouTube · Trustpilot · etc)"), "💬", reddit)}
 
 <!-- CTA Banner -->
 <tr><td style="padding:28px 32px 0;">
