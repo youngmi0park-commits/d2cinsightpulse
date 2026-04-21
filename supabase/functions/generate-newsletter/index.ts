@@ -261,7 +261,20 @@ Deno.serve(async (req) => {
 
     const aiData = await aiRes.json();
     const rawText = aiData.choices?.[0]?.message?.content ?? "{}";
-    const intel = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+    const cleaned = (rawText || "{}").replace(/```json|```/g, "").trim();
+    let intel: { channelActions?: unknown[]; faqItems?: unknown[]; cautionItems?: unknown[] } = {};
+    if (cleaned) {
+      try {
+        intel = JSON.parse(cleaned);
+      } catch (parseErr) {
+        console.error("[newsletter] AI JSON parse failed, continuing with empty intel:",
+          parseErr instanceof Error ? parseErr.message : parseErr,
+          "raw length:", cleaned.length);
+        intel = {};
+      }
+    } else {
+      console.warn("[newsletter] AI returned empty content, continuing with empty intel");
+    }
 
     // ── 10. Save to DB ──
     const { data: issue, error: issueErr } = await supabase
