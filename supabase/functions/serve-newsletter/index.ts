@@ -711,7 +711,7 @@ ${d.trendingSignals.length > 0 ? `<!-- Trending Signals -->
   </table>
 
   ${renderKeyTakeaway("LG.COM", "🏪", "#A50034", lgcom)}
-  ${renderKeyTakeaway(bi("REDDIT & 커뮤니티", "REDDIT & Communities"), "💬", "#FF4500", reddit)}
+  ${renderKeyTakeaway(bi("커뮤니티 통합 Overview", "Communities Combined Overview"), "💬", "#FF4500", reddit)}
 
   ${allChannel ? `
   <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:4px;">
