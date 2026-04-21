@@ -569,7 +569,7 @@ a {text-decoration:none;}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
     <td style="font-family:${INTER};">
       <div style="font-size:24px;font-weight:700;color:#1B1A1E;letter-spacing:-0.6px;mso-line-height-rule:exactly;line-height:30px;">Review-to-Asset <span style="color:#EA1917;">Studio</span></div>
-      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")} &nbsp;·&nbsp; <span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
+      <div style="font-size:13px;color:#6B6A6E;margin-top:6px;mso-line-height-rule:exactly;line-height:18px;font-weight:400;">${bi("주간 인사이트 리포트", "Weekly Insight Report")}<br/><span style="color:#9B9A9E;">${bi("리뷰를 즉시 활용 가능한 마케팅 에셋으로", "Turn Real Reviews into Ready-to-Use Marketing Assets.")}</span></div>
     </td>
     <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
       <!-- Language Toggle + Weekly Meta (browser-only; Outlook fallback below) -->
