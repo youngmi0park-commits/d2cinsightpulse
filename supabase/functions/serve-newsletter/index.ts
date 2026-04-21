@@ -269,7 +269,18 @@ async function generateAllChannelSummary(sb: any, lovableApiKey: string): Promis
   });
   if (!resp.ok) return null;
   const aiData = await resp.json();
-  try { return JSON.parse(aiData.choices?.[0]?.message?.content || "{}"); } catch { return null; }
+  const raw = aiData.choices?.[0]?.message?.content || "{}";
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  if (!cleaned) return null;
+  const start = cleaned.search(/[\{\[]/);
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) return null;
+  cleaned = cleaned.substring(start, end + 1);
+  try { return JSON.parse(cleaned); }
+  catch {
+    try { return JSON.parse(cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "")); }
+    catch { return null; }
+  }
 }
 
 /* ── Newsletter HTML builder ── */
