@@ -1484,8 +1484,20 @@ export const CollectionCriteria = () => {
                 const lgeCode = ISO_TO_LGE[iso] || iso;
                 const bvCount = lgComCounts[iso] || 0;
                 const communityCount = totalCount - bvCount;
-                return { iso, lgeCode, totalCount, bvCount, communityCount };
+                return { iso, lgeCode, totalCount, bvCount, communityCount, isGlobal: false };
               });
+              // Inject Global as a regular row so it sorts alongside countries by count
+              if (countryCounts["Global"] && countryCounts["Global"] > 0) {
+                countryData.push({
+                  iso: "Global",
+                  lgeCode: "Global",
+                  totalCount: countryCounts["Global"],
+                  bvCount: 0,
+                  communityCount: countryCounts["Global"],
+                  isGlobal: true,
+                });
+              }
+              countryData.sort((a, b) => b.totalCount - a.totalCount);
               const globalTotal = Object.values(countryCounts).reduce((s, v) => s + v, 0);
               const maxCount = countryData.length > 0 ? Math.max(...countryData.map(d => d.totalCount)) : 1;
 
@@ -1493,11 +1505,11 @@ export const CollectionCriteria = () => {
                 <div className="space-y-3">
                   {/* Stacked bar grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                    {countryData.map(({ iso, lgeCode, totalCount, bvCount, communityCount }) => {
+                    {countryData.map(({ iso, lgeCode, totalCount, bvCount, communityCount, isGlobal }) => {
                       return (
                         <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-[10px]">{LGE_FLAGS[lgeCode] || "🔹"} {COUNTRY_KO_NAME[iso] || iso}</span>
+                            <span className="font-semibold text-[10px]">{isGlobal ? "🌐 글로벌" : `${LGE_FLAGS[lgeCode] || "🔹"} ${COUNTRY_KO_NAME[iso] || iso}`}</span>
                             <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
                           {/* Stacked bar: BV (primary) + Community (teal) */}
@@ -1512,7 +1524,7 @@ export const CollectionCriteria = () => {
                             {communityCount > 0 && (
                               <div
                                 className="h-full bg-teal-500 transition-all"
-                                style={{ width: `${(communityCount / maxCount) * 100}%` }}
+                                style={{ width: `${Math.max((communityCount / maxCount) * 100, isGlobal ? 4 : 0)}%` }}
                                 title={`커뮤니티 ${communityCount.toLocaleString()}`}
                               />
                             )}
@@ -1532,21 +1544,6 @@ export const CollectionCriteria = () => {
                         </div>
                       );
                     })}
-                    {/* Global */}
-                    {countryCounts["Global"] && countryCounts["Global"] > 0 && (
-                      <div className="rounded border border-border bg-background/60 px-2 py-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-[10px]">🌐 글로벌</span>
-                          <span className="text-[10px] font-bold text-foreground">{countryCounts["Global"].toLocaleString()}</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-muted overflow-hidden my-0.5 flex">
-                          <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.max((countryCounts["Global"] / maxCount) * 100, 4)}%` }} />
-                        </div>
-                        <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />커뮤니티 {countryCounts["Global"].toLocaleString()}
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Legend */}
