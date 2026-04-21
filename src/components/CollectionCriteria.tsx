@@ -1391,8 +1391,20 @@ export const CollectionCriteria = () => {
 
   // Split criteria into priority groups
   const priorityCriteria = criteria.filter((c) =>
-    ["Collection Schedule & Dashboard Sync", "Target Regions (20+ Countries)", "Selection Logic"].includes(c.titleEn)
+    ["Target Regions (20+ Countries)", "Collection Channel List"].includes(c.titleEn)
   );
+  // Order: 대상 지역 (left) → 수집 채널 리스트 (right)
+  priorityCriteria.sort((a, b) => {
+    const order = ["Target Regions (20+ Countries)", "Collection Channel List"];
+    return order.indexOf(a.titleEn) - order.indexOf(b.titleEn);
+  });
+  const belowCriteria = criteria.filter((c) =>
+    ["Selection Logic", "Collection Schedule & Dashboard Sync"].includes(c.titleEn)
+  );
+  belowCriteria.sort((a, b) => {
+    const order = ["Selection Logic", "Collection Schedule & Dashboard Sync"];
+    return order.indexOf(a.titleEn) - order.indexOf(b.titleEn);
+  });
   const secondaryCriteria = criteria.filter((c) => !priorityCriteria.includes(c));
 
   return (
