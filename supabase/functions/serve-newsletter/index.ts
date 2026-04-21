@@ -127,7 +127,104 @@ JSON 형식으로 응답: { "top_products": [...], "top_topics": [...], "urgent_
   if (!aiResponse.ok) return null;
   const aiData = await aiResponse.json();
   const content = aiData.choices?.[0]?.message?.content || "{}";
-  try { return JSON.parse(content); } catch { return null; }
+  return safeParseInsight(content);
+}
+
+/* ── Robust JSON extractor (handles markdown fences, trailing commas, truncation) ── */
+function safeParseInsight(raw: string): ChannelInsight | null {
+  if (!raw) return null;
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  if (!cleaned) return null;
+  const start = cleaned.search(/[\{\[]/);
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) return null;
+  cleaned = cleaned.substring(start, end + 1);
+  try { return JSON.parse(cleaned); }
+  catch {
+    try {
+      const fixed = cleaned
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/[\x00-\x1F\x7F]/g, "");
+      return JSON.parse(fixed);
+    } catch { return null; }
+  }
+}
+
+/* ── Deterministic fallback insight from raw reviews (used when AI fails) ── */
+async function buildFallbackInsight(sb: any, channel: "lgcom" | "reddit" | "community" | "reddit_plus_community"): Promise<ChannelInsight | null> {
+  const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
+  let q = sb.from("reviews")
+    .select("title, content, sentiment, source, products!inner(display_name, category)")
+    .gte("published_at", weekAgoStr)
+    .order("published_at", { ascending: false })
+    .limit(600);
+  if (channel === "lgcom") q = q.like("source", "lge_com%");
+  else if (channel === "reddit") q = q.like("source", "reddit%");
+  else if (channel === "community") q = q.not("source", "like", "lge_com%").not("source", "like", "reddit%");
+  else q = q.not("source", "like", "lge_com%"); // reddit + community
+
+  const { data: reviews } = await q;
+  if (!reviews?.length) return null;
+
+  const byProduct: Record<string, { name: string; cat: string; pos: number; neg: number; posT: string[]; negT: string[] }> = {};
+  for (const r of reviews as any[]) {
+    const name = r.products?.display_name || "Unknown";
+    const cat = r.products?.category || "General";
+    if (!byProduct[name]) byProduct[name] = { name, cat, pos: 0, neg: 0, posT: [], negT: [] };
+    const p = byProduct[name];
+    if (r.sentiment === "positive") { p.pos++; if (r.title && p.posT.length < 5) p.posT.push(r.title); }
+    else if (r.sentiment === "negative") { p.neg++; if (r.title && p.negT.length < 5) p.negT.push(r.title); }
+  }
+  const top = Object.values(byProduct).sort((a, b) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 5);
+  return {
+    top_products: top.map((p, i) => ({
+      rank: i + 1,
+      name: p.name,
+      category: p.cat,
+      mention_count: p.pos + p.neg,
+      pos_summary: p.posT[0] || "긍정 코멘트 수집 중",
+      neg_summary: p.negT[0] || "",
+      praise_points: p.posT.slice(0, 3).map(t => t.slice(0, 12)),
+    })),
+    top_topics: [],
+    urgent_issues: [],
+    recurring_praise: top.flatMap(p => p.posT.slice(0, 1).map(t => ({ text: t.slice(0, 24), product: p.name, category: p.cat }))).slice(0, 5),
+  };
+}
+
+/* ── Merge two ChannelInsights into one combined view (reddit + community) ── */
+function mergeChannelInsights(a: ChannelInsight | null, b: ChannelInsight | null): ChannelInsight | null {
+  if (!a && !b) return null;
+  if (!a) return b;
+  if (!b) return a;
+  const mergedProducts = [...(a.top_products || []), ...(b.top_products || [])]
+    .reduce((acc: any[], p) => {
+      const existing = acc.find(x => x.name === p.name);
+      if (existing) existing.mention_count += p.mention_count;
+      else acc.push({ ...p });
+      return acc;
+    }, [])
+    .sort((x, y) => (y.mention_count || 0) - (x.mention_count || 0))
+    .slice(0, 5)
+    .map((p, i) => ({ ...p, rank: i + 1 }));
+  const mergedTopics = [...(a.top_topics || []), ...(b.top_topics || [])]
+    .sort((x, y) => (y.mention_pct || 0) - (x.mention_pct || 0))
+    .slice(0, 3)
+    .map((t, i) => ({ ...t, rank: i + 1 }));
+  const mergedIssues = [...(a.urgent_issues || []), ...(b.urgent_issues || [])]
+    .sort((x, y) => (y.mention_pct || 0) - (x.mention_pct || 0))
+    .slice(0, 3)
+    .map((iss, i) => ({ ...iss, rank: i + 1 }));
+  const mergedPraise = [...(a.recurring_praise || []), ...(b.recurring_praise || [])].slice(0, 5);
+  const mergedKT = [...(a.key_takeaway || []), ...(b.key_takeaway || [])];
+  return {
+    top_products: mergedProducts,
+    top_topics: mergedTopics,
+    urgent_issues: mergedIssues,
+    recurring_praise: mergedPraise,
+    key_takeaway: mergedKT,
+  };
 }
 
 /* ── All-channel summary ── */
