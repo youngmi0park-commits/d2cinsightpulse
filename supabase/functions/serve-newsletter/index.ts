@@ -892,8 +892,8 @@ Deno.serve(async (req) => {
     if (latestKwDate) kwQuery = kwQuery.eq("snapshot_date", latestKwDate);
 
     const [weeklyRes, lastWeekRes, totalRes, productRes, keywordsRes, trendingRes] = await Promise.all([
-      sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", weekAgo.toISOString()),
-      sb.from("reviews").select("*", { count: "exact", head: true }).gte("published_at", twoWeeksAgo.toISOString()).lt("published_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", weekAgo.toISOString()),
+      sb.from("reviews").select("*", { count: "exact", head: true }).gte("collected_at", twoWeeksAgo.toISOString()).lt("collected_at", weekAgo.toISOString()),
       sb.from("reviews").select("*", { count: "exact", head: true }),
       sb.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
       kwQuery,
