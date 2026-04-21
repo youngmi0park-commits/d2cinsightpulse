@@ -435,6 +435,35 @@ const criteria: CriteriaItem[] = [
     ],
   },
   {
+    icon: Database,
+    titleEn: "Collection Channel List",
+    titleKo: "수집 채널 리스트",
+    itemsEn: [
+      "🏢 lg.com (Bazaarvoice API) — Official D2C reviews · 9 countries (US, UK, DE, AU, IN, JP, TW, TH, BR)",
+      "🟠 Reddit — 1 platform · subreddits (r/OLED, r/hometheater, r/4kTV, r/soundbars, r/Appliances, r/BuyItForLife, r/HVAC, r/AirPurifiers, r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors, r/LG_UserHub, r/StanbyME)",
+      "🔴 YouTube — 1 platform · review/unboxing comments across 13 country channels",
+      "🟧 Amazon — Verified Purchase reviews (US, UK, DE, IN, JP, CA, FR, SG, Global)",
+      "🛒 Best Buy · Walmart · Target · Costco — US retail VOC (Public API)",
+      "🛍️ Shopee · Lazada — SE Asia e-commerce (TH, SG, MY, PH, ID, VN) via Firecrawl",
+      "📊 Consumer Reports · Wirecutter · Designer Appliances · This Old House · BestReviews — Expert reviews",
+      "🌐 Trustpilot · Reviews.io · ComplaintsBoard · ConsumerAffairs · Houzz — Global VOC platforms",
+      "🧪 RTINGS · CNET · TechRadar · PCMag · Notebookcheck · Tom's Hardware · SoundGuys · Trusted Reviews — Lab/editor reviews",
+      "💬 Lemon8 · Quora · Stack Exchange · Google Reviews · LG Community — Social/community signals",
+    ],
+    itemsKo: [
+      "🏢 lg.com (Bazaarvoice API) — 공식 D2C 리뷰 · 9개국 (US, UK, DE, AU, IN, JP, TW, TH, BR)",
+      "🟠 Reddit — 1개 플랫폼 · 서브레딧 (r/OLED, r/hometheater, r/4kTV, r/soundbars, r/Appliances, r/BuyItForLife, r/HVAC, r/AirPurifiers, r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors, r/LG_UserHub, r/StanbyME)",
+      "🔴 YouTube — 1개 플랫폼 · 리뷰/언박싱 영상 댓글 · 13개국 채널",
+      "🟧 Amazon — Verified Purchase 리뷰 (US, UK, DE, IN, JP, CA, FR, SG, 글로벌)",
+      "🛒 Best Buy · Walmart · Target · Costco — 미국 리테일 VOC (공개 API)",
+      "🛍️ Shopee · Lazada — 동남아 이커머스 (TH, SG, MY, PH, ID, VN) Firecrawl 수집",
+      "📊 Consumer Reports · Wirecutter · Designer Appliances · This Old House · BestReviews — 전문가 리뷰",
+      "🌐 Trustpilot · Reviews.io · ComplaintsBoard · ConsumerAffairs · Houzz — 글로벌 VOC 플랫폼",
+      "🧪 RTINGS · CNET · TechRadar · PCMag · Notebookcheck · Tom's Hardware · SoundGuys · Trusted Reviews — 랩/에디터 리뷰",
+      "💬 Lemon8 · Quora · Stack Exchange · Google Reviews · LG 공식 커뮤니티 — 소셜/커뮤니티 시그널",
+    ],
+  },
+  {
     icon: Calendar,
     titleEn: "Collection Schedule & Dashboard Sync",
     titleKo: "수집 주기 및 대시보드 동기화",
@@ -1362,9 +1391,23 @@ export const CollectionCriteria = () => {
 
   // Split criteria into priority groups
   const priorityCriteria = criteria.filter((c) =>
-    ["Collection Schedule & Dashboard Sync", "Target Regions (20+ Countries)", "Selection Logic"].includes(c.titleEn)
+    ["Target Regions (20+ Countries)", "Collection Channel List"].includes(c.titleEn)
   );
-  const secondaryCriteria = criteria.filter((c) => !priorityCriteria.includes(c));
+  // Order: 대상 지역 (left) → 수집 채널 리스트 (right)
+  priorityCriteria.sort((a, b) => {
+    const order = ["Target Regions (20+ Countries)", "Collection Channel List"];
+    return order.indexOf(a.titleEn) - order.indexOf(b.titleEn);
+  });
+  const belowCriteria = criteria.filter((c) =>
+    ["Selection Logic", "Collection Schedule & Dashboard Sync"].includes(c.titleEn)
+  );
+  belowCriteria.sort((a, b) => {
+    const order = ["Selection Logic", "Collection Schedule & Dashboard Sync"];
+    return order.indexOf(a.titleEn) - order.indexOf(b.titleEn);
+  });
+  const secondaryCriteria = criteria.filter(
+    (c) => !priorityCriteria.includes(c) && !belowCriteria.includes(c)
+  );
 
   return (
     <div className="space-y-0">
@@ -1624,6 +1667,29 @@ export const CollectionCriteria = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {priorityCriteria.map((c) => {
+              const Icon = c.icon;
+              const title = t(c.titleEn, c.titleKo);
+              const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
+              return (
+                <div key={c.titleEn} className="rounded-lg border border-border bg-background/50 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="h-4 w-4 text-primary shrink-0" />
+                    <h5 className="font-semibold text-xs">{title}</h5>
+                  </div>
+                  <ul className="space-y-1">
+                    {items.map((item, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground flex gap-1.5">
+                        <span className="text-primary mt-0.5 shrink-0">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {belowCriteria.map((c) => {
               const Icon = c.icon;
               const title = t(c.titleEn, c.titleKo);
               const items = t(c.titleEn, c.titleKo) === c.titleEn ? c.itemsEn : c.itemsKo;
