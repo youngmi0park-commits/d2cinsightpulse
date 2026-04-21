@@ -655,9 +655,10 @@ a {text-decoration:none;}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E5DFD3;border-radius:24px;overflow:hidden;">
         <tr><td style="height:4px;background:#EA1917;font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="padding:14px 12px;text-align:center;height:120px;vertical-align:middle;font-family:${INTER};">
-          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("총 리뷰 수집", "Total Reviews")}</div>
-          <div style="font-size:22px;font-weight:700;color:#1B1A1E;line-height:28px;margin-top:4px;letter-spacing:-0.6px;">${d.totalReviews.toLocaleString()}</div>
+          <div style="font-size:10px;font-weight:600;color:#8B8A8E;letter-spacing:0.4px;line-height:14px;">${bi("금주 수집 리뷰", "This Week's Reviews")}</div>
+          <div style="font-size:22px;font-weight:700;color:#1B1A1E;line-height:28px;margin-top:4px;letter-spacing:-0.6px;">${d.weeklyReviews.toLocaleString()}</div>
           <div style="font-size:10px;color:${d.wow >= 0 ? '#0D9488' : '#EA1917'};font-weight:600;margin-top:3px;">${d.wow > 0 ? '▲ +' : d.wow < 0 ? '▼ ' : ''}${d.wow}% ${bi("vs 전주", "vs last week")}</div>
+          <div style="font-size:9px;color:#A8A7AB;font-weight:500;margin-top:6px;letter-spacing:0.2px;">${bi("누적", "Cumulative")} ${d.totalReviews.toLocaleString()}</div>
         </td></tr>
       </table>
     </td>
