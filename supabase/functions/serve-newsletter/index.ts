@@ -20,6 +20,27 @@ interface AllChannelSummary {
   community_weekly: string;
 }
 
+/* ── Helpers: source → country code & flag ── */
+function sourceToCountry(src: string): string {
+  const s = (src || "").toLowerCase();
+  const m = s.match(/_([a-z]{2})$/);
+  if (m) {
+    const cc = m[1].toUpperCase();
+    if (["US","UK","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN"].includes(cc)) return cc;
+  }
+  if (s === "lge_com" || /^(amazon|youtube|bestbuy|walmart|costco|target|consumeraffairs|consumer_reports|bestreviews|houzz|web_review|reddit)$/.test(s)) return "US";
+  if (s === "trusted_reviews") return "UK";
+  if (s.startsWith("reddit")) return "US";
+  return "Global";
+}
+const FLAG: Record<string, string> = {
+  US: "🇺🇸", UK: "🇬🇧", CA: "🇨🇦", DE: "🇩🇪", FR: "🇫🇷", AU: "🇦🇺",
+  BR: "🇧🇷", MX: "🇲🇽", JP: "🇯🇵", SG: "🇸🇬", MY: "🇲🇾", TH: "🇹🇭",
+  PH: "🇵🇭", ID: "🇮🇩", VN: "🇻🇳", TW: "🇹🇼", HK: "🇭🇰", IN: "🇮🇳",
+  Global: "🌐",
+};
+const flagFor = (cc: string) => FLAG[cc] || "🌐";
+
 /* ── AI insight generation per channel ── */
 async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "lgcom" | "reddit" | "community"): Promise<ChannelInsight | null> {
   const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -47,9 +68,11 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   for (const r of reviews as any[]) {
     const pName = r.products?.display_name || "Unknown";
     if (!productMap[pName]) {
-      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[] };
+      productMap[pName] = { name: pName, model: r.products?.model_number || "", category: r.products?.category || "", subCategory: r.products?.sub_category || "", pos: 0, neg: 0, posTitles: [] as string[], negTitles: [] as string[], posContent: [] as string[], negContent: [] as string[], countries: {} as Record<string, number> };
     }
     const p = productMap[pName];
+    const cc = sourceToCountry(r.source);
+    p.countries[cc] = (p.countries[cc] || 0) + 1;
     if (r.sentiment === "positive") {
       p.pos++;
       if (r.title && p.posTitles.length < 8) p.posTitles.push(r.title);
@@ -63,9 +86,10 @@ async function generateChannelInsight(sb: any, lovableApiKey: string, channel: "
   }
 
   const topProducts = Object.values(productMap).sort((a: any, b: any) => (b.pos + b.neg) - (a.pos + a.neg)).slice(0, 10);
-  const productSummary = topProducts.map((p: any) =>
-    `${p.name} (${p.category}): 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`
-  ).join("\n\n");
+  const productSummary = topProducts.map((p: any) => {
+    const topCountries = Object.entries(p.countries).sort((a: any, b: any) => b[1] - a[1]).slice(0, 3).map(([c, n]) => `${c}(${n})`).join(", ");
+    return `${p.name} (${p.category}) [국가: ${topCountries}]: 총 ${p.pos + p.neg}건, 긍정 ${p.pos}건, 부정 ${p.neg}건\n  긍정키워드: ${p.posTitles.slice(0, 5).join(", ")}\n  부정키워드: ${p.negTitles.slice(0, 5).join(", ")}\n  긍정리뷰 예시: ${p.posContent.slice(0, 2).join(" | ")}\n  부정리뷰 예시: ${p.negContent.slice(0, 2).join(" | ")}`;
+  }).join("\n\n");
 
   const channelLabel = channel === "lgcom" ? "LG.com 공식 리뷰" : channel === "reddit" ? "Reddit 및 커뮤니티" : "Amazon/YouTube/Trustpilot 등 외부 커뮤니티";
 
