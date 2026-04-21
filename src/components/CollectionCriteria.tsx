@@ -1136,6 +1136,24 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   Global: "글로벌", Other: "기타",
 };
 
+const COUNTRY_EN_NAME: Record<string, string> = {
+  US: "USA", UK: "UK", DE: "Germany", AU: "Australia", IN: "India",
+  JP: "Japan", TW: "Taiwan", TH: "Thailand", SG: "Singapore", VN: "Vietnam",
+  ID: "Indonesia", HK: "Hong Kong", PH: "Philippines", MY: "Malaysia",
+  CA: "Canada", BR: "Brazil", MX: "Mexico", FR: "France",
+  Global: "Global", Other: "Other",
+};
+
+const CATEGORY_EN: Record<string, string> = {
+  "TV": "TV", "세탁기": "Washer", "냉장고": "Refrigerator", "건조기": "Dryer",
+  "모니터": "Monitor", "오디오": "Audio", "에어컨": "Air Conditioner", "노트북": "Laptop",
+  "공기청정기": "Air Purifier", "전자레인지": "Microwave", "프로젝터": "Projector",
+  "식기세척기": "Dishwasher", "청소기": "Vacuum", "세탁건조기": "Washer/Dryer",
+  "오븐/레인지": "Oven/Range", "스타일러": "Styler", "General": "General",
+  "액세서리": "Accessory", "스마트폰": "Smartphone", "쿡탑": "Cooktop",
+  "가전 번들": "Appliance Bundle",
+};
+
 function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: string) => string; dbCountryCounts: Record<string, number> }) {
   const [expanded, setExpanded] = useState(true);
   const [filterCountry, setFilterCountry] = useState<string>("all");
@@ -1436,7 +1454,7 @@ export const CollectionCriteria = () => {
                 </h4>
                 <div className="flex flex-wrap gap-3 ml-auto text-[11px]">
                   <span className="inline-flex items-center gap-1 font-semibold">
-                    📊 {t("Total", "총 리뷰")} <span className="text-primary font-bold">{totalCountry.toLocaleString()}</span>
+                    📊 {t("Total Reviews", "총 리뷰")} <span className="text-primary font-bold">{totalCountry.toLocaleString()}</span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
                     🌏 {activeCountries.length + (countryCounts["Global"] ? 1 : 0)} {t("countries", "개국")}
@@ -1509,7 +1527,7 @@ export const CollectionCriteria = () => {
                       return (
                         <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-[10px]">{isGlobal ? "🌐 글로벌" : `${LGE_FLAGS[lgeCode] || "🔹"} ${COUNTRY_KO_NAME[iso] || iso}`}</span>
+                            <span className="font-semibold text-[10px]">{isGlobal ? `🌐 ${t("Global", "글로벌")}` : `${LGE_FLAGS[lgeCode] || "🔹"} ${t(COUNTRY_EN_NAME[iso] || iso, COUNTRY_KO_NAME[iso] || iso)}`}</span>
                             <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
                           {/* Stacked bar: BV (primary) + Community (teal) */}
@@ -1525,7 +1543,7 @@ export const CollectionCriteria = () => {
                               <div
                                 className="h-full bg-teal-500 transition-all"
                                 style={{ width: `${Math.max((communityCount / maxCount) * 100, isGlobal ? 4 : 0)}%` }}
-                                title={`커뮤니티 ${communityCount.toLocaleString()}`}
+                                title={`${t("Community", "커뮤니티")} ${communityCount.toLocaleString()}`}
                               />
                             )}
                           </div>
@@ -1537,7 +1555,7 @@ export const CollectionCriteria = () => {
                             )}
                             {communityCount > 0 && (
                               <span className="flex items-center gap-0.5">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />커뮤니티 {communityCount.toLocaleString()}
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />{t("Community", "커뮤니티")} {communityCount.toLocaleString()}
                               </span>
                             )}
                           </div>
@@ -1548,9 +1566,9 @@ export const CollectionCriteria = () => {
 
                   {/* Legend */}
                   <div className="flex items-center gap-4 text-[9px] text-muted-foreground border-t border-border/50 pt-1.5">
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-primary" /> 바자보이스 (LG.com)</span>
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> 커뮤니티 (Reddit·Amazon·YouTube 등)</span>
-                    <span className="ml-auto font-semibold">누적 총계: <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>건</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-primary" /> {t("Bazaarvoice (LG.com)", "바자보이스 (LG.com)")}</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> {t("Community (Reddit · Amazon · YouTube etc.)", "커뮤니티 (Reddit·Amazon·YouTube 등)")}</span>
+                    <span className="ml-auto font-semibold">{t("Cumulative total:", "누적 총계:")} <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>{t("", "건")}</span>
                   </div>
                 </div>
               );
@@ -1576,7 +1594,7 @@ export const CollectionCriteria = () => {
                         <div key={c.category} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-[10px]">
-                              {CATEGORY_ICONS[c.category] || "📦"} {CATEGORY_KO[c.category] || c.category}
+                              {CATEGORY_ICONS[c.category] || "📦"} {t(CATEGORY_EN[c.category] || c.category, CATEGORY_KO[c.category] || c.category)}
                             </span>
                             <span className="text-[9px] text-muted-foreground">{pct}%</span>
                           </div>
@@ -1595,18 +1613,18 @@ export const CollectionCriteria = () => {
                   {generalCount > 0 && (
                     <div className="rounded border border-border bg-muted/30 px-3 py-2 flex items-center justify-between">
                       <div>
-                        <p className="text-[11px] font-semibold text-muted-foreground">📦 미분류 (General)</p>
-                        <p className="text-[9px] text-muted-foreground">카테고리 미지정 리뷰 · 분석 제외 · 분모에서 제외</p>
+                        <p className="text-[11px] font-semibold text-muted-foreground">📦 {t("General (Unclassified)", "미분류 (General)")}</p>
+                        <p className="text-[9px] text-muted-foreground">{t("Uncategorized reviews · excluded from analysis · excluded from denominator", "카테고리 미지정 리뷰 · 분석 제외 · 분모에서 제외")}</p>
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-bold text-muted-foreground">{generalCount.toLocaleString()}</span>
-                        <p className="text-[9px] text-muted-foreground">전체 {grandTotal.toLocaleString()} 중 {grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}%</p>
+                        <p className="text-[9px] text-muted-foreground">{t(`${grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}% of total ${grandTotal.toLocaleString()}`, `전체 ${grandTotal.toLocaleString()} 중 ${grandTotal > 0 ? Math.round((generalCount / grandTotal) * 100) : 0}%`)}</p>
                       </div>
                     </div>
                   )}
 
                   <p className="text-[9px] text-muted-foreground text-right">
-                    분류된 리뷰 {classifiedTotal.toLocaleString()}건 기준 · 출처: Bazaarvoice API + 커뮤니티 통합
+                    {t(`Based on ${classifiedTotal.toLocaleString()} classified reviews · Source: Bazaarvoice API + Community combined`, `분류된 리뷰 ${classifiedTotal.toLocaleString()}건 기준 · 출처: Bazaarvoice API + 커뮤니티 통합`)}
                   </p>
                 </div>
               );
@@ -1622,7 +1640,7 @@ export const CollectionCriteria = () => {
                         <span className="font-semibold text-[11px]">
                           {cat.icon} {t(cat.labelEn, cat.labelKo).split("·")[0].trim()}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">{cat.channels.length}개</span>
+                        <span className="text-[10px] text-muted-foreground">{cat.channels.length}{t("", "개")}</span>
                       </div>
                       <div className="w-full h-1 rounded-full bg-muted overflow-hidden my-1">
                         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min((cat.channels.length / 8) * 100, 100)}%` }} />
@@ -1639,7 +1657,10 @@ export const CollectionCriteria = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground text-right">
-                  총 {CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · {CATEGORY_CHANNELS.length}개 카테고리
+                  {t(
+                    `Total ${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)} channels · ${CATEGORY_CHANNELS.length} categories`,
+                    `총 ${CATEGORY_CHANNELS.reduce((s, c) => s + c.channels.length, 0)}개 채널 · ${CATEGORY_CHANNELS.length}개 카테고리`
+                  )}
                 </p>
               </div>
             )}
