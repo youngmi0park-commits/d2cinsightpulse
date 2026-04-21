@@ -154,17 +154,27 @@ function safeParseInsight(raw: string): ChannelInsight | null {
 /* ── Deterministic fallback insight from raw reviews (used when AI fails) ── */
 async function buildFallbackInsight(sb: any, channel: "lgcom" | "reddit" | "community" | "reddit_plus_community"): Promise<ChannelInsight | null> {
   const weekAgoStr = new Date(Date.now() - 7 * 86400000).toISOString();
-  let q = sb.from("reviews")
-    .select("title, content, sentiment, source, products!inner(display_name, category)")
-    .gte("published_at", weekAgoStr)
-    .order("published_at", { ascending: false })
-    .limit(600);
-  if (channel === "lgcom") q = q.like("source", "lge_com%");
-  else if (channel === "reddit") q = q.like("source", "reddit%");
-  else if (channel === "community") q = q.not("source", "like", "lge_com%").not("source", "like", "reddit%");
-  else q = q.not("source", "like", "lge_com%"); // reddit + community
+  // Reddit/community frequently have NULL published_at — use collected_at as the safe weekly window
+  const buildQuery = (useCollected: boolean) => {
+    const dateCol = useCollected ? "collected_at" : "published_at";
+    let q = sb.from("reviews")
+      .select("title, content, sentiment, source, products!inner(display_name, category)")
+      .gte(dateCol, weekAgoStr)
+      .order(dateCol, { ascending: false })
+      .limit(600);
+    if (channel === "lgcom") q = q.like("source", "lge_com%");
+    else if (channel === "reddit") q = q.like("source", "reddit%");
+    else if (channel === "community") q = q.not("source", "like", "lge_com%").not("source", "like", "reddit%");
+    else q = q.not("source", "like", "lge_com%"); // reddit + community
+    return q;
+  };
 
-  const { data: reviews } = await q;
+  // Try published_at first; if empty, retry with collected_at (covers Reddit/YouTube/community)
+  let { data: reviews } = await buildQuery(false);
+  if (!reviews?.length) {
+    const retry = await buildQuery(true);
+    reviews = retry.data;
+  }
   if (!reviews?.length) return null;
 
   const byProduct: Record<string, { name: string; cat: string; pos: number; neg: number; posT: string[]; negT: string[] }> = {};
