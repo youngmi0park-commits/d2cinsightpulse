@@ -118,15 +118,17 @@ ${productSummary}
 
 ## 2. 고객이 가장 많이 말하는 주제 TOP 3 (top_topics)
 각 주제별:
-- rank, topic (한국어 12자 이내), topic_en (English, ≤22 chars), mention_pct, positive_pct, negative_pct
-- representative_comment (한 문장 45자 이내) + representative_comment_en (≤80 chars)
-- related_products
+- rank, topic (한국어 18자 이내), topic_en (English, ≤32 chars), mention_pct, positive_pct, negative_pct
+- representative_comment (한 문장 80자 이내) + representative_comment_en (≤140 chars)
+- related_products: 실제 제품 display_name 1~3개 배열
+- related_countries: 해당 토픽이 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","UK","DE"]) — 위 데이터의 [국가: ...] 정보 활용
 
 ## 3. 개선 시급 이슈 TOP 3 (urgent_issues)
-- rank, issue + issue_en (각 15/25자 이내), mention_pct
-- pattern + pattern_en (각 25/45자 이내)
-- cause + cause_en (각 25/45자 이내)
-- related_products
+- rank, issue + issue_en (각 24/40자 이내), mention_pct
+- pattern + pattern_en (각 60/100자 이내)
+- cause + cause_en (각 60/100자 이내)
+- related_products: 실제 제품 display_name 1~3개 배열
+- related_countries: 해당 이슈가 가장 많이 언급된 국가 코드 1~3개 배열 (예: ["US","DE"])
 
 ## 4. 반복 칭찬 포인트 5개 (recurring_praise)
 - 각 항목 { "text": "20자 이내 한국어 칭찬", "text_en": "≤32 chars English praise", "product": "제품명", "category": "카테고리" }
