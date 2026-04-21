@@ -241,13 +241,44 @@ Deno.serve(async (req) => {
       throw new Error("AI API error: " + aiResponse.status + " - " + errText);
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content || "{}";
-    let report;
-    try {
-      report = JSON.parse(content);
-    } catch {
-      report = { raw: content };
+    // Safe JSON parsing - AI Gateway can return empty body on transient errors
+    const rawText = await aiResponse.text();
+    let aiData: any = {};
+    if (rawText && rawText.trim().length > 0) {
+      try {
+        aiData = JSON.parse(rawText);
+      } catch (e) {
+        console.error("Failed to parse AI gateway response:", e, "raw:", rawText.slice(0, 200));
+      }
+    } else {
+      console.error("AI gateway returned empty body");
+    }
+    const content = aiData?.choices?.[0]?.message?.content || "";
+    let report: any;
+    if (content && content.trim().length > 0) {
+      try {
+        // strip optional markdown fences
+        const cleaned = content.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+        report = JSON.parse(cleaned);
+      } catch (e) {
+        console.error("Failed to parse AI content as JSON:", e);
+        report = { raw: content };
+      }
+    } else {
+      report = {
+        executive_summary: {
+          period: periodLabel,
+          total_reviews: totalReviews,
+          channel_reviews: totalReviews,
+          sentiment_ratio: { positive_pct: posPct, negative_pct: negPct, neutral_pct: neuPct },
+          top3_insights: ["AI 분석 응답이 비어 있어 요약을 생성하지 못했습니다. 잠시 후 다시 시도해주세요."],
+        },
+        top5_themes: [],
+        negative_priority_top3: [],
+        strengths: { repeated_praise: [], unconditional_praise: [], competitive_advantage: [] },
+        action_items: { product_team: [], cs_team: [], marketing_team: [] },
+        product_insights: [],
+      };
     }
 
     // Ensure executive_summary uses actual total
