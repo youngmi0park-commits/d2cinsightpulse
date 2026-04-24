@@ -757,7 +757,7 @@ Deno.serve(async (req) => {
     error_samples: errors.slice(0, 5),
     phase_stats: phaseStats,
     diagnostics: diag,
-    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs },
+    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs, yarsHarvest, searchSort, searchTimeFilter },
   };
 
   console.log(`✅ Reddit collection v3 complete:`, JSON.stringify(result));
