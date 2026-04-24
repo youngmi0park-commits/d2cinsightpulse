@@ -459,6 +459,8 @@ async function adaptiveCollect(
   firecrawlKey: string,
   diag: Record<string, number>,
   phaseStats: Record<string, number>,
+  searchSort: "relevance" | "new" | "top" | "hot" | "comments" = "new",
+  searchTimeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   let results: FetchResult[] = [];
 
@@ -496,7 +498,7 @@ async function adaptiveCollect(
   // Phase 1 (LAST TRY): Reddit native JSON — usually 403 from Edge Function IPs,
   // but kept as a no-cost attempt in case Reddit lifts the block
   try {
-    const redditResults = await fetchRedditSearchJson(query);
+    const redditResults = await fetchRedditSearchJson(query, searchSort, searchTimeFilter);
     diag.p1_results = (diag.p1_results || 0) + redditResults.length;
     if (redditResults.length > 0) {
       console.log(`[P1 ✓] Reddit JSON unexpectedly worked: ${redditResults.length}`);
