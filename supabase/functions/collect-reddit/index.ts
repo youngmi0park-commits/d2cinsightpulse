@@ -284,7 +284,11 @@ async function fetchSubredditJson(
 }
 
 // ─── Phase 1b: Reddit search JSON (sort=new, t=week for fresh) ─
-async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
+async function fetchRedditSearchJson(
+  query: string,
+  sort: "relevance" | "new" | "top" | "hot" | "comments" = "new",
+  timeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
+): Promise<FetchResult[]> {
   // Strip "site:reddit.com" and any "r/<sub>" hint, plus operators
   const cleanedQ = query
     .replace(/site:reddit\.com\/?(r\/[\w_]+)?/gi, "")
@@ -297,7 +301,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
   const baseUrl = subMatch
     ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
     : `https://www.reddit.com/search.json?`;
-  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
+  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=${sort}&limit=25&t=${timeFilter}&raw_json=1`;
   const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
@@ -314,10 +318,38 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
     results.push({
       content: block.slice(0, 4500),
       url: `https://reddit.com${d.permalink || ""}`,
-      source: "reddit_search_json",
+      source: `reddit_search_${sort}`,
     });
   }
   return results;
+}
+
+// ─── Phase 1d: YARS-style keyless multi-listing harvest ───────
+// Inspired by YARS (Yet Another Reddit Scraper) — sweep multiple
+// listings (hot, new, top, rising) per subreddit with no API key.
+// Reference: https://github.com/datavorous/yars
+async function fetchYarsStyleHarvest(
+  sub: string,
+): Promise<FetchResult[]> {
+  const listings: Array<"hot" | "new" | "top" | "rising"> = ["hot", "new", "top", "rising"];
+  const merged = new Map<string, FetchResult>();
+  for (const listing of listings) {
+    try {
+      // For "top" use weekly window (URS convention); others use default
+      const tf = listing === "top" ? "week" : "week";
+      const posts = await fetchSubredditJson(sub, listing, tf);
+      for (const p of posts) {
+        if (!merged.has(p.url)) {
+          merged.set(p.url, { ...p, source: `yars_${listing}` });
+        }
+      }
+      // light pacing between listing calls
+      await sleep(jitteredDelay());
+    } catch (e) {
+      console.warn(`[YARS] r/${sub} ${listing} failed: ${String(e).slice(0, 80)}`);
+    }
+  }
+  return Array.from(merged.values());
 }
 
 // ─── Phase 1c: Comments JSON for a specific post ───────────────
