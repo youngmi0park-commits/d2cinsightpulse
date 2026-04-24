@@ -539,6 +539,10 @@ Deno.serve(async (req) => {
   let deepComments = true;
   let maxQueriesPerCategory = 10;
   let includeDirectSubs = true;
+  // URS/YARS-inspired knobs
+  let yarsHarvest = true; // multi-listing keyless sweep per subreddit
+  let searchSort: "relevance" | "new" | "top" | "hot" | "comments" = "new";
+  let searchTimeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week";
 
   try {
     const body = await req.json();
@@ -547,6 +551,9 @@ Deno.serve(async (req) => {
     if (body.deepComments !== undefined) deepComments = body.deepComments;
     if (body.maxQueries) maxQueriesPerCategory = Math.min(Number(body.maxQueries), 15);
     if (body.includeDirectSubs !== undefined) includeDirectSubs = body.includeDirectSubs;
+    if (body.yarsHarvest !== undefined) yarsHarvest = body.yarsHarvest;
+    if (body.searchSort) searchSort = body.searchSort;
+    if (body.searchTimeFilter) searchTimeFilter = body.searchTimeFilter;
   } catch {
     // defaults
   }
