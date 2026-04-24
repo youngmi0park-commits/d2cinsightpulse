@@ -672,9 +672,11 @@ Deno.serve(async (req) => {
       for (const { sub, category } of subsToFetch) {
         diag.direct_subs_attempted += 1;
         try {
-          console.log(`[Direct] r/${sub} (${category}) — sort=new&t=week`);
-          // Use sort=new with t=week to capture only fresh posts
-          const posts = await fetchSubredditJson(sub, "new", "week");
+          const harvestMode = yarsHarvest ? "YARS multi-listing" : "sort=new&t=week";
+          console.log(`[Direct] r/${sub} (${category}) — ${harvestMode}`);
+          const posts = yarsHarvest
+            ? await fetchYarsStyleHarvest(sub)
+            : await fetchSubredditJson(sub, "new", "week");
           phaseStats[sub] = (phaseStats[sub] || 0) + posts.length;
 
           if (posts.length === 0) {
