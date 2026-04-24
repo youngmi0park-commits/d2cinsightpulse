@@ -256,8 +256,8 @@ function passesQualityFilter(selftext: string, score: number): boolean {
 // Returns posts AND raw metadata so caller can apply quality filter
 async function fetchSubredditJson(
   sub: string,
-  listing: "hot" | "new" | "top" = "new",
-  timeFilter: "week" | "month" | "year" | "all" = "week",
+  listing: "hot" | "new" | "top" | "rising" | "controversial" = "new",
+  timeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
   const res = await fetchWithRetry(url, { headers: browserHeaders() });
