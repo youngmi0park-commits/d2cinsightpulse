@@ -256,8 +256,8 @@ function passesQualityFilter(selftext: string, score: number): boolean {
 // Returns posts AND raw metadata so caller can apply quality filter
 async function fetchSubredditJson(
   sub: string,
-  listing: "hot" | "new" | "top" = "new",
-  timeFilter: "week" | "month" | "year" | "all" = "week",
+  listing: "hot" | "new" | "top" | "rising" | "controversial" = "new",
+  timeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   const url = `https://www.reddit.com/r/${sub}/${listing}.json?limit=25&t=${timeFilter}&raw_json=1`;
   const res = await fetchWithRetry(url, { headers: browserHeaders() });
@@ -284,7 +284,11 @@ async function fetchSubredditJson(
 }
 
 // ─── Phase 1b: Reddit search JSON (sort=new, t=week for fresh) ─
-async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
+async function fetchRedditSearchJson(
+  query: string,
+  sort: "relevance" | "new" | "top" | "hot" | "comments" = "new",
+  timeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
+): Promise<FetchResult[]> {
   // Strip "site:reddit.com" and any "r/<sub>" hint, plus operators
   const cleanedQ = query
     .replace(/site:reddit\.com\/?(r\/[\w_]+)?/gi, "")
@@ -297,7 +301,7 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
   const baseUrl = subMatch
     ? `https://www.reddit.com/r/${subMatch[1]}/search.json?restrict_sr=1`
     : `https://www.reddit.com/search.json?`;
-  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=new&limit=25&t=week&raw_json=1`;
+  const url = `${baseUrl}&q=${encodeURIComponent(cleanedQ)}&sort=${sort}&limit=25&t=${timeFilter}&raw_json=1`;
   const res = await fetchWithRetry(url, { headers: browserHeaders() });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} ${res.statusText}`);
@@ -314,10 +318,38 @@ async function fetchRedditSearchJson(query: string): Promise<FetchResult[]> {
     results.push({
       content: block.slice(0, 4500),
       url: `https://reddit.com${d.permalink || ""}`,
-      source: "reddit_search_json",
+      source: `reddit_search_${sort}`,
     });
   }
   return results;
+}
+
+// ─── Phase 1d: YARS-style keyless multi-listing harvest ───────
+// Inspired by YARS (Yet Another Reddit Scraper) — sweep multiple
+// listings (hot, new, top, rising) per subreddit with no API key.
+// Reference: https://github.com/datavorous/yars
+async function fetchYarsStyleHarvest(
+  sub: string,
+): Promise<FetchResult[]> {
+  const listings: Array<"hot" | "new" | "top" | "rising"> = ["hot", "new", "top", "rising"];
+  const merged = new Map<string, FetchResult>();
+  for (const listing of listings) {
+    try {
+      // For "top" use weekly window (URS convention); others use default
+      const tf = listing === "top" ? "week" : "week";
+      const posts = await fetchSubredditJson(sub, listing, tf);
+      for (const p of posts) {
+        if (!merged.has(p.url)) {
+          merged.set(p.url, { ...p, source: `yars_${listing}` });
+        }
+      }
+      // light pacing between listing calls
+      await sleep(jitteredDelay());
+    } catch (e) {
+      console.warn(`[YARS] r/${sub} ${listing} failed: ${String(e).slice(0, 80)}`);
+    }
+  }
+  return Array.from(merged.values());
 }
 
 // ─── Phase 1c: Comments JSON for a specific post ───────────────
@@ -427,6 +459,8 @@ async function adaptiveCollect(
   firecrawlKey: string,
   diag: Record<string, number>,
   phaseStats: Record<string, number>,
+  searchSort: "relevance" | "new" | "top" | "hot" | "comments" = "new",
+  searchTimeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week",
 ): Promise<FetchResult[]> {
   let results: FetchResult[] = [];
 
@@ -464,7 +498,7 @@ async function adaptiveCollect(
   // Phase 1 (LAST TRY): Reddit native JSON — usually 403 from Edge Function IPs,
   // but kept as a no-cost attempt in case Reddit lifts the block
   try {
-    const redditResults = await fetchRedditSearchJson(query);
+    const redditResults = await fetchRedditSearchJson(query, searchSort, searchTimeFilter);
     diag.p1_results = (diag.p1_results || 0) + redditResults.length;
     if (redditResults.length > 0) {
       console.log(`[P1 ✓] Reddit JSON unexpectedly worked: ${redditResults.length}`);
@@ -507,6 +541,10 @@ Deno.serve(async (req) => {
   let deepComments = true;
   let maxQueriesPerCategory = 10;
   let includeDirectSubs = true;
+  // URS/YARS-inspired knobs
+  let yarsHarvest = true; // multi-listing keyless sweep per subreddit
+  let searchSort: "relevance" | "new" | "top" | "hot" | "comments" = "new";
+  let searchTimeFilter: "hour" | "day" | "week" | "month" | "year" | "all" = "week";
 
   try {
     const body = await req.json();
@@ -515,6 +553,9 @@ Deno.serve(async (req) => {
     if (body.deepComments !== undefined) deepComments = body.deepComments;
     if (body.maxQueries) maxQueriesPerCategory = Math.min(Number(body.maxQueries), 15);
     if (body.includeDirectSubs !== undefined) includeDirectSubs = body.includeDirectSubs;
+    if (body.yarsHarvest !== undefined) yarsHarvest = body.yarsHarvest;
+    if (body.searchSort) searchSort = body.searchSort;
+    if (body.searchTimeFilter) searchTimeFilter = body.searchTimeFilter;
   } catch {
     // defaults
   }
@@ -555,7 +596,7 @@ Deno.serve(async (req) => {
         diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats, searchSort, searchTimeFilter);
 
           if (results.length === 0) {
             diag.queries_zero_results += 1;
@@ -633,9 +674,11 @@ Deno.serve(async (req) => {
       for (const { sub, category } of subsToFetch) {
         diag.direct_subs_attempted += 1;
         try {
-          console.log(`[Direct] r/${sub} (${category}) — sort=new&t=week`);
-          // Use sort=new with t=week to capture only fresh posts
-          const posts = await fetchSubredditJson(sub, "new", "week");
+          const harvestMode = yarsHarvest ? "YARS multi-listing" : "sort=new&t=week";
+          console.log(`[Direct] r/${sub} (${category}) — ${harvestMode}`);
+          const posts = yarsHarvest
+            ? await fetchYarsStyleHarvest(sub)
+            : await fetchSubredditJson(sub, "new", "week");
           phaseStats[sub] = (phaseStats[sub] || 0) + posts.length;
 
           if (posts.length === 0) {
@@ -714,7 +757,7 @@ Deno.serve(async (req) => {
     error_samples: errors.slice(0, 5),
     phase_stats: phaseStats,
     diagnostics: diag,
-    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs },
+    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs, yarsHarvest, searchSort, searchTimeFilter },
   };
 
   console.log(`✅ Reddit collection v3 complete:`, JSON.stringify(result));

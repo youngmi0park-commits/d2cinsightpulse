@@ -10,4 +10,7 @@ collect-reddit Edge Function은 insane-search 철학을 차용한 4단계 적응
 - **Phase 2**: old.reddit.com URL 변환 후 Firecrawl 재시도
 - **Phase 3**: Bing 우회 검색 (`<query> reddit`)
 
-각 단계별 수집 건수는 응답의 `phase_stats`로 반환됩니다. 카테고리당 최대 쿼리 15개, 13개 핵심 서브레딧을 항상 직접 수집(includeDirectSubs 기본 true). UA 풀 3종 랜덤 로테이션. 호출 예: `{ mode, category, deepComments, maxQueries, includeDirectSubs }`.
+**Phase 1d (YARS-style)**: 키리스 멀티-리스팅 하베스트 — 서브레딧당 hot/new/top/rising 4개 리스팅을 순회하며 URL 기준 dedupe (참고: github.com/datavorous/yars). `yarsHarvest=true` 기본.
+**URS-style 옵션**: `searchSort` (relevance/new/top/hot/comments)와 `searchTimeFilter` (hour/day/week/month/year/all)로 Reddit 검색 결과 정렬·시간창 제어 (참고: github.com/JosephLai241/URS).
+
+각 단계별 수집 건수는 응답의 `phase_stats`로 반환됩니다. 카테고리당 최대 쿼리 15개, 13개 핵심 서브레딧을 항상 직접 수집(includeDirectSubs 기본 true). UA 풀 7종 랜덤 로테이션. 호출 예: `{ mode, category, deepComments, maxQueries, includeDirectSubs, yarsHarvest, searchSort, searchTimeFilter }`.
