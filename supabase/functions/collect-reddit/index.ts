@@ -596,7 +596,7 @@ Deno.serve(async (req) => {
         diag.queries_attempted += 1;
         try {
           console.log(`[${category}] Q: ${query.slice(0, 70)}...`);
-          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats);
+          const results = await adaptiveCollect(query, FIRECRAWL_API_KEY, diag, phaseStats, searchSort, searchTimeFilter);
 
           if (results.length === 0) {
             diag.queries_zero_results += 1;
