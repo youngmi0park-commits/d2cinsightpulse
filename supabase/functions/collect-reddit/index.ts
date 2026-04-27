@@ -567,23 +567,25 @@ Deno.serve(async (req) => {
     .single();
   const logId = logEntry?.id;
 
-  let totalCollected = 0;
-  let totalSkipped = 0;
-  const phaseStats: Record<string, number> = {};
-  const errors: string[] = [];
-  const diag: Record<string, number> = {
-    queries_attempted: 0,
-    queries_zero_results: 0,
-    queries_short_batch: 0,
-    ai_extractions_attempted: 0,
-    ai_extractions_failed: 0,
-    ai_returned_empty: 0,
-    ai_returned_items: 0,
-    direct_subs_attempted: 0,
-    direct_subs_zero_posts: 0,
-  };
+  // ── Background worker: avoid 150s edge timeout by deferring heavy work ──
+  const runCollection = async () => {
+    let totalCollected = 0;
+    let totalSkipped = 0;
+    const phaseStats: Record<string, number> = {};
+    const errors: string[] = [];
+    const diag: Record<string, number> = {
+      queries_attempted: 0,
+      queries_zero_results: 0,
+      queries_short_batch: 0,
+      ai_extractions_attempted: 0,
+      ai_extractions_failed: 0,
+      ai_returned_empty: 0,
+      ai_returned_items: 0,
+      direct_subs_attempted: 0,
+      direct_subs_zero_posts: 0,
+    };
 
-  try {
+    try {
     const categories = categoryFilter
       ? { [categoryFilter]: REDDIT_QUERIES[categoryFilter] || [] }
       : REDDIT_QUERIES;
@@ -732,39 +734,49 @@ Deno.serve(async (req) => {
         await sleep(jitteredDelay());
       }
     }
-  } catch (fatalErr) {
-    errors.push(`Fatal: ${fatalErr}`);
-    console.error("Fatal error:", fatalErr);
-  }
+    } catch (fatalErr) {
+      errors.push(`Fatal: ${fatalErr}`);
+      console.error("Fatal error:", fatalErr);
+    }
 
-  if (logId) {
-    await supabase
-      .from("collection_logs")
-      .update({
-        status: errors.length > 0 ? "partial" : "completed",
-        completed_at: new Date().toISOString(),
-        items_collected: totalCollected,
-        error_message: errors.length > 0 ? errors.slice(0, 10).join(" | ") : null,
-      })
-      .eq("id", logId);
-  }
+    if (logId) {
+      await supabase
+        .from("collection_logs")
+        .update({
+          status: errors.length > 0 ? "partial" : "completed",
+          completed_at: new Date().toISOString(),
+          items_collected: totalCollected,
+          error_message: errors.length > 0 ? errors.slice(0, 10).join(" | ") : null,
+        })
+        .eq("id", logId);
+    }
 
-  const result = {
-    success: true,
-    collected: totalCollected,
-    skipped_duplicates: totalSkipped,
-    errors: errors.length,
-    error_samples: errors.slice(0, 5),
-    phase_stats: phaseStats,
-    diagnostics: diag,
-    config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs, yarsHarvest, searchSort, searchTimeFilter },
+    console.log(`✅ Reddit collection v3 complete: collected=${totalCollected} skipped=${totalSkipped} errors=${errors.length}`, JSON.stringify({ phaseStats, diag }));
   };
 
-  console.log(`✅ Reddit collection v3 complete:`, JSON.stringify(result));
+  // Fire-and-forget on the edge runtime so we return immediately (avoids 150s IDLE_TIMEOUT)
+  // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+  if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+    // @ts-ignore
+    EdgeRuntime.waitUntil(runCollection());
+  } else {
+    // Fallback for local/non-edge environments
+    runCollection().catch((e) => console.error("[bg] runCollection failed:", e));
+  }
 
-  return new Response(JSON.stringify(result), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      success: true,
+      status: "accepted",
+      message: "Reddit collection started in background. Check collection_logs for progress.",
+      log_id: logId,
+      config: { mode, categoryFilter, deepComments, maxQueriesPerCategory, includeDirectSubs, yarsHarvest, searchSort, searchTimeFilter },
+    }),
+    {
+      status: 202,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    },
+  );
 });
 
 // ══════════════════════════════════════════════════════════════
