@@ -22,7 +22,6 @@ const COUNTRY_CONFIG: Record<string, { lang: string; searchTerms: string[] }> = 
   HK: { lang: "zh", searchTerms: ["LG TV review Hong Kong", "LG OLED 評價 香港", "LG 雪櫃 評價"] },
   IN: { lang: "en", searchTerms: ["LG TV review India", "LG OLED review India amazon", "LG refrigerator review India", "LG washing machine India"] },
   // ── 신규 확장: 전국가/전채널 강화 ──
-  KR: { lang: "ko", searchTerms: ["LG TV 후기 다나와", "LG 트롬 세탁기 후기", "LG 디오스 냉장고 후기", "LG 그램 후기 클리앙"] },
   AE: { lang: "en", searchTerms: ["LG TV review UAE noon", "LG refrigerator review Dubai", "LG washing machine review UAE amazon.ae"] },
   SA: { lang: "ar", searchTerms: ["LG تلفزيون مراجعة", "LG ثلاجة مراجعة السعودية", "LG غسالة مراجعة"] },
   TR: { lang: "tr", searchTerms: ["LG TV inceleme şikayetvar", "LG buzdolabı yorum hepsiburada", "LG çamaşır makinesi inceleme trendyol"] },
