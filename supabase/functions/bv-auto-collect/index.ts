@@ -63,6 +63,13 @@ Deno.serve(async (req) => {
         return aIdx - bIdx;
       });
     }
+
+    // 정책: 미국(en_US)은 항상 마지막에 수집 — 미국 외 국가 우선 강화
+    sortedLocales.sort((a, b) => {
+      if (a.locale === "en_US" && b.locale !== "en_US") return 1;
+      if (b.locale === "en_US" && a.locale !== "en_US") return -1;
+      return 0;
+    });
   }
 
   console.log(`[BV-AUTO] Starting mode=${mode}, ${sortedLocales.length} locales active, order: ${sortedLocales.map(l => l.locale).join(", ")}`);
