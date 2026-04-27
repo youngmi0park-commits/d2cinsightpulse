@@ -345,7 +345,7 @@ Deno.serve(async (req) => {
     // Channel actions (AI-generated)
     if (intel.channelActions?.length) {
       await supabase.from("newsletter_channel_actions").insert(
-        intel.channelActions.map((a: Record<string, unknown>, i: number) => ({
+        (intel.channelActions as Record<string, unknown>[]).map((a, i) => ({
           issue_id: issueId,
           channel_type: a.channelType,
           target_codes: a.targetCodes,
@@ -364,7 +364,7 @@ Deno.serve(async (req) => {
     // FAQ items (AI-generated)
     if (intel.faqItems?.length) {
       await supabase.from("newsletter_faq_items").insert(
-        intel.faqItems.map((f: Record<string, unknown>, i: number) => ({
+        (intel.faqItems as Record<string, unknown>[]).map((f, i) => ({
           issue_id: issueId,
           faq_type: f.faqType,
           question_ko: f.questionKo,
@@ -381,7 +381,7 @@ Deno.serve(async (req) => {
     // Caution items (AI-generated)
     if (intel.cautionItems?.length) {
       await supabase.from("newsletter_caution_items").insert(
-        intel.cautionItems.map((c: Record<string, unknown>, i: number) => ({
+        (intel.cautionItems as Record<string, unknown>[]).map((c, i) => ({
           issue_id: issueId,
           severity: c.severity,
           target_codes: c.targetCodes,
