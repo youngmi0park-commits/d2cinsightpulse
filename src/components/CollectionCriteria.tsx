@@ -1182,17 +1182,13 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
     return acc;
   }, {});
 
-  // Calculate cumulative count per country
-  const countryTotalCumulative = (country: string, rows: CollectionRow[]): number => {
-    const seen = new Set<string>();
-    let total = 0;
-    for (const row of rows) {
-      const key = `${row.channel}|${row.country}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      total += resolveCumulativeCount(row.channel, row.country, sourceCounts);
-    }
-    return total;
+  // Calculate cumulative count per country.
+  // ✅ Use DB country counts as the single source of truth so this matches
+  //    the "수집 현황 종합 → 국가별" tab exactly. Summing per-channel rows
+  //    would double-count shared-source channels (e.g. Amazon/YouTube whose
+  //    DB rows aren't country-suffixed).
+  const countryTotalCumulative = (country: string): number => {
+    return dbCountryCounts[country] || 0;
   };
 
   const statusBadge = (s: CollectionRow["status"]) => {
