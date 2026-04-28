@@ -18,6 +18,35 @@ export interface CompetitiveMention {
   win: boolean;
 }
 
+/** Explicit "vs Brand" / "than Brand" / "compared to Brand" comparison flag */
+export interface CompetitorComparisonFlag {
+  brand: string;            // canonical brand (e.g. "Samsung")
+  maskedBrand: string;      // privacy-masked label (e.g. "SS")
+  pattern: string;          // matched phrase, e.g. "vs Samsung"
+  outcome: "win" | "loss" | "neutral";
+  evidence: string;         // sentence excerpt
+}
+
+/** 6-emotion classifier result (Beta) */
+export type EmotionLabel =
+  | "satisfaction"   // 만족
+  | "disappointment" // 실망
+  | "expectation"    // 기대
+  | "anxiety"        // 불안
+  | "anger"          // 분노
+  | "trust";         // 신뢰
+
+export interface EmotionDistribution {
+  satisfaction: number;
+  disappointment: number;
+  expectation: number;
+  anxiety: number;
+  anger: number;
+  trust: number;
+  dominant: EmotionLabel | "none";
+  beta: true;
+}
+
 export interface SentimentResult {
   positive: number;
   negative: number;
@@ -41,6 +70,13 @@ export interface SentimentResult {
   primarySubject: string;
   hasCrossProductMention: boolean;
   confidence: number; // 0–1, lower when cross-product comparisons detected
+  // ── Roadmap v2 additions ─────────────────────────────────────
+  /** Explicit "vs Samsung" style comparisons surfaced for marketing */
+  competitorComparisons: CompetitorComparisonFlag[];
+  /** 6-emotion distribution (Beta — rule-based v1, EN/KO/DE/FR/ES) */
+  emotions: EmotionDistribution;
+  /** Languages detected across reviews (rough ISO codes) */
+  detectedLanguages: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════
