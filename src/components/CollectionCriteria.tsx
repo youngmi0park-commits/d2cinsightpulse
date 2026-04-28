@@ -1027,22 +1027,29 @@ function resolveCumulativeCount(
         .filter(([k]) => k.startsWith("youtube"))
         .reduce((s, [, v]) => s + v, 0);
     }
+    // Use per-country youtube_xx keys so non-US countries don't inherit the
+    // global "youtube" bucket (which historically inflated VN/SG/etc.)
     const cMap: Record<string, string[]> = {
       US: ["youtube", "youtube_LGUSAChannel"],
-      UK: ["youtube"],
-      DE: ["youtube"],
-      AU: ["youtube"],
-      IN: ["youtube"],
-      JP: ["youtube"],
-      TW: ["youtube"],
-      TH: ["youtube"],
-      SG: ["youtube"],
-      VN: ["youtube"],
+      UK: ["youtube_uk"],
+      DE: ["youtube_de"],
+      AU: ["youtube_au"],
+      IN: ["youtube_in"],
+      JP: ["youtube_jp"],
+      TW: ["youtube_tw"],
+      TH: ["youtube_th"],
+      SG: ["youtube_sg"],
+      VN: ["youtube_vn"],
       ID: ["youtube_id"],
-      HK: ["youtube"],
+      HK: ["youtube_hk"],
       MY: ["youtube_my"],
+      PH: ["youtube_ph"],
+      CA: ["youtube_ca"],
+      FR: ["youtube_fr"],
+      BR: ["youtube_br"],
+      MX: ["youtube_mx"],
     };
-    const keys = cMap[country] || ["youtube"];
+    const keys = cMap[country] || [];
     return keys.reduce((s, k) => s + (sourceCounts[k] || 0), 0);
   }
   // Amazon
