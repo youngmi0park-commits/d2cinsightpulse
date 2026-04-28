@@ -1182,17 +1182,13 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
     return acc;
   }, {});
 
-  // Calculate cumulative count per country
-  const countryTotalCumulative = (country: string, rows: CollectionRow[]): number => {
-    const seen = new Set<string>();
-    let total = 0;
-    for (const row of rows) {
-      const key = `${row.channel}|${row.country}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      total += resolveCumulativeCount(row.channel, row.country, sourceCounts);
-    }
-    return total;
+  // Calculate cumulative count per country.
+  // ✅ Use DB country counts as the single source of truth so this matches
+  //    the "수집 현황 종합 → 국가별" tab exactly. Summing per-channel rows
+  //    would double-count shared-source channels (e.g. Amazon/YouTube whose
+  //    DB rows aren't country-suffixed).
+  const countryTotalCumulative = (country: string): number => {
+    return dbCountryCounts[country] || 0;
   };
 
   const statusBadge = (s: CollectionRow["status"]) => {
@@ -1332,7 +1328,7 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                             </span>
                             {expandedCountry === country && (
                               <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in whitespace-nowrap">
-                                📊 {rows.length}개 채널, 누적 {countryTotalCumulative(country, rows).toLocaleString()}건 수집
+                                📊 {rows.length}개 채널, 누적 {countryTotalCumulative(country).toLocaleString()}건 수집
                               </span>
                             )}
                           </div>
@@ -1439,7 +1435,11 @@ export const CollectionCriteria = () => {
         <section className="rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
           {/* Summary header */}
           {(() => {
-            const totalCountry = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+            // ✅ Exclude "Other" so the total matches the per-country breakdown shown below
+            //    and the Detail Table footer (single source of truth).
+            const totalCountry = Object.entries(countryCounts)
+              .filter(([k]) => k !== "Other")
+              .reduce((s, [, v]) => s + v, 0);
             const bvCollected = Object.entries(BV_AVAILABLE).reduce((s, [code]) => {
               const iso = Object.entries(ISO_TO_LGE).find(([, v]) => v === code)?.[0] || "";
               return s + (lgComCounts[iso] || 0);
@@ -1516,7 +1516,10 @@ export const CollectionCriteria = () => {
                 });
               }
               countryData.sort((a, b) => b.totalCount - a.totalCount);
-              const globalTotal = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+              // ✅ Exclude "Other" so totals match the header and detail table footer
+              const globalTotal = Object.entries(countryCounts)
+                .filter(([k]) => k !== "Other")
+                .reduce((s, [, v]) => s + v, 0);
               const maxCount = countryData.length > 0 ? Math.max(...countryData.map(d => d.totalCount)) : 1;
 
               return (
