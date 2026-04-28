@@ -1435,7 +1435,11 @@ export const CollectionCriteria = () => {
         <section className="rounded-lg border border-primary/20 bg-primary/5 overflow-hidden">
           {/* Summary header */}
           {(() => {
-            const totalCountry = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+            // ✅ Exclude "Other" so the total matches the per-country breakdown shown below
+            //    and the Detail Table footer (single source of truth).
+            const totalCountry = Object.entries(countryCounts)
+              .filter(([k]) => k !== "Other")
+              .reduce((s, [, v]) => s + v, 0);
             const bvCollected = Object.entries(BV_AVAILABLE).reduce((s, [code]) => {
               const iso = Object.entries(ISO_TO_LGE).find(([, v]) => v === code)?.[0] || "";
               return s + (lgComCounts[iso] || 0);
