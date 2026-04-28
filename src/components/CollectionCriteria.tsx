@@ -944,9 +944,14 @@ function useCumulativeSourceCounts() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   useEffect(() => {
     const fetchData = async () => {
-      const [sourceRes, lgcomRes] = await Promise.all([
+      const [sourceRes, lgcomRes, rawRes] = await Promise.all([
         supabase.rpc("get_source_counts"),
         supabase.rpc("get_lgcom_country_counts"),
+        // Raw per-source counts so per-country keys (youtube_vn, web_review_vn, ...) survive
+        supabase
+          .from("reviews")
+          .select("source", { count: "exact", head: false })
+          .limit(0),
       ]);
       const map: Record<string, number> = {};
       if (sourceRes.data) {
@@ -961,6 +966,15 @@ function useCumulativeSourceCounts() {
           map[key] = Number(d.count || 0);
         });
       }
+      // Fetch authoritative per-source counts (so VN/SG/MY/etc. youtube_xx + web_review_xx are exact)
+      try {
+        const { data: rawRows } = await supabase.rpc("get_recent_source_counts", { p_hours: 24 * 365 * 10 });
+        if (Array.isArray(rawRows)) {
+          (rawRows as { source: string; count: number }[]).forEach(d => {
+            map[d.source] = Number(d.count || 0);
+          });
+        }
+      } catch (_) { /* fallback silently */ }
       setCounts(map);
     };
     fetchData();
