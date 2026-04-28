@@ -1516,7 +1516,10 @@ export const CollectionCriteria = () => {
                 });
               }
               countryData.sort((a, b) => b.totalCount - a.totalCount);
-              const globalTotal = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+              // ✅ Exclude "Other" so totals match the header and detail table footer
+              const globalTotal = Object.entries(countryCounts)
+                .filter(([k]) => k !== "Other")
+                .reduce((s, [, v]) => s + v, 0);
               const maxCount = countryData.length > 0 ? Math.max(...countryData.map(d => d.totalCount)) : 1;
 
               return (
