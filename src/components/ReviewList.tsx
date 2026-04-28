@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { maskCompetitorNames } from "@/lib/sentiment";
 import { extractKeyPhrases, isPrivacyPlaceholder } from "@/lib/reviewUtils";
 import type { Review } from "@/data/dummyData";
-import { Star, Calendar, TrendingUp, Languages, Loader2, Quote } from "lucide-react";
+import { Star, Calendar, TrendingUp, Languages, Loader2, Quote, Camera, Film, ShieldAlert, Sparkles } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -121,6 +121,34 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
 
   const isLgCom = review.source.startsWith("lge_com");
 
+  // ── Multimodal (photo/video) badge + analysis surface ──
+  const r = review as any;
+  const hasMedia: boolean = !!r.has_media;
+  const mediaType: "photo" | "video" | "mixed" | "none" = r.media_type || "none";
+  const mediaAnalysis = r.multimodal_analysis as
+    | null
+    | {
+        modality?: "photo" | "video";
+        product_condition?: string;
+        damage_signals?: string[];
+        installation_quality?: string;
+        environment?: string;
+        summary_ko?: string;
+        title_summary_ko?: string;
+        pros_segments?: { label_ko?: string; ts_start?: number }[];
+        cons_segments?: { label_ko?: string; ts_start?: number }[];
+        action_required?: string;
+        confidence?: number;
+      };
+  const mediaStatus: string = r.media_analysis_status || "pending";
+
+  const fmtTs = (s?: number) => {
+    if (s == null || isNaN(s)) return "";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, "0");
+    return `${m}:${sec}`;
+  };
+
   /** 2차 가공 요약 — 원문 대신 긍부정 코멘트 요약만 표시 */
   const lgComSummary = () => {
     const title = (review as any).title as string | undefined;
@@ -157,6 +185,21 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
           {isJP && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600">
               🇯🇵 원문: 일본어
+            </Badge>
+          )}
+          {hasMedia && (mediaType === "photo" || mediaType === "mixed") && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-teal-500/40 text-teal-600 gap-0.5">
+              <Camera className="h-2.5 w-2.5" /> 사진
+            </Badge>
+          )}
+          {hasMedia && (mediaType === "video" || mediaType === "mixed") && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-violet-500/40 text-violet-600 gap-0.5">
+              <Film className="h-2.5 w-2.5" /> 영상
+            </Badge>
+          )}
+          {hasMedia && mediaStatus === "processing" && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-600 gap-0.5">
+              <Loader2 className="h-2.5 w-2.5 animate-spin" /> 분석중
             </Badge>
           )}
           {!isLgCom && <span className="text-sm text-muted-foreground">{review.author}</span>}
@@ -221,6 +264,105 @@ function ReviewCard({ review, t }: { review: Review; t: (en: string, ko: string)
             {translated}
           </p>
         </div>
+      )}
+
+      {/* ── Multimodal AI analysis panel ── */}
+      {hasMedia && mediaAnalysis && mediaStatus === "done" && (
+        <div className="mt-3 p-3 rounded-md bg-accent/5 border border-accent/20 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-accent" />
+            <span className="text-[10px] font-semibold text-accent uppercase tracking-wide">
+              {mediaAnalysis.modality === "video" ? "영상 자동 요약 (FCO)" : "사진 비전 분석"}
+            </span>
+            {typeof mediaAnalysis.confidence === "number" && (
+              <span className="text-[9px] text-muted-foreground ml-auto">
+                신뢰도 {(mediaAnalysis.confidence * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
+
+          {(mediaAnalysis.summary_ko || mediaAnalysis.title_summary_ko) && (
+            <p className="text-xs text-foreground/85 leading-relaxed">
+              {mediaAnalysis.summary_ko || mediaAnalysis.title_summary_ko}
+            </p>
+          )}
+
+          {/* Photo specifics */}
+          {mediaAnalysis.modality !== "video" && (
+            <div className="space-y-1">
+              {mediaAnalysis.product_condition && (
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                  <span className="text-muted-foreground">제품 상태:</span>
+                  <span className={`px-1.5 py-0.5 rounded ${
+                    mediaAnalysis.product_condition === "damaged" || mediaAnalysis.product_condition === "defective"
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-muted text-foreground/80"
+                  }`}>{mediaAnalysis.product_condition}</span>
+                </div>
+              )}
+              {mediaAnalysis.damage_signals && mediaAnalysis.damage_signals.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {mediaAnalysis.damage_signals.slice(0, 5).map((sig, i) => (
+                    <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">
+                      <ShieldAlert className="h-2.5 w-2.5 inline mr-0.5" />{sig}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {(mediaAnalysis.installation_quality || mediaAnalysis.environment) && (
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+                  {mediaAnalysis.installation_quality && <span>설치: {mediaAnalysis.installation_quality}</span>}
+                  {mediaAnalysis.environment && <span>환경: {mediaAnalysis.environment}</span>}
+                </div>
+              )}
+              {mediaAnalysis.action_required === "urgent_qc_review" && (
+                <Badge className="text-[10px] bg-destructive text-destructive-foreground">긴급 QC 검토 필요</Badge>
+              )}
+            </div>
+          )}
+
+          {/* Video specifics */}
+          {mediaAnalysis.modality === "video" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {mediaAnalysis.pros_segments && mediaAnalysis.pros_segments.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-success mb-0.5">👍 좋은 점</p>
+                  <ul className="space-y-0.5">
+                    {mediaAnalysis.pros_segments.slice(0, 4).map((s, i) => (
+                      <li key={i} className="text-[11px] text-foreground/85 flex gap-1">
+                        {s.ts_start != null && (
+                          <span className="font-mono text-[9px] text-muted-foreground shrink-0">{fmtTs(s.ts_start)}</span>
+                        )}
+                        <span>{s.label_ko}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {mediaAnalysis.cons_segments && mediaAnalysis.cons_segments.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-destructive mb-0.5">👎 아쉬운 점</p>
+                  <ul className="space-y-0.5">
+                    {mediaAnalysis.cons_segments.slice(0, 4).map((s, i) => (
+                      <li key={i} className="text-[11px] text-foreground/85 flex gap-1">
+                        {s.ts_start != null && (
+                          <span className="font-mono text-[9px] text-muted-foreground shrink-0">{fmtTs(s.ts_start)}</span>
+                        )}
+                        <span>{s.label_ko}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasMedia && mediaStatus === "pending" && (
+        <p className="mt-2 text-[10px] text-muted-foreground italic">
+          {mediaType === "video" ? "🎬 영상 분석 대기 중 (자막+댓글 FCO)" : "📷 사진 비전 분석 대기 중"}
+        </p>
       )}
 
       <div className="flex items-center justify-between mt-2">
