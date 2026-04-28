@@ -1272,6 +1272,18 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     ? Math.max(0, 1 - (crossProductMentionCount / reviewCount) * 0.5)
     : 1;
 
+  // ── Roadmap v2: aggregate comparisons, emotions, languages ──
+  const allTexts: string[] = reviews.map(r => ((r as any)._analysisText || r.text || "") as string);
+  const competitorComparisons: CompetitorComparisonFlag[] = [];
+  const langSet = new Set<string>();
+  for (const t of allTexts) {
+    if (!t) continue;
+    langSet.add(detectLanguage(t));
+    const flags = detectCompetitorComparisons(t);
+    if (flags.length) competitorComparisons.push(...flags);
+  }
+  const emotions = classifyEmotions(allTexts);
+
   return {
     positive,
     negative,
@@ -1295,5 +1307,8 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     primarySubject: productCategory || "Unknown",
     hasCrossProductMention: crossProductMentionCount > 0,
     confidence: avgConfidence,
+    competitorComparisons: competitorComparisons.slice(0, 20),
+    emotions,
+    detectedLanguages: [...langSet].filter(l => l !== "unknown"),
   };
 }
