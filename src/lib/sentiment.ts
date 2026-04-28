@@ -95,6 +95,20 @@ const POSITIVE_WORDS: Record<string, number> = {
   love: 0.8, good: 0.5, outstanding: 0.85, best: 0.8, "top-notch": 0.8,
   "well-built": 0.7, "well-designed": 0.7, "cutting-edge": 0.75,
   "must-have": 0.75, "class-leading": 0.8, "worth it": 0.7,
+  // ── German ──
+  hervorragend: 0.85, ausgezeichnet: 0.85, perfekt: 0.9, super: 0.7,
+  toll: 0.7, fantastisch: 0.8, wunderbar: 0.8, leise: 0.55, schnell: 0.6,
+  zuverlässig: 0.7, empfehlenswert: 0.75, zufrieden: 0.65, "sehr gut": 0.8,
+  einfach: 0.4, bequem: 0.6, preiswert: 0.6, hochwertig: 0.7,
+  // ── French ──
+  excellent_fr: 0.85, parfait: 0.9, magnifique: 0.85, génial: 0.8,
+  superbe: 0.8, fiable: 0.7, rapide: 0.6, silencieux: 0.55, pratique: 0.6,
+  satisfait: 0.65, recommande: 0.7, agréable: 0.6, robuste: 0.65,
+  // ── Spanish ──
+  excelente: 0.85, perfecto: 0.9, increíble: 0.85, fantástico: 0.8,
+  estupendo: 0.8, fiable_es: 0.7, rápido: 0.6, silencioso: 0.55,
+  cómodo: 0.6, satisfecho: 0.65, recomiendo: 0.7, "muy bueno": 0.7,
+  duradero: 0.65, ligero: 0.5,
 };
 
 const NEGATIVE_WORDS: Record<string, number> = {
@@ -108,6 +122,19 @@ const NEGATIVE_WORDS: Record<string, number> = {
   disappointed: -0.7, terrible: -0.9, awful: -0.9, worst: -0.95,
   regret: -0.8, waste: -0.75, avoid: -0.8, broken: -0.85, unusable: -0.9,
   "do not buy": -0.9,
+  // ── German ──
+  schlecht: -0.7, enttäuscht: -0.7, enttäuschend: -0.7, langsam: -0.55,
+  laut: -0.55, kaputt: -0.85, mangelhaft: -0.7, unzuverlässig: -0.75,
+  teuer: -0.5, defekt: -0.85, schwach: -0.55, fehlerhaft: -0.7,
+  unbrauchbar: -0.9, ärgerlich: -0.6,
+  // ── French ──
+  mauvais: -0.7, déçu: -0.7, décevant: -0.7, lent: -0.55, bruyant: -0.55,
+  cassé: -0.85, défectueux: -0.85, fragile_fr: -0.6, cher: -0.5,
+  inutilisable: -0.9, médiocre: -0.55, nul: -0.7, "pas fiable": -0.75,
+  // ── Spanish ──
+  malo: -0.7, decepcionado: -0.7, decepcionante: -0.7, lento: -0.55,
+  ruidoso: -0.55, roto: -0.85, defectuoso: -0.85, caro: -0.5,
+  inútil: -0.85, mediocre_es: -0.55, frágil: -0.6, "no funciona": -0.85,
 };
 
 const NEGATION_TOKENS = [
@@ -115,6 +142,12 @@ const NEGATION_TOKENS = [
   "won't", "barely", "hardly", "fails to", "unable to",
   "doesn't", "didn't", "couldn't", "shouldn't", "wouldn't",
   "neither", "nor", "without",
+  // German
+  "nicht", "kein", "keine", "nie", "niemals", "ohne",
+  // French
+  "ne", "pas", "jamais", "aucun", "aucune", "sans",
+  // Spanish
+  "no", "nunca", "ningún", "ninguna", "sin",
 ];
 
 // ── Contrastive conjunctions that flip sentiment weight ──
