@@ -946,6 +946,165 @@ function extractUsageScenes(reviews: Review[]): string[] {
 // PUBLIC API: analyzeSentiment
 // ═══════════════════════════════════════════════════════════════════
 
+// ── Roadmap v2 helpers ────────────────────────────────────────────
+
+/** Canonical competitor brand list with masking labels */
+const COMPETITOR_BRANDS: { name: string; masked: string; pattern: RegExp }[] = [
+  { name: "Samsung",   masked: "SS",      pattern: /\b(samsung|galaxy|bravia samsung)\b/gi },
+  { name: "Sony",      masked: "SN",      pattern: /\b(sony|bravia)\b/gi },
+  { name: "TCL",       masked: "C브랜드", pattern: /\btcl\b/gi },
+  { name: "Hisense",   masked: "C브랜드", pattern: /\bhisense\b/gi },
+  { name: "Vizio",     masked: "C브랜드", pattern: /\bvizio\b/gi },
+  { name: "Panasonic", masked: "기타",    pattern: /\bpanasonic\b/gi },
+  { name: "Philips",   masked: "기타",    pattern: /\bphilips\b/gi },
+  { name: "Bose",      masked: "기타",    pattern: /\bbose\b/gi },
+  { name: "Sonos",     masked: "기타",    pattern: /\bsonos\b/gi },
+  { name: "Whirlpool", masked: "기타",    pattern: /\bwhirlpool\b/gi },
+  { name: "Bosch",     masked: "기타",    pattern: /\bbosch\b/gi },
+  { name: "Dyson",     masked: "기타",    pattern: /\bdyson\b/gi },
+  { name: "Apple",     masked: "기타",    pattern: /\bapple\b/gi },
+];
+
+const COMPARISON_TRIGGERS = [
+  "vs", "vs.", "versus", "compared to", "compared with", "than", "over",
+  "switched from", "switched to", "moved from", "moved to", "instead of",
+  // Multilingual
+  "im vergleich zu", "verglichen mit", "besser als", "schlechter als",   // DE
+  "par rapport à", "comparé à", "meilleur que", "pire que",              // FR
+  "comparado con", "frente a", "mejor que", "peor que",                  // ES
+];
+
+/**
+ * Detect explicit "vs Brand" / "than Brand" comparisons.
+ * Returns one flag per (brand, sentence) pair.
+ */
+function detectCompetitorComparisons(text: string): CompetitorComparisonFlag[] {
+  if (!text) return [];
+  const flags: CompetitorComparisonFlag[] = [];
+  const sentences = text.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 4);
+  const lowerTriggers = COMPARISON_TRIGGERS.map(t => t.toLowerCase());
+
+  for (const sentence of sentences) {
+    const lower = sentence.toLowerCase();
+    for (const brand of COMPETITOR_BRANDS) {
+      brand.pattern.lastIndex = 0;
+      if (!brand.pattern.test(sentence)) continue;
+
+      // Find which trigger phrase appears
+      const matchedTrigger = lowerTriggers.find(t => lower.includes(t));
+      if (!matchedTrigger) continue;
+
+      // Outcome heuristic
+      let outcome: "win" | "loss" | "neutral" = "neutral";
+      const lgFirst =
+        /\blg\b[^.!?]{0,40}(?:better|beats|wins|preferred|выше|besser|meilleur|mejor)/i.test(sentence) ||
+        /(better than|beats|wins over|preferred over|besser als|meilleur que|mejor que)\s+(samsung|sony|tcl|hisense|vizio|panasonic|philips|bose|sonos|whirlpool|bosch|dyson|apple)/i.test(sentence);
+      const brandFirst = new RegExp(
+        `${brand.name}\\s+(?:is\\s+)?(?:better|beats|wins|superior|besser|meilleur|mejor)`,
+        "i"
+      ).test(sentence) ||
+        new RegExp(`(?:switched|moved|going)\\s+(?:from\\s+lg\\s+)?to\\s+${brand.name}`, "i").test(sentence);
+
+      if (lgFirst) outcome = "win";
+      else if (brandFirst) outcome = "loss";
+
+      flags.push({
+        brand: brand.name,
+        maskedBrand: brand.masked,
+        pattern: matchedTrigger,
+        outcome,
+        evidence: sentence.length > 140 ? sentence.slice(0, 137) + "…" : sentence,
+      });
+    }
+  }
+  return flags;
+}
+
+// ── 6-Emotion lexicon (Beta) ──
+// Maps each emotion to multilingual cue words.
+const EMOTION_LEXICON: Record<EmotionLabel, string[]> = {
+  satisfaction: [
+    "satisfied", "love", "happy", "great", "perfect", "delighted", "pleased",
+    "만족", "좋아요", "최고",
+    "zufrieden", "perfekt", "toll",
+    "satisfait", "content", "parfait",
+    "satisfecho", "encantado", "perfecto",
+  ],
+  disappointment: [
+    "disappointed", "disappointing", "let down", "underwhelming", "expected better",
+    "실망", "아쉬",
+    "enttäuscht", "enttäuschend",
+    "déçu", "décevant",
+    "decepcionado", "decepcionante",
+  ],
+  expectation: [
+    "hope", "hoping", "looking forward", "can't wait", "expect", "anticipate", "excited",
+    "기대", "고대",
+    "freue mich", "erwarte",
+    "hâte", "j'espère", "j'attends",
+    "espero", "tengo ganas", "ansío",
+  ],
+  anxiety: [
+    "worried", "concerned", "afraid", "nervous", "uncertain", "unsure",
+    "걱정", "불안", "염려",
+    "besorgt", "ängstlich", "unsicher",
+    "inquiet", "préoccupé", "incertain",
+    "preocupado", "ansioso", "inseguro",
+  ],
+  anger: [
+    "angry", "furious", "outraged", "ridiculous", "pissed", "rage", "scam",
+    "화남", "분노", "어이없",
+    "wütend", "verärgert",
+    "en colère", "furieux", "scandaleux",
+    "enojado", "furioso", "indignante",
+  ],
+  trust: [
+    "trust", "reliable", "dependable", "consistent", "honest", "loyal", "long-time",
+    "신뢰", "믿음",
+    "vertrauen", "zuverlässig",
+    "confiance", "fiable",
+    "confianza", "fiable", "confío",
+  ],
+};
+
+function classifyEmotions(texts: string[]): EmotionDistribution {
+  const counts: Record<EmotionLabel, number> = {
+    satisfaction: 0, disappointment: 0, expectation: 0,
+    anxiety: 0, anger: 0, trust: 0,
+  };
+  for (const t of texts) {
+    if (!t) continue;
+    const lower = t.toLowerCase();
+    for (const [emotion, cues] of Object.entries(EMOTION_LEXICON) as [EmotionLabel, string[]][]) {
+      for (const cue of cues) {
+        if (lower.includes(cue.toLowerCase())) {
+          counts[emotion]++;
+          break; // count once per review per emotion
+        }
+      }
+    }
+  }
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+  let dominant: EmotionLabel | "none" = "none";
+  let best = 0;
+  for (const [k, v] of Object.entries(counts) as [EmotionLabel, number][]) {
+    if (v > best) { best = v; dominant = k; }
+  }
+  return { ...counts, dominant: total === 0 ? "none" : dominant, beta: true };
+}
+
+/** Cheap heuristic language detector based on stopwords/diacritics */
+function detectLanguage(text: string): string {
+  if (!text) return "unknown";
+  const lower = text.toLowerCase();
+  if (/[\uac00-\ud7af]/.test(text)) return "ko";
+  if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(text)) return "ja";
+  if (/\b(der|die|das|und|nicht|sehr|ist|mit|für|aber)\b/.test(lower)) return "de";
+  if (/\b(le|la|les|et|pas|très|avec|pour|mais|bien)\b/.test(lower) || /[àâçéèêëîïôûùüÿœ]/.test(lower)) return "fr";
+  if (/\b(el|la|los|las|y|no|muy|con|para|pero|bien)\b/.test(lower) || /[áéíóúñ¿¡]/.test(lower)) return "es";
+  return "en";
+}
+
 export function analyzeSentiment(reviews: Review[], productCategory?: string): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
   let hasRealText = false;
