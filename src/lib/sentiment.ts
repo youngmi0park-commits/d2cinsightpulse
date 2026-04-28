@@ -18,6 +18,35 @@ export interface CompetitiveMention {
   win: boolean;
 }
 
+/** Explicit "vs Brand" / "than Brand" / "compared to Brand" comparison flag */
+export interface CompetitorComparisonFlag {
+  brand: string;            // canonical brand (e.g. "Samsung")
+  maskedBrand: string;      // privacy-masked label (e.g. "SS")
+  pattern: string;          // matched phrase, e.g. "vs Samsung"
+  outcome: "win" | "loss" | "neutral";
+  evidence: string;         // sentence excerpt
+}
+
+/** 6-emotion classifier result (Beta) */
+export type EmotionLabel =
+  | "satisfaction"   // 만족
+  | "disappointment" // 실망
+  | "expectation"    // 기대
+  | "anxiety"        // 불안
+  | "anger"          // 분노
+  | "trust";         // 신뢰
+
+export interface EmotionDistribution {
+  satisfaction: number;
+  disappointment: number;
+  expectation: number;
+  anxiety: number;
+  anger: number;
+  trust: number;
+  dominant: EmotionLabel | "none";
+  beta: true;
+}
+
 export interface SentimentResult {
   positive: number;
   negative: number;
@@ -41,6 +70,13 @@ export interface SentimentResult {
   primarySubject: string;
   hasCrossProductMention: boolean;
   confidence: number; // 0–1, lower when cross-product comparisons detected
+  // ── Roadmap v2 additions ─────────────────────────────────────
+  /** Explicit "vs Samsung" style comparisons surfaced for marketing */
+  competitorComparisons: CompetitorComparisonFlag[];
+  /** 6-emotion distribution (Beta — rule-based v1, EN/KO/DE/FR/ES) */
+  emotions: EmotionDistribution;
+  /** Languages detected across reviews (rough ISO codes) */
+  detectedLanguages: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -59,6 +95,20 @@ const POSITIVE_WORDS: Record<string, number> = {
   love: 0.8, good: 0.5, outstanding: 0.85, best: 0.8, "top-notch": 0.8,
   "well-built": 0.7, "well-designed": 0.7, "cutting-edge": 0.75,
   "must-have": 0.75, "class-leading": 0.8, "worth it": 0.7,
+  // ── German ──
+  hervorragend: 0.85, ausgezeichnet: 0.85, perfekt: 0.9, super: 0.7,
+  toll: 0.7, fantastisch: 0.8, wunderbar: 0.8, leise: 0.55, schnell: 0.6,
+  zuverlässig: 0.7, empfehlenswert: 0.75, zufrieden: 0.65, "sehr gut": 0.8,
+  einfach: 0.4, bequem: 0.6, preiswert: 0.6, hochwertig: 0.7,
+  // ── French ──
+  excellent_fr: 0.85, parfait: 0.9, magnifique: 0.85, génial: 0.8,
+  superbe: 0.8, fiable: 0.7, rapide: 0.6, silencieux: 0.55, pratique: 0.6,
+  satisfait: 0.65, recommande: 0.7, agréable: 0.6, robuste: 0.65,
+  // ── Spanish ──
+  excelente: 0.85, perfecto: 0.9, increíble: 0.85, fantástico: 0.8,
+  estupendo: 0.8, fiable_es: 0.7, rápido: 0.6, silencioso: 0.55,
+  cómodo: 0.6, satisfecho: 0.65, recomiendo: 0.7, "muy bueno": 0.7,
+  duradero: 0.65, ligero: 0.5,
 };
 
 const NEGATIVE_WORDS: Record<string, number> = {
@@ -72,6 +122,19 @@ const NEGATIVE_WORDS: Record<string, number> = {
   disappointed: -0.7, terrible: -0.9, awful: -0.9, worst: -0.95,
   regret: -0.8, waste: -0.75, avoid: -0.8, broken: -0.85, unusable: -0.9,
   "do not buy": -0.9,
+  // ── German ──
+  schlecht: -0.7, enttäuscht: -0.7, enttäuschend: -0.7, langsam: -0.55,
+  laut: -0.55, kaputt: -0.85, mangelhaft: -0.7, unzuverlässig: -0.75,
+  teuer: -0.5, defekt: -0.85, schwach: -0.55, fehlerhaft: -0.7,
+  unbrauchbar: -0.9, ärgerlich: -0.6,
+  // ── French ──
+  mauvais: -0.7, déçu: -0.7, décevant: -0.7, lent: -0.55, bruyant: -0.55,
+  cassé: -0.85, défectueux: -0.85, fragile_fr: -0.6, cher: -0.5,
+  inutilisable: -0.9, médiocre: -0.55, nul: -0.7, "pas fiable": -0.75,
+  // ── Spanish ──
+  malo: -0.7, decepcionado: -0.7, decepcionante: -0.7, lento: -0.55,
+  ruidoso: -0.55, roto: -0.85, defectuoso: -0.85, caro: -0.5,
+  inútil: -0.85, mediocre_es: -0.55, frágil: -0.6, "no funciona": -0.85,
 };
 
 const NEGATION_TOKENS = [
@@ -79,6 +142,12 @@ const NEGATION_TOKENS = [
   "won't", "barely", "hardly", "fails to", "unable to",
   "doesn't", "didn't", "couldn't", "shouldn't", "wouldn't",
   "neither", "nor", "without",
+  // German
+  "nicht", "kein", "keine", "nie", "niemals", "ohne",
+  // French
+  "ne", "pas", "jamais", "aucun", "aucune", "sans",
+  // Spanish
+  "no", "nunca", "ningún", "ninguna", "sin",
 ];
 
 // ── Contrastive conjunctions that flip sentiment weight ──
@@ -877,6 +946,165 @@ function extractUsageScenes(reviews: Review[]): string[] {
 // PUBLIC API: analyzeSentiment
 // ═══════════════════════════════════════════════════════════════════
 
+// ── Roadmap v2 helpers ────────────────────────────────────────────
+
+/** Canonical competitor brand list with masking labels */
+const COMPETITOR_BRANDS: { name: string; masked: string; pattern: RegExp }[] = [
+  { name: "Samsung",   masked: "SS",      pattern: /\b(samsung|galaxy|bravia samsung)\b/gi },
+  { name: "Sony",      masked: "SN",      pattern: /\b(sony|bravia)\b/gi },
+  { name: "TCL",       masked: "C브랜드", pattern: /\btcl\b/gi },
+  { name: "Hisense",   masked: "C브랜드", pattern: /\bhisense\b/gi },
+  { name: "Vizio",     masked: "C브랜드", pattern: /\bvizio\b/gi },
+  { name: "Panasonic", masked: "기타",    pattern: /\bpanasonic\b/gi },
+  { name: "Philips",   masked: "기타",    pattern: /\bphilips\b/gi },
+  { name: "Bose",      masked: "기타",    pattern: /\bbose\b/gi },
+  { name: "Sonos",     masked: "기타",    pattern: /\bsonos\b/gi },
+  { name: "Whirlpool", masked: "기타",    pattern: /\bwhirlpool\b/gi },
+  { name: "Bosch",     masked: "기타",    pattern: /\bbosch\b/gi },
+  { name: "Dyson",     masked: "기타",    pattern: /\bdyson\b/gi },
+  { name: "Apple",     masked: "기타",    pattern: /\bapple\b/gi },
+];
+
+const COMPARISON_TRIGGERS = [
+  "vs", "vs.", "versus", "compared to", "compared with", "than", "over",
+  "switched from", "switched to", "moved from", "moved to", "instead of",
+  // Multilingual
+  "im vergleich zu", "verglichen mit", "besser als", "schlechter als",   // DE
+  "par rapport à", "comparé à", "meilleur que", "pire que",              // FR
+  "comparado con", "frente a", "mejor que", "peor que",                  // ES
+];
+
+/**
+ * Detect explicit "vs Brand" / "than Brand" comparisons.
+ * Returns one flag per (brand, sentence) pair.
+ */
+function detectCompetitorComparisons(text: string): CompetitorComparisonFlag[] {
+  if (!text) return [];
+  const flags: CompetitorComparisonFlag[] = [];
+  const sentences = text.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 4);
+  const lowerTriggers = COMPARISON_TRIGGERS.map(t => t.toLowerCase());
+
+  for (const sentence of sentences) {
+    const lower = sentence.toLowerCase();
+    for (const brand of COMPETITOR_BRANDS) {
+      brand.pattern.lastIndex = 0;
+      if (!brand.pattern.test(sentence)) continue;
+
+      // Find which trigger phrase appears
+      const matchedTrigger = lowerTriggers.find(t => lower.includes(t));
+      if (!matchedTrigger) continue;
+
+      // Outcome heuristic
+      let outcome: "win" | "loss" | "neutral" = "neutral";
+      const lgFirst =
+        /\blg\b[^.!?]{0,40}(?:better|beats|wins|preferred|выше|besser|meilleur|mejor)/i.test(sentence) ||
+        /(better than|beats|wins over|preferred over|besser als|meilleur que|mejor que)\s+(samsung|sony|tcl|hisense|vizio|panasonic|philips|bose|sonos|whirlpool|bosch|dyson|apple)/i.test(sentence);
+      const brandFirst = new RegExp(
+        `${brand.name}\\s+(?:is\\s+)?(?:better|beats|wins|superior|besser|meilleur|mejor)`,
+        "i"
+      ).test(sentence) ||
+        new RegExp(`(?:switched|moved|going)\\s+(?:from\\s+lg\\s+)?to\\s+${brand.name}`, "i").test(sentence);
+
+      if (lgFirst) outcome = "win";
+      else if (brandFirst) outcome = "loss";
+
+      flags.push({
+        brand: brand.name,
+        maskedBrand: brand.masked,
+        pattern: matchedTrigger,
+        outcome,
+        evidence: sentence.length > 140 ? sentence.slice(0, 137) + "…" : sentence,
+      });
+    }
+  }
+  return flags;
+}
+
+// ── 6-Emotion lexicon (Beta) ──
+// Maps each emotion to multilingual cue words.
+const EMOTION_LEXICON: Record<EmotionLabel, string[]> = {
+  satisfaction: [
+    "satisfied", "love", "happy", "great", "perfect", "delighted", "pleased",
+    "만족", "좋아요", "최고",
+    "zufrieden", "perfekt", "toll",
+    "satisfait", "content", "parfait",
+    "satisfecho", "encantado", "perfecto",
+  ],
+  disappointment: [
+    "disappointed", "disappointing", "let down", "underwhelming", "expected better",
+    "실망", "아쉬",
+    "enttäuscht", "enttäuschend",
+    "déçu", "décevant",
+    "decepcionado", "decepcionante",
+  ],
+  expectation: [
+    "hope", "hoping", "looking forward", "can't wait", "expect", "anticipate", "excited",
+    "기대", "고대",
+    "freue mich", "erwarte",
+    "hâte", "j'espère", "j'attends",
+    "espero", "tengo ganas", "ansío",
+  ],
+  anxiety: [
+    "worried", "concerned", "afraid", "nervous", "uncertain", "unsure",
+    "걱정", "불안", "염려",
+    "besorgt", "ängstlich", "unsicher",
+    "inquiet", "préoccupé", "incertain",
+    "preocupado", "ansioso", "inseguro",
+  ],
+  anger: [
+    "angry", "furious", "outraged", "ridiculous", "pissed", "rage", "scam",
+    "화남", "분노", "어이없",
+    "wütend", "verärgert",
+    "en colère", "furieux", "scandaleux",
+    "enojado", "furioso", "indignante",
+  ],
+  trust: [
+    "trust", "reliable", "dependable", "consistent", "honest", "loyal", "long-time",
+    "신뢰", "믿음",
+    "vertrauen", "zuverlässig",
+    "confiance", "fiable",
+    "confianza", "fiable", "confío",
+  ],
+};
+
+function classifyEmotions(texts: string[]): EmotionDistribution {
+  const counts: Record<EmotionLabel, number> = {
+    satisfaction: 0, disappointment: 0, expectation: 0,
+    anxiety: 0, anger: 0, trust: 0,
+  };
+  for (const t of texts) {
+    if (!t) continue;
+    const lower = t.toLowerCase();
+    for (const [emotion, cues] of Object.entries(EMOTION_LEXICON) as [EmotionLabel, string[]][]) {
+      for (const cue of cues) {
+        if (lower.includes(cue.toLowerCase())) {
+          counts[emotion]++;
+          break; // count once per review per emotion
+        }
+      }
+    }
+  }
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+  let dominant: EmotionLabel | "none" = "none";
+  let best = 0;
+  for (const [k, v] of Object.entries(counts) as [EmotionLabel, number][]) {
+    if (v > best) { best = v; dominant = k; }
+  }
+  return { ...counts, dominant: total === 0 ? "none" : dominant, beta: true };
+}
+
+/** Cheap heuristic language detector based on stopwords/diacritics */
+function detectLanguage(text: string): string {
+  if (!text) return "unknown";
+  const lower = text.toLowerCase();
+  if (/[\uac00-\ud7af]/.test(text)) return "ko";
+  if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(text)) return "ja";
+  if (/\b(der|die|das|und|nicht|sehr|ist|mit|für|aber)\b/.test(lower)) return "de";
+  if (/\b(le|la|les|et|pas|très|avec|pour|mais|bien)\b/.test(lower) || /[àâçéèêëîïôûùüÿœ]/.test(lower)) return "fr";
+  if (/\b(el|la|los|las|y|no|muy|con|para|pero|bien)\b/.test(lower) || /[áéíóúñ¿¡]/.test(lower)) return "es";
+  return "en";
+}
+
 export function analyzeSentiment(reviews: Review[], productCategory?: string): SentimentResult {
   let positive = 0, negative = 0, neutral = 0;
   let hasRealText = false;
@@ -1044,6 +1272,18 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     ? Math.max(0, 1 - (crossProductMentionCount / reviewCount) * 0.5)
     : 1;
 
+  // ── Roadmap v2: aggregate comparisons, emotions, languages ──
+  const allTexts: string[] = reviews.map(r => ((r as any)._analysisText || r.text || "") as string);
+  const competitorComparisons: CompetitorComparisonFlag[] = [];
+  const langSet = new Set<string>();
+  for (const t of allTexts) {
+    if (!t) continue;
+    langSet.add(detectLanguage(t));
+    const flags = detectCompetitorComparisons(t);
+    if (flags.length) competitorComparisons.push(...flags);
+  }
+  const emotions = classifyEmotions(allTexts);
+
   return {
     positive,
     negative,
@@ -1067,5 +1307,8 @@ export function analyzeSentiment(reviews: Review[], productCategory?: string): S
     primarySubject: productCategory || "Unknown",
     hasCrossProductMention: crossProductMentionCount > 0,
     confidence: avgConfidence,
+    competitorComparisons: competitorComparisons.slice(0, 20),
+    emotions,
+    detectedLanguages: [...langSet].filter(l => l !== "unknown"),
   };
 }
