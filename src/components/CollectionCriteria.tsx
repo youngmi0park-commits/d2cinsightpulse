@@ -1079,9 +1079,9 @@ function resolveCumulativeCount(
   if (channel.includes("Shopee") || channel.includes("Lazada")) {
     const cMap: Record<string, string> = {
       TH: "web_review_th", SG: "web_review_sg", VN: "web_review_vn",
-      ID: "web_review_id", MY: "web_review", PH: "web_review",
+      ID: "web_review_id", MY: "web_review_my", PH: "web_review_ph",
     };
-    return sourceCounts[cMap[country] || "web_review"] || 0;
+    return sourceCounts[cMap[country] || ""] || 0;
   }
   // Web Review
   if (channel.includes("Web Review")) {
