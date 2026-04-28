@@ -1328,7 +1328,7 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                             </span>
                             {expandedCountry === country && (
                               <span className="text-[10px] font-bold text-primary mt-0.5 animate-in fade-in whitespace-nowrap">
-                                📊 {rows.length}개 채널, 누적 {countryTotalCumulative(country, rows).toLocaleString()}건 수집
+                                📊 {rows.length}개 채널, 누적 {countryTotalCumulative(country).toLocaleString()}건 수집
                               </span>
                             )}
                           </div>
