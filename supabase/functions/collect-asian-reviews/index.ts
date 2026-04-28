@@ -37,13 +37,66 @@ const COUNTRY_CONFIG: Record<string, { lang: string; searchTerms: string[] }> = 
 
 const LG_CATEGORIES = ["TV", "OLED", "Refrigerator", "Washing Machine", "Air Conditioner", "Soundbar", "Monitor", "Laptop", "Dishwasher"];
 
+// ── 자동 검증: 필수 국가별 searchTerms 누락 여부 확인 ──
+const REQUIRED_COUNTRIES = [
+  "JP","SG","MY","ID","TH","PH","VN","TW","HK","IN",
+  "AE","SA","TR","MX","BR","FR","IT","ES","NL","CA","GB",
+];
+
+function validateCountryConfig(): { ok: boolean; missing: string[]; empty: string[]; invalid: string[] } {
+  const missing: string[] = [];
+  const empty: string[] = [];
+  const invalid: string[] = [];
+  for (const c of REQUIRED_COUNTRIES) {
+    const cfg = COUNTRY_CONFIG[c];
+    if (!cfg) { missing.push(c); continue; }
+    if (!Array.isArray(cfg.searchTerms) || cfg.searchTerms.length === 0) { empty.push(c); continue; }
+    const bad = cfg.searchTerms.some((t) => typeof t !== "string" || t.trim().length < 3);
+    if (bad || !cfg.lang) invalid.push(c);
+  }
+  return { ok: missing.length === 0 && empty.length === 0 && invalid.length === 0, missing, empty, invalid };
+}
+
+// 모듈 로드 시 자동 검증 (배포 시점에 즉시 노출)
+const __validation = validateCountryConfig();
+if (!__validation.ok) {
+  console.error("[collect-asian-reviews] COUNTRY_CONFIG validation FAILED:", __validation);
+} else {
+  console.log(`[collect-asian-reviews] COUNTRY_CONFIG validation OK (${REQUIRED_COUNTRIES.length} countries)`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const url = new URL(req.url);
+    // 헬스체크 / 검증 전용 엔드포인트: ?validate=1
+    if (url.searchParams.get("validate") === "1" || req.method === "GET") {
+      const v = validateCountryConfig();
+      return new Response(
+        JSON.stringify({
+          success: v.ok,
+          required: REQUIRED_COUNTRIES.length,
+          configured: REQUIRED_COUNTRIES.filter((c) => COUNTRY_CONFIG[c]).length,
+          ...v,
+        }),
+        { status: v.ok ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const body: CollectRequest = await req.json().catch(() => ({}));
+
+    // 실행 전 가드: 누락 시 즉시 실패 응답
+    const v = validateCountryConfig();
+    if (!v.ok) {
+      return new Response(
+        JSON.stringify({ success: false, error: "COUNTRY_CONFIG validation failed", ...v }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const countries = body.countries || Object.keys(COUNTRY_CONFIG);
     const maxPages = body.maxPages || 3;
 
