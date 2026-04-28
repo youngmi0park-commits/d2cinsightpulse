@@ -638,7 +638,13 @@ export type Database = {
           emotion_category: string | null
           emotion_intensity: number | null
           external_id: string | null
+          has_media: boolean
           id: string
+          media_analysis_status: string
+          media_type: string
+          media_urls: string[] | null
+          multimodal_analysis: Json | null
+          multimodal_analyzed_at: string | null
           platform_type: string | null
           product_id: string
           published_at: string | null
@@ -659,7 +665,13 @@ export type Database = {
           emotion_category?: string | null
           emotion_intensity?: number | null
           external_id?: string | null
+          has_media?: boolean
           id?: string
+          media_analysis_status?: string
+          media_type?: string
+          media_urls?: string[] | null
+          multimodal_analysis?: Json | null
+          multimodal_analyzed_at?: string | null
           platform_type?: string | null
           product_id: string
           published_at?: string | null
@@ -680,7 +692,13 @@ export type Database = {
           emotion_category?: string | null
           emotion_intensity?: number | null
           external_id?: string | null
+          has_media?: boolean
           id?: string
+          media_analysis_status?: string
+          media_type?: string
+          media_urls?: string[] | null
+          multimodal_analysis?: Json | null
+          multimodal_analyzed_at?: string | null
           platform_type?: string | null
           product_id?: string
           published_at?: string | null
