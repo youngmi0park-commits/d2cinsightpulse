@@ -16,6 +16,14 @@ const corsHeaders = {
  * Body: { limit?: number, dry_run?: boolean }
  */
 
+/**
+ * Bulk SQL fast-path for marking media via regex.
+ * mode="bulk_mark": one batched UPDATE per call, no per-row roundtrip.
+ * mode="queue_analysis": pulls reviews already marked has_media=true but not yet analyzed,
+ *                       and dispatches photo/video analysis edge calls.
+ * Default mode (no `mode` param) keeps the legacy per-row scan behavior.
+ */
+
 const YT_PATTERNS = [
   /youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})/i,
   /youtu\.be\/([A-Za-z0-9_-]{11})/i,
@@ -60,10 +68,69 @@ serve(async (req) => {
 
   try {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
-    const limit = Math.min(Number(body.limit) || 200, 1000);
+    const limit = Math.min(Number(body.limit) || 200, 50000);
     const dryRun = !!body.dry_run;
+    const mode = (body.mode as string) || "scan";
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // ---------- BULK SQL FAST-PATH ----------
+    if (mode === "bulk_mark") {
+      // 1) Mark obvious YouTube videos by source/source_url
+      const { error: e1, count: videoMarked } = await supabase
+        .from("reviews")
+        .update({ has_media: true, media_type: "video", media_analysis_status: "queued" }, { count: "exact" })
+        .eq("media_analysis_status", "pending")
+        .like("source", "youtube%")
+        .limit(limit);
+      if (e1) throw e1;
+
+      // 2) Mark everything else as skipped in bulk (no media detected)
+      const { error: e2, count: skipMarked } = await supabase
+        .from("reviews")
+        .update({ has_media: false, media_type: "none", media_analysis_status: "skipped" }, { count: "exact" })
+        .eq("media_analysis_status", "pending")
+        .not("source", "like", "youtube%")
+        .limit(limit);
+      if (e2) throw e2;
+
+      return new Response(JSON.stringify({
+        ok: true, mode, videoMarked: videoMarked ?? 0, skipMarked: skipMarked ?? 0,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ---------- QUEUE ANALYSIS ON ALREADY-MARKED ITEMS ----------
+    if (mode === "queue_analysis") {
+      const { data: rows, error } = await supabase
+        .from("reviews")
+        .select("id, source, source_url, content, media_type")
+        .eq("media_analysis_status", "queued")
+        .limit(Math.min(limit, 50));
+      if (error) throw error;
+
+      let photoQueued = 0, videoQueued = 0;
+      for (const r of rows || []) {
+        const media = detectMedia(r as any);
+        if (!media.has_media) continue;
+        if (media.media_type === "video" || media.media_type === "mixed") {
+          const vid = media.media_urls.find((u) => /^[A-Za-z0-9_-]{11}$/.test(u));
+          if (vid) {
+            supabase.functions.invoke("analyze-video-review", { body: { review_id: r.id, video_id: vid } }).catch(() => {});
+            videoQueued++;
+          }
+        }
+        if (media.media_type === "photo" || media.media_type === "mixed") {
+          const photoUrls = media.media_urls.filter((u) => /^https?:\/\//.test(u));
+          if (photoUrls.length > 0) {
+            supabase.functions.invoke("analyze-photo-review", { body: { review_id: r.id, image_urls: photoUrls } }).catch(() => {});
+            photoQueued++;
+          }
+        }
+      }
+      return new Response(JSON.stringify({
+        ok: true, mode, scanned: rows?.length || 0, photoQueued, videoQueued,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Pull a batch of reviews not yet scanned for media
     const { data: rows, error } = await supabase
