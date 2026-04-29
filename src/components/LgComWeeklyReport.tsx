@@ -117,7 +117,19 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
       const { data, error } = await supabase.functions.invoke("generate-lgcom-weekly-report", {
         body: invokeBody,
       });
-      if (error) throw error;
+      if (error) {
+        const ctx: any = (error as any).context;
+        const status = ctx?.status;
+        if (status === 402) {
+          toast.error(t("AI credits exhausted. Please top up.", "Lovable AI 크레딧이 부족합니다. 충전 후 다시 시도해주세요."));
+          return;
+        }
+        if (status === 429) {
+          toast.error(t("Too many requests. Try again shortly.", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."));
+          return;
+        }
+        throw error;
+      }
       if (data?.report) {
         setReport(data.report);
         setMeta(data.metadata);
