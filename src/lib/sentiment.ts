@@ -208,7 +208,8 @@ const COMPETITORS = [
 
 /** Mask competitor brand names in user-facing text */
 export function maskCompetitorNames(text: string): string {
-  return text
+  if (!text) return "";
+  return String(text)
     .replace(/\bsamsung\b/gi, "SS")
     .replace(/\bgalaxy\b/gi, "SS")
     .replace(/\bsony\b/gi, "SN")
