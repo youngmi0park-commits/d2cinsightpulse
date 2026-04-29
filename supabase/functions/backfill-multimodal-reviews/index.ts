@@ -16,6 +16,14 @@ const corsHeaders = {
  * Body: { limit?: number, dry_run?: boolean }
  */
 
+/**
+ * Bulk SQL fast-path for marking media via regex.
+ * mode="bulk_mark": one batched UPDATE per call, no per-row roundtrip.
+ * mode="queue_analysis": pulls reviews already marked has_media=true but not yet analyzed,
+ *                       and dispatches photo/video analysis edge calls.
+ * Default mode (no `mode` param) keeps the legacy per-row scan behavior.
+ */
+
 const YT_PATTERNS = [
   /youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})/i,
   /youtu\.be\/([A-Za-z0-9_-]{11})/i,
