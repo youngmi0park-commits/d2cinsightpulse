@@ -238,7 +238,23 @@ Deno.serve(async (req) => {
 
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
-      throw new Error("AI API error: " + aiResponse.status + " - " + errText);
+      console.error("AI API error:", aiResponse.status, errText);
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "RATE_LIMITED", message: "AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "PAYMENT_REQUIRED", message: "Lovable AI 크레딧이 부족합니다. Settings → Workspace → Usage에서 크레딧을 충전해주세요." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: "AI_GATEWAY_ERROR", status: aiResponse.status }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Safe JSON parsing - AI Gateway can return empty body on transient errors
