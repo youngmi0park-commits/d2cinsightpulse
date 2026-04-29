@@ -45,10 +45,10 @@ interface ChannelDef {
 }
 
 const ALL_CHANNELS: ChannelDef[] = [
-  { key: "google_pmax", label: "Google PMAX", color: "#1a8a4a", format: "Headlines ×5 + Descriptions ×2", fields: [{ name: "Headline", max: 30 }, { name: "Description", max: 90 }], funnels: ["conversion"] },
+  { key: "google_pmax", label: "Google PMAX", color: "#1a8a4a", format: "Headlines A/B + Descriptions A/B", fields: [{ name: "Headline A", max: 30 }, { name: "Headline B", max: 30 }, { name: "Description A", max: 90 }, { name: "Description B", max: 90 }], funnels: ["conversion"] },
   { key: "google_rsa", label: "Google Search RSA", color: "#1a8a4a", format: "Headlines ×5 + Descriptions ×2", fields: [{ name: "Headline", max: 30 }, { name: "Description", max: 90 }], funnels: ["consideration", "conversion"] },
   { key: "google_gdn", label: "Google Display/GDN", color: "#1a8a4a", format: "Short Headline + Long Headline + Description + CTA", fields: [{ name: "Short Headline", max: 25 }, { name: "Long Headline", max: 90 }, { name: "Description", max: 90 }, { name: "CTA", max: 15 }], funnels: ["awareness"] },
-  { key: "meta_feed", label: "Meta Feed", color: "#1a52d4", format: "Primary Text + Headline + Description + CTA", fields: [{ name: "Primary Text", max: 125 }, { name: "Headline", max: 27 }, { name: "Description", max: 27 }, { name: "CTA", max: 20 }], funnels: ["consideration", "conversion"] },
+  { key: "meta_feed", label: "Meta Feed", color: "#1a52d4", format: "Primary Text(A/B) + Headline + Description + CTA", fields: [{ name: "Primary Text A", max: 125 }, { name: "Primary Text B", max: 125 }, { name: "Headline", max: 27 }, { name: "Description", max: 27 }, { name: "CTA", max: 20 }], funnels: ["consideration", "conversion"] },
   { key: "meta_stories", label: "Meta Stories/Reels", color: "#1a52d4", format: "Hook + Caption + CTA", fields: [{ name: "Caption", max: 125 }, { name: "CTA", max: 20 }], funnels: ["awareness", "conversion"] },
   { key: "meta_carousel", label: "Meta Carousel", color: "#1a52d4", format: "Card별 Headline + Body + CTA", fields: [{ name: "Headline", max: 40 }, { name: "Body", max: 125 }, { name: "CTA", max: 20 }], funnels: ["consideration", "conversion"] },
   { key: "criteo_retargeting", label: "Criteo Retargeting", color: "#F57C00", format: "Headline + Description + CTA", fields: [{ name: "Headline", max: 25 }, { name: "Description", max: 38 }, { name: "CTA", max: 15 }], funnels: ["conversion", "retention"] },
@@ -58,7 +58,7 @@ const ALL_CHANNELS: ChannelDef[] = [
   { key: "lgcom_hero", label: "LG.com Hero Banner", color: "#A50034", format: "Eyebrow + Headline + Subheadline + CTA", fields: [{ name: "Eyebrow", max: 40 }, { name: "Headline", max: 50 }, { name: "Subheadline", max: 80 }, { name: "CTA", max: 35 }], funnels: ["awareness", "consideration"] },
   { key: "lgcom_pdp", label: "LG.com PDP 배너", color: "#A50034", format: "Headline + Body + CTA", fields: [{ name: "Headline", max: 50 }, { name: "Body", max: 80 }, { name: "CTA", max: 35 }], funnels: ["conversion"] },
   { key: "lgcom_email", label: "LG.com Email/CRM", color: "#A50034", format: "Subject + Body + CTA", fields: [{ name: "Subject", max: 60 }, { name: "Body", max: 200 }, { name: "CTA", max: 25 }], funnels: ["retention"] },
-  { key: "affiliate_reviewer", label: "Affiliate 리뷰어 브리프", color: "#6B21A8", format: "Brief Headline + Key Points ×3 + CTA 제안", fields: [{ name: "Headline", max: 60 }, { name: "Key Point", max: 80 }, { name: "CTA", max: 25 }], funnels: ["consideration", "conversion"] },
+  { key: "affiliate_reviewer", label: "Affiliate 리뷰어 브리프", color: "#6B21A8", format: "Brief Headline + Key Points ×3 + CTA 제안 + Long Form", fields: [{ name: "Headline", max: 60 }, { name: "Key Point", max: 80 }, { name: "CTA", max: 25 }, { name: "Brief (Long)", max: 1000 }], funnels: ["consideration", "conversion"] },
   { key: "affiliate_publisher", label: "Affiliate 퍼블리셔 배너", color: "#6B21A8", format: "Headline + Description + CTA", fields: [{ name: "Headline", max: 40 }, { name: "Description", max: 90 }, { name: "CTA", max: 20 }], funnels: ["conversion"] },
 ];
 
@@ -309,6 +309,12 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
           adj1,
         ];
         break;
+      case "Headline A":
+        candidates = [`${adj1} & ${adj2}`, `${capitalize(s1)} & ${capitalize(s2)}`];
+        break;
+      case "Headline B":
+        candidates = [pain ? `Solves ${pain}` : `${adj1} ${noun}`, `True ${capitalize(s1)}`];
+        break;
       case "Headline":
         candidates = ownedChannel ? [
           `${capitalize(s1)} You Can Feel Every Day`,
@@ -331,6 +337,24 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
           `Your ${scene}, upgraded with ${s1} and ${s2}.`,
           `${capitalize(s1)} and ${s2}, made for your ${scene}.`,
           `${capitalize(s1)} & ${s2} for your ${scene}.`,
+        ];
+        break;
+      case "Description A":
+        candidates = pain ? [`Concerned about ${pain}? Owners highlight ${s1} and ${s2}.`] : [`Praised for outstanding ${s1} and reliable ${s2}.`];
+        break;
+      case "Description B":
+        candidates = [`Experience ${s1} and ${s2} in your ${scene} every single day.`, `Your ${scene}, upgraded with ${s1} and ${s2}.`];
+        break;
+      case "Primary Text A":
+        candidates = pain ? [
+          `Concerned about ${pain}? Real users praise the ${s1} and ${s2} of the ${noun} — see why.`
+        ] : [
+          `Praised for outstanding ${s1} and reliable ${s2} — hear from real ${noun} owners.`
+        ];
+        break;
+      case "Primary Text B":
+        candidates = [
+          `Your ${scene}, upgraded with ${s1} and ${s2}. Discover the difference the ${noun} makes.`
         ];
         break;
       case "Description": case "Body": case "Primary Text":
@@ -402,6 +426,11 @@ function generateCopy(channel: ChannelDef, pName: string, sentiment: SentimentRe
           `Imagine ${s1} in your ${scene} — every single day.`,
           `Imagine ${s1} in your ${scene}.`,
           `Picture ${s1} at home.`,
+        ];
+        break;
+      case "Brief (Long)":
+        candidates = [
+          `## Marketing Brief: ${pName}\n\n**Goal**: Highlight ${s1} and ${s2} in a ${scene} context.\n\n**Context**: Customer sentiment is generally positive towards ${s1}. ${pain ? `However, some users expressed concern about ${pain}. Please frame ${s1} as a solution.` : `It's praised highly in reviews.`}\n\n**Do**: Ensure you mention the product in daily use. Be honest.\n**Don't**: Use unsubstantiated claims or emojis. No direct competitor comparisons.\n\n**Hashtags**: #${noun.replace(/\\s+/g, "")} #Review #Ad`
         ];
         break;
       case "Key Point":
