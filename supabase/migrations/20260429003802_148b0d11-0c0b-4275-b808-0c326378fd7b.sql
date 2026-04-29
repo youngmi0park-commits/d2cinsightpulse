@@ -1,0 +1,1 @@
+UPDATE public.reviews SET media_analysis_status='queued', multimodal_analysis = NULL WHERE media_analysis_status='failed' AND media_type IN ('video','photo');
