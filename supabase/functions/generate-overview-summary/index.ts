@@ -65,8 +65,9 @@ function sanitizeFetchError(message: string) {
 function applyChannelFilter(query: any, channel: string) {
   if (channel === "lgcom") return query.like("source", "lge_com%");
   if (channel === "reddit") return query.like("source", "reddit%");
-  // "other": exclude lgcom and reddit — fetch all, filter in-memory
-  return query;
+  // "other": exclude lgcom and reddit at the DB level so the planner
+  // can use indexes instead of scanning the full table.
+  return query.not("source", "like", "lge_com%").not("source", "like", "reddit%");
 }
 
 async function fetchReviewPage(
@@ -79,12 +80,13 @@ async function fetchReviewPage(
   let query = sb
     .from("reviews")
     .select(REVIEW_SELECT)
-    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("collected_at", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
 
   if (sinceIso) {
-    // Filter on published_at (작성 시점) — same as dashboard windows
-    query = query.gte("published_at", sinceIso);
+    // Filter on collected_at — indexed and avoids slow published_at sorts
+    // across millions of rows when "other" channel is requested.
+    query = query.gte("collected_at", sinceIso);
   }
 
   query = applyChannelFilter(query, channel);
@@ -112,11 +114,18 @@ async function fetchWindowSample(
     offset < window.maxScanRows && reviews.length < TARGET_SAMPLE_SIZE;
     offset += REVIEW_PAGE_SIZE
   ) {
-    const page = await fetchReviewPage(sb, channel, sinceIso, offset, REVIEW_PAGE_SIZE);
-    // For "other" channel, we still need in-memory filtering
-    const matched = channel === "other"
-      ? page.filter((row) => matchesChannel(row.source, channel))
-      : page;
+    let page: ReviewRow[] = [];
+    try {
+      page = await fetchReviewPage(sb, channel, sinceIso, offset, REVIEW_PAGE_SIZE);
+    } catch (err) {
+      // Treat statement timeouts as "no more rows in this window" and
+      // fall through to the next (broader) window instead of failing.
+      console.warn(
+        `[generate-overview-summary] ${channel} ${window.label}: page fetch failed at offset=${offset}: ${(err as Error).message}`,
+      );
+      break;
+    }
+    const matched = page;
 
     if (matched.length > 0) {
       reviews.push(
