@@ -607,6 +607,251 @@ function buildPmaxVariants(pName: string, sentiment: SentimentResult): PmaxVaria
   return [A, B, C].map(scoreVariant);
 }
 
+/* ── Meta Primary Text A/B/C variant generator ──
+ * Meta Feed/Stories 규칙: Primary Text ≤125자, Headline ≤27자, CTA ≤20자
+ * 3가지 톤 변형: A) Hook/Question  B) Social Proof  C) Story/Lifestyle
+ */
+export interface MetaVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  primaryText: string;       // ≤125
+  headline: string;          // ≤27
+  description: string;       // ≤27
+  cta: string;               // ≤20
+  hashtags: string[];
+  compliance: { ok: boolean; issues: string[] };
+  score: number;
+}
+
+function buildMetaVariants(pName: string, sentiment: SentimentResult): MetaVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+  const tag = noun.replace(/\s+/g, "");
+
+  // A — Hook/Question (관심 환기)
+  const A: MetaVariant = {
+    id: "A",
+    angle: "후크 질문형",
+    angleEn: "Hook/Question",
+    rationale: pain
+      ? `"${pain}" 우려를 질문으로 환기 → 관심 유발 후 베네핏 해결 제시 (스크롤 정지율 ↑)`
+      : `궁금증을 자극하는 질문으로 시작 → 베네핏 ${s1} 자연스럽게 노출`,
+    primaryText: pickBestFit([
+      pain
+        ? `Tired of ${pain}? Real owners say the ${s1} of this ${noun} changed everything. See why ${posPct}% of reviews are positive. ✨`
+        : `What if your ${scene} felt brand new? Real owners praise the ${s1} & ${s2} of this ${noun}. ${posPct}% love it. ✨`,
+      pain
+        ? `Worried about ${pain}? Owners highlight the ${s1} they trust every day.`
+        : `Looking for ${adj1} ${noun}? Owners praise the ${s1} every day.`,
+    ], 125),
+    headline: pickBestFit([`${adj1} ${noun}`, `Truly ${adj1}`, adj1], 27),
+    description: pickBestFit([`Owner-Approved`, `Loved by Owners`, `Real Reviews`], 27),
+    cta: pickBestFit(["Shop Now", "Learn More", "Discover"], 20),
+    hashtags: [`#LG${tag}`, `#${capitalize(s1).replace(/\s+/g, "")}`, "#RealReviews"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // B — Social Proof (수치 + 리뷰 인용 톤)
+  const B: MetaVariant = {
+    id: "B",
+    angle: "소셜 프루프형",
+    angleEn: "Social Proof",
+    rationale: `리뷰 ${total}건 중 긍정 ${posPct}% 데이터를 전면 노출 → 신뢰·전환 동시 강화`,
+    primaryText: pickBestFit([
+      `${posPct}% of ${total}+ reviews praise the ${s1} and ${s2}. Hear it from real ${noun} owners. ⭐`,
+      `Real owners. Real ${s1}. ${posPct}% positive across ${total}+ reviews — see why this ${noun} stands out.`,
+      `Owners highlight ${s1} and ${s2}. Join ${total}+ reviewers who trust this ${noun}.`,
+    ], 125),
+    headline: pickBestFit([`${posPct}% Owner-Loved`, `Owner-Approved`, `Owner-Loved`], 27),
+    description: pickBestFit([`${total}+ Real Reviews`, `Real Owner Praise`, `Owner Praised`], 27),
+    cta: pickBestFit(["See Reviews", "Shop Now", "Learn More"], 20),
+    hashtags: [`#LG${tag}`, "#RealReviews", "#OwnerLoved"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // C — Story/Lifestyle (장면 기반 감성)
+  const C: MetaVariant = {
+    id: "C",
+    angle: "스토리 라이프스타일형",
+    angleEn: "Story/Lifestyle",
+    rationale: `사용 장면(${scene}) 중심의 감성 스토리텔링 → 인지·고려 단계 도달률 극대화`,
+    primaryText: pickBestFit([
+      `From morning to night in your ${scene} — ${s1} and ${s2} you can feel. That's the ${noun} owners love. ✨`,
+      `Your ${scene}, upgraded. ${capitalize(s1)} and ${s2} that real owners praise every day.`,
+      `Bring ${s1} into your ${scene}. Loved by real ${noun} owners.`,
+    ], 125),
+    headline: pickBestFit([`For Your ${capitalize(scene)}`, `${capitalize(scene)} Upgraded`, `Made for ${capitalize(scene)}`], 27),
+    description: pickBestFit([`Loved Every Day`, `Daily ${capitalize(s1)}`, capitalize(s1)], 27),
+    cta: pickBestFit(["Discover", "Shop Now", "Learn More"], 20),
+    hashtags: [`#LG${tag}`, `#${capitalize(scene).replace(/\s+/g, "")}`, "#OwnerLoved"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const scoreVariant = (v: MetaVariant): MetaVariant => {
+    const allText = [v.primaryText, v.headline, v.description, v.cta].join(" | ");
+    v.compliance = quickComply(allText);
+    const ptFit = v.primaryText.length <= 125 ? 1 : 0;
+    const hFit = v.headline.length <= 27 ? 1 : 0;
+    const dFit = v.description.length <= 27 ? 1 : 0;
+    const cFit = v.cta.length <= 20 ? 1 : 0;
+    const richness = Math.min(1, v.primaryText.length / 110);
+    const tokens = v.primaryText.toLowerCase().split(/\W+/).filter(Boolean);
+    const diversity = tokens.length ? Math.min(1, new Set(tokens).size / tokens.length) : 0;
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((ptFit * 0.20) + (hFit * 0.15) + (dFit * 0.10) + (cFit * 0.05) + (richness * 0.20) + (diversity * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
+/* ── Affiliate Reviewer Brief generator ──
+ * 리뷰어/퍼블리셔에게 전달할 구조화된 브리프를 자동 생성
+ */
+export interface AffiliateBrief {
+  headline: string;
+  hook: string;
+  audience: string;
+  keyPoints: string[];          // 3개 핵심 포인트
+  proofPoints: string[];        // 리뷰 인용 또는 수치
+  doList: string[];
+  dontList: string[];
+  ctaSuggestion: string;
+  disclosure: string;
+  longBrief: string;            // Markdown long form
+  hashtags: string[];
+  compliance: { ok: boolean; issues: string[] };
+}
+
+function buildAffiliateBrief(
+  pName: string,
+  sentiment: SentimentResult,
+  reviews: { text: string; sentiment?: string; source?: string }[],
+): AffiliateBrief {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+
+  // Open reviews 인용 (LG.com 원문 비공개 정책 준수)
+  const openReviews = reviews.filter(r => !r.source?.startsWith("lge_com") && r.sentiment === "positive");
+  const proofQuotes = openReviews.slice(0, 2).map(r => {
+    const t = r.text.length > 110 ? r.text.slice(0, 107) + "…" : r.text;
+    return `"${t}"`;
+  });
+  const proofPoints: string[] = [];
+  if (total > 0) proofPoints.push(`총 ${total}건 리뷰 분석 — 긍정 ${posPct}%`);
+  if (pos.length) proofPoints.push(`Top 강점 키워드: ${pos.slice(0, 3).join(" · ")}`);
+  if (proofQuotes.length) proofPoints.push(...proofQuotes);
+
+  const headline = pickBestFit([
+    `${pName} — Owner-Praised ${s1} & ${s2}`,
+    `${pName} 리뷰 — 실사용자가 인정한 ${s1}`,
+  ], 60);
+
+  const hook = pain
+    ? `If you've ever worried about ${pain} in a ${noun}, real owners say ${pName} delivers ${s1} that solves it.`
+    : `Real owners praise ${pName} for ${s1} and ${s2} — here's why it earned ${posPct}% positive reviews.`;
+
+  const audience = `${capitalize(scene)} 중심 사용자 · ${s1}/${s2}을(를) 중시하는 실사용 후기 신뢰형 구매층`;
+
+  const keyPoints = [
+    `✓ ${capitalize(s1)} — ${pos.length ? `리뷰에서 가장 자주 언급된 강점` : `핵심 베네핏`}`,
+    `✓ ${capitalize(s2)} — 실사용 환경에서 검증된 성능`,
+    pain
+      ? `✓ ${capitalize(pain)} 우려를 ${s1} 메시지로 선제 해소`
+      : `✓ ${capitalize(s3)} — 디자인/마감의 디테일`,
+  ];
+
+  const doList = [
+    `실사용자 리뷰(긍정 ${posPct}%)를 데이터로 인용 — "Based on ${total} user reviews" 표기`,
+    `${capitalize(scene)} 사용 장면을 시각·문장으로 구체화`,
+    `광고 표기("Ad" / "광고") 및 affiliate 링크 disclosure 명시`,
+    `${pName} 모델명·정확한 스펙은 LG 공식 PDP 링크로 fact-check`,
+  ];
+  const dontList = [
+    `근거 없는 최상급 표현 금지 ("best", "#1", "world's first" 등)`,
+    `경쟁사(Samsung·Sony·TCL 등) 직접 비교 금지 — 마스킹 처리`,
+    `LG.com 리뷰 원문 인용 금지 (개인정보 보호 정책)`,
+    `검증되지 않은 의료/안전/환경 효능 주장 금지`,
+  ];
+  const ctaSuggestion = `"Shop ${pName} on LG.com" 또는 "View Real Reviews" — affiliate 트래킹 링크 동봉`;
+  const disclosure = `#Ad · #LGPartner · This post contains affiliate links. Reviews data sourced from public user reviews (n=${total}).`;
+
+  const longBrief =
+`## Affiliate Reviewer Brief — ${pName}
+
+**🎯 Goal**: Drive consideration & conversion through credible third-party storytelling, anchored in real owner reviews.
+
+**👤 Target Audience**: ${audience}
+
+**💡 Hook (5s 이내)**:
+> ${hook}
+
+**🔑 Key Selling Points (반드시 포함)**:
+${keyPoints.map(k => `- ${k.replace(/^✓ /, "")}`).join("\n")}
+
+**📊 Proof Points (인용 가능 데이터)**:
+${proofPoints.map(p => `- ${p}`).join("\n")}
+
+**✅ Do**:
+${doList.map(d => `- ${d}`).join("\n")}
+
+**🚫 Don't**:
+${dontList.map(d => `- ${d}`).join("\n")}
+
+**📣 Suggested CTA**: ${ctaSuggestion}
+
+**📜 Required Disclosure**: ${disclosure}
+
+**🏷️ Hashtags**: #LG${noun.replace(/\s+/g, "")} #${capitalize(s1).replace(/\s+/g, "")} #RealReviews #Ad
+
+**📐 Format Guide**:
+- Long-form blog: 800–1,200 words · H2 3개 이상 · 실제 사용 사진 1매 이상
+- YouTube/Reels: 60–90초 · 사용 장면(${scene}) 포함 · CTA 카드 5초
+- Instagram Carousel: 5–7장 · 1장: Hook · 2~5장: Key Points · 마지막: CTA + Disclosure`;
+
+  const compliance = quickComply(`${headline} ${hook} ${keyPoints.join(" ")} ${doList.join(" ")} ${ctaSuggestion}`);
+
+  return {
+    headline,
+    hook,
+    audience,
+    keyPoints,
+    proofPoints,
+    doList,
+    dontList,
+    ctaSuggestion,
+    disclosure,
+    longBrief,
+    hashtags: [`#LG${noun.replace(/\s+/g, "")}`, `#${capitalize(s1).replace(/\s+/g, "")}`, "#RealReviews", "#Ad"],
+    compliance,
+  };
+}
+
 /* ── Generate SEO/GEO script ── */
 function generateSeoGeo(type: string, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
