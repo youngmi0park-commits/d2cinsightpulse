@@ -694,7 +694,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
