@@ -6,7 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
   Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
-  ExternalLink, Download,
+  ExternalLink, Download, Sparkles, Trophy,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -457,6 +457,156 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/* ── PMAX A/B/C variant generator ──
+ * Google PMAX 규칙: Headline ≤30자, Long Headline ≤90자, Description ≤90자
+ * 3가지 앵글로 자동 변형: A) 베네핏 강조  B) 우려/Pain 해소  C) 라이프스타일/장면
+ */
+export interface PmaxVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  headlines: string[];        // up to 5, each ≤30
+  longHeadline: string;       // ≤90
+  descriptions: string[];     // up to 2, each ≤90
+  compliance: { ok: boolean; issues: string[] };
+  score: number;              // 0-100 (풍부도+규칙준수+다양성)
+}
+
+function buildPmaxVariants(pName: string, sentiment: SentimentResult): PmaxVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "living room";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+  const adj2 = toAdjectiveBenefit(s2);
+  const adj3 = toAdjectiveBenefit(s3);
+
+  // Variant A — Benefit-led (형용사 베네핏 중심)
+  const A: PmaxVariant = {
+    id: "A",
+    angle: "베네핏 강조형",
+    angleEn: "Benefit-Led",
+    rationale: `긍정 키워드 Top3(${pos.slice(0, 3).join(", ") || "강점"})를 형용사 베네핏으로 환산해 인지·전환 동시 공략`,
+    headlines: [
+      pickBestFit([`${adj1} ${noun}`, `${adj1} & ${adj2}`, adj1], 30),
+      pickBestFit([`${adj1}. ${adj2}. Yours.`, `${adj1} + ${adj2}`], 30),
+      pickBestFit([`So ${adj1}, So Smart`, `Truly ${adj1}`], 30),
+      pickBestFit([`${adj3} ${noun}`, `${adj3} Design`, adj3], 30),
+      pickBestFit([`${capitalize(s1)} You Feel`, `Real ${capitalize(s1)}`, capitalize(s1)], 30),
+    ],
+    longHeadline: pickBestFit([
+      `Experience ${s1} and ${s2} every day — owner-praised ${noun} for your ${scene}.`,
+      `${capitalize(s1)} and ${s2}, made for your ${scene}.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        `Praised for outstanding ${s1} and reliable ${s2} — hear from real owners.`,
+        `Loved for ${s1} and ${s2} by real ${noun} owners.`,
+      ], 90),
+      pickBestFit([
+        `Bring ${s1} into your ${scene}, every single day.`,
+        `Your ${scene}, upgraded with ${s1} and ${s2}.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Variant B — Pain-solver (우려/문제 해소)
+  const painText = pain || "everyday hassle";
+  const B: PmaxVariant = {
+    id: "B",
+    angle: pain ? "Pain 해소형" : "기대 충족형",
+    angleEn: pain ? "Pain-Solver" : "Expectation-Match",
+    rationale: pain
+      ? `부정 키워드 "${pain}"을 선제 해소 메시지로 전환 — 구매 망설임 단계 직격`
+      : `리뷰에서 도출된 기대치를 충족 메시지로 전환 — 신뢰 구축에 강점`,
+    headlines: [
+      pickBestFit([pain ? `Solves ${pain}` : `True ${capitalize(s1)}`, `End ${painText}`], 30),
+      pickBestFit([`${capitalize(s1)} that Lasts`, `Built for ${capitalize(s1)}`], 30),
+      pickBestFit([pain ? `No More ${capitalize(pain)}` : `${adj1} ${noun}`, `Worry-Free ${noun}`], 30),
+      pickBestFit([`Owner-Approved ${noun}`, `Trusted ${noun}`, `Proven ${noun}`], 30),
+      pickBestFit([`Real Owners. Real ${capitalize(s1)}.`, `Real ${capitalize(s1)}`], 30),
+    ],
+    longHeadline: pickBestFit([
+      pain
+        ? `Worried about ${pain}? Real owners praise the ${s1} and ${s2} of this ${noun}.`
+        : `Praised by real owners for ${s1} and ${s2} — see why this ${noun} delivers.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        pain
+          ? `Concerned about ${pain}? Owners highlight the ${s1} and ${s2} they rely on.`
+          : `Owners highlight the ${s1} and ${s2} they use every day.`,
+      ], 90),
+      pickBestFit([
+        `${capitalize(s1)}. ${capitalize(s2)}. Proven by real ${noun} owners.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Variant C — Lifestyle/Scene (사용 장면 감성)
+  const C: PmaxVariant = {
+    id: "C",
+    angle: "라이프스타일형",
+    angleEn: "Lifestyle-Scene",
+    rationale: `사용 장면(${scene})과 감성 베네핏을 결합 — 인지·고려 단계 도달률 극대화`,
+    headlines: [
+      pickBestFit([`Your ${capitalize(scene)}, Upgraded`, `For Your ${capitalize(scene)}`], 30),
+      pickBestFit([`${adj1} in Your ${capitalize(scene)}`, `${capitalize(scene)} Reimagined`], 30),
+      pickBestFit([`Made for ${capitalize(scene)}`, `Built for ${capitalize(scene)}`], 30),
+      pickBestFit([`${adj2} Every Day`, `Daily ${adj2}`, adj2], 30),
+      pickBestFit([`Live ${capitalize(s1)}`, `Feel the ${capitalize(s1)}`], 30),
+    ],
+    longHeadline: pickBestFit([
+      `Bring ${s1} and ${s2} into your ${scene} — a new everyday standard.`,
+      `Your ${scene}, redefined by ${s1} and ${s2}.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        `Make your ${scene} feel new — ${s1} and ${s2} owners love every day.`,
+        `${capitalize(s1)} for your ${scene}. Loved by real owners.`,
+      ], 90),
+      pickBestFit([
+        `From morning to night — ${s1} and ${s2} in your ${scene}.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Score: compliance + 한도 준수율 + 다양성(unique 단어) + 길이 충실도
+  const scoreVariant = (v: PmaxVariant): PmaxVariant => {
+    const allText = [...v.headlines, v.longHeadline, ...v.descriptions].join(" | ");
+    v.compliance = quickComply(allText);
+    const headlineFit = v.headlines.filter(h => h && h.length <= 30).length / 5;
+    const descFit = v.descriptions.filter(d => d && d.length <= 90).length / v.descriptions.length;
+    const longFit = v.longHeadline.length <= 90 ? 1 : 0;
+    // 다양성: 헤드라인 unique token 비율
+    const tokens = v.headlines.join(" ").toLowerCase().split(/\W+/).filter(Boolean);
+    const uniq = new Set(tokens).size;
+    const diversity = tokens.length ? Math.min(1, uniq / tokens.length) : 0;
+    // 길이 충실도(평균 헤드라인 길이/30)
+    const avgLen = v.headlines.reduce((a, h) => a + h.length, 0) / v.headlines.length;
+    const richness = Math.min(1, avgLen / 24);
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((headlineFit * 0.25) + (descFit * 0.15) + (longFit * 0.10) + (diversity * 0.20) + (richness * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
 /* ── Generate SEO/GEO script ── */
 function generateSeoGeo(type: string, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
@@ -544,7 +694,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -574,6 +724,13 @@ export function MarketingHub({
   const funnelInsight = useMemo(() => {
     return buildFunnelInsight(selectedFunnel, sentiment, reviews, pName);
   }, [selectedFunnel, sentiment, reviews, pName]);
+
+  /* PMAX A/B/C variants */
+  const pmaxVariants = useMemo(() => buildPmaxVariants(pName, sentiment), [pName, sentiment]);
+  const pmaxWinner = useMemo(() => {
+    return pmaxVariants.reduce((best, v) => (v.score > best.score ? v : best), pmaxVariants[0]);
+  }, [pmaxVariants]);
+  const [adoptedPmax, setAdoptedPmax] = useState<"A" | "B" | "C" | null>(null);
 
   /* Auto-translate funnel source quotes to Korean */
   const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
@@ -726,6 +883,151 @@ export function MarketingHub({
             </div>
           </div>
         )}
+
+        {/* ═══ 1-c. 🧪 Google PMAX 헤드라인 A/B/C 자동 변형 ═══ */}
+        <Collapsible open={openSections.pmax} onOpenChange={() => toggleSection("pmax")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="🧪 Google PMAX 헤드라인 A/B/C 자동 변형"
+              subtitle="채널 규칙(헤드라인 ≤30자, 롱헤드라인 ≤90자, 디스크립션 ≤90자) 기반 3개 앵글 변형 + 점수 비교"
+              collapsible
+              isOpen={openSections.pmax}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {pmaxVariants.map((v) => {
+                const isWinner = v.id === pmaxWinner.id;
+                const isAdopted = adoptedPmax === v.id;
+                const blockText =
+                  `[PMAX Variant ${v.id} — ${v.angle}]\n` +
+                  v.headlines.map((h, i) => `Headline ${i + 1} (${h.length}/30): ${h}`).join("\n") +
+                  `\nLong Headline (${v.longHeadline.length}/90): ${v.longHeadline}\n` +
+                  v.descriptions.map((d, i) => `Description ${i + 1} (${d.length}/90): ${d}`).join("\n");
+                const key = `pmax-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#1a8a4a] text-white">Variant {v.id}</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    {/* Compliance */}
+                    <div>
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Headlines */}
+                    <div className="space-y-1 pt-1">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headlines (≤30자)</p>
+                      {v.headlines.map((h, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2 group">
+                          <p className="text-[11px] font-semibold text-foreground/90 flex-1 truncate">{i + 1}. {h}</p>
+                          <span className={`text-[9px] shrink-0 ${h.length > 30 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                            {h.length}/30
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Long Headline */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Long Headline</p>
+                        <span className={`text-[9px] ${v.longHeadline.length > 90 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.longHeadline.length}/90
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/85 leading-snug">{v.longHeadline}</p>
+                    </div>
+
+                    {/* Descriptions */}
+                    <div className="space-y-1 pt-1">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Descriptions (≤90자)</p>
+                      {v.descriptions.map((d, i) => (
+                        <div key={i} className="space-y-0.5">
+                          <p className="text-[10px] text-foreground/80 leading-snug">{i + 1}. {d}</p>
+                          <span className={`text-[9px] ${d.length > 90 ? "text-destructive font-bold" : "text-muted-foreground"}`}>
+                            {d.length}/90
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedPmax(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Comparison summary */}
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {pmaxVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === pmaxWinner.id ? "text-amber-700" : ""}>
+                    {v.id}({v.angle}) {v.score}점
+                  </strong>
+                  {i < pmaxVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">Variant {pmaxWinner.id}</strong> · 한도 준수·다양성·표현 풍부도 종합 산출
+                {adoptedPmax && ` · 현재 채택: Variant ${adoptedPmax}`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* ═══ 2. ⚡ 광고 카피 (Ad Copy) — 채널별 ═══ */}
         <Collapsible open={openSections.adcopy} onOpenChange={() => toggleSection("adcopy")}>
