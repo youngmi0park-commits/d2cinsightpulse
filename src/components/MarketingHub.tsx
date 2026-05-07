@@ -884,6 +884,151 @@ export function MarketingHub({
           </div>
         )}
 
+        {/* ═══ 1-c. 🧪 Google PMAX 헤드라인 A/B/C 자동 변형 ═══ */}
+        <Collapsible open={openSections.pmax} onOpenChange={() => toggleSection("pmax")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="🧪 Google PMAX 헤드라인 A/B/C 자동 변형"
+              subtitle="채널 규칙(헤드라인 ≤30자, 롱헤드라인 ≤90자, 디스크립션 ≤90자) 기반 3개 앵글 변형 + 점수 비교"
+              collapsible
+              isOpen={openSections.pmax}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {pmaxVariants.map((v) => {
+                const isWinner = v.id === pmaxWinner.id;
+                const isAdopted = adoptedPmax === v.id;
+                const blockText =
+                  `[PMAX Variant ${v.id} — ${v.angle}]\n` +
+                  v.headlines.map((h, i) => `Headline ${i + 1} (${h.length}/30): ${h}`).join("\n") +
+                  `\nLong Headline (${v.longHeadline.length}/90): ${v.longHeadline}\n` +
+                  v.descriptions.map((d, i) => `Description ${i + 1} (${d.length}/90): ${d}`).join("\n");
+                const key = `pmax-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#1a8a4a] text-white">Variant {v.id}</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    {/* Compliance */}
+                    <div>
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Headlines */}
+                    <div className="space-y-1 pt-1">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headlines (≤30자)</p>
+                      {v.headlines.map((h, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2 group">
+                          <p className="text-[11px] font-semibold text-foreground/90 flex-1 truncate">{i + 1}. {h}</p>
+                          <span className={`text-[9px] shrink-0 ${h.length > 30 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                            {h.length}/30
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Long Headline */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Long Headline</p>
+                        <span className={`text-[9px] ${v.longHeadline.length > 90 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.longHeadline.length}/90
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/85 leading-snug">{v.longHeadline}</p>
+                    </div>
+
+                    {/* Descriptions */}
+                    <div className="space-y-1 pt-1">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Descriptions (≤90자)</p>
+                      {v.descriptions.map((d, i) => (
+                        <div key={i} className="space-y-0.5">
+                          <p className="text-[10px] text-foreground/80 leading-snug">{i + 1}. {d}</p>
+                          <span className={`text-[9px] ${d.length > 90 ? "text-destructive font-bold" : "text-muted-foreground"}`}>
+                            {d.length}/90
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedPmax(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Comparison summary */}
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {pmaxVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === pmaxWinner.id ? "text-amber-700" : ""}>
+                    {v.id}({v.angle}) {v.score}점
+                  </strong>
+                  {i < pmaxVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">Variant {pmaxWinner.id}</strong> · 한도 준수·다양성·표현 풍부도 종합 산출
+                {adoptedPmax && ` · 현재 채택: Variant ${adoptedPmax}`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* ═══ 2. ⚡ 광고 카피 (Ad Copy) — 채널별 ═══ */}
         <Collapsible open={openSections.adcopy} onOpenChange={() => toggleSection("adcopy")}>
           <CollapsibleTrigger className="w-full">
