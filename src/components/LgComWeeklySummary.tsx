@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
@@ -6,8 +6,9 @@ import { useTrendingDataWindow } from "@/hooks/useProductData";
 import { DataWindowBadge } from "@/components/DataWindowBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PositiveReviewsDialog } from "@/components/PositiveReviewsDialog";
 import {
-  BarChart3, ThumbsUp, ThumbsDown, FileText, Star, Lightbulb, Loader2
+  BarChart3, ThumbsUp, ThumbsDown, FileText, Star, Lightbulb, Loader2, Eye
 } from "lucide-react";
 
 interface TopProduct {
@@ -18,6 +19,7 @@ interface TopProduct {
 
 export function LgComWeeklySummary() {
   const { t } = useLang();
+  const [openProduct, setOpenProduct] = useState<{ name: string; category: string } | null>(null);
 
   // Use weekly category counts for accurate totals
   const { data: weeklyCounts, isLoading: countsLoading } = useQuery({
@@ -109,6 +111,7 @@ export function LgComWeeklySummary() {
   if (!stats) return null;
 
   return (
+    <>
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2 flex-wrap">
@@ -171,6 +174,7 @@ export function LgComWeeklySummary() {
             title={t("Positive Mentions TOP 3", "긍정 언급 TOP 3")}
             products={stats.topPos.map(p => ({ name: p.name, category: p.category, count: p.pos }))}
             color="success"
+            onSelect={(p) => setOpenProduct({ name: p.name, category: p.category })}
           />
           <ProductRankList
             icon={ThumbsDown}
@@ -196,11 +200,23 @@ export function LgComWeeklySummary() {
         )}
       </CardContent>
     </Card>
+    {openProduct && (
+      <PositiveReviewsDialog
+        open={!!openProduct}
+        onOpenChange={(o) => !o && setOpenProduct(null)}
+        productName={openProduct.name}
+        category={openProduct.category}
+        sourceLike="lge_com%"
+        sinceISO={sinceISO}
+      />
+    )}
+    </>
   );
 }
 
-function ProductRankList({ icon: Icon, title, products, color }: {
+function ProductRankList({ icon: Icon, title, products, color, onSelect }: {
   icon: any; title: string; products: TopProduct[]; color: "success" | "destructive";
+  onSelect?: (p: TopProduct) => void;
 }) {
   const isSuccess = color === "success";
   return (
@@ -210,7 +226,15 @@ function ProductRankList({ icon: Icon, title, products, color }: {
         <span className={`text-[11px] font-semibold ${isSuccess ? "text-success" : "text-destructive"}`}>{title}</span>
       </div>
       {products.map((p, i) => (
-        <div key={p.name} className="flex items-center gap-2 bg-background/60 rounded px-2.5 py-1.5">
+        <button
+          key={p.name}
+          type="button"
+          onClick={() => onSelect?.(p)}
+          disabled={!onSelect}
+          className={`w-full flex items-center gap-2 bg-background/60 rounded px-2.5 py-1.5 text-left ${
+            onSelect ? "hover:bg-background transition-colors cursor-pointer" : "cursor-default"
+          }`}
+        >
           <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
             i === 0
               ? isSuccess ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
@@ -221,7 +245,8 @@ function ProductRankList({ icon: Icon, title, products, color }: {
             <div className="text-[9px] text-muted-foreground">{p.category}</div>
           </div>
           <span className={`text-[11px] font-mono font-semibold shrink-0 ${isSuccess ? "text-success" : "text-destructive"}`}>{p.count}</span>
-        </div>
+          {onSelect && <Eye className="h-3 w-3 text-muted-foreground shrink-0" />}
+        </button>
       ))}
     </div>
   );

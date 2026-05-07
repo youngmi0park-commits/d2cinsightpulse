@@ -14,12 +14,14 @@ import {
   ThumbsUp, ThumbsDown, BarChart3, Users, Lightbulb, RefreshCw
 } from "lucide-react";
 import { classifyRedditPost, generateBucketSummaries } from "@/lib/redditBucketClassifier";
+import { PositiveReviewsDialog } from "@/components/PositiveReviewsDialog";
 
 export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { t } = useLang();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [openProduct, setOpenProduct] = useState<{ name: string; category: string } | null>(null);
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: window } = useTrendingDataWindow("reddit%");
@@ -144,6 +146,7 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   };
 
   return (
+    <>
     <Card className="gradient-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2 flex-wrap">
@@ -227,7 +230,12 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
               <span className="text-[11px] font-semibold text-success">{t("Positive Mentions TOP 3", "긍정 언급 TOP 3")}</span>
             </div>
             {stats.topPos.map((p, i) => (
-              <div key={p.name} className="bg-background/60 rounded px-2.5 py-1.5 space-y-1">
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => setOpenProduct({ name: p.name, category: p.category })}
+                className="w-full text-left bg-background/60 rounded px-2.5 py-1.5 space-y-1 hover:bg-background transition-colors"
+              >
                 <div className="flex items-center gap-2">
                   <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
                     i === 0 ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
@@ -243,7 +251,7 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
                     💬 {summaryTranslations[`pos_${i}`]}
                   </p>
                 )}
-              </div>
+              </button>
             ))}
           </div>
           {/* Negative */}
@@ -290,5 +298,16 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
         )}
       </CardContent>
     </Card>
+    {openProduct && (
+      <PositiveReviewsDialog
+        open={!!openProduct}
+        onOpenChange={(o) => !o && setOpenProduct(null)}
+        productName={openProduct.name}
+        category={openProduct.category}
+        sourceLike="reddit%"
+        sinceISO={sinceISO}
+      />
+    )}
+    </>
   );
 }
