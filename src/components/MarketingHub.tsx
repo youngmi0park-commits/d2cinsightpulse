@@ -457,6 +457,156 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/* ── PMAX A/B/C variant generator ──
+ * Google PMAX 규칙: Headline ≤30자, Long Headline ≤90자, Description ≤90자
+ * 3가지 앵글로 자동 변형: A) 베네핏 강조  B) 우려/Pain 해소  C) 라이프스타일/장면
+ */
+export interface PmaxVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  headlines: string[];        // up to 5, each ≤30
+  longHeadline: string;       // ≤90
+  descriptions: string[];     // up to 2, each ≤90
+  compliance: { ok: boolean; issues: string[] };
+  score: number;              // 0-100 (풍부도+규칙준수+다양성)
+}
+
+function buildPmaxVariants(pName: string, sentiment: SentimentResult): PmaxVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "living room";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+  const adj2 = toAdjectiveBenefit(s2);
+  const adj3 = toAdjectiveBenefit(s3);
+
+  // Variant A — Benefit-led (형용사 베네핏 중심)
+  const A: PmaxVariant = {
+    id: "A",
+    angle: "베네핏 강조형",
+    angleEn: "Benefit-Led",
+    rationale: `긍정 키워드 Top3(${pos.slice(0, 3).join(", ") || "강점"})를 형용사 베네핏으로 환산해 인지·전환 동시 공략`,
+    headlines: [
+      pickBestFit([`${adj1} ${noun}`, `${adj1} & ${adj2}`, adj1], 30),
+      pickBestFit([`${adj1}. ${adj2}. Yours.`, `${adj1} + ${adj2}`], 30),
+      pickBestFit([`So ${adj1}, So Smart`, `Truly ${adj1}`], 30),
+      pickBestFit([`${adj3} ${noun}`, `${adj3} Design`, adj3], 30),
+      pickBestFit([`${capitalize(s1)} You Feel`, `Real ${capitalize(s1)}`, capitalize(s1)], 30),
+    ],
+    longHeadline: pickBestFit([
+      `Experience ${s1} and ${s2} every day — owner-praised ${noun} for your ${scene}.`,
+      `${capitalize(s1)} and ${s2}, made for your ${scene}.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        `Praised for outstanding ${s1} and reliable ${s2} — hear from real owners.`,
+        `Loved for ${s1} and ${s2} by real ${noun} owners.`,
+      ], 90),
+      pickBestFit([
+        `Bring ${s1} into your ${scene}, every single day.`,
+        `Your ${scene}, upgraded with ${s1} and ${s2}.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Variant B — Pain-solver (우려/문제 해소)
+  const painText = pain || "everyday hassle";
+  const B: PmaxVariant = {
+    id: "B",
+    angle: pain ? "Pain 해소형" : "기대 충족형",
+    angleEn: pain ? "Pain-Solver" : "Expectation-Match",
+    rationale: pain
+      ? `부정 키워드 "${pain}"을 선제 해소 메시지로 전환 — 구매 망설임 단계 직격`
+      : `리뷰에서 도출된 기대치를 충족 메시지로 전환 — 신뢰 구축에 강점`,
+    headlines: [
+      pickBestFit([pain ? `Solves ${pain}` : `True ${capitalize(s1)}`, `End ${painText}`], 30),
+      pickBestFit([`${capitalize(s1)} that Lasts`, `Built for ${capitalize(s1)}`], 30),
+      pickBestFit([pain ? `No More ${capitalize(pain)}` : `${adj1} ${noun}`, `Worry-Free ${noun}`], 30),
+      pickBestFit([`Owner-Approved ${noun}`, `Trusted ${noun}`, `Proven ${noun}`], 30),
+      pickBestFit([`Real Owners. Real ${capitalize(s1)}.`, `Real ${capitalize(s1)}`], 30),
+    ],
+    longHeadline: pickBestFit([
+      pain
+        ? `Worried about ${pain}? Real owners praise the ${s1} and ${s2} of this ${noun}.`
+        : `Praised by real owners for ${s1} and ${s2} — see why this ${noun} delivers.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        pain
+          ? `Concerned about ${pain}? Owners highlight the ${s1} and ${s2} they rely on.`
+          : `Owners highlight the ${s1} and ${s2} they use every day.`,
+      ], 90),
+      pickBestFit([
+        `${capitalize(s1)}. ${capitalize(s2)}. Proven by real ${noun} owners.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Variant C — Lifestyle/Scene (사용 장면 감성)
+  const C: PmaxVariant = {
+    id: "C",
+    angle: "라이프스타일형",
+    angleEn: "Lifestyle-Scene",
+    rationale: `사용 장면(${scene})과 감성 베네핏을 결합 — 인지·고려 단계 도달률 극대화`,
+    headlines: [
+      pickBestFit([`Your ${capitalize(scene)}, Upgraded`, `For Your ${capitalize(scene)}`], 30),
+      pickBestFit([`${adj1} in Your ${capitalize(scene)}`, `${capitalize(scene)} Reimagined`], 30),
+      pickBestFit([`Made for ${capitalize(scene)}`, `Built for ${capitalize(scene)}`], 30),
+      pickBestFit([`${adj2} Every Day`, `Daily ${adj2}`, adj2], 30),
+      pickBestFit([`Live ${capitalize(s1)}`, `Feel the ${capitalize(s1)}`], 30),
+    ],
+    longHeadline: pickBestFit([
+      `Bring ${s1} and ${s2} into your ${scene} — a new everyday standard.`,
+      `Your ${scene}, redefined by ${s1} and ${s2}.`,
+    ], 90),
+    descriptions: [
+      pickBestFit([
+        `Make your ${scene} feel new — ${s1} and ${s2} owners love every day.`,
+        `${capitalize(s1)} for your ${scene}. Loved by real owners.`,
+      ], 90),
+      pickBestFit([
+        `From morning to night — ${s1} and ${s2} in your ${scene}.`,
+      ], 90),
+    ],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // Score: compliance + 한도 준수율 + 다양성(unique 단어) + 길이 충실도
+  const scoreVariant = (v: PmaxVariant): PmaxVariant => {
+    const allText = [...v.headlines, v.longHeadline, ...v.descriptions].join(" | ");
+    v.compliance = quickComply(allText);
+    const headlineFit = v.headlines.filter(h => h && h.length <= 30).length / 5;
+    const descFit = v.descriptions.filter(d => d && d.length <= 90).length / v.descriptions.length;
+    const longFit = v.longHeadline.length <= 90 ? 1 : 0;
+    // 다양성: 헤드라인 unique token 비율
+    const tokens = v.headlines.join(" ").toLowerCase().split(/\W+/).filter(Boolean);
+    const uniq = new Set(tokens).size;
+    const diversity = tokens.length ? Math.min(1, uniq / tokens.length) : 0;
+    // 길이 충실도(평균 헤드라인 길이/30)
+    const avgLen = v.headlines.reduce((a, h) => a + h.length, 0) / v.headlines.length;
+    const richness = Math.min(1, avgLen / 24);
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((headlineFit * 0.25) + (descFit * 0.15) + (longFit * 0.10) + (diversity * 0.20) + (richness * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
 /* ── Generate SEO/GEO script ── */
 function generateSeoGeo(type: string, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
