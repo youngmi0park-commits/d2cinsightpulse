@@ -21,6 +21,7 @@ export function PositiveReviewsDialog({
   open, onOpenChange, productName, category, sourceLike, sinceISO,
 }: Props) {
   const { t } = useLang();
+  const isLgCom = sourceLike.startsWith("lge_com");
 
   const { data, isLoading } = useQuery({
     queryKey: ["positive-reviews-detail", productName, sourceLike, sinceISO],
@@ -83,9 +84,17 @@ export function PositiveReviewsDialog({
                     )}
                   </div>
                   {r.title && <div className="text-xs font-semibold text-foreground">{r.title}</div>}
-                  {r.content && (
+                  {!isLgCom && r.content && (
                     <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">
                       {r.content}
+                    </p>
+                  )}
+                  {isLgCom && (
+                    <p className="text-[10px] text-muted-foreground italic">
+                      {t(
+                        "Raw LG.com review text is not displayed (privacy). Title and rating shown only.",
+                        "LG.com 원문 리뷰는 정책상 표시되지 않습니다. 제목과 평점만 노출됩니다."
+                      )}
                     </p>
                   )}
                 </div>
