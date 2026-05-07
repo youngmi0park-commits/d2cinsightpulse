@@ -6,7 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
   Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
-  ExternalLink, Download, Sparkles, Trophy,
+  ExternalLink, Download, Sparkles, Trophy, FileText, Megaphone,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -607,6 +607,251 @@ function buildPmaxVariants(pName: string, sentiment: SentimentResult): PmaxVaria
   return [A, B, C].map(scoreVariant);
 }
 
+/* ── Meta Primary Text A/B/C variant generator ──
+ * Meta Feed/Stories 규칙: Primary Text ≤125자, Headline ≤27자, CTA ≤20자
+ * 3가지 톤 변형: A) Hook/Question  B) Social Proof  C) Story/Lifestyle
+ */
+export interface MetaVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  primaryText: string;       // ≤125
+  headline: string;          // ≤27
+  description: string;       // ≤27
+  cta: string;               // ≤20
+  hashtags: string[];
+  compliance: { ok: boolean; issues: string[] };
+  score: number;
+}
+
+function buildMetaVariants(pName: string, sentiment: SentimentResult): MetaVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+  const tag = noun.replace(/\s+/g, "");
+
+  // A — Hook/Question (관심 환기)
+  const A: MetaVariant = {
+    id: "A",
+    angle: "후크 질문형",
+    angleEn: "Hook/Question",
+    rationale: pain
+      ? `"${pain}" 우려를 질문으로 환기 → 관심 유발 후 베네핏 해결 제시 (스크롤 정지율 ↑)`
+      : `궁금증을 자극하는 질문으로 시작 → 베네핏 ${s1} 자연스럽게 노출`,
+    primaryText: pickBestFit([
+      pain
+        ? `Tired of ${pain}? Real owners say the ${s1} of this ${noun} changed everything. See why ${posPct}% of reviews are positive. ✨`
+        : `What if your ${scene} felt brand new? Real owners praise the ${s1} & ${s2} of this ${noun}. ${posPct}% love it. ✨`,
+      pain
+        ? `Worried about ${pain}? Owners highlight the ${s1} they trust every day.`
+        : `Looking for ${adj1} ${noun}? Owners praise the ${s1} every day.`,
+    ], 125),
+    headline: pickBestFit([`${adj1} ${noun}`, `Truly ${adj1}`, adj1], 27),
+    description: pickBestFit([`Owner-Approved`, `Loved by Owners`, `Real Reviews`], 27),
+    cta: pickBestFit(["Shop Now", "Learn More", "Discover"], 20),
+    hashtags: [`#LG${tag}`, `#${capitalize(s1).replace(/\s+/g, "")}`, "#RealReviews"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // B — Social Proof (수치 + 리뷰 인용 톤)
+  const B: MetaVariant = {
+    id: "B",
+    angle: "소셜 프루프형",
+    angleEn: "Social Proof",
+    rationale: `리뷰 ${total}건 중 긍정 ${posPct}% 데이터를 전면 노출 → 신뢰·전환 동시 강화`,
+    primaryText: pickBestFit([
+      `${posPct}% of ${total}+ reviews praise the ${s1} and ${s2}. Hear it from real ${noun} owners. ⭐`,
+      `Real owners. Real ${s1}. ${posPct}% positive across ${total}+ reviews — see why this ${noun} stands out.`,
+      `Owners highlight ${s1} and ${s2}. Join ${total}+ reviewers who trust this ${noun}.`,
+    ], 125),
+    headline: pickBestFit([`${posPct}% Owner-Loved`, `Owner-Approved`, `Owner-Loved`], 27),
+    description: pickBestFit([`${total}+ Real Reviews`, `Real Owner Praise`, `Owner Praised`], 27),
+    cta: pickBestFit(["See Reviews", "Shop Now", "Learn More"], 20),
+    hashtags: [`#LG${tag}`, "#RealReviews", "#OwnerLoved"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  // C — Story/Lifestyle (장면 기반 감성)
+  const C: MetaVariant = {
+    id: "C",
+    angle: "스토리 라이프스타일형",
+    angleEn: "Story/Lifestyle",
+    rationale: `사용 장면(${scene}) 중심의 감성 스토리텔링 → 인지·고려 단계 도달률 극대화`,
+    primaryText: pickBestFit([
+      `From morning to night in your ${scene} — ${s1} and ${s2} you can feel. That's the ${noun} owners love. ✨`,
+      `Your ${scene}, upgraded. ${capitalize(s1)} and ${s2} that real owners praise every day.`,
+      `Bring ${s1} into your ${scene}. Loved by real ${noun} owners.`,
+    ], 125),
+    headline: pickBestFit([`For Your ${capitalize(scene)}`, `${capitalize(scene)} Upgraded`, `Made for ${capitalize(scene)}`], 27),
+    description: pickBestFit([`Loved Every Day`, `Daily ${capitalize(s1)}`, capitalize(s1)], 27),
+    cta: pickBestFit(["Discover", "Shop Now", "Learn More"], 20),
+    hashtags: [`#LG${tag}`, `#${capitalize(scene).replace(/\s+/g, "")}`, "#OwnerLoved"],
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const scoreVariant = (v: MetaVariant): MetaVariant => {
+    const allText = [v.primaryText, v.headline, v.description, v.cta].join(" | ");
+    v.compliance = quickComply(allText);
+    const ptFit = v.primaryText.length <= 125 ? 1 : 0;
+    const hFit = v.headline.length <= 27 ? 1 : 0;
+    const dFit = v.description.length <= 27 ? 1 : 0;
+    const cFit = v.cta.length <= 20 ? 1 : 0;
+    const richness = Math.min(1, v.primaryText.length / 110);
+    const tokens = v.primaryText.toLowerCase().split(/\W+/).filter(Boolean);
+    const diversity = tokens.length ? Math.min(1, new Set(tokens).size / tokens.length) : 0;
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((ptFit * 0.20) + (hFit * 0.15) + (dFit * 0.10) + (cFit * 0.05) + (richness * 0.20) + (diversity * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
+/* ── Affiliate Reviewer Brief generator ──
+ * 리뷰어/퍼블리셔에게 전달할 구조화된 브리프를 자동 생성
+ */
+export interface AffiliateBrief {
+  headline: string;
+  hook: string;
+  audience: string;
+  keyPoints: string[];          // 3개 핵심 포인트
+  proofPoints: string[];        // 리뷰 인용 또는 수치
+  doList: string[];
+  dontList: string[];
+  ctaSuggestion: string;
+  disclosure: string;
+  longBrief: string;            // Markdown long form
+  hashtags: string[];
+  compliance: { ok: boolean; issues: string[] };
+}
+
+function buildAffiliateBrief(
+  pName: string,
+  sentiment: SentimentResult,
+  reviews: { text: string; sentiment?: string; source?: string }[],
+): AffiliateBrief {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+
+  // Open reviews 인용 (LG.com 원문 비공개 정책 준수)
+  const openReviews = reviews.filter(r => !r.source?.startsWith("lge_com") && r.sentiment === "positive");
+  const proofQuotes = openReviews.slice(0, 2).map(r => {
+    const t = r.text.length > 110 ? r.text.slice(0, 107) + "…" : r.text;
+    return `"${t}"`;
+  });
+  const proofPoints: string[] = [];
+  if (total > 0) proofPoints.push(`총 ${total}건 리뷰 분석 — 긍정 ${posPct}%`);
+  if (pos.length) proofPoints.push(`Top 강점 키워드: ${pos.slice(0, 3).join(" · ")}`);
+  if (proofQuotes.length) proofPoints.push(...proofQuotes);
+
+  const headline = pickBestFit([
+    `${pName} — Owner-Praised ${s1} & ${s2}`,
+    `${pName} 리뷰 — 실사용자가 인정한 ${s1}`,
+  ], 60);
+
+  const hook = pain
+    ? `If you've ever worried about ${pain} in a ${noun}, real owners say ${pName} delivers ${s1} that solves it.`
+    : `Real owners praise ${pName} for ${s1} and ${s2} — here's why it earned ${posPct}% positive reviews.`;
+
+  const audience = `${capitalize(scene)} 중심 사용자 · ${s1}/${s2}을(를) 중시하는 실사용 후기 신뢰형 구매층`;
+
+  const keyPoints = [
+    `✓ ${capitalize(s1)} — ${pos.length ? `리뷰에서 가장 자주 언급된 강점` : `핵심 베네핏`}`,
+    `✓ ${capitalize(s2)} — 실사용 환경에서 검증된 성능`,
+    pain
+      ? `✓ ${capitalize(pain)} 우려를 ${s1} 메시지로 선제 해소`
+      : `✓ ${capitalize(s3)} — 디자인/마감의 디테일`,
+  ];
+
+  const doList = [
+    `실사용자 리뷰(긍정 ${posPct}%)를 데이터로 인용 — "Based on ${total} user reviews" 표기`,
+    `${capitalize(scene)} 사용 장면을 시각·문장으로 구체화`,
+    `광고 표기("Ad" / "광고") 및 affiliate 링크 disclosure 명시`,
+    `${pName} 모델명·정확한 스펙은 LG 공식 PDP 링크로 fact-check`,
+  ];
+  const dontList = [
+    `근거 없는 최상급 표현 금지 ("best", "#1", "world's first" 등)`,
+    `경쟁사(Samsung·Sony·TCL 등) 직접 비교 금지 — 마스킹 처리`,
+    `LG.com 리뷰 원문 인용 금지 (개인정보 보호 정책)`,
+    `검증되지 않은 의료/안전/환경 효능 주장 금지`,
+  ];
+  const ctaSuggestion = `"Shop ${pName} on LG.com" 또는 "View Real Reviews" — affiliate 트래킹 링크 동봉`;
+  const disclosure = `#Ad · #LGPartner · This post contains affiliate links. Reviews data sourced from public user reviews (n=${total}).`;
+
+  const longBrief =
+`## Affiliate Reviewer Brief — ${pName}
+
+**🎯 Goal**: Drive consideration & conversion through credible third-party storytelling, anchored in real owner reviews.
+
+**👤 Target Audience**: ${audience}
+
+**💡 Hook (5s 이내)**:
+> ${hook}
+
+**🔑 Key Selling Points (반드시 포함)**:
+${keyPoints.map(k => `- ${k.replace(/^✓ /, "")}`).join("\n")}
+
+**📊 Proof Points (인용 가능 데이터)**:
+${proofPoints.map(p => `- ${p}`).join("\n")}
+
+**✅ Do**:
+${doList.map(d => `- ${d}`).join("\n")}
+
+**🚫 Don't**:
+${dontList.map(d => `- ${d}`).join("\n")}
+
+**📣 Suggested CTA**: ${ctaSuggestion}
+
+**📜 Required Disclosure**: ${disclosure}
+
+**🏷️ Hashtags**: #LG${noun.replace(/\s+/g, "")} #${capitalize(s1).replace(/\s+/g, "")} #RealReviews #Ad
+
+**📐 Format Guide**:
+- Long-form blog: 800–1,200 words · H2 3개 이상 · 실제 사용 사진 1매 이상
+- YouTube/Reels: 60–90초 · 사용 장면(${scene}) 포함 · CTA 카드 5초
+- Instagram Carousel: 5–7장 · 1장: Hook · 2~5장: Key Points · 마지막: CTA + Disclosure`;
+
+  const compliance = quickComply(`${headline} ${hook} ${keyPoints.join(" ")} ${doList.join(" ")} ${ctaSuggestion}`);
+
+  return {
+    headline,
+    hook,
+    audience,
+    keyPoints,
+    proofPoints,
+    doList,
+    dontList,
+    ctaSuggestion,
+    disclosure,
+    longBrief,
+    hashtags: [`#LG${noun.replace(/\s+/g, "")}`, `#${capitalize(s1).replace(/\s+/g, "")}`, "#RealReviews", "#Ad"],
+    compliance,
+  };
+}
+
 /* ── Generate SEO/GEO script ── */
 function generateSeoGeo(type: string, pName: string, sentiment: SentimentResult) {
   const s1 = sentiment.keywords.positive?.[0] || "quality";
@@ -694,7 +939,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    pmax: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, meta: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -731,6 +976,16 @@ export function MarketingHub({
     return pmaxVariants.reduce((best, v) => (v.score > best.score ? v : best), pmaxVariants[0]);
   }, [pmaxVariants]);
   const [adoptedPmax, setAdoptedPmax] = useState<"A" | "B" | "C" | null>(null);
+
+  /* Meta Primary Text A/B/C variants */
+  const metaVariants = useMemo(() => buildMetaVariants(pName, sentiment), [pName, sentiment]);
+  const metaWinner = useMemo(() => {
+    return metaVariants.reduce((best, v) => (v.score > best.score ? v : best), metaVariants[0]);
+  }, [metaVariants]);
+  const [adoptedMeta, setAdoptedMeta] = useState<"A" | "B" | "C" | null>(null);
+
+  /* Affiliate brief */
+  const affiliateBrief = useMemo(() => buildAffiliateBrief(pName, sentiment, reviews), [pName, sentiment, reviews]);
 
   /* Auto-translate funnel source quotes to Korean */
   const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
@@ -1025,6 +1280,282 @@ export function MarketingHub({
                 추천안: <strong className="text-amber-700">Variant {pmaxWinner.id}</strong> · 한도 준수·다양성·표현 풍부도 종합 산출
                 {adoptedPmax && ` · 현재 채택: Variant ${adoptedPmax}`}
               </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ 1-d. 📘 Meta Primary Text A/B/C 자동 변형 ═══ */}
+        <Collapsible open={openSections.meta} onOpenChange={() => toggleSection("meta")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="📘 Meta Primary Text 강화 — A/B/C 자동 변형"
+              subtitle="Meta 규칙(Primary Text ≤125자, Headline ≤27자, CTA ≤20자) 기반 3개 톤 변형 + 점수 비교"
+              collapsible
+              isOpen={openSections.meta}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {metaVariants.map((v) => {
+                const isWinner = v.id === metaWinner.id;
+                const isAdopted = adoptedMeta === v.id;
+                const blockText =
+                  `[Meta Variant ${v.id} — ${v.angle}]\n` +
+                  `Primary Text (${v.primaryText.length}/125): ${v.primaryText}\n` +
+                  `Headline (${v.headline.length}/27): ${v.headline}\n` +
+                  `Description (${v.description.length}/27): ${v.description}\n` +
+                  `CTA (${v.cta.length}/20): ${v.cta}\n` +
+                  `Hashtags: ${v.hashtags.join(" ")}`;
+                const key = `meta-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#1a52d4] text-white">Variant {v.id}</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    <div>
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Primary Text */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Primary Text</p>
+                        <span className={`text-[9px] ${v.primaryText.length > 125 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.primaryText.length}/125
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/90 leading-snug">{v.primaryText}</p>
+                    </div>
+
+                    {/* Headline */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headline</p>
+                        <span className={`text-[9px] ${v.headline.length > 27 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.headline.length}/27
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-foreground/90">{v.headline}</p>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Description</p>
+                        <span className={`text-[9px] ${v.description.length > 27 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.description.length}/27
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-foreground/80">{v.description}</p>
+                    </div>
+
+                    {/* CTA + Hashtags */}
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground">CTA: </span>
+                        <Badge variant="secondary" className="text-[10px]">{v.cta}</Badge>
+                      </div>
+                      <span className={`text-[9px] ${v.cta.length > 20 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                        {v.cta.length}/20
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {v.hashtags.map((h, i) => (
+                        <span key={i} className="text-[9px] text-primary">{h}</span>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedMeta(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {metaVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === metaWinner.id ? "text-amber-700" : ""}>
+                    {v.id}({v.angle}) {v.score}점
+                  </strong>
+                  {i < metaVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">Variant {metaWinner.id}</strong>
+                {adoptedMeta && ` · 현재 채택: Variant ${adoptedMeta}`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ 1-e. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
+        <Collapsible open={openSections.affiliate} onOpenChange={() => toggleSection("affiliate")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="📄 Affiliate 리뷰어 브리프 자동화"
+              subtitle="리뷰 데이터 기반 리뷰어/퍼블리셔용 구조화 브리프 — Hook, Key Points, Do/Don't, Disclosure 자동 생성"
+              collapsible
+              isOpen={openSections.affiliate}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge className="text-[10px] bg-[#6B21A8] text-white"><Megaphone className="h-3 w-3 mr-1" />Affiliate Brief</Badge>
+                  {affiliateBrief.compliance.ok ? (
+                    <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                      <ShieldCheck className="h-3 w-3" /> 규정 OK
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                      <AlertTriangle className="h-3 w-3" /> {affiliateBrief.compliance.issues.length} fix
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[10px] gap-1"
+                  onClick={() => copyText(affiliateBrief.longBrief, "aff-long")}
+                >
+                  {copiedKey === "aff-long" ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                  {copiedKey === "aff-long" ? "복사됨" : "전체 브리프 복사"}
+                </Button>
+              </div>
+
+              {/* Headline + Hook */}
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headline</p>
+                <p className="text-sm font-bold text-foreground">{affiliateBrief.headline}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Hook (5초 이내)</p>
+                <p className="text-[12px] text-foreground/90 italic border-l-2 border-primary/40 pl-2">{affiliateBrief.hook}</p>
+              </div>
+
+              {/* Audience */}
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Target Audience</p>
+                <p className="text-[11px] text-foreground/85">{affiliateBrief.audience}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Key Points */}
+                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-foreground">🔑 Key Selling Points</p>
+                  {affiliateBrief.keyPoints.map((k, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85">{k}</p>
+                  ))}
+                </div>
+                {/* Proof Points */}
+                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-foreground">📊 Proof Points</p>
+                  {affiliateBrief.proofPoints.map((p, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {p}</p>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Do */}
+                <div className="rounded-lg border border-[#15803D]/30 bg-[#15803D]/5 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-[#15803D]">✅ Do</p>
+                  {affiliateBrief.doList.map((d, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {d}</p>
+                  ))}
+                </div>
+                {/* Don't */}
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-destructive">🚫 Don't</p>
+                  {affiliateBrief.dontList.map((d, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {d}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA + Disclosure */}
+              <div className="rounded-lg border border-amber-400/40 bg-amber-50/40 p-3 space-y-1.5">
+                <div>
+                  <p className="text-[10px] font-bold text-amber-800">📣 Suggested CTA</p>
+                  <p className="text-[11px] text-foreground/85">{affiliateBrief.ctaSuggestion}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-amber-800">📜 Required Disclosure</p>
+                  <p className="text-[11px] text-foreground/85 italic">{affiliateBrief.disclosure}</p>
+                </div>
+              </div>
+
+              {/* Hashtags */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-muted-foreground">Hashtags:</span>
+                {affiliateBrief.hashtags.map((h, i) => (
+                  <Badge key={i} variant="secondary" className="text-[10px]">{h}</Badge>
+                ))}
+              </div>
+
+              {/* Long form preview */}
+              <details className="rounded-lg border border-border bg-muted/10 p-2">
+                <summary className="text-[11px] font-semibold text-foreground cursor-pointer flex items-center gap-1">
+                  <FileText className="h-3 w-3" /> Long-form Brief 미리보기 (Markdown)
+                </summary>
+                <pre className="mt-2 text-[10px] text-foreground/80 whitespace-pre-wrap leading-snug font-mono">
+{affiliateBrief.longBrief}
+                </pre>
+              </details>
             </div>
           </CollapsibleContent>
         </Collapsible>
