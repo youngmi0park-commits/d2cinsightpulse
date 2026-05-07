@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ThumbsUp, Star } from "lucide-react";
+import { Loader2, ThumbsUp, ThumbsDown, Star } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -15,23 +15,28 @@ interface Props {
   category?: string;
   sourceLike: string; // e.g. "lge_com%" | "reddit%"
   sinceISO?: string;
+  sentiment?: "positive" | "negative";
 }
 
 export function PositiveReviewsDialog({
-  open, onOpenChange, productName, category, sourceLike, sinceISO,
+  open, onOpenChange, productName, category, sourceLike, sinceISO, sentiment = "positive",
 }: Props) {
   const { t } = useLang();
   const isLgCom = sourceLike.startsWith("lge_com");
+  const isNeg = sentiment === "negative";
+  const Icon = isNeg ? ThumbsDown : ThumbsUp;
+  const accent = isNeg ? "text-destructive" : "text-success";
+  const cardBorder = isNeg ? "border-destructive/15 bg-destructive/5" : "border-success/15 bg-success/5";
 
   const { data, isLoading } = useQuery({
-    queryKey: ["positive-reviews-detail", productName, sourceLike, sinceISO],
+    queryKey: ["sentiment-reviews-detail", sentiment, productName, sourceLike, sinceISO],
     enabled: open && !!productName,
     queryFn: async () => {
       let q = supabase
         .from("reviews")
         .select("id, title, content, rating, sentiment_score, source, published_at, collected_at, products!inner(display_name, category)")
         .like("source", sourceLike)
-        .eq("sentiment", "positive")
+        .eq("sentiment", sentiment)
         .eq("products.display_name", productName)
         .order("collected_at", { ascending: false })
         .limit(200);
@@ -48,12 +53,14 @@ export function PositiveReviewsDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <ThumbsUp className="h-4 w-4 text-success" />
+            <Icon className={`h-4 w-4 ${accent}`} />
             {productName}
             {category && <Badge variant="outline" className="text-[10px]">{category}</Badge>}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            {t("All positive reviews within the active window", "활성 윈도우 내 모든 긍정 리뷰")}
+            {isNeg
+              ? t("All negative reviews within the active window", "활성 윈도우 내 모든 부정 리뷰")
+              : t("All positive reviews within the active window", "활성 윈도우 내 모든 긍정 리뷰")}
             {data && ` · ${data.length}${t(" reviews", "건")}`}
           </DialogDescription>
         </DialogHeader>
@@ -71,7 +78,7 @@ export function PositiveReviewsDialog({
           <ScrollArea className="h-[60vh] pr-3">
             <div className="space-y-2">
               {data.map((r: any) => (
-                <div key={r.id} className="rounded-lg border border-success/15 bg-success/5 p-3 space-y-1">
+                <div key={r.id} className={`rounded-lg border p-3 space-y-1 ${cardBorder}`}>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                     {r.rating != null && (
                       <span className="inline-flex items-center gap-0.5 text-amber-500 font-semibold">
