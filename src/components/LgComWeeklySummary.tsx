@@ -19,7 +19,7 @@ interface TopProduct {
 
 export function LgComWeeklySummary() {
   const { t } = useLang();
-  const [openProduct, setOpenProduct] = useState<{ name: string; category: string } | null>(null);
+  const [openProduct, setOpenProduct] = useState<{ name: string; category: string; sentiment: "positive" | "negative" } | null>(null);
 
   // Use weekly category counts for accurate totals
   const { data: weeklyCounts, isLoading: countsLoading } = useQuery({
@@ -174,13 +174,14 @@ export function LgComWeeklySummary() {
             title={t("Positive Mentions TOP 3", "긍정 언급 TOP 3")}
             products={stats.topPos.map(p => ({ name: p.name, category: p.category, count: p.pos }))}
             color="success"
-            onSelect={(p) => setOpenProduct({ name: p.name, category: p.category })}
+            onSelect={(p) => setOpenProduct({ name: p.name, category: p.category, sentiment: "positive" })}
           />
           <ProductRankList
             icon={ThumbsDown}
             title={t("Negative Mentions TOP 3", "부정 언급 TOP 3")}
             products={stats.topNeg.map(p => ({ name: p.name, category: p.category, count: p.neg }))}
             color="destructive"
+            onSelect={(p) => setOpenProduct({ name: p.name, category: p.category, sentiment: "negative" })}
           />
         </div>
 
@@ -208,6 +209,7 @@ export function LgComWeeklySummary() {
         category={openProduct.category}
         sourceLike="lge_com%"
         sinceISO={sinceISO}
+        sentiment={openProduct.sentiment}
       />
     )}
     </>
