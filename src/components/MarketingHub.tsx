@@ -725,6 +725,13 @@ export function MarketingHub({
     return buildFunnelInsight(selectedFunnel, sentiment, reviews, pName);
   }, [selectedFunnel, sentiment, reviews, pName]);
 
+  /* PMAX A/B/C variants */
+  const pmaxVariants = useMemo(() => buildPmaxVariants(pName, sentiment), [pName, sentiment]);
+  const pmaxWinner = useMemo(() => {
+    return pmaxVariants.reduce((best, v) => (v.score > best.score ? v : best), pmaxVariants[0]);
+  }, [pmaxVariants]);
+  const [adoptedPmax, setAdoptedPmax] = useState<"A" | "B" | "C" | null>(null);
+
   /* Auto-translate funnel source quotes to Korean */
   const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
