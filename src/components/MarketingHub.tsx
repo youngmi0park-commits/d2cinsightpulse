@@ -939,7 +939,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    pmax: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, meta: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -976,6 +976,16 @@ export function MarketingHub({
     return pmaxVariants.reduce((best, v) => (v.score > best.score ? v : best), pmaxVariants[0]);
   }, [pmaxVariants]);
   const [adoptedPmax, setAdoptedPmax] = useState<"A" | "B" | "C" | null>(null);
+
+  /* Meta Primary Text A/B/C variants */
+  const metaVariants = useMemo(() => buildMetaVariants(pName, sentiment), [pName, sentiment]);
+  const metaWinner = useMemo(() => {
+    return metaVariants.reduce((best, v) => (v.score > best.score ? v : best), metaVariants[0]);
+  }, [metaVariants]);
+  const [adoptedMeta, setAdoptedMeta] = useState<"A" | "B" | "C" | null>(null);
+
+  /* Affiliate brief */
+  const affiliateBrief = useMemo(() => buildAffiliateBrief(pName, sentiment, reviews), [pName, sentiment, reviews]);
 
   /* Auto-translate funnel source quotes to Korean */
   const [translatedQuotes, setTranslatedQuotes] = useState<Record<string, string>>({});
