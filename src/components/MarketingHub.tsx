@@ -1284,6 +1284,282 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
+        {/* ═══ 1-d. 📘 Meta Primary Text A/B/C 자동 변형 ═══ */}
+        <Collapsible open={openSections.meta} onOpenChange={() => toggleSection("meta")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="📘 Meta Primary Text 강화 — A/B/C 자동 변형"
+              subtitle="Meta 규칙(Primary Text ≤125자, Headline ≤27자, CTA ≤20자) 기반 3개 톤 변형 + 점수 비교"
+              collapsible
+              isOpen={openSections.meta}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {metaVariants.map((v) => {
+                const isWinner = v.id === metaWinner.id;
+                const isAdopted = adoptedMeta === v.id;
+                const blockText =
+                  `[Meta Variant ${v.id} — ${v.angle}]\n` +
+                  `Primary Text (${v.primaryText.length}/125): ${v.primaryText}\n` +
+                  `Headline (${v.headline.length}/27): ${v.headline}\n` +
+                  `Description (${v.description.length}/27): ${v.description}\n` +
+                  `CTA (${v.cta.length}/20): ${v.cta}\n` +
+                  `Hashtags: ${v.hashtags.join(" ")}`;
+                const key = `meta-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#1a52d4] text-white">Variant {v.id}</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    <div>
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Primary Text */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Primary Text</p>
+                        <span className={`text-[9px] ${v.primaryText.length > 125 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.primaryText.length}/125
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/90 leading-snug">{v.primaryText}</p>
+                    </div>
+
+                    {/* Headline */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headline</p>
+                        <span className={`text-[9px] ${v.headline.length > 27 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.headline.length}/27
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-foreground/90">{v.headline}</p>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Description</p>
+                        <span className={`text-[9px] ${v.description.length > 27 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.description.length}/27
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-foreground/80">{v.description}</p>
+                    </div>
+
+                    {/* CTA + Hashtags */}
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground">CTA: </span>
+                        <Badge variant="secondary" className="text-[10px]">{v.cta}</Badge>
+                      </div>
+                      <span className={`text-[9px] ${v.cta.length > 20 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                        {v.cta.length}/20
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {v.hashtags.map((h, i) => (
+                        <span key={i} className="text-[9px] text-primary">{h}</span>
+                      ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedMeta(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {metaVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === metaWinner.id ? "text-amber-700" : ""}>
+                    {v.id}({v.angle}) {v.score}점
+                  </strong>
+                  {i < metaVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">Variant {metaWinner.id}</strong>
+                {adoptedMeta && ` · 현재 채택: Variant ${adoptedMeta}`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ 1-e. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
+        <Collapsible open={openSections.affiliate} onOpenChange={() => toggleSection("affiliate")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="📄 Affiliate 리뷰어 브리프 자동화"
+              subtitle="리뷰 데이터 기반 리뷰어/퍼블리셔용 구조화 브리프 — Hook, Key Points, Do/Don't, Disclosure 자동 생성"
+              collapsible
+              isOpen={openSections.affiliate}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge className="text-[10px] bg-[#6B21A8] text-white"><Megaphone className="h-3 w-3 mr-1" />Affiliate Brief</Badge>
+                  {affiliateBrief.compliance.ok ? (
+                    <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                      <ShieldCheck className="h-3 w-3" /> 규정 OK
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                      <AlertTriangle className="h-3 w-3" /> {affiliateBrief.compliance.issues.length} fix
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[10px] gap-1"
+                  onClick={() => copyText(affiliateBrief.longBrief, "aff-long")}
+                >
+                  {copiedKey === "aff-long" ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                  {copiedKey === "aff-long" ? "복사됨" : "전체 브리프 복사"}
+                </Button>
+              </div>
+
+              {/* Headline + Hook */}
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Headline</p>
+                <p className="text-sm font-bold text-foreground">{affiliateBrief.headline}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Hook (5초 이내)</p>
+                <p className="text-[12px] text-foreground/90 italic border-l-2 border-primary/40 pl-2">{affiliateBrief.hook}</p>
+              </div>
+
+              {/* Audience */}
+              <div className="space-y-1">
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Target Audience</p>
+                <p className="text-[11px] text-foreground/85">{affiliateBrief.audience}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Key Points */}
+                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-foreground">🔑 Key Selling Points</p>
+                  {affiliateBrief.keyPoints.map((k, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85">{k}</p>
+                  ))}
+                </div>
+                {/* Proof Points */}
+                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-foreground">📊 Proof Points</p>
+                  {affiliateBrief.proofPoints.map((p, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {p}</p>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Do */}
+                <div className="rounded-lg border border-[#15803D]/30 bg-[#15803D]/5 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-[#15803D]">✅ Do</p>
+                  {affiliateBrief.doList.map((d, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {d}</p>
+                  ))}
+                </div>
+                {/* Don't */}
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1">
+                  <p className="text-[10px] font-bold text-destructive">🚫 Don't</p>
+                  {affiliateBrief.dontList.map((d, i) => (
+                    <p key={i} className="text-[11px] text-foreground/85 leading-snug">• {d}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA + Disclosure */}
+              <div className="rounded-lg border border-amber-400/40 bg-amber-50/40 p-3 space-y-1.5">
+                <div>
+                  <p className="text-[10px] font-bold text-amber-800">📣 Suggested CTA</p>
+                  <p className="text-[11px] text-foreground/85">{affiliateBrief.ctaSuggestion}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-amber-800">📜 Required Disclosure</p>
+                  <p className="text-[11px] text-foreground/85 italic">{affiliateBrief.disclosure}</p>
+                </div>
+              </div>
+
+              {/* Hashtags */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-muted-foreground">Hashtags:</span>
+                {affiliateBrief.hashtags.map((h, i) => (
+                  <Badge key={i} variant="secondary" className="text-[10px]">{h}</Badge>
+                ))}
+              </div>
+
+              {/* Long form preview */}
+              <details className="rounded-lg border border-border bg-muted/10 p-2">
+                <summary className="text-[11px] font-semibold text-foreground cursor-pointer flex items-center gap-1">
+                  <FileText className="h-3 w-3" /> Long-form Brief 미리보기 (Markdown)
+                </summary>
+                <pre className="mt-2 text-[10px] text-foreground/80 whitespace-pre-wrap leading-snug font-mono">
+{affiliateBrief.longBrief}
+                </pre>
+              </details>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* ═══ 2. ⚡ 광고 카피 (Ad Copy) — 채널별 ═══ */}
         <Collapsible open={openSections.adcopy} onOpenChange={() => toggleSection("adcopy")}>
           <CollapsibleTrigger className="w-full">
