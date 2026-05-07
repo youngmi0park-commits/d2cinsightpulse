@@ -6,7 +6,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import {
   Wrench, Copy, Eye, MousePointer, ShoppingCart, RefreshCw,
   Check, ShieldCheck, AlertTriangle, ChevronDown, ChevronRight,
-  ExternalLink, Download, Sparkles, Trophy,
+  ExternalLink, Download, Sparkles, Trophy, FileText, Megaphone,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
