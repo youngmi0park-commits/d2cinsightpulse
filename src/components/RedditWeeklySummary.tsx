@@ -21,7 +21,7 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [openProduct, setOpenProduct] = useState<{ name: string; category: string } | null>(null);
+  const [openProduct, setOpenProduct] = useState<{ name: string; category: string; sentiment: "positive" | "negative" } | null>(null);
   const sourcesFilter = country !== "all" ? countryToSourceFilter(country) : null;
 
   const { data: window } = useTrendingDataWindow("reddit%");
@@ -233,7 +233,7 @@ export function RedditWeeklySummary({ country = "all" }: { country?: string }) {
               <button
                 key={p.name}
                 type="button"
-                onClick={() => setOpenProduct({ name: p.name, category: p.category })}
+                onClick={() => setOpenProduct({ name: p.name, category: p.category, sentiment: "positive" })}
                 className="w-full text-left bg-background/60 rounded px-2.5 py-1.5 space-y-1 hover:bg-background transition-colors"
               >
                 <div className="flex items-center gap-2">
