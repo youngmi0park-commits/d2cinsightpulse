@@ -399,6 +399,140 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ── PHASE 4: BULK 2025 (Collect >10k reviews post-Jan 1 2025, non-US) ──
+  const runBulk2025 = async () => {
+    console.log("[BV-BULK] Starting bulk 2025 background collection...");
+    const targetLocales = activeLocales.filter(l => l.locale !== "en_US");
+    const sinceTs = Math.floor(new Date("2025-01-01T00:00:00Z").getTime() / 1000);
+    const TARGET_VOLUME = 10000;
+    const productCache: Record<string, string> = {};
+
+    for (const { locale, region, keyName } of targetLocales) {
+      const passkey = Deno.env.get(keyName);
+      if (!passkey) continue;
+      
+      let totalInserted = 0;
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore && totalInserted < TARGET_VOLUME) {
+        const url = new URL(BV_BASE + "/reviews.json");
+        url.searchParams.set("apiversion", "5.4");
+        url.searchParams.set("passkey", passkey);
+        url.searchParams.set("Locale", locale);
+        url.searchParams.set("Limit", String(PAGE_SIZE));
+        url.searchParams.set("Offset", String(offset));
+        url.searchParams.set("Sort", "SubmissionTime:desc");
+        url.searchParams.set("Include", "Products");
+        url.searchParams.set("Filter", "SubmissionTime:gte:" + sinceTs);
+
+        try {
+          const res = await fetch(url.toString());
+          if (!res.ok) {
+            if (res.status === 429) { await new Promise(r => setTimeout(r, 3000)); continue; }
+            console.error(`[BV-BULK] ${locale} failed: ${res.status}`);
+            break;
+          }
+
+          const data = await res.json();
+          const reviews = data.Results ?? [];
+          if (reviews.length === 0) break;
+
+          const rows: any[] = [];
+          for (const rv of reviews) {
+            const reviewText = (rv.ReviewText as string) ?? "";
+            if (reviewText.trim().length < 20) continue;
+
+            const externalId = "bv_" + region + "_" + rv.Id;
+            const rating = Number(rv.Rating) || null;
+            let sentiment = "neutral";
+            let sentimentScore = 0.5;
+            if (rating !== null) {
+              if (rating >= 4) { sentiment = "positive"; sentimentScore = 0.7 + (rating - 4) * 0.15; }
+              else if (rating <= 2) { sentiment = "negative"; sentimentScore = 0.1 + (rating - 1) * 0.15; }
+            }
+
+            const safeContent = sanitizePII(reviewText).slice(0, 2000);
+            const modelNum = rv.OriginalProductName && !rv.OriginalProductName.startsWith("MD")
+              ? rv.OriginalProductName : rv.ProductId || "LG-GENERIC";
+            const displayName = rv.Products?.[rv.ProductId]?.Name || "LG Product";
+            const category = rv.Products?.[rv.ProductId]?.CategoryId || "General";
+
+            if (!productCache[modelNum]) {
+              const { data: ex } = await supabase
+                .from("products").select("id").eq("model_number", modelNum).maybeSingle();
+              if (ex) { productCache[modelNum] = ex.id; }
+              else {
+                const { data: np } = await supabase
+                  .from("products").insert({ model_number: modelNum, display_name: displayName, category })
+                  .select("id").single();
+                if (np) productCache[modelNum] = np.id;
+              }
+            }
+            const dbProductId = productCache[modelNum];
+            if (!dbProductId) continue;
+
+            let reviewType = "organic";
+            if (rv.IsSyndicated === true || rv.SyndicationSource) reviewType = "syndication";
+
+            rows.push({
+              product_id: dbProductId,
+              source: "lge_com_" + region,
+              source_url: "bazaarvoice://lg/" + rv.Id,
+              external_id: externalId,
+              title: rv.Title || null,
+              content: safeContent,
+              author: "LG Review User",
+              rating, sentiment, sentiment_score: sentimentScore,
+              published_at: rv.SubmissionTime?.split("T")[0] || null,
+              emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
+              emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
+              user_type: rv.BadgesOrder?.includes("verifiedPurchaser") ? "actual_user" : "unknown",
+              content_type: "review",
+              platform_type: "retailer",
+              review_type: reviewType,
+            });
+          }
+
+          if (rows.length > 0) {
+            const { data: inserted, error: upsertErr } = await supabase
+              .from("reviews")
+              .upsert(rows, { onConflict: "external_id", ignoreDuplicates: false })
+              .select("id");
+            if (!upsertErr) {
+               totalInserted += inserted?.length ?? 0;
+            } else {
+               console.error("[BV-BULK] DB Upsert Error:", upsertErr);
+            }
+          }
+
+          offset += reviews.length;
+          hasMore = reviews.length === PAGE_SIZE;
+          await new Promise(r => setTimeout(r, 300));
+        } catch (e) {
+          console.error(`[BV-BULK] Exception on ${locale}:`, e);
+          break;
+        }
+      }
+      console.log(`[BV-BULK] ${locale} completed: ${totalInserted} reviews`);
+    }
+    console.log("[BV-BULK] Background collection finished.");
+  };
+
+  if (mode === "bulk2025") {
+    // @ts-ignore
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(runBulk2025());
+    } else {
+      runBulk2025().catch(e => console.error(e));
+    }
+    return new Response(
+      JSON.stringify({ success: true, mode, message: "bulk2025 background job started" }),
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   return new Response(
     JSON.stringify({ success: true, mode, results }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
