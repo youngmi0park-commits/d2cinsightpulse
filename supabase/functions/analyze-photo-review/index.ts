@@ -21,9 +21,10 @@ Inspect for:
 8. confidence: 0.0–1.0
 9. action_required: "urgent_qc_review" | "follow_up" | "none"
 10. summary_ko: one Korean sentence (≤60자) suitable for the marketing dashboard
+11. pii_detected: boolean (true if faces, license plates, personal info are visible)
+12. face_boxes: array of objects { "image_index": number (0, 1, or 2), "box": [ymin, xmin, ymax, xmax] } normalized to 0-1000 scale. If no faces, return [].
 
 CRITICAL:
-- NEVER include personal data (faces, license plates, addresses, names). If detected, set "pii_detected": true and DO NOT describe them.
 - Do NOT mention competitor brand names; mask Samsung as "SS", Sony as "SN", TCL/Hisense/Vizio as "C브랜드".
 - Output ONLY a single JSON object. No markdown, no commentary.`;
 
@@ -89,13 +90,25 @@ serve(async (req) => {
     parsed.analyzed_at = new Date().toISOString();
     parsed.modality = "photo";
 
+    // ─── PII PRIVACY PROTECTION LOGIC ───
+    // 대시보드에 이미지를 로드하지 않아도 된다면, PII 감지 시 해당 이미지를 즉시 파기합니다.
+    let finalImageUrls = [...imgs];
+    if (parsed.pii_detected) {
+      console.log("PII Detected! Removing images for privacy protection.");
+      // 얼굴이나 개인정보가 감지된 경우, 모든(또는 감지된) 이미지 URL을 제거합니다.
+      // 여기서는 안전을 위해 AI가 PII를 감지했다면 해당 리뷰의 모든 이미지를 블라인드 처리합니다.
+      finalImageUrls = finalImageUrls.map(() => "https://via.placeholder.com/800x600.png?text=Image+Removed+for+Privacy");
+    }
+
+    // Update the DB with the analysis AND the scrubbed image URLs
     await supabase.from("reviews").update({
+      media_urls: finalImageUrls,
       multimodal_analysis: parsed,
       multimodal_analyzed_at: parsed.analyzed_at,
       media_analysis_status: "done",
     }).eq("id", review_id);
 
-    return new Response(JSON.stringify({ ok: true, analysis: parsed }), {
+    return new Response(JSON.stringify({ ok: true, analysis: parsed, safe_urls: finalImageUrls }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

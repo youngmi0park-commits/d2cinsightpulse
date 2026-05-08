@@ -152,6 +152,9 @@ For each post/comment, return a JSON array of objects:
 - post_type: "post" | "comment"
 - upvotes: number or null
 - is_lg_relevant: boolean (true only if specifically about LG product)
+- media_urls: string[] (extract image URLs like i.redd.it/imgur.com ONLY IF the post context clearly indicates it is a product setup, defect, or hardware photo. CRITICAL: Exclude URLs if the text implies selfies, people, or PII are in the photo)
+- has_media: boolean (true if media_urls is not empty)
+- media_type: "photo" | "video" | "mixed" | "none" (infer from URLs, usually photo for i.redd.it)
 
 RULES:
 - Only include content specifically about LG Electronics products
@@ -586,9 +589,22 @@ Deno.serve(async (req) => {
     };
 
     try {
+    // Load dynamic queries from database
+    const dynamicQueries = await loadDynamicQueries(supabase);
+    
+    // Merge dynamic queries with hardcoded defaults
+    let mergedCategories: Record<string, string[]> = {};
+    const allCategories = new Set([...Object.keys(REDDIT_QUERIES), ...Object.keys(dynamicQueries)]);
+    
+    for (const cat of allCategories) {
+      const defaultQ = REDDIT_QUERIES[cat] || [];
+      const dynQ = dynamicQueries[cat] || [];
+      mergedCategories[cat] = Array.from(new Set([...dynQ, ...defaultQ]));
+    }
+
     const categories = categoryFilter
-      ? { [categoryFilter]: REDDIT_QUERIES[categoryFilter] || [] }
-      : REDDIT_QUERIES;
+      ? { [categoryFilter]: mergedCategories[categoryFilter] || [] }
+      : mergedCategories;
 
     // ── Phase A: Query-driven collection ──
     for (const [category, queries] of Object.entries(categories)) {
@@ -881,6 +897,9 @@ async function persistReviews(
       content_type: bucket,
       platform_type: "community",
       user_type: isLgOperator ? "lg_operator" : "actual_user",
+      has_media: review.has_media || false,
+      media_type: review.media_type || "none",
+      media_urls: review.media_urls || [],
     });
 
     if (!insertErr) collected++;
@@ -950,4 +969,28 @@ async function findOrCreateProduct(
   const id = newProduct?.id || "unknown";
   productCache.set(cacheKey, id);
   return id;
+}
+
+async function loadDynamicQueries(supabase: any): Promise<Record<string, string[]>> {
+  try {
+    const { data, error } = await supabase
+      .from("crawling_keywords")
+      .select("category, query")
+      .eq("is_active", true);
+
+    if (error || !data) {
+      // It's normal to fail if the table doesn't exist yet
+      return {};
+    }
+
+    const result: Record<string, string[]> = {};
+    for (const row of data) {
+      if (!result[row.category]) result[row.category] = [];
+      result[row.category].push(row.query);
+    }
+    return result;
+  } catch (e) {
+    console.warn("[DB] Could not load dynamic queries:", e);
+    return {};
+  }
 }
