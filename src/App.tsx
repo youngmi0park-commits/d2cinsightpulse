@@ -14,7 +14,6 @@ import LgComPage from "./pages/LgComPage";
 import CollectionPage from "./pages/CollectionPage";
 import NewsletterPage from "./pages/NewsletterPage";
 import CommunitiesPage from "./pages/CommunitiesPage";
-import VisionGalleryPage from "./pages/VisionGalleryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,7 +38,6 @@ const App = () => (
                     <Route path="/newsletter" element={<NewsletterPage />} />
                     <Route path="/communities" element={<CommunitiesPage />} />
                     <Route path="/toolkit" element={<ToolkitPage />} />
-                    <Route path="/vision-gallery" element={<VisionGalleryPage />} />
                     
                     <Route path="*" element={<NotFound />} />
                   </Routes>
