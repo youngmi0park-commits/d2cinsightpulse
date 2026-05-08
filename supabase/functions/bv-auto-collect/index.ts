@@ -533,6 +533,109 @@ Deno.serve(async (req) => {
     );
   }
 
+  // ── PHASE 5: US 10 RECENT (Quick sync 10 reviews for en_US) ──
+  if (mode === "us10") {
+    const usLocale = activeLocales.find(l => l.locale === "en_US");
+    if (usLocale) {
+      const passkey = Deno.env.get(usLocale.keyName);
+      if (passkey) {
+        const url = new URL(BV_BASE + "/reviews.json");
+        url.searchParams.set("apiversion", "5.4");
+        url.searchParams.set("passkey", passkey);
+        url.searchParams.set("Locale", usLocale.locale);
+        url.searchParams.set("Limit", "10");
+        url.searchParams.set("Sort", "SubmissionTime:desc");
+        url.searchParams.set("Include", "Products");
+
+        try {
+          const res = await fetch(url.toString());
+          if (res.ok) {
+            const data = await res.json();
+            const reviews = data.Results ?? [];
+            const rows: any[] = [];
+            const productCache: Record<string, string> = {};
+
+            for (const rv of reviews) {
+              const reviewText = (rv.ReviewText as string) ?? "";
+              if (reviewText.trim().length < 20) continue;
+
+              const externalId = "bv_" + usLocale.region + "_" + rv.Id;
+              const rating = Number(rv.Rating) || null;
+              let sentiment = "neutral";
+              let sentimentScore = 0.5;
+              if (rating !== null) {
+                if (rating >= 4) { sentiment = "positive"; sentimentScore = 0.7 + (rating - 4) * 0.15; }
+                else if (rating <= 2) { sentiment = "negative"; sentimentScore = 0.1 + (rating - 1) * 0.15; }
+              }
+
+              const safeContent = sanitizePII(reviewText).slice(0, 2000);
+              const modelNum = rv.OriginalProductName && !rv.OriginalProductName.startsWith("MD")
+                ? rv.OriginalProductName : rv.ProductId || "LG-GENERIC";
+              const displayName = rv.Products?.[rv.ProductId]?.Name || "LG Product";
+              const category = rv.Products?.[rv.ProductId]?.CategoryId || "General";
+
+              if (!productCache[modelNum]) {
+                const { data: ex } = await supabase
+                  .from("products").select("id").eq("model_number", modelNum).maybeSingle();
+                if (ex) { productCache[modelNum] = ex.id; }
+                else {
+                  const { data: np } = await supabase
+                    .from("products").insert({ model_number: modelNum, display_name: displayName, category })
+                    .select("id").single();
+                  if (np) productCache[modelNum] = np.id;
+                }
+              }
+              const dbProductId = productCache[modelNum];
+              if (!dbProductId) continue;
+
+              let reviewType = "organic";
+              if (rv.IsSyndicated === true || rv.SyndicationSource) reviewType = "syndication";
+
+              rows.push({
+                product_id: dbProductId,
+                source: "lge_com_" + usLocale.region,
+                source_url: "bazaarvoice://lg/" + rv.Id,
+                external_id: externalId,
+                title: rv.Title || null,
+                content: safeContent,
+                author: "LG Review User",
+                rating, sentiment, sentiment_score: sentimentScore,
+                published_at: rv.SubmissionTime?.split("T")[0] || null,
+                emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
+                emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
+                user_type: rv.BadgesOrder?.includes("verifiedPurchaser") ? "actual_user" : "unknown",
+                content_type: "review",
+                platform_type: "retailer",
+                review_type: reviewType,
+              });
+            }
+
+            if (rows.length > 0) {
+              const { data: inserted, error: upsertErr } = await supabase
+                .from("reviews")
+                // We don't ignore duplicates, we upsert so it updates the timestamp!
+                .upsert(rows, { onConflict: "external_id", ignoreDuplicates: false })
+                .select("id");
+              results[`us10`] = { inserted: inserted?.length ?? 0 };
+              
+              // FORCE UPDATE collected_at to now() to guarantee dashboard sync!
+              if (inserted && inserted.length > 0) {
+                 const ids = inserted.map(i => i.id);
+                 await supabase.from("reviews").update({ collected_at: new Date().toISOString() }).in("id", ids);
+              }
+            }
+          }
+        } catch (e) {
+          console.error("[BV-US10] Error:", e);
+        }
+      }
+    }
+    return new Response(
+      JSON.stringify({ success: true, mode, results }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   return new Response(
     JSON.stringify({ success: true, mode, results }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
