@@ -886,12 +886,16 @@ function useCollectionLogs() {
         if (res.data?.source) {
           const bvKey = bvSourceToBvKey[res.data.source];
           if (bvKey) {
-            // Use actual collected_at as lastAt (most recent sync time)
+            // Use actual collected_at as lastAt (most recent sync time), but respect bv_collection_runs if it's more recent!
             if (res.data.collected_at) {
               if (!map[bvKey]) {
                 map[bvKey] = { lastAt: res.data.collected_at, count: 0, status: "done" };
               } else {
-                map[bvKey].lastAt = res.data.collected_at;
+                const existingTime = new Date(map[bvKey].lastAt).getTime();
+                const newTime = new Date(res.data.collected_at).getTime();
+                if (newTime > existingTime) {
+                  map[bvKey].lastAt = res.data.collected_at;
+                }
                 map[bvKey].status = "done";
               }
             }
