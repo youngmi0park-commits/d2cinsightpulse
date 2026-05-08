@@ -611,18 +611,19 @@ Deno.serve(async (req) => {
             }
 
             if (rows.length > 0) {
-              const { data: inserted, error: upsertErr } = await supabase
+              const { error: upsertErr } = await supabase
                 .from("reviews")
-                // We don't ignore duplicates, we upsert so it updates the timestamp!
-                .upsert(rows, { onConflict: "external_id", ignoreDuplicates: false })
-                .select("id");
-              results[`us10`] = { inserted: inserted?.length ?? 0 };
+                .upsert(rows, { onConflict: "external_id", ignoreDuplicates: false });
               
-              // FORCE UPDATE collected_at to now() to guarantee dashboard sync!
-              if (inserted && inserted.length > 0) {
-                 const ids = inserted.map(i => i.id);
-                 await supabase.from("reviews").update({ collected_at: new Date().toISOString() }).in("id", ids);
-              }
+              const externalIds = rows.map(r => r.external_id);
+              
+              // FORCE UPDATE collected_at to now() for these specific rows to guarantee dashboard sync!
+              const { error: updateErr } = await supabase
+                 .from("reviews")
+                 .update({ collected_at: new Date().toISOString() })
+                 .in("external_id", externalIds);
+
+              results[`us10`] = { externalIdsUpdated: externalIds.length, upsertErr, updateErr };
             }
           }
         } catch (e) {
