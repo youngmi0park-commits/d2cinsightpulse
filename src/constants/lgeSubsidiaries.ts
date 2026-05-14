@@ -11,6 +11,7 @@ export const LGE_SUBSIDIARIES = [
   { code:"LGEDE", country:"독일",       countryEn:"Germany",        flag:"🇩🇪", region:"Europe"    },
   { code:"LGEFS", country:"프랑스",     countryEn:"France",         flag:"🇫🇷", region:"Europe"    },
   { code:"LGEBN", country:"네덜란드",   countryEn:"Netherlands",    flag:"🇳🇱", region:"Europe"    },
+  { code:"LGEES", country:"스페인",     countryEn:"Spain",          flag:"🇪🇸", region:"Europe"    },
   { code:"LGEIL", country:"인도",       countryEn:"India",          flag:"🇮🇳", region:"SouthAsia" },
   { code:"LGEAP", country:"호주",       countryEn:"Australia",      flag:"🇦🇺", region:"Oceania"   },
   { code:"LGEJP", country:"일본",       countryEn:"Japan",          flag:"🇯🇵", region:"NEAsia"    },
@@ -42,6 +43,7 @@ export const sourceToLgeCode = (source: string): string => {
     lge_com_ph: "LGEPH", lge_com_vn: "LGEVN", lge_com_hk: "LGEHK",
     lge_com_ca: "LGECI", lge_com_mx: "LGEMS",
     lge_com_fr: "LGEFS", lge_com_nl: "LGEBN",
+    lge_com_es: "LGEES",
   };
   return map[source] ?? "LGEUS";
 };
@@ -50,6 +52,7 @@ export const sourceToLgeCode = (source: string): string => {
 export const ISO_TO_LGE: Record<string, string> = {
   US: "LGEUS", UK: "LGEUK", GB: "LGEUK", CA: "LGECI", BR: "LGESP", MX: "LGEMS",
   DE: "LGEDE", FR: "LGEFS", NL: "LGEBN",
+  ES: "LGEES",
   AU: "LGEAP", JP: "LGEJP", TW: "LGETT", HK: "LGEHK",
   SG: "LGESL", MY: "LGEML", ID: "LGEIN", TH: "LGETH", PH: "LGEPH", VN: "LGEVN",
   IN: "LGEIL",
