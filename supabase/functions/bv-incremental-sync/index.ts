@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     { locale: "de_DE", region: "de", key: Deno.env.get("BAZAARVOICE_DE_API_KEY")! },
     { locale: "en_AU", region: "au", key: Deno.env.get("BAZAARVOICE_AU_API_KEY")! },
     { locale: "pt_BR", region: "br", key: Deno.env.get("BAZAARVOICE_BR_API_KEY")! },
+    { locale: "es_ES", region: "es", key: Deno.env.get("BAZAARVOICE_ES_API_KEY")! },
   ].filter(l => !!l.key);
 
   // Reviews submitted in the last 25 hours
