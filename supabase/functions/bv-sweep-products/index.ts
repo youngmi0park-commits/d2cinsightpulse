@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
     const data = await res.json();
     const products = data.Results ?? [];
     totalProducts = data.TotalResults ?? totalProducts;
+    console.log("[BV-SWEEP] resp locale=" + locale + " status=" + res.status + " TotalResults=" + data.TotalResults + " HasErrors=" + data.HasErrors + " err=" + (data.Errors?.[0]?.Message ?? ""));
 
     if (products.length === 0) break;
 
