@@ -7,6 +7,7 @@ import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StrategicBadge } from "@/components/StrategicBadge";
 
 // value = ISO code (kept for backward-compatible source mapping & child components)
 // labelEn = LGE 법인 코드 (RIS Subsidiary List 표준)
@@ -15,24 +16,30 @@ const BV_COUNTRIES = [
   { value: "US",  label: "미국",   labelEn: "LGEUS",  flag: "🇺🇸" },
   { value: "UK",  label: "영국",   labelEn: "LGEUK",  flag: "🇬🇧" },
   { value: "DE",  label: "독일",   labelEn: "LGEDE",  flag: "🇩🇪" },
+  { value: "ES",  label: "스페인", labelEn: "LGEES",  flag: "🇪🇸" },
   { value: "AU",  label: "호주",   labelEn: "LGEAP",  flag: "🇦🇺" },
   { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
   { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
   { value: "JP",  label: "일본",   labelEn: "LGEJP",  flag: "🇯🇵" },
   { value: "TH",  label: "태국",   labelEn: "LGETH",  flag: "🇹🇭" },
   { value: "BR",  label: "브라질", labelEn: "LGESP",  flag: "🇧🇷" },
+  { value: "MX",  label: "멕시코", labelEn: "LGEMS",  flag: "🇲🇽" },
+  { value: "PE",  label: "페루",   labelEn: "LGEPR",  flag: "🇵🇪" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
   US: ["lge_com_us"],
   UK: ["lge_com_uk"],
   DE: ["lge_com_de"],
+  ES: ["lge_com_es"],
   AU: ["lge_com_au"],
   IN: ["lge_com_in"],
   TW: ["lge_com_tw"],
   JP: ["lge_com_jp"],
   TH: ["lge_com_th"],
   BR: ["lge_com_br"],
+  MX: ["lge_com_mx"],
+  PE: ["lge_com_pe"],
 };
 
 /* ── Country Stats Cards ── */
@@ -104,8 +111,13 @@ function CountryStatsGrid({
                 : "border-border bg-card hover:border-primary/40"
             }`}
           >
-            <span className="text-base">{c.flag}</span>
-            <span className="text-[10px] font-semibold text-foreground">{t(c.labelEn, c.label)}</span>
+            <span className="text-base relative">
+              {c.flag}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-foreground">
+              {t(c.labelEn, c.label)}
+              <StrategicBadge iso={c.value} />
+            </span>
             <span className="text-xs font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
             <span className="text-[8px] text-muted-foreground" title={t(`${c.labelEn}: Cumulative total since collection start`, `${c.label}: 수집 시작 이후 전체 누적`)}>
               {t("cumulative", "누적")} · {pct}%
