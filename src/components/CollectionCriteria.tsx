@@ -179,6 +179,24 @@ const BV_AVAILABLE: Record<string, number> = {
   LGEUS: 121353, LGEUK: 68862, LGEDE: 41097, LGEAP: 17842, LGEIL: 7761, LGETH: 5503, LGETT: 4633, LGEJP: 1322,
 };
 
+// 지역(region) 정렬 우선순위: 북미 → 유럽 → 중남미 → 아시아·오세아니아 → 중동·아프리카 → Global → Other
+const REGION_ORDER: Record<string, number> = {
+  // 북미
+  US: 1, CA: 2,
+  // 유럽
+  UK: 10, DE: 11, ES: 12, FR: 13,
+  // 중남미
+  BR: 20, MX: 21, PE: 22,
+  // 아시아·오세아니아
+  AU: 30, IN: 31, TW: 32, JP: 33, TH: 34,
+  SG: 35, MY: 36, ID: 37, PH: 38, VN: 39, HK: 40,
+  // 중동·아프리카
+  SA: 50,
+  // 기타
+  Global: 98, Other: 99,
+};
+const regionRank = (iso: string): number => REGION_ORDER[iso] ?? 90;
+
 // Channel data organized by product category
 interface ChannelEntry {
   platform: string;
