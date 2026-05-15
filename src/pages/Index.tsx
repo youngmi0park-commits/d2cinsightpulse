@@ -228,7 +228,7 @@ const Index = () => {
               Turn Real Reviews into Ready-to-Use Marketing Assets.
             </p>
             <p className="text-[11px] md:text-xs max-w-2xl mx-auto leading-relaxed whitespace-pre-line" style={{ color: '#6B6B6B' }}>
-              <strong className="text-foreground">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong>{"\n"}RTA Studio는 15개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여{"\n"}숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.
+              <strong className="text-foreground">고객의 생생한 목소리에서 마케팅의 해답을 찾습니다.</strong>{"\n"}RTA Studio는 18개국, 43개+ 채널의 실사용자 리뷰를 통합 분석하여{"\n"}숨겨진 인사이트를 발견하고, 즉시 활용 가능한 마케팅 에셋을 제공하는 올인원 플랫폼입니다.
             </p>
             {stats && (
               <div className="flex items-center justify-center gap-2 mt-5">
@@ -249,7 +249,7 @@ const Index = () => {
           <PageHeader
             icon={LayoutDashboard}
             title="📊 Main Overview"
-            description="15개국, 43개+ 채널에서 수집된 실사용자 리뷰를 플랫폼·국가별로 통합 분석합니다. 트렌딩 제품, 감성 변화, 주간 마케팅 액션 아이템을 한눈에 확인하세요."
+            description="18개국, 43개+ 채널에서 수집된 실사용자 리뷰를 플랫폼·국가별로 통합 분석합니다. 트렌딩 제품, 감성 변화, 주간 마케팅 액션 아이템을 한눈에 확인하세요."
           />
           <DataStatusBar />
           <TrendingDashboard onProductClick={(m) => handleSearch(m)} country={selectedCountry} />
