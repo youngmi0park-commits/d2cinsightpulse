@@ -281,8 +281,8 @@ Deno.serve(async (req) => {
         );
       }
       return new Response(
-        JSON.stringify({ error: "AI_GATEWAY_ERROR", status: aiResponse.status }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "AI_GATEWAY_ERROR", status: aiResponse.status, message: "AI 게이트웨이 일시 오류입니다. 잠시 후 다시 시도해주세요." }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
