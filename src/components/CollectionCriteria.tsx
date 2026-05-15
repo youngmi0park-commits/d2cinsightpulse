@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategicBadge } from "@/components/StrategicBadge";
+import { STRATEGIC_COUNTRIES, isStrategicCountry } from "@/lib/strategicCountries";
 
 interface CriteriaItem {
   icon: typeof Database;
