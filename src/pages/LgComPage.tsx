@@ -13,20 +13,25 @@ import { StrategicBadge } from "@/components/StrategicBadge";
 // labelEn = LGE 법인 코드 (RIS Subsidiary List 표준)
 const BV_COUNTRIES = [
   { value: "all", label: "전체",   labelEn: "All",    flag: "🌐" },
+  // 북미
   { value: "US",  label: "미국",   labelEn: "LGEUS",  flag: "🇺🇸" },
+  { value: "CA",  label: "캐나다", labelEn: "LGECI",  flag: "🇨🇦" },
+  // 유럽
   { value: "UK",  label: "영국",   labelEn: "LGEUK",  flag: "🇬🇧" },
   { value: "DE",  label: "독일",   labelEn: "LGEDE",  flag: "🇩🇪" },
   { value: "ES",  label: "스페인", labelEn: "LGEES",  flag: "🇪🇸" },
+  // 중남미
+  { value: "BR",  label: "브라질", labelEn: "LGESP",  flag: "🇧🇷" },
+  { value: "MX",  label: "멕시코", labelEn: "LGEMS",  flag: "🇲🇽" },
+  { value: "PE",  label: "페루",   labelEn: "LGEPR",  flag: "🇵🇪" },
+  // 아시아·오세아니아
   { value: "AU",  label: "호주",   labelEn: "LGEAP",  flag: "🇦🇺" },
   { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
   { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
   { value: "JP",  label: "일본",   labelEn: "LGEJP",  flag: "🇯🇵" },
   { value: "TH",  label: "태국",   labelEn: "LGETH",  flag: "🇹🇭" },
-  { value: "BR",  label: "브라질", labelEn: "LGESP",  flag: "🇧🇷" },
-  { value: "MX",  label: "멕시코", labelEn: "LGEMS",  flag: "🇲🇽" },
-  { value: "PE",  label: "페루",   labelEn: "LGEPR",  flag: "🇵🇪" },
+  // 중동·아프리카
   { value: "SA",  label: "사우디", labelEn: "LGESJ",  flag: "🇸🇦" },
-  { value: "CA",  label: "캐나다", labelEn: "LGECI",  flag: "🇨🇦" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
