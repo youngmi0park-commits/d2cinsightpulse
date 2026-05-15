@@ -2,6 +2,7 @@ import { Globe, Database } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useCountryCounts } from "@/hooks/useProductData";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StrategicBadge } from "@/components/StrategicBadge";
 
 export interface CountryFilter {
   country: string;
@@ -41,6 +42,12 @@ const ALL_COUNTRIES: {
     sources: ["Amazon BR", "YouTube BR"] },
   { value: "MX", label: "LGEMS", flag: "🇲🇽", nameKo: "멕시코", nameEn: "Mexico", group: "americas",
     sources: ["Amazon MX", "YouTube MX"] },
+  { value: "ES", label: "LGEES", flag: "🇪🇸", nameKo: "스페인", nameEn: "Spain", group: "americas",
+    sources: ["LG.com ES", "Amazon ES", "YouTube ES"] },
+  { value: "PE", label: "LGEPR", flag: "🇵🇪", nameKo: "페루", nameEn: "Peru", group: "americas",
+    sources: ["LG.com PE", "YouTube PE"] },
+  { value: "SA", label: "LGESJ", flag: "🇸🇦", nameKo: "사우디", nameEn: "Saudi Arabia", group: "asia",
+    sources: ["YouTube SA", "Amazon SA"] },
   // Asia
   { value: "JP", label: "LGEJP", flag: "🇯🇵", nameKo: "일본", nameEn: "Japan", group: "asia",
     sources: ["Amazon JP", "YouTube JP", "Reviews.io"] },
@@ -180,7 +187,10 @@ export function CountryFilterBar({ selected, onChange, customCounts }: CountryFi
                             : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                         }`}
                       >
-                        {c.flag} {c.label}
+                        <span className="inline-flex items-center gap-1">
+                          {c.flag} {c.label}
+                          <StrategicBadge iso={c.value} />
+                        </span>
                         {count > 0 && (
                           <span className="ml-1 text-[9px] opacity-70">{count.toLocaleString()}</span>
                         )}
@@ -219,7 +229,10 @@ export function CountryFilterBar({ selected, onChange, customCounts }: CountryFi
                             : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                         }`}
                       >
-                        {c.flag} {c.label}
+                        <span className="inline-flex items-center gap-1">
+                          {c.flag} {c.label}
+                          <StrategicBadge iso={c.value} />
+                        </span>
                         {count > 0 && (
                           <span className="ml-1 text-[9px] opacity-70">{count.toLocaleString()}</span>
                         )}
