@@ -50,7 +50,7 @@ const ISO_TO_LGE: Record<string, string> = {
   US: "LGEUS", UK: "LGEUK", CA: "LGECI", DE: "LGEDE", FR: "LGEFS", AU: "LGEAP",
   BR: "LGESP", MX: "LGEMS", JP: "LGEJP", SG: "LGESL", MY: "LGEML", TH: "LGETH",
   PH: "LGEPH", ID: "LGEIN", VN: "LGEVN", TW: "LGETT", HK: "LGEHK", IN: "LGEIL",
-  NL: "LGEBN",
+  NL: "LGEBN", GB: "LGEUK",
 };
 
 /* ── 법인코드 → 국기 ── */
@@ -59,6 +59,8 @@ const LGE_FLAGS: Record<string, string> = {
   LGESP: "🇧🇷", LGEMS: "🇲🇽", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGETH: "🇹🇭",
   LGEPH: "🇵🇭", LGEIN: "🇮🇩", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
   LGEBN: "🇳🇱", Global: "🌍",
+  // 신규 커뮤니티 국가 (LGE 법인 코드 미보유 → ISO 코드 직접 키로 사용)
+  ES: "🇪🇸", PE: "🇵🇪", SA: "🇸🇦", AE: "🇦🇪", TR: "🇹🇷", IT: "🇮🇹",
 };
 
 /** ISO2 코드를 LGE 법인 코드로 변환 (Global은 그대로 유지) */
@@ -76,6 +78,8 @@ function sourceLabel(source: string): string {
   if (source.startsWith("shopee")) return "Shopee";
   if (source.startsWith("lazada")) return "Lazada";
   if (source.startsWith("trustpilot")) return "Trustpilot";
+  if (source.startsWith("reviews_io")) return "Reviews.io";
+  if (source.startsWith("mercadolibre")) return "MercadoLibre";
   if (source.startsWith("web_review")) return "Web Reviews";
   return source.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -269,6 +273,14 @@ const SOURCE_COUNTRY: Record<string, string> = {
   consumeraffairs: "US", consumer_reports: "US", bestreviews: "US", houzz: "US",
   web_review: "US", web_review_jp: "JP", web_review_th: "TH", web_review_in: "IN",
   web_review_sg: "SG", web_review_id: "ID", web_review_vn: "VN", web_review_hk: "HK", web_review_tw: "TW",
+  web_review_my: "MY", web_review_ph: "PH", web_review_ca: "CA", web_review_mx: "MX",
+  web_review_es: "ES", web_review_sa: "SA", web_review_pe: "PE", web_review_ae: "AE",
+  web_review_tr: "TR", web_review_it: "IT", web_review_nl: "NL", web_review_gb: "UK",
+  web_review_fr: "FR", web_review_de: "DE", web_review_au: "AU", web_review_uk: "UK",
+  shopee_sg: "SG", shopee_my: "MY", shopee_th: "TH", shopee_ph: "PH", shopee_id: "ID", shopee_vn: "VN", shopee_tw: "TW",
+  lazada_sg: "SG", lazada_my: "MY", lazada_th: "TH", lazada_ph: "PH", lazada_id: "ID", lazada_vn: "VN",
+  amazon_es: "ES", amazon_it: "IT", amazon_nl: "NL", amazon_ae: "AE", amazon_tr: "TR",
+  reviews_io: "Global", mercadolibre_mx: "MX", mercadolibre_br: "BR",
   trusted_reviews: "UK",
   trustpilot: "Global", rtings: "Global", pcmag: "Global", cnet: "Global",
   techradar: "Global", notebookcheck: "Global", lemon8: "Global",
@@ -281,7 +293,7 @@ function inferCountryFromSource(source: string): string {
   const m = source.match(/_([a-z]{2})$/i);
   if (m) {
     const code = m[1].toUpperCase();
-    const valid = ["US","UK","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN"];
+    const valid = ["US","UK","GB","CA","DE","FR","AU","BR","MX","JP","SG","MY","TH","PH","ID","VN","TW","HK","IN","ES","PE","SA","AE","TR","IT","NL"];
     if (valid.includes(code)) return code;
   }
   // Known US-centric channels without country suffix
