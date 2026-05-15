@@ -1565,7 +1565,7 @@ export const CollectionCriteria = () => {
                   isGlobal: true,
                 });
               }
-              countryData.sort((a, b) => b.totalCount - a.totalCount);
+              countryData.sort((a, b) => regionRank(a.iso) - regionRank(b.iso));
               // ✅ Exclude "Other" so totals match the header and detail table footer
               const globalTotal = Object.entries(countryCounts)
                 .filter(([k]) => k !== "Other")
@@ -1653,7 +1653,7 @@ export const CollectionCriteria = () => {
                 const communityCount = Math.max(totalCount - bvCount, 0);
                 return { iso, totalCount, bvCount, communityCount };
               });
-              stratData.sort((a, b) => b.totalCount - a.totalCount);
+              stratData.sort((a, b) => regionRank(a.iso) - regionRank(b.iso));
               const stratTotal = stratData.reduce((s, d) => s + d.totalCount, 0);
               const stratBV = stratData.reduce((s, d) => s + d.bvCount, 0);
               const collectedCountries = stratData.filter(d => d.totalCount > 0).length;
