@@ -2,7 +2,7 @@ import { Globe, Database } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useCountryCounts } from "@/hooks/useProductData";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { StrategicBadge } from "@/components/StrategicBadge";
+
 
 export interface CountryFilter {
   country: string;
@@ -189,7 +189,6 @@ export function CountryFilterBar({ selected, onChange, customCounts }: CountryFi
                       >
                         <span className="inline-flex items-center gap-1">
                           {c.flag} {c.label}
-                          <StrategicBadge iso={c.value} />
                         </span>
                         {count > 0 && (
                           <span className="ml-1 text-[9px] opacity-70">{count.toLocaleString()}</span>
@@ -231,7 +230,6 @@ export function CountryFilterBar({ selected, onChange, customCounts }: CountryFi
                       >
                         <span className="inline-flex items-center gap-1">
                           {c.flag} {c.label}
-                          <StrategicBadge iso={c.value} />
                         </span>
                         {count > 0 && (
                           <span className="ml-1 text-[9px] opacity-70">{count.toLocaleString()}</span>

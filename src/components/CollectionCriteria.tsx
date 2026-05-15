@@ -2,7 +2,7 @@ import { Database, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, 
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
-import { StrategicBadge } from "@/components/StrategicBadge";
+
 import { STRATEGIC_COUNTRIES } from "@/lib/strategicCountries";
 
 interface CriteriaItem {
@@ -1284,7 +1284,6 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                 >
                   <span className="inline-flex items-center gap-1">
                     {row.flag} {COUNTRY_KO_NAME[c] || c}
-                    <StrategicBadge iso={c} />
                   </span>
                 </button>
               );
@@ -1370,7 +1369,6 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                           <div className="flex flex-col items-start gap-0.5">
                             <span className="text-sm leading-tight inline-flex items-center gap-1 flex-wrap">
                               {row.flag} {COUNTRY_KO_NAME[country] || country}
-                              <StrategicBadge iso={country} />
                             </span>
                             <span className="text-[9px] text-muted-foreground font-normal" style={{ wordBreak: "keep-all" }}>
                               ({country})
@@ -1526,7 +1524,7 @@ export const CollectionCriteria = () => {
           <div className="flex border-b border-primary/10 px-3 pt-2 gap-1">
             {([
               { key: "country" as const, label: t("By Country", "국가별"), icon: "🌏" },
-              { key: "strategic" as const, label: t("By Strategic Review Country", "리뷰 전략국가별"), icon: "⭐" },
+              { key: "strategic" as const, label: t("By Bazaarvoice Collection", "바자보이스 수집별"), icon: "🛒" },
               { key: "category" as const, label: t("By Category", "카테고리별"), icon: "📦" },
               { key: "channel" as const, label: t("By Collection Channel", "수집채널별"), icon: "📡" },
             ]).map((tab) => (
@@ -1582,7 +1580,6 @@ export const CollectionCriteria = () => {
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-[10px] inline-flex items-center gap-1">
                               {isGlobal ? `🌐 ${t("Global", "글로벌")}` : `${LGE_FLAGS[lgeCode] || "🔹"} ${t(COUNTRY_EN_NAME[iso] || iso, COUNTRY_KO_NAME[iso] || iso)}`}
-                              {!isGlobal && <StrategicBadge iso={iso} />}
                             </span>
                             <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
@@ -1686,7 +1683,6 @@ export const CollectionCriteria = () => {
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-[10px] inline-flex items-center gap-1">
                               {STRAT_FLAGS[iso] || "🔹"} {t(STRAT_EN[iso] || iso, STRAT_KO[iso] || iso)}
-                              <StrategicBadge iso={iso} />
                             </span>
                             <span className={`text-[10px] font-bold ${isPending ? "text-muted-foreground" : "text-foreground"}`}>
                               {isPending ? t("pending", "준비중") : totalCount.toLocaleString()}
