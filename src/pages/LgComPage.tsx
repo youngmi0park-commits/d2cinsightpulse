@@ -25,6 +25,7 @@ const BV_COUNTRIES = [
   { value: "BR",  label: "브라질", labelEn: "LGESP",  flag: "🇧🇷" },
   { value: "MX",  label: "멕시코", labelEn: "LGEMS",  flag: "🇲🇽" },
   { value: "PE",  label: "페루",   labelEn: "LGEPR",  flag: "🇵🇪" },
+  { value: "SA",  label: "사우디", labelEn: "LGESJ",  flag: "🇸🇦" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
@@ -40,6 +41,7 @@ const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
   BR: ["lge_com_br"],
   MX: ["lge_com_mx"],
   PE: ["lge_com_pe"],
+  SA: ["lge_com_sa"],
 };
 
 /* ── Country Stats Cards ── */
