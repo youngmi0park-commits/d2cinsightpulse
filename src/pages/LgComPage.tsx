@@ -81,9 +81,9 @@ function CountryStatsGrid({
 
   if (isLoading) {
     return (
-      <div className="flex gap-1.5">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="flex-1 h-16 rounded-lg bg-secondary/50 animate-pulse" />
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5">
+        {Array.from({ length: 16 }).map((_, i) => (
+          <div key={i} className="h-16 rounded-lg bg-secondary/50 animate-pulse" />
         ))}
       </div>
     );
@@ -92,11 +92,11 @@ function CountryStatsGrid({
   const countMap = new Map(data?.map((c) => [c.country, Number(c.count)]) || []);
 
   return (
-    <div className="flex gap-1.5 overflow-x-auto">
+    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5">
       {/* All card */}
       <button
         onClick={() => onSelect("all")}
-        className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
+        className={`min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
           selectedCountry === "all"
             ? "border-primary bg-primary/5 shadow-sm"
             : "border-border bg-card hover:border-primary/40"
@@ -117,7 +117,7 @@ function CountryStatsGrid({
           <button
             key={c.value}
             onClick={() => onSelect(c.value)}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
+            className={`min-w-0 flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 px-1.5 py-1.5 transition-all hover:shadow-md ${
               isActive
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border bg-card hover:border-primary/40"
