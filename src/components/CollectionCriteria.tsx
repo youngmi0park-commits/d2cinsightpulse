@@ -1155,6 +1155,7 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   JP: "일본", TW: "대만", TH: "태국", SG: "싱가포르", VN: "베트남",
   ID: "인도네시아", HK: "홍콩", PH: "필리핀", MY: "말레이시아",
   CA: "캐나다", BR: "브라질", MX: "멕시코", FR: "프랑스",
+  ES: "스페인", PE: "페루", SA: "사우디",
   Global: "글로벌", Other: "기타",
 };
 
@@ -1163,6 +1164,7 @@ const COUNTRY_EN_NAME: Record<string, string> = {
   JP: "Japan", TW: "Taiwan", TH: "Thailand", SG: "Singapore", VN: "Vietnam",
   ID: "Indonesia", HK: "Hong Kong", PH: "Philippines", MY: "Malaysia",
   CA: "Canada", BR: "Brazil", MX: "Mexico", FR: "France",
+  ES: "Spain", PE: "Peru", SA: "Saudi Arabia",
   Global: "Global", Other: "Other",
 };
 
