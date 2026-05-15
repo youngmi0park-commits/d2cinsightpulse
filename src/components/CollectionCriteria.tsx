@@ -472,7 +472,7 @@ const criteria: CriteriaItem[] = [
       "💬 Lemon8 · Quora · Stack Exchange · Google Reviews · LG Community — Social/community signals",
     ],
     itemsKo: [
-      "🏢 lg.com (Bazaarvoice API) — 공식 D2C 리뷰 · 9개국 (US, UK, DE, AU, IN, JP, TW, TH, BR)",
+      "🏢 lg.com (Bazaarvoice API) — 공식 D2C 리뷰 · 15개국 (US, UK, DE, AU, IN, JP, TW, TH, BR, ES, MX, PE, SA, CA, VN)",
       "🟠 Reddit — 1개 플랫폼 · 서브레딧 (r/OLED, r/hometheater, r/4kTV, r/soundbars, r/Appliances, r/BuyItForLife, r/HVAC, r/AirPurifiers, r/LGgram, r/ultrawidemasterrace, r/buildapc, r/monitors, r/LG_UserHub, r/StanbyME)",
       "🔴 YouTube — 1개 플랫폼 · 리뷰/언박싱 영상 댓글 · 13개국 채널",
       "🟧 Amazon — Verified Purchase 리뷰 (US, UK, DE, IN, JP, CA, FR, SG, 글로벌)",
@@ -506,7 +506,7 @@ const criteria: CriteriaItem[] = [
       "📦 Collect 단계: 50개 제품/배치, 우선순위 — 냉장고/세탁기/건조기 → 식기세척기/청소기/에어컨 → 주방가전 → 기타 → TV(후순위)",
       "🔄 Sweep 단계: 매일 BV 전체 제품 카탈로그 스캔, 신규 리뷰 감지 시 완료 제품도 자동 재오픈",
       "🆕 Sync 단계: 최근 25시간 내 작성된 리뷰 증분 동기화 — 매일 신규 리뷰 누락 없이 수집",
-      "🌐 LG.com Bazaarvoice API: 9개국 (US, UK, IN, TW, JP, TH, DE, AU, BR) — 작성시점 제한 없음, 전 카테고리, 과거 리뷰 전량 수집",
+      "🌐 LG.com Bazaarvoice API: 15개국 (US, UK, IN, TW, JP, TH, DE, AU, BR, ES, MX, PE, SA, CA, VN) — 작성시점 제한 없음, 전 카테고리, 과거 리뷰 전량 수집",
       "📦 collect-reviews (Reddit/Amazon/BestBuy 등) 07:00 KST → collect-youtube-comments 07:05 KST 후속 실행",
       "🆕 collect-asian-reviews 07:10 KST 실행 → Shopee/Lazada/Reviews.io/ComplaintsBoard Firecrawl 기반 스크래핑",
       "트렌딩 대시보드는 수집 완료 직후 자동 갱신 (수집 주기 = 대시보드 갱신 주기)",
@@ -1823,7 +1823,7 @@ export const CollectionCriteria = () => {
           </div>
 
           <p className="text-[9px] text-muted-foreground px-3 pb-2">
-            {t("Source: Bazaarvoice API (Prod) · 9 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 9개국 · 전 카테고리 · 작성시점 제한 없음")}
+            {t("Source: Bazaarvoice API (Prod) · 15 countries · All categories · No date limit", "출처: Bazaarvoice API (운영 서버) · 15개국 · 전 카테고리 · 작성시점 제한 없음")}
           </p>
         </section>
 
