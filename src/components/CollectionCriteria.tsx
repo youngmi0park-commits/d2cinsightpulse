@@ -1425,7 +1425,7 @@ export const CollectionCriteria = () => {
   const countryCounts = useAllCountryCounts();
   const categoryCounts = useCategoryCounts();
   const [showAllCriteria, setShowAllCriteria] = useState(false);
-  const [statusTab, setStatusTab] = useState<"country" | "category" | "channel">("country");
+  const [statusTab, setStatusTab] = useState<"country" | "strategic" | "category" | "channel">("country");
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
