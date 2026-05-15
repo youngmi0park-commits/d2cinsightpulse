@@ -633,13 +633,16 @@ export type Database = {
         Row: {
           author: string | null
           collected_at: string
+          cons: string[] | null
           content: string
           content_type: string | null
           emotion_category: string | null
           emotion_intensity: number | null
           external_id: string | null
           has_media: boolean
+          helpful_votes: number | null
           id: string
+          is_recommended: boolean | null
           media_analysis_status: string
           media_type: string
           media_urls: string[] | null
@@ -647,9 +650,11 @@ export type Database = {
           multimodal_analyzed_at: string | null
           platform_type: string | null
           product_id: string
+          pros: string[] | null
           published_at: string | null
           rating: number | null
           review_type: string | null
+          secondary_ratings: Json | null
           sentiment: string | null
           sentiment_score: number | null
           source: string
@@ -660,13 +665,16 @@ export type Database = {
         Insert: {
           author?: string | null
           collected_at?: string
+          cons?: string[] | null
           content: string
           content_type?: string | null
           emotion_category?: string | null
           emotion_intensity?: number | null
           external_id?: string | null
           has_media?: boolean
+          helpful_votes?: number | null
           id?: string
+          is_recommended?: boolean | null
           media_analysis_status?: string
           media_type?: string
           media_urls?: string[] | null
@@ -674,9 +682,11 @@ export type Database = {
           multimodal_analyzed_at?: string | null
           platform_type?: string | null
           product_id: string
+          pros?: string[] | null
           published_at?: string | null
           rating?: number | null
           review_type?: string | null
+          secondary_ratings?: Json | null
           sentiment?: string | null
           sentiment_score?: number | null
           source: string
@@ -687,13 +697,16 @@ export type Database = {
         Update: {
           author?: string | null
           collected_at?: string
+          cons?: string[] | null
           content?: string
           content_type?: string | null
           emotion_category?: string | null
           emotion_intensity?: number | null
           external_id?: string | null
           has_media?: boolean
+          helpful_votes?: number | null
           id?: string
+          is_recommended?: boolean | null
           media_analysis_status?: string
           media_type?: string
           media_urls?: string[] | null
@@ -701,9 +714,11 @@ export type Database = {
           multimodal_analyzed_at?: string | null
           platform_type?: string | null
           product_id?: string
+          pros?: string[] | null
           published_at?: string | null
           rating?: number | null
           review_type?: string | null
+          secondary_ratings?: Json | null
           sentiment?: string | null
           sentiment_score?: number | null
           source?: string
