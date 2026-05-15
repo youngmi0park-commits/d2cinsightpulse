@@ -158,7 +158,7 @@ const LgComPage = () => {
         title="🏬 LG.com 인사이트 리포트"
         description={t(
           "Analyze customer reviews from 9 LG.com regions. Select a country, search products, and generate marketing assets.",
-          "LG.com 9개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
+          "LG.com 15개국 리뷰를 분석하고 마케팅 에셋을 생성하세요. 국가를 선택하고 제품을 검색하세요."
         )}
       />
 
