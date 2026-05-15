@@ -19,6 +19,7 @@ const ALL_LOCALES = [
   { locale: "es_ES", region: "es", keyName: "BAZAARVOICE_ES_API_KEY" },
   { locale: "es_MX", region: "mx", keyName: "BAZAARVOICE_MX_API_KEY" },
   { locale: "es_PE", region: "pe", keyName: "BAZAARVOICE_PE_API_KEY" },
+  { locale: "ar_SA", region: "sa", keyName: "BAZAARVOICE_SA_API_KEY" },
 ];
 
 const BV_BASE = "https://api.bazaarvoice.com/data";
