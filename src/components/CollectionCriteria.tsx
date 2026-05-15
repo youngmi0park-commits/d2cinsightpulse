@@ -2,6 +2,7 @@ import { Database, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, 
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { StrategicBadge } from "@/components/StrategicBadge";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -162,13 +163,14 @@ const ISO_TO_LGE: Record<string, string> = {
   US: "LGEUS", UK: "LGEUK", DE: "LGEDE", AU: "LGEAP", IN: "LGEIL",
   TH: "LGETH", TW: "LGETT", JP: "LGEJP", SG: "LGESL", MY: "LGEML",
   ID: "LGEIN", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
-  BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
+  BR: "LGESP", MX: "LGEMS", FR: "LGEFS", ES: "LGEES", PE: "LGEPR", SA: "LGESJ",
 };
 
 const LGE_FLAGS: Record<string, string> = {
   LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIN: "🇮🇩",
   LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
   LGEDE: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
+  LGEES: "🇪🇸", LGEPR: "🇵🇪", LGESJ: "🇸🇦",
   Global: "🌐", Other: "🔹",
 };
 
@@ -1153,6 +1155,7 @@ const COUNTRY_KO_NAME: Record<string, string> = {
   JP: "일본", TW: "대만", TH: "태국", SG: "싱가포르", VN: "베트남",
   ID: "인도네시아", HK: "홍콩", PH: "필리핀", MY: "말레이시아",
   CA: "캐나다", BR: "브라질", MX: "멕시코", FR: "프랑스",
+  ES: "스페인", PE: "페루", SA: "사우디",
   Global: "글로벌", Other: "기타",
 };
 
@@ -1161,6 +1164,7 @@ const COUNTRY_EN_NAME: Record<string, string> = {
   JP: "Japan", TW: "Taiwan", TH: "Thailand", SG: "Singapore", VN: "Vietnam",
   ID: "Indonesia", HK: "Hong Kong", PH: "Philippines", MY: "Malaysia",
   CA: "Canada", BR: "Brazil", MX: "Mexico", FR: "France",
+  ES: "Spain", PE: "Peru", SA: "Saudi Arabia",
   Global: "Global", Other: "Other",
 };
 
@@ -1259,7 +1263,10 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                     filterCountry === c ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {row.flag} {COUNTRY_KO_NAME[c] || c}
+                  <span className="inline-flex items-center gap-1">
+                    {row.flag} {COUNTRY_KO_NAME[c] || c}
+                    <StrategicBadge iso={c} />
+                  </span>
                 </button>
               );
             })}
@@ -1340,8 +1347,9 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                           onClick={() => setExpandedCountry(expandedCountry === country ? null : country)}
                         >
                           <div className="flex flex-col items-start gap-0.5">
-                            <span className="text-sm leading-tight">
+                            <span className="text-sm leading-tight inline-flex items-center gap-1 flex-wrap">
                               {row.flag} {COUNTRY_KO_NAME[country] || country}
+                              <StrategicBadge iso={country} />
                             </span>
                             <span className="text-[9px] text-muted-foreground font-normal" style={{ wordBreak: "keep-all" }}>
                               ({country})
@@ -1550,7 +1558,10 @@ export const CollectionCriteria = () => {
                       return (
                         <div key={iso} className="rounded border border-border bg-background/60 px-2 py-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-[10px]">{isGlobal ? `🌐 ${t("Global", "글로벌")}` : `${LGE_FLAGS[lgeCode] || "🔹"} ${t(COUNTRY_EN_NAME[iso] || iso, COUNTRY_KO_NAME[iso] || iso)}`}</span>
+                            <span className="font-semibold text-[10px] inline-flex items-center gap-1">
+                              {isGlobal ? `🌐 ${t("Global", "글로벌")}` : `${LGE_FLAGS[lgeCode] || "🔹"} ${t(COUNTRY_EN_NAME[iso] || iso, COUNTRY_KO_NAME[iso] || iso)}`}
+                              {!isGlobal && <StrategicBadge iso={iso} />}
+                            </span>
                             <span className="text-[10px] font-bold text-foreground">{totalCount.toLocaleString()}</span>
                           </div>
                           {/* Stacked bar: BV (primary) + Community (teal) */}
