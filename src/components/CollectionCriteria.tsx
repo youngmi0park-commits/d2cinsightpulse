@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { StrategicBadge } from "@/components/StrategicBadge";
+import { STRATEGIC_COUNTRIES } from "@/lib/strategicCountries";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -1424,7 +1425,7 @@ export const CollectionCriteria = () => {
   const countryCounts = useAllCountryCounts();
   const categoryCounts = useCategoryCounts();
   const [showAllCriteria, setShowAllCriteria] = useState(false);
-  const [statusTab, setStatusTab] = useState<"country" | "category" | "channel">("country");
+  const [statusTab, setStatusTab] = useState<"country" | "strategic" | "category" | "channel">("country");
 
   // Countries with actual data
   const activeCountries = Object.entries(countryCounts)
@@ -1505,6 +1506,7 @@ export const CollectionCriteria = () => {
           <div className="flex border-b border-primary/10 px-3 pt-2 gap-1">
             {([
               { key: "country" as const, label: t("By Country", "국가별"), icon: "🌏" },
+              { key: "strategic" as const, label: t("Strategic Countries", "전략국가별"), icon: "⭐" },
               { key: "category" as const, label: t("By Category", "카테고리별"), icon: "📦" },
               { key: "channel" as const, label: t("By Collection Channel", "수집채널별"), icon: "📡" },
             ]).map((tab) => (
@@ -1604,6 +1606,106 @@ export const CollectionCriteria = () => {
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-teal-500" /> {t("Community (Reddit · Amazon · YouTube etc.)", "커뮤니티 (Reddit·Amazon·YouTube 등)")}</span>
                     <span className="ml-auto font-semibold">{t("Cumulative total:", "누적 총계:")} <span className="text-primary font-bold">{globalTotal.toLocaleString()}</span>{t("", "건")}</span>
                   </div>
+                </div>
+              );
+            })()}
+
+            {/* ── 전략국가별 (Strategic 12 countries) ── */}
+            {statusTab === "strategic" && (() => {
+              const STRAT_KO: Record<string, string> = {
+                US: "미국", CA: "캐나다", DE: "독일", ES: "스페인", UK: "영국",
+                BR: "브라질", MX: "멕시코", PE: "페루", SA: "사우디아라비아",
+                AU: "호주", TH: "태국", VN: "베트남",
+              };
+              const STRAT_EN: Record<string, string> = {
+                US: "USA", CA: "Canada", DE: "Germany", ES: "Spain", UK: "UK",
+                BR: "Brazil", MX: "Mexico", PE: "Peru", SA: "Saudi Arabia",
+                AU: "Australia", TH: "Thailand", VN: "Vietnam",
+              };
+              const STRAT_FLAGS: Record<string, string> = {
+                US: "🇺🇸", CA: "🇨🇦", DE: "🇩🇪", ES: "🇪🇸", UK: "🇬🇧",
+                BR: "🇧🇷", MX: "🇲🇽", PE: "🇵🇪", SA: "🇸🇦",
+                AU: "🇦🇺", TH: "🇹🇭", VN: "🇻🇳",
+              };
+              const stratData = (STRATEGIC_COUNTRIES as readonly string[]).map((iso) => {
+                const totalCount = countryCounts[iso] || 0;
+                const bvCount = lgComCounts[iso] || 0;
+                const communityCount = Math.max(totalCount - bvCount, 0);
+                return { iso, totalCount, bvCount, communityCount };
+              });
+              stratData.sort((a, b) => b.totalCount - a.totalCount);
+              const stratTotal = stratData.reduce((s, d) => s + d.totalCount, 0);
+              const stratBV = stratData.reduce((s, d) => s + d.bvCount, 0);
+              const collectedCountries = stratData.filter(d => d.totalCount > 0).length;
+              const maxCount = Math.max(1, ...stratData.map(d => d.totalCount));
+
+              return (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3 text-[10px] px-1">
+                    <span className="font-semibold inline-flex items-center gap-1">
+                      ⭐ {t("Strategic Markets", "리뷰 전략국가")}
+                      <span className="text-primary font-bold">{collectedCountries}/{STRATEGIC_COUNTRIES.length}</span>
+                      <span className="text-muted-foreground">{t("countries collected", "수집 완료")}</span>
+                    </span>
+                    <span className="text-muted-foreground">📊 {t("Total", "총")} <span className="text-foreground font-bold">{stratTotal.toLocaleString()}</span></span>
+                    <span className="text-muted-foreground">🏪 BV <span className="text-foreground font-bold">{stratBV.toLocaleString()}</span></span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {stratData.map(({ iso, totalCount, bvCount, communityCount }) => {
+                      const isPending = totalCount === 0;
+                      return (
+                        <div
+                          key={iso}
+                          className={`rounded border px-2 py-1.5 ${
+                            isPending
+                              ? "border-dashed border-amber-500/40 bg-amber-500/5"
+                              : "border-amber-500/30 bg-amber-500/[0.03]"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-[10px] inline-flex items-center gap-1">
+                              {STRAT_FLAGS[iso] || "🔹"} {t(STRAT_EN[iso] || iso, STRAT_KO[iso] || iso)}
+                              <StrategicBadge iso={iso} />
+                            </span>
+                            <span className={`text-[10px] font-bold ${isPending ? "text-muted-foreground" : "text-foreground"}`}>
+                              {isPending ? t("pending", "준비중") : totalCount.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-muted overflow-hidden my-0.5 flex">
+                            {bvCount > 0 && (
+                              <div className="h-full bg-primary transition-all" style={{ width: `${(bvCount / maxCount) * 100}%` }} title={`BV ${bvCount.toLocaleString()}`} />
+                            )}
+                            {communityCount > 0 && (
+                              <div className="h-full bg-teal-500 transition-all" style={{ width: `${(communityCount / maxCount) * 100}%` }} title={`${t("Community", "커뮤니티")} ${communityCount.toLocaleString()}`} />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[8px] text-muted-foreground">
+                            {bvCount > 0 && (
+                              <span className="flex items-center gap-0.5">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />BV {bvCount.toLocaleString()}
+                              </span>
+                            )}
+                            {communityCount > 0 && (
+                              <span className="flex items-center gap-0.5">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />{t("Community", "커뮤니티")} {communityCount.toLocaleString()}
+                              </span>
+                            )}
+                            {isPending && (
+                              <span className="text-amber-600 font-medium">{t("Setup in progress", "수집 준비중")}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[9px] text-muted-foreground text-right">
+                    {t(
+                      `12 strategic markets defined for review collection · ${collectedCountries} active`,
+                      `리뷰 수집 전략국가 12개국 · 현재 ${collectedCountries}개국 수집 중`
+                    )}
+                  </p>
                 </div>
               );
             })()}
