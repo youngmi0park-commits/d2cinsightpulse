@@ -89,12 +89,12 @@ export const getLgComSentimentSummary = (
  * (or has no usable text). PII-clean LG.com 리뷰가 한 건이라도 있으면 false → 원문 노출 허용.
  */
 export const isAllPrivacyRestricted = (
-  reviews: { source?: string; content?: string | null; title?: string | null }[]
+  reviews: { source?: string; content?: string | null; text?: string | null; title?: string | null }[]
 ): boolean => {
   if (reviews.length === 0) return false;
   return reviews.every((r) => {
     if (!isPrivacyRestricted(r.source)) return false;
-    const text = `${r.title ?? ""} ${r.content ?? ""}`.trim();
+    const text = `${r.title ?? ""} ${r.content ?? r.text ?? ""}`.trim();
     if (!text) return true;
     return containsPII(text);
   });
