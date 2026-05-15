@@ -1,4 +1,7 @@
-/** Sources whose full text must never be displayed */
+/**
+ * Sources that REQUIRE PII screening before display.
+ * Note (정책 업데이트): 원문 자체를 무조건 숨기지 않는다. PII가 없으면 마스킹된 원문을 그대로 노출한다.
+ */
 export const PRIVACY_RESTRICTED_SOURCES = [
   "lgcom",
   "lg.com",
@@ -9,7 +12,7 @@ export const PRIVACY_RESTRICTED_SOURCES = [
 
 export type ReviewSource = (typeof PRIVACY_RESTRICTED_SOURCES)[number] | string;
 
-/** Returns true if this source hides review text */
+/** Returns true if this source requires PII screening (LG.com / Bazaarvoice). */
 export const isPrivacyRestricted = (source: string | undefined | null): boolean => {
   if (!source) return false;
   const normalized = source.toLowerCase().replace(/[\s._-]/g, "");
@@ -32,14 +35,38 @@ export const isPrivacyPlaceholder = (text: string | null | undefined): boolean =
   );
 };
 
-/** Sanitized review text — returns null if restricted */
+/**
+ * PII detector — returns true if raw text still contains 개인 특정 가능 정보.
+ * 사용처: 리뷰 원문을 분석 인사이트에 노출할지 판단.
+ */
+export const containsPII = (text: string | null | undefined): boolean => {
+  if (!text) return false;
+  const s = text;
+  if (/[\w.+-]+@[\w-]+\.[\w.-]+/.test(s)) return true;                   // email
+  if (/\bhttps?:\/\/\S+|\bwww\.[\w.-]+/i.test(s)) return true;           // URL
+  if (/\+?\d{1,3}[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/.test(s)) return true; // phone
+  if (/\b\d{3}[\s.-]\d{3,4}[\s.-]\d{4}\b/.test(s)) return true;          // phone alt
+  if (/\b\d{1,6}\s+[A-Z][a-zA-Z]+\s+(St|Street|Ave|Avenue|Rd|Road|Blvd|Ln|Lane|Dr|Drive|Way|Ct|Pl)\b/.test(s)) return true; // address
+  if (/\b(serial|s\/n|order|invoice|case|ticket)\s*[#:]?\s*[A-Z0-9-]{4,}/i.test(s)) return true;
+  if (/\bmy name is\s+[A-Z][a-zA-Z]+/i.test(s)) return true;
+  if (/\b\d{10,}\b/.test(s)) return true;                                 // long IDs
+  return false;
+};
+
+/**
+ * 분석/UI에 노출할 리뷰 본문을 반환.
+ * - placeholder면 null
+ * - PII가 없는 경우: 원문 그대로 노출 (LG.com 포함)
+ * - PII가 있는 경우: maskPII()로 마스킹한 텍스트 반환
+ */
 export const getSafeReviewText = (
   text: string | null | undefined,
-  source: string | undefined | null
+  _source: string | undefined | null
 ): string | null => {
-  if (isPrivacyRestricted(source)) return null;
   if (isPrivacyPlaceholder(text)) return null;
-  return text ?? null;
+  const raw = text ?? "";
+  if (!raw) return null;
+  return containsPII(raw) ? maskPII(raw) : raw;
 };
 
 /** Generate sentiment-based summary for LG.com reviews */
@@ -57,10 +84,20 @@ export const getLgComSentimentSummary = (
   return sentLabel;
 };
 
-/** Check if a set of reviews is entirely from privacy-restricted sources */
-export const isAllPrivacyRestricted = (reviews: { source?: string }[]): boolean => {
+/**
+ * Returns true ONLY when every review is from a restricted source AND contains PII
+ * (or has no usable text). PII-clean LG.com 리뷰가 한 건이라도 있으면 false → 원문 노출 허용.
+ */
+export const isAllPrivacyRestricted = (
+  reviews: { source?: string; content?: string | null; text?: string | null; title?: string | null }[]
+): boolean => {
   if (reviews.length === 0) return false;
-  return reviews.every((r) => isPrivacyRestricted(r.source));
+  return reviews.every((r) => {
+    if (!isPrivacyRestricted(r.source)) return false;
+    const text = `${r.title ?? ""} ${r.content ?? r.text ?? ""}`.trim();
+    if (!text) return true;
+    return containsPII(text);
+  });
 };
 
 const extractThemeLabel = (keyword: string): string => keyword.split(/\s+[–-]\s+/)[0]?.trim() || "";

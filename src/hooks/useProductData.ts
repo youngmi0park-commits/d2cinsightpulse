@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { isPrivacyRestricted, getSafeReviewText } from "@/lib/reviewUtils";
+import { isPrivacyRestricted, getSafeReviewText, containsPII, maskPII } from "@/lib/reviewUtils";
 
 export interface DBReview {
   id: string;
@@ -316,20 +316,19 @@ function stripPII(text: string): string {
 // Convert DB review to the format used by existing components
 export function toReviewFormat(dbReview: DBReview) {
   const restricted = isPrivacyRestricted(dbReview.source);
+  const rawText = dbReview.content ?? "";
+  const hasPII = restricted && containsPII(`${dbReview.title ?? ""} ${rawText}`);
 
-  // For privacy-restricted sources: show sentiment summary, never raw text
+  // 정책 업데이트: PII가 없는 LG.com 리뷰는 원문 그대로 노출. PII 감지 시 마스킹된 본문 노출.
   let displayText: string;
-  if (restricted) {
-    const sentLabel = dbReview.sentiment === "positive"
-      ? "👍 긍정적 사용 경험 확인"
-      : dbReview.sentiment === "negative"
-        ? "👎 불만 또는 개선 요청 확인"
-        : "➖ 중립적 의견";
-    displayText = dbReview.title
-      ? `${sentLabel} — ${dbReview.title}`
-      : sentLabel;
+  if (!restricted) {
+    displayText = rawText;
+  } else if (!hasPII) {
+    displayText = rawText;
   } else {
-    displayText = dbReview.content;
+    displayText = maskPII(rawText) || (dbReview.title
+      ? `${dbReview.sentiment === "negative" ? "👎 불만/개선" : "👍 긍정적 사용 경험"} — ${maskPII(dbReview.title)}`
+      : "👍 긍정적 사용 경험 확인");
   }
 
   return {
