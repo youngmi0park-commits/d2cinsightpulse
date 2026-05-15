@@ -26,12 +26,13 @@ const BV_COUNTRIES = [
   { value: "PE",  label: "페루",   labelEn: "LGEPR",  flag: "🇵🇪" },
   // 아시아·오세아니아
   { value: "AU",  label: "호주",   labelEn: "LGEAP",  flag: "🇦🇺" },
-  { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
-  { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
-  { value: "JP",  label: "일본",   labelEn: "LGEJP",  flag: "🇯🇵" },
   { value: "TH",  label: "태국",   labelEn: "LGETH",  flag: "🇹🇭" },
   // 중동·아프리카
   { value: "SA",  label: "사우디", labelEn: "LGESJ",  flag: "🇸🇦" },
+  // 기타 (최우측 고정)
+  { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
+  { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
+  { value: "JP",  label: "일본",   labelEn: "LGEJP",  flag: "🇯🇵" },
 ];
 
 const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
