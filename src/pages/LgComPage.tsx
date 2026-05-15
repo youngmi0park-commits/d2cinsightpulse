@@ -29,6 +29,7 @@ const BV_COUNTRIES = [
   { value: "TH",  label: "태국",   labelEn: "LGETH",  flag: "🇹🇭" },
   // 중동·아프리카
   { value: "SA",  label: "사우디", labelEn: "LGESJ",  flag: "🇸🇦" },
+  { value: "VN",  label: "베트남", labelEn: "LGEVN",  flag: "🇻🇳" },
   // 기타 (최우측 고정)
   { value: "IN",  label: "인도",   labelEn: "LGEIL",  flag: "🇮🇳" },
   { value: "TW",  label: "대만",   labelEn: "LGETT",  flag: "🇹🇼" },
@@ -49,6 +50,7 @@ const COUNTRY_SOURCE_MAP: Record<string, string[]> = {
   MX: ["lge_com_mx"],
   PE: ["lge_com_pe"],
   SA: ["lge_com_sa"],
+  VN: ["lge_com_vn"],
   CA: ["lge_com_ca"],
 };
 
