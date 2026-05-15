@@ -7,7 +7,7 @@ import { WeeklyInsightsPanel } from "@/components/WeeklyInsightsPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { useLang } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StrategicBadge } from "@/components/StrategicBadge";
+
 
 // value = ISO code (kept for backward-compatible source mapping & child components)
 // labelEn = LGE 법인 코드 (RIS Subsidiary List 표준)
@@ -128,7 +128,6 @@ function CountryStatsGrid({
             </span>
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-foreground">
               {t(c.labelEn, c.label)}
-              <StrategicBadge iso={c.value} />
             </span>
             <span className="text-xs font-bold font-sans text-primary">{cnt.toLocaleString()}</span>
             <span className="text-[8px] text-muted-foreground" title={t(`${c.labelEn}: Cumulative total since collection start`, `${c.label}: 수집 시작 이후 전체 누적`)}>
