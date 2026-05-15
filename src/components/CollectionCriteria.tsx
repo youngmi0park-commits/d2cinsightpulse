@@ -1347,7 +1347,9 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(grouped).map(([country, rows]) =>
+                {Object.entries(grouped)
+                  .sort(([a], [b]) => regionRank(a) - regionRank(b))
+                  .map(([country, rows]) =>
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
                     const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
