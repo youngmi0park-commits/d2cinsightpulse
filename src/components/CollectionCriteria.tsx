@@ -2,6 +2,7 @@ import { Database, Calendar, MessageSquare, ShieldCheck, Languages, TrendingUp, 
 import { useState, useEffect } from "react";
 import { useLang } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { StrategicBadge } from "@/components/StrategicBadge";
 
 interface CriteriaItem {
   icon: typeof Database;
@@ -162,13 +163,14 @@ const ISO_TO_LGE: Record<string, string> = {
   US: "LGEUS", UK: "LGEUK", DE: "LGEDE", AU: "LGEAP", IN: "LGEIL",
   TH: "LGETH", TW: "LGETT", JP: "LGEJP", SG: "LGESL", MY: "LGEML",
   ID: "LGEIN", PH: "LGEPH", VN: "LGEVN", HK: "LGEHK", CA: "LGECI",
-  BR: "LGESP", MX: "LGEMS", FR: "LGEFS",
+  BR: "LGESP", MX: "LGEMS", FR: "LGEFS", ES: "LGEES", PE: "LGEPR", SA: "LGESJ",
 };
 
 const LGE_FLAGS: Record<string, string> = {
   LGEUS: "🇺🇸", LGEUK: "🇬🇧", LGEJP: "🇯🇵", LGESL: "🇸🇬", LGEML: "🇲🇾", LGEIN: "🇮🇩",
   LGETH: "🇹🇭", LGEPH: "🇵🇭", LGEVN: "🇻🇳", LGETT: "🇹🇼", LGEHK: "🇭🇰", LGEIL: "🇮🇳",
   LGEDE: "🇩🇪", LGEFS: "🇫🇷", LGEAP: "🇦🇺", LGECI: "🇨🇦", LGESP: "🇧🇷", LGEMS: "🇲🇽",
+  LGEES: "🇪🇸", LGEPR: "🇵🇪", LGESJ: "🇸🇦",
   Global: "🌐", Other: "🔹",
 };
 
