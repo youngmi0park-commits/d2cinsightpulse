@@ -1506,6 +1506,7 @@ export const CollectionCriteria = () => {
           <div className="flex border-b border-primary/10 px-3 pt-2 gap-1">
             {([
               { key: "country" as const, label: t("By Country", "국가별"), icon: "🌏" },
+              { key: "strategic" as const, label: t("Strategic Countries", "전략국가별"), icon: "⭐" },
               { key: "category" as const, label: t("By Category", "카테고리별"), icon: "📦" },
               { key: "channel" as const, label: t("By Collection Channel", "수집채널별"), icon: "📡" },
             ]).map((tab) => (
