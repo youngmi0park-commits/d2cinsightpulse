@@ -216,25 +216,54 @@ Deno.serve(async (req) => {
 
     const userPrompt = "\uB2E4\uC74C\uC740 LG.com\uC5D0\uC11C " + (isCumulative ? "\uC218\uC9D1\uB41C \uC804\uCCB4 \uB204\uC801" : "\uC774\uBC88 \uC8FC \uC218\uC9D1\uB41C") + " \uB9AC\uBDF0 \uB370\uC774\uD130 \uC694\uC57D\uC785\uB2C8\uB2E4:\n\n\uC804\uCCB4 \uB9AC\uBDF0 \uC218: " + totalReviews + "\uAC74 (\uAE0D\uC815 " + posPct + "% / \uBD80\uC815 " + negPct + "% / \uC911\uB9BD " + neuPct + "%)\n\uBD84\uC11D \uAE30\uAC04: " + periodLabel + "\n\uBD84\uC11D \uC9C0\uC5ED: " + (region === "all" ? "\uC804\uCCB4" : region) + "\n\uCE74\uD14C\uACE0\uB9AC: " + (category === "all" ? "\uC804\uCCB4" : category) + "\n\n" + reviewDataSummary + "\n\n\uC704 \uB370\uC774\uD130\uB97C \uAE30\uBC18\uC73C\uB85C \uC544\uB798 6\uAC1C \uC139\uC158\uC758 " + (isCumulative ? "\uB204\uC801 \uBD84\uC11D" : "\uC8FC\uAC04") + " \uB9AC\uD3EC\uD2B8\uB97C JSON\uC73C\uB85C \uC0DD\uC131\uD558\uC138\uC694.\n\n{\n  \"executive_summary\": {\n    \"period\": \"" + periodLabel + "\",\n    \"total_reviews\": " + totalReviews + ",\n    \"channel_reviews\": " + totalReviews + ",\n    \"avg_rating\": \"\uCC38\uACE0\uC6A9 \uD3C9\uADE0 \uD3C9\uC810\",\n    \"sentiment_ratio\": {\n      \"positive_pct\": " + posPct + ",\n      \"negative_pct\": " + negPct + ",\n      \"neutral_pct\": " + neuPct + "\n    },\n    \"top3_insights\": [\"\uC778\uC0AC\uC774\uD2B81\", \"\uC778\uC0AC\uC774\uD2B82\", \"\uC778\uC0AC\uC774\uD2B83\"]\n  },\n  \"top5_themes\": [{\"theme\": \"\uC8FC\uC81C\uBA85\", \"mention_pct\": \"\uC5B8\uAE09 \uBE44\uC728\", \"positive_pct\": \"\uAE0D\uC815 \uBE44\uC728\", \"negative_pct\": \"\uBD80\uC815 \uBE44\uC728\", \"representative_quote\": \"\uC775\uBA85 \uCC98\uB9AC\uB41C \uB300\uD45C \uB9AC\uBDF0 \uC758\uC5ED\", \"related_products\": [\"\uAD00\uB828 \uC81C\uD488\uAD70\"]}],\n  \"negative_priority_top3\": [{\"issue\": \"\uBD80\uC815 \uC774\uC288\", \"mention_pct\": \"\uBD80\uC815 \uC5B8\uAE09 \uBE44\uC728\", \"recurring_pattern\": \"\uBC18\uBCF5 \uB4F1\uC7A5 \uD328\uD134\", \"root_cause\": \"Why \uC911\uC2EC \uC6D0\uC778 \uBD84\uC11D\", \"related_products\": [\"\uAD00\uB828 \uC81C\uD488\"]}],\n  \"strengths\": {\"repeated_praise\": [\"\uBC18\uBCF5 \uCE6D\uCC2C \uD3EC\uC778\uD2B8\"], \"unconditional_praise\": [\"\uBE44\uAD50 \uC5C6\uC774 \uCE6D\uCC2C\uD558\uB294 \uD3EC\uC778\uD2B8\"], \"competitive_advantage\": [{\"point\": \"\uC6B0\uC704 \uD3EC\uC778\uD2B8\", \"vs_competitor\": \"\uBE44\uAD50 \uB300\uC0C1\", \"evidence\": \"\uB9AC\uBDF0 \uAE30\uBC18 \uADFC\uAC70\"}]},\n  \"action_items\": {\"product_team\": [{\"item\": \"\uAC1C\uC120 \uD56D\uBAA9\", \"priority\": \"\uB192\uC74C/\uC911\uAC04/\uB0AE\uC74C\", \"detail\": \"\uC0C1\uC138 \uC124\uBA85\"}], \"cs_team\": [{\"item\": \"\uB300\uC751 \uD56D\uBAA9\", \"detail\": \"\uC0C1\uC138\"}], \"marketing_team\": [{\"satisfaction_message\": \"\uAC15\uD654 \uD3EC\uC778\uD2B8\", \"copy_suggestion\": \"\uACE0\uAC1D \uD45C\uD604 \uAE30\uBC18 \uCE74\uD53C \uC81C\uC548\"}]},\n  \"product_insights\": [{\"product_name\": \"\uC81C\uD488\uBA85\", \"category\": \"\uCE74\uD14C\uACE0\uB9AC\", \"review_count\": 0, \"positive_pct\": \"\uAE0D\uC815 \uBE44\uC728\", \"negative_pct\": \"\uBD80\uC815 \uBE44\uC728\", \"top_praise_keywords\": [\"\uCE6D\uCC2C \uD0A4\uC6CC\uB4DC\"], \"top_complaint_keywords\": [\"\uBD88\uB9CC \uD0A4\uC6CC\uB4DC\"], \"key_insight\": \"\uD575\uC2EC \uC778\uC0AC\uC774\uD2B8 1\uC904\", \"action_suggestion\": \"\uC561\uC158 \uC81C\uC548 1\uC904\"}],\n  \"deep_insights\": {\"ux_strategy\": {\"pain_flow\": [\"\uACE0\uAC1D\uC774 \uBD88\uD3B8\uC744 \uB290\uB07C\uB294 \uACBD\uD5D8 \uD750\uB984\"], \"stage_issues\": {\"pre_use\": \"\uC0AC\uC6A9 \uC804 \uBB38\uC81C\", \"during_use\": \"\uC0AC\uC6A9 \uC911 \uBB38\uC81C\", \"post_use\": \"\uC0AC\uC6A9 \uD6C4 \uBB38\uC81C\"}, \"high_impact_improvements\": [\"\uAC1C\uC120 \uC2DC \uB9CC\uC871\uB3C4 \uC0C1\uC2B9 \uAC00\uB2A5\uC131 \uB192\uC740 \uD3EC\uC778\uD2B8\"]}, \"product_quality_strategy\": {\"recurring_defects\": [\"\uBC18\uBCF5 \uACB0\uD568/\uC131\uB2A5 \uC774\uC288\"], \"expectation_disappointment\": [\"\uAE30\uB300 \uB300\uBE44 \uC2E4\uB9DD \uD3EC\uC778\uD2B8\"], \"trust_impact_expressions\": [\"\uD488\uC9C8 \uC2E0\uB8B0\uB3C4\uC5D0 \uC601\uD5A5\uC744 \uC8FC\uB294 \uD45C\uD604\"]}, \"marketing_comms_strategy\": {\"organic_praise_sentences\": [\"\uACE0\uAC1D\uC774 \uC790\uBC1C\uC801\uC73C\uB85C \uC0AC\uC6A9\uD558\uB294 \uCE6D\uCC2C \uBB38\uC7A5\"], \"copy_candidates\": [\"\uCE74\uD53C \uD6C4\uBCF4\"], \"avoid_expressions\": [\"\uD53C\uD574\uC57C \uD560 \uD45C\uD604\"]}}\n}";
 
-    // 5. Call AI
-    const aiResponse = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + lovableApiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-        }),
+    // 5. Call AI with retry/backoff + model fallback for transient upstream 5xx
+    const models = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite", "google/gemini-3-flash-preview"];
+    let aiResponse: Response | null = null;
+    let lastErrText = "";
+    outer: for (const model of models) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          aiResponse = await fetch(
+            "https://ai.gateway.lovable.dev/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + lovableApiKey,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model,
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  { role: "user", content: userPrompt },
+                ],
+                response_format: { type: "json_object" },
+              }),
+            }
+          );
+          if (aiResponse.ok) break outer;
+          // Don't retry on auth/quota/rate
+          if (aiResponse.status === 401 || aiResponse.status === 402 || aiResponse.status === 429) break outer;
+          lastErrText = await aiResponse.text();
+          console.warn(`AI gateway ${aiResponse.status} (model=${model}, attempt=${attempt + 1}): ${lastErrText.slice(0, 200)}`);
+          if (aiResponse.status >= 500) {
+            await new Promise((r) => setTimeout(r, 800 * Math.pow(2, attempt)));
+            continue;
+          }
+          break; // other 4xx — try next model
+        } catch (e) {
+          lastErrText = e instanceof Error ? e.message : String(e);
+          console.warn(`AI gateway fetch threw (model=${model}, attempt=${attempt + 1}):`, lastErrText);
+          await new Promise((r) => setTimeout(r, 800 * Math.pow(2, attempt)));
+        }
       }
-    );
+    }
+    if (!aiResponse) {
+      return new Response(
+        JSON.stringify({ error: "AI_GATEWAY_ERROR", message: "AI 게이트웨이에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.", detail: lastErrText.slice(0, 300) }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
