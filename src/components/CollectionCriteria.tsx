@@ -179,6 +179,24 @@ const BV_AVAILABLE: Record<string, number> = {
   LGEUS: 121353, LGEUK: 68862, LGEDE: 41097, LGEAP: 17842, LGEIL: 7761, LGETH: 5503, LGETT: 4633, LGEJP: 1322,
 };
 
+// 지역(region) 정렬 우선순위: 북미 → 유럽 → 중남미 → 아시아·오세아니아 → 중동·아프리카 → Global → Other
+const REGION_ORDER: Record<string, number> = {
+  // 북미
+  US: 1, CA: 2,
+  // 유럽
+  UK: 10, DE: 11, ES: 12, FR: 13,
+  // 중남미
+  BR: 20, MX: 21, PE: 22,
+  // 아시아·오세아니아
+  AU: 30, IN: 31, TW: 32, JP: 33, TH: 34,
+  SG: 35, MY: 36, ID: 37, PH: 38, VN: 39, HK: 40,
+  // 중동·아프리카
+  SA: 50,
+  // 기타
+  Global: 98, Other: 99,
+};
+const regionRank = (iso: string): number => REGION_ORDER[iso] ?? 90;
+
 // Channel data organized by product category
 interface ChannelEntry {
   platform: string;
@@ -1329,7 +1347,9 @@ function CollectionDetailTable({ t, dbCountryCounts }: { t: (en: string, ko: str
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(grouped).map(([country, rows]) =>
+                {Object.entries(grouped)
+                  .sort(([a], [b]) => regionRank(a) - regionRank(b))
+                  .map(([country, rows]) =>
                   rows.map((row, ri) => {
                     const logEntry = resolveChannelLog(row.channel, row.country, collectionLogs);
                     const cumulative = resolveCumulativeCount(row.channel, row.country, sourceCounts);
@@ -1545,7 +1565,7 @@ export const CollectionCriteria = () => {
                   isGlobal: true,
                 });
               }
-              countryData.sort((a, b) => b.totalCount - a.totalCount);
+              countryData.sort((a, b) => regionRank(a.iso) - regionRank(b.iso));
               // ✅ Exclude "Other" so totals match the header and detail table footer
               const globalTotal = Object.entries(countryCounts)
                 .filter(([k]) => k !== "Other")
@@ -1633,7 +1653,7 @@ export const CollectionCriteria = () => {
                 const communityCount = Math.max(totalCount - bvCount, 0);
                 return { iso, totalCount, bvCount, communityCount };
               });
-              stratData.sort((a, b) => b.totalCount - a.totalCount);
+              stratData.sort((a, b) => regionRank(a.iso) - regionRank(b.iso));
               const stratTotal = stratData.reduce((s, d) => s + d.totalCount, 0);
               const stratBV = stratData.reduce((s, d) => s + d.bvCount, 0);
               const collectedCountries = stratData.filter(d => d.totalCount > 0).length;
