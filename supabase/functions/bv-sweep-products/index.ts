@@ -26,6 +26,7 @@ Deno.serve(async (req) => {
     es_ES: "BAZAARVOICE_ES_API_KEY",
   };
   const passkey = Deno.env.get(LOCALE_KEY_MAP[locale] ?? "BAZAARVOICE_US_API_KEY")!;
+  console.log("[BV-SWEEP] using key tail=..." + (passkey ? passkey.slice(-8) : "MISSING") + " len=" + (passkey?.length ?? 0));
 
   if (!passkey) {
     return new Response(JSON.stringify({ success: false, error: "Missing BV API key for " + locale }),
