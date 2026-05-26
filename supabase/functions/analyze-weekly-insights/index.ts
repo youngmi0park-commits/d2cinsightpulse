@@ -22,10 +22,19 @@ Deno.serve(async (req) => {
     const limit = body.limit || 5;
     const category = body.category || "all";
     const productId = body.product_id || null;
-    const period = body.period === "cumulative" ? "cumulative" : "weekly";
+    const periodRaw = body.period;
+    const period = periodRaw === "cumulative" ? "cumulative" : periodRaw === "monthly" ? "monthly" : "weekly";
     const isCumulative = period === "cumulative";
-    // Weekly = last 7 days; Cumulative = no date restriction
-    const sinceDate = isCumulative ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const isMonthly = period === "monthly";
+    const monthStr: string | null = isMonthly && typeof body.month === "string" ? body.month : null;
+    let monthStart: string | null = null;
+    let monthEnd: string | null = null;
+    if (isMonthly && monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
+      const [yy, mm] = monthStr.split("-").map(Number);
+      monthStart = new Date(Date.UTC(yy, mm - 1, 1)).toISOString();
+      monthEnd = new Date(Date.UTC(mm === 12 ? yy + 1 : yy, mm === 12 ? 0 : mm, 1)).toISOString();
+    }
+    const sinceDate = (isCumulative || isMonthly) ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // Category matching patterns
     const categoryPatterns: Record<string, string[]> = {
@@ -80,6 +89,9 @@ Deno.serve(async (req) => {
           .select("product_id, products!inner(model_number, display_name, category)")
           .in("source", sourceFilter);
         if (sinceDate) q = q.gte("published_at", sinceDate);
+        if (isMonthly && monthStart && monthEnd) {
+          q = q.gte("published_at", monthStart).lt("published_at", monthEnd);
+        }
         const { data: batch } = await q.range(offset, offset + pageSize - 1);
 
         if (!batch || batch.length === 0) { hasMore = false; break; }
@@ -133,6 +145,9 @@ Deno.serve(async (req) => {
           .eq("product_id", pid)
           .in("source", sourceFilter);
         if (sinceDate) qr = qr.gte("published_at", sinceDate);
+        if (isMonthly && monthStart && monthEnd) {
+          qr = qr.gte("published_at", monthStart).lt("published_at", monthEnd);
+        }
         const { data: batch } = await qr
           .order("published_at", { ascending: false })
           .range(off, off + 999);
@@ -231,9 +246,15 @@ ${negContentSamples.map((s, i) => `${i + 1}. ${s}`).join("\n") || "N/A"}`;
       })
       .join("\n\n---\n\n");
 
-    const periodLabel = isCumulative ? "전체 누적 (수집 시점 제한 없음)" : "최근 7일 (주간)";
+    const periodLabel = isCumulative
+      ? "전체 누적 (수집 시점 제한 없음)"
+      : isMonthly
+      ? (monthStr + " 한 달 (월간)")
+      : "최근 7일 (주간)";
     const periodFocus = isCumulative
       ? "You are analyzing ALL collected reviews (cumulative, all-time). Focus on long-term patterns, product life-cycle trends, and deep structural consumer understanding."
+      : isMonthly
+      ? ("You are analyzing reviews published in " + monthStr + " ONLY (one specific month). Focus on what changed and emerged in that month.")
       : "You are analyzing reviews from the LAST 7 DAYS only. Focus on recent signals, emerging issues, and what's changed this week. Highlight time-sensitive marketing opportunities.";
 
     const systemPrompt = `You are a global brand strategist and consumer insight analyst for LG Electronics.
