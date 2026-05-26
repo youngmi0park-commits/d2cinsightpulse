@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Store, Globe, BarChart3, Brain, Calendar, Database } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Store, Globe, BarChart3, Brain, Calendar, Database, CalendarRange } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LgComWeeklyReport } from "@/components/LgComWeeklyReport";
@@ -143,7 +143,28 @@ function CountryStatsGrid({
 const LgComPage = () => {
   const { t } = useLang();
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const [period, setPeriod] = useState<"weekly" | "cumulative">("weekly");
+  const [period, setPeriod] = useState<"weekly" | "cumulative" | "monthly">("weekly");
+
+  // Build month list: 2025-01 → current month (descending)
+  const months = useMemo(() => {
+    const out: { value: string; label: string; labelEn: string }[] = [];
+    const now = new Date();
+    const endY = now.getFullYear();
+    const endM = now.getMonth(); // 0-indexed
+    let y = 2025, m = 0;
+    while (y < endY || (y === endY && m <= endM)) {
+      const mm = String(m + 1).padStart(2, "0");
+      out.push({
+        value: `${y}-${mm}`,
+        label: `${String(y).slice(2)}년 ${m + 1}월`,
+        labelEn: `${String(y).slice(2)}'${mm}`,
+      });
+      m++;
+      if (m > 11) { m = 0; y++; }
+    }
+    return out.reverse();
+  }, []);
+  const [selectedMonth, setSelectedMonth] = useState<string>(months[0]?.value || "");
 
   const handleCountrySelect = (country: string) => {
     setSelectedCountry(country);
@@ -199,6 +220,17 @@ const LgComPage = () => {
                 {t("Weekly", "주간")}
               </button>
               <button
+                onClick={() => setPeriod("monthly")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
+                  period === "monthly"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <CalendarRange className="h-3 w-3" />
+                {t("Monthly", "월간")}
+              </button>
+              <button
                 onClick={() => setPeriod("cumulative")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all ${
                   period === "cumulative"
@@ -222,11 +254,36 @@ const LgComPage = () => {
             }</span></span>
             <span className="text-border">|</span>
             <span>{t("Period", "기간")}: <span className="font-semibold text-foreground">{
-              period === "weekly" ? t("Weekly", "주간") : t("Cumulative", "전체 누적")
+              period === "weekly"
+                ? t("Weekly", "주간")
+                : period === "monthly"
+                ? `${t("Monthly", "월간")} · ${selectedMonth}`
+                : t("Cumulative", "전체 누적")
             }</span></span>
             <span className="text-border">|</span>
             <span>{t("Basis", "기준")}: <span className="font-semibold text-foreground">{t("By Product", "제품별")}</span></span>
           </div>
+
+          {period === "monthly" && (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {months.map((m) => {
+                const active = selectedMonth === m.value;
+                return (
+                  <button
+                    key={m.value}
+                    onClick={() => setSelectedMonth(m.value)}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    {t(m.labelEn, m.label)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="weekly" className="w-full">
@@ -241,10 +298,10 @@ const LgComPage = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="weekly" className="p-4 mt-0">
-            <LgComWeeklyReport country={selectedCountry} period={period} />
+            <LgComWeeklyReport country={selectedCountry} period={period} month={selectedMonth} />
           </TabsContent>
           <TabsContent value="strategic" className="p-4 mt-0">
-            <WeeklyInsightsPanel country={selectedCountry} period={period} />
+            <WeeklyInsightsPanel country={selectedCountry} period={period} month={selectedMonth} />
           </TabsContent>
         </Tabs>
       </section>
