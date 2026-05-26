@@ -96,7 +96,7 @@ function SectionCard({ icon: Icon, title, children, color = "border-border bg-ca
 }
 
 /* ── main component ── */
-export function LgComWeeklyReport({ country = "all", period = "weekly" }: { country?: string; period?: "weekly" | "cumulative" }) {
+export function LgComWeeklyReport({ country = "all", period = "weekly", month }: { country?: string; period?: "weekly" | "cumulative" | "monthly"; month?: string }) {
   const { t } = useLang();
   const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
@@ -113,6 +113,7 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
     if (!productId) setCategory(target);
     try {
       const invokeBody: any = { region, limit: 10, category: target, period };
+      if (period === "monthly" && month) invokeBody.month = month;
       if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("generate-lgcom-weekly-report", {
         body: invokeBody,
@@ -150,7 +151,7 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
     setReport(null);
     setMeta(null);
     runReport("all");
-  }, [region, period]);
+  }, [region, period, month]);
 
   const es = report?.executive_summary;
 
@@ -165,10 +166,18 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
           <div className="flex items-center gap-2 flex-wrap">
             <BarChart3 className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-heading">
-              {period === "weekly" ? t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트") : t("LG.com Cumulative Insight Report", "LG.com 전체 누적 인사이트 리포트")}
+              {period === "weekly"
+                ? t("LG.com Weekly Insight Report", "LG.com 주간 인사이트 리포트")
+                : period === "monthly"
+                ? t("LG.com Monthly Insight Report", "LG.com 월간 인사이트 리포트")
+                : t("LG.com Cumulative Insight Report", "LG.com 전체 누적 인사이트 리포트")}
             </CardTitle>
-            <Badge variant={period === "weekly" ? "default" : "secondary"} className="text-[10px] font-semibold">
-              {period === "weekly" ? t("Weekly · 7d", "주간 · 7일") : t("Cumulative · All-time", "전체 누적")}
+            <Badge variant={period === "cumulative" ? "secondary" : "default"} className="text-[10px] font-semibold">
+              {period === "weekly"
+                ? t("Weekly · 7d", "주간 · 7일")
+                : period === "monthly"
+                ? `${t("Monthly", "월간")} · ${month || ""}`
+                : t("Cumulative · All-time", "전체 누적")}
             </Badge>
             <Badge variant="outline" className="text-[10px] font-medium">{regionLabel}</Badge>
           </div>
@@ -186,6 +195,8 @@ export function LgComWeeklyReport({ country = "all", period = "weekly" }: { coun
         <p className="text-xs text-muted-foreground mt-1">
           {period === "weekly"
             ? t("AI-powered weekly insight report — uses country filter above", "AI 기반 주간 인사이트 리포트 · 상단 국가 필터와 연동")
+            : period === "monthly"
+            ? t("AI-powered monthly insight report — selected month only", "AI 기반 월간 인사이트 리포트 · 선택한 달의 리뷰만 분석")
             : t("AI-powered cumulative insight report — all collected reviews", "AI 기반 전체 누적 인사이트 리포트 · 수집된 전체 리뷰 분석")}
         </p>
       </CardHeader>

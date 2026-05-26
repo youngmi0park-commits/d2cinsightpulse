@@ -120,7 +120,7 @@ function ProductTag({ name }: { name: string }) {
   );
 }
 
-export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { country?: string; period?: "weekly" | "cumulative" }) {
+export function WeeklyInsightsPanel({ country = "all", period = "weekly", month }: { country?: string; period?: "weekly" | "cumulative" | "monthly"; month?: string }) {
   const { t } = useLang();
   const region = country === "all" ? "all" : country;
   const [category, setCategory] = useState("all");
@@ -133,7 +133,7 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
   useEffect(() => {
     setResult(null);
     setCategory("all");
-  }, [region, period]);
+  }, [region, period, month]);
 
   const runAnalysis = async (cat?: string, productId?: string) => {
     const targetCategory = cat ?? category;
@@ -141,6 +141,7 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
     if (!productId) setCategory(targetCategory);
     try {
       const invokeBody: any = { region, limit: 5, category: targetCategory, period };
+      if (period === "monthly" && month) invokeBody.month = month;
       if (productId) invokeBody.product_id = productId;
       const { data, error } = await supabase.functions.invoke("analyze-weekly-insights", {
         body: invokeBody,
@@ -181,10 +182,16 @@ export function WeeklyInsightsPanel({ country = "all", period = "weekly" }: { co
               className={`text-[10px] font-medium ${
                 period === "cumulative"
                   ? "bg-primary/10 text-primary border-primary/30"
+                  : period === "monthly"
+                  ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
                   : "bg-success/10 text-success border-success/30"
               }`}
             >
-              {period === "cumulative" ? t("Cumulative · All-time", "전체 누적") : t("Weekly · 7d", "주간 · 7일")}
+              {period === "cumulative"
+                ? t("Cumulative · All-time", "전체 누적")
+                : period === "monthly"
+                ? `${t("Monthly", "월간")} · ${month || ""}`
+                : t("Weekly · 7d", "주간 · 7일")}
             </Badge>
           </div>
           <button

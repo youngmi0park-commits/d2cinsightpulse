@@ -34,6 +34,16 @@ Deno.serve(async (req) => {
     const productId = body.product_id || null;
     const period = body.period || "weekly";
     const isCumulative = period === "cumulative";
+    const isMonthly = period === "monthly";
+    const monthStr: string | null = isMonthly && typeof body.month === "string" ? body.month : null;
+    // Compute month date range
+    let monthStart: string | null = null;
+    let monthEnd: string | null = null;
+    if (isMonthly && monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
+      const [yy, mm] = monthStr.split("-").map(Number);
+      monthStart = new Date(Date.UTC(yy, mm - 1, 1)).toISOString();
+      monthEnd = new Date(Date.UTC(mm === 12 ? yy + 1 : yy, mm === 12 ? 0 : mm, 1)).toISOString();
+    }
 
     const categoryPatterns: Record<string, string[]> = {
       TV: ["TV", "OLED", "QNED", "NanoCell", "LED", "StanbyME"],
@@ -57,11 +67,21 @@ Deno.serve(async (req) => {
     };
 
     const sourceFilter = getSourceFilter(region);
-    const weekAgo = isCumulative ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const weekAgo = (isCumulative || isMonthly) ? null : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // 1. Get total count for this country+category from DB
     let actualTotal = 0;
-    if (isCumulative) {
+    if (isMonthly && monthStart && monthEnd) {
+      // Direct count for the selected month
+      let cq = sb
+        .from("reviews")
+        .select("id", { count: "exact", head: true })
+        .in("source", sourceFilter)
+        .gte("published_at", monthStart)
+        .lt("published_at", monthEnd);
+      const { count } = await cq;
+      actualTotal = count || 0;
+    } else if (isCumulative) {
       const { data: ccData } = await sb.rpc("get_category_counts_by_country", {
         p_country: region,
       });
@@ -100,7 +120,7 @@ Deno.serve(async (req) => {
       }
     } else {
       const fetchLimit = category === "all" ? limit : 50;
-      const topProductsRpc = isCumulative
+      const topProductsRpc = (isCumulative || isMonthly)
         ? "get_lgcom_cumulative_top_products"
         : "get_lgcom_weekly_top_products";
       const { data: posProducts, error: posErr } = await sb.rpc(
@@ -148,10 +168,13 @@ Deno.serve(async (req) => {
         .eq("product_id", pid)
         .in("source", sourceFilter)
         .order("published_at", { ascending: false })
-        .limit(isCumulative ? 500 : 200);
+        .limit(isMonthly ? 300 : (isCumulative ? 500 : 200));
 
       if (weekAgo) {
         query = query.gte("published_at", weekAgo);
+      }
+      if (isMonthly && monthStart && monthEnd) {
+        query = query.gte("published_at", monthStart).lt("published_at", monthEnd);
       }
 
       const { data: reviews } = await query;
@@ -204,9 +227,11 @@ Deno.serve(async (req) => {
     const negPct = sampledTotal > 0 ? Math.round(allNeg / sampledTotal * 100) : 0;
     const neuPct = 100 - posPct - negPct;
 
-    const periodLabel = isCumulative ? "전체 누적" : "최근 7일";
+    const periodLabel = isCumulative ? "전체 누적" : isMonthly ? (monthStr + " (월간)") : "최근 7일";
     const periodFocus = isCumulative
       ? "\n\nPERIOD FOCUS — CUMULATIVE: 전체 누적 데이터를 바탕으로 장기 트렌드, 반복적으로 등장하는 강점/약점 패턴, 제품 라이프사이클 전반의 인사이트에 집중하세요. '이번 주' 같은 단기 표현은 사용하지 말고, '지속적으로', '꾸준히', '장기간' 같은 누적 관점의 표현을 사용하세요. top3_insights는 누적 트렌드 중심으로 작성하세요."
+      : isMonthly
+      ? ("\n\nPERIOD FOCUS — MONTHLY (" + monthStr + "): 해당 월(" + monthStr + ")에 게시된 리뷰만 분석하여 그 달의 변화·이슈·신호에 집중하세요. '이번 달', '" + monthStr + "', '월간' 같은 시점 표현을 사용하세요. top3_insights는 해당 월 핵심 변화 중심으로 작성하세요.")
       : "\n\nPERIOD FOCUS — WEEKLY: 최근 7일 신규 리뷰만을 분석하여 이번 주의 변화/이슈/신호에 집중하세요. '이번 주', '최근 7일', '신규 발생' 같은 단기 시점 표현을 적극 사용하세요. top3_insights는 이번 주 핵심 변화 중심으로 작성하세요.";
     const categoryGuard = category !== "all"
       ? "\nCRITICAL CATEGORY RULE: You are analyzing the \"" + category + "\" category ONLY. When excerpting or paraphrasing reviews, ONLY include opinions that directly relate to " + category + " products. If a review mentions other appliance categories (e.g. a Washer review mentioning a dishwasher, or a TV review mentioning a soundbar), EXCLUDE those cross-category mentions entirely. Focus strictly on feedback about " + category + " product features, performance, and experience."
