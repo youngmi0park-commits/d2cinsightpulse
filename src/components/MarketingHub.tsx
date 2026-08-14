@@ -721,10 +721,130 @@ function buildMetaVariants(pName: string, sentiment: SentimentResult): MetaVaria
   return [A, B, C].map(scoreVariant);
 }
 
+/* ── ChatGPT(대화형 AI) 광고문구 A/B/C variant generator ──
+ * 규칙: Title ≤40자, Answer Body ≤200자, Follow-up Prompt ≤60자, CTA ≤20자
+ * 3가지 기획 앵글: A) 직접 답변형  B) 비교 추천형  C) 문제 해결형
+ */
+export interface ChatGptAdVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  userIntent: string;      // 가정 질의(프롬프트)
+  title: string;           // ≤40
+  answer: string;          // ≤200
+  proofLine: string;       // 리뷰 근거 한 줄
+  followUp: string;        // ≤60
+  cta: string;             // ≤20
+  compliance: { ok: boolean; issues: string[] };
+  score: number;
+}
+
+function buildChatGptAdVariants(pName: string, sentiment: SentimentResult): ChatGptAdVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+
+  const A: ChatGptAdVariant = {
+    id: "A",
+    angle: "직접 답변형",
+    angleEn: "Direct Answer",
+    rationale: `"어떤 ${noun}이 좋아?" 류 탐색 질의에 결론부터 제시 — 대화형 AI 답변 인용 확률 극대화`,
+    userIntent: `Which ${noun} should I buy?`,
+    title: pickBestFit([`${adj1} ${noun}, Owner-Verified`, `${adj1} ${noun}`, adj1], 40),
+    answer: pickBestFit([
+      `Owners consistently point to ${s1} and ${s2} as the standout strengths of this ${noun}, with ${s3} noted as a bonus. Across ${total}+ reviews, ${posPct}% are positive.`,
+      `Real owners highlight ${s1} and ${s2} in this ${noun}. ${posPct}% of ${total}+ reviews are positive.`,
+    ], 200),
+    proofLine: `리뷰 ${total}건 · 긍정 ${posPct}% · Top 키워드: ${pos.slice(0, 3).join(", ") || s1}`,
+    followUp: pickBestFit([`Compare specs for my ${scene}?`, `Show owner reviews`], 60),
+    cta: pickBestFit(["Learn More", "See Details", "Explore"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const B: ChatGptAdVariant = {
+    id: "B",
+    angle: "비교 추천형",
+    angleEn: "Comparison",
+    rationale: `대체 옵션과의 비교 질의에 대응 — 경쟁사명 대신 카테고리 평균 대비 강점으로 우위 서술(법무 안전)`,
+    userIntent: `How does this ${noun} compare to other options?`,
+    title: pickBestFit([`${capitalize(s1)} That Owners Compare By`, `${capitalize(s1)} vs. the Rest`], 40),
+    answer: pickBestFit([
+      `Compared with other options in the same category, reviewers most often single out ${s1} and ${s2}. ${posPct}% of ${total}+ owner reviews are positive, with ${s3} frequently mentioned.`,
+      `Reviewers comparing options in this category single out ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`,
+    ], 200),
+    proofLine: `비교 기준 키워드: ${[s1, s2, s3].join(" / ")} — 리뷰 기반 추출`,
+    followUp: pickBestFit([`What do owners say about ${s2}?`, `Show a spec comparison`], 60),
+    cta: pickBestFit(["Compare Now", "See Comparison", "Learn More"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const C: ChatGptAdVariant = {
+    id: "C",
+    angle: "문제 해결형",
+    angleEn: "Problem-Solving",
+    rationale: pain
+      ? `"${pain}" 관련 우려 질의를 선점 — 부정 VOC를 정직하게 다루며 신뢰 기반 전환 유도`
+      : `사용 장면(${scene}) 기반 상황 질의 대응 — 구체 시나리오로 답변 적합도 상승`,
+    userIntent: pain ? `Is ${pain} an issue with this ${noun}?` : `Which ${noun} fits my ${scene}?`,
+    title: pickBestFit([
+      pain ? `What Owners Say About ${capitalize(pain)}` : `Built for Your ${capitalize(scene)}`,
+      pain ? `${capitalize(pain)}, Addressed` : `Made for ${capitalize(scene)}`,
+    ], 40),
+    answer: pickBestFit([
+      pain
+        ? `Some reviews mention ${pain}. Most owners, however, report strong ${s1} and ${s2} in daily use — ${posPct}% of ${total}+ reviews are positive, so weigh both sides before deciding.`
+        : `For a ${scene} setup, owners point to ${s1} and ${s2} as the deciding factors, with ${s3} often mentioned. ${posPct}% of ${total}+ reviews are positive.`,
+      pain
+        ? `A few reviews mention ${pain}, while most owners praise ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`
+        : `Owners in a ${scene} setup praise ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`,
+    ], 200),
+    proofLine: pain
+      ? `부정 키워드 "${pain}" 선제 대응 · 긍정 ${posPct}%로 균형 서술`
+      : `사용 장면 "${scene}" 기반 · 긍정 ${posPct}%`,
+    followUp: pickBestFit([
+      pain ? `How do owners handle ${pain}?` : `Show setups for my ${scene}`,
+      `Show owner reviews`,
+    ], 60),
+    cta: pickBestFit(["See Reviews", "Learn More", "Explore"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const scoreVariant = (v: ChatGptAdVariant): ChatGptAdVariant => {
+    const allText = [v.title, v.answer, v.followUp, v.cta].join(" | ");
+    v.compliance = quickComply(allText);
+    const tFit = v.title.length <= 40 ? 1 : 0;
+    const aFit = v.answer.length <= 200 ? 1 : 0;
+    const fFit = v.followUp.length <= 60 ? 1 : 0;
+    const cFit = v.cta.length <= 20 ? 1 : 0;
+    const richness = Math.min(1, v.answer.length / 170);
+    const tokens = v.answer.toLowerCase().split(/\W+/).filter(Boolean);
+    const diversity = tokens.length ? Math.min(1, new Set(tokens).size / tokens.length) : 0;
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((tFit * 0.15) + (aFit * 0.20) + (fFit * 0.10) + (cFit * 0.05) + (richness * 0.20) + (diversity * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
 /* ── Affiliate Reviewer Brief generator ──
  * 리뷰어/퍼블리셔에게 전달할 구조화된 브리프를 자동 생성
  */
-/* placeholder-anchor */
 export interface AffiliateBrief {
   headline: string;
   hook: string;
