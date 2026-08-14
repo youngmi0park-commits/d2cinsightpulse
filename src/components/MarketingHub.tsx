@@ -1060,7 +1060,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    pmax: true, meta: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, meta: true, chatgpt: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -1104,6 +1104,13 @@ export function MarketingHub({
     return metaVariants.reduce((best, v) => (v.score > best.score ? v : best), metaVariants[0]);
   }, [metaVariants]);
   const [adoptedMeta, setAdoptedMeta] = useState<"A" | "B" | "C" | null>(null);
+
+  /* ChatGPT 광고문구 A/B/C variants */
+  const chatGptVariants = useMemo(() => buildChatGptAdVariants(pName, sentiment), [pName, sentiment]);
+  const chatGptWinner = useMemo(() => {
+    return chatGptVariants.reduce((best, v) => (v.score > best.score ? v : best), chatGptVariants[0]);
+  }, [chatGptVariants]);
+  const [adoptedChatGpt, setAdoptedChatGpt] = useState<"A" | "B" | "C" | null>(null);
 
   /* Affiliate brief */
   const affiliateBrief = useMemo(() => buildAffiliateBrief(pName, sentiment, reviews), [pName, sentiment, reviews]);
