@@ -1570,6 +1570,7 @@ export function MarketingHub({
         </Collapsible>
 
         {/* ═══ 1-e. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
+        {/* placeholder-chatgpt-section */}
         <Collapsible open={openSections.affiliate} onOpenChange={() => toggleSection("affiliate")}>
           <CollapsibleTrigger className="w-full">
             <SectionHeader
