@@ -724,6 +724,7 @@ function buildMetaVariants(pName: string, sentiment: SentimentResult): MetaVaria
 /* ── Affiliate Reviewer Brief generator ──
  * 리뷰어/퍼블리셔에게 전달할 구조화된 브리프를 자동 생성
  */
+/* placeholder-anchor */
 export interface AffiliateBrief {
   headline: string;
   hook: string;
