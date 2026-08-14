@@ -1569,8 +1569,169 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
-        {/* ═══ 1-e. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
-        {/* placeholder-chatgpt-section */}
+        {/* ═══ 1-e. 🤖 ChatGPT 광고문구 기획 A/B/C ═══ */}
+        <Collapsible open={openSections.chatgpt} onOpenChange={() => toggleSection("chatgpt")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="🤖 ChatGPT 광고문구 기획 — A/B/C안"
+              subtitle="대화형 AI 광고 규격(Title ≤40자, Answer ≤200자, Follow-up ≤60자, CTA ≤20자) 기반 3개 기획안 + 점수 비교"
+              collapsible
+              isOpen={openSections.chatgpt}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {chatGptVariants.map((v) => {
+                const isWinner = v.id === chatGptWinner.id;
+                const isAdopted = adoptedChatGpt === v.id;
+                const blockText =
+                  `[ChatGPT Ad ${v.id}안 — ${v.angle}]\n` +
+                  `User Intent: ${v.userIntent}\n` +
+                  `Title (${v.title.length}/40): ${v.title}\n` +
+                  `Answer (${v.answer.length}/200): ${v.answer}\n` +
+                  `Proof: ${v.proofLine}\n` +
+                  `Follow-up (${v.followUp.length}/60): ${v.followUp}\n` +
+                  `CTA (${v.cta.length}/20): ${v.cta}`;
+                const key = `chatgpt-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#0D9488] text-white">{v.id}안</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    <div className="flex items-center gap-1.5">
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* User Intent */}
+                    <div className="rounded-md bg-muted/40 px-2 py-1.5">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">가정 질의 (Prompt)</p>
+                      <p className="text-[10px] text-foreground/80 italic">“{v.userIntent}”</p>
+                    </div>
+
+                    {/* Title */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Title</p>
+                        <span className={`text-[9px] ${v.title.length > 40 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.title.length}/40
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-foreground/90">{v.title}</p>
+                    </div>
+
+                    {/* Answer */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Answer Body</p>
+                        <span className={`text-[9px] ${v.answer.length > 200 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.answer.length}/200
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/90 leading-snug">{v.answer}</p>
+                    </div>
+
+                    {/* Proof */}
+                    <div className="rounded-md border border-border/60 bg-secondary/20 px-2 py-1.5">
+                      <p className="text-[9px] text-muted-foreground">{v.proofLine}</p>
+                    </div>
+
+                    {/* Follow-up + CTA */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Follow-up Prompt</p>
+                        <span className={`text-[9px] ${v.followUp.length > 60 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.followUp.length}/60
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-foreground/80">↳ {v.followUp}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground">CTA: </span>
+                        <Badge variant="secondary" className="text-[10px]">{v.cta}</Badge>
+                      </div>
+                      <span className={`text-[9px] ${v.cta.length > 20 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                        {v.cta.length}/20
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedChatGpt(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {chatGptVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === chatGptWinner.id ? "text-amber-700" : ""}>
+                    {v.id}안({v.angle}) {v.score}점
+                  </strong>
+                  {i < chatGptVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">{chatGptWinner.id}안</strong>
+                {adoptedChatGpt && ` · 현재 채택: ${adoptedChatGpt}안`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ 1-f. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
         <Collapsible open={openSections.affiliate} onOpenChange={() => toggleSection("affiliate")}>
           <CollapsibleTrigger className="w-full">
             <SectionHeader
