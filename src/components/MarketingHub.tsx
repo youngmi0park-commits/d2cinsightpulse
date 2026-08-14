@@ -721,6 +721,127 @@ function buildMetaVariants(pName: string, sentiment: SentimentResult): MetaVaria
   return [A, B, C].map(scoreVariant);
 }
 
+/* ── ChatGPT(대화형 AI) 광고문구 A/B/C variant generator ──
+ * 규칙: Title ≤40자, Answer Body ≤200자, Follow-up Prompt ≤60자, CTA ≤20자
+ * 3가지 기획 앵글: A) 직접 답변형  B) 비교 추천형  C) 문제 해결형
+ */
+export interface ChatGptAdVariant {
+  id: "A" | "B" | "C";
+  angle: string;
+  angleEn: string;
+  rationale: string;
+  userIntent: string;      // 가정 질의(프롬프트)
+  title: string;           // ≤40
+  answer: string;          // ≤200
+  proofLine: string;       // 리뷰 근거 한 줄
+  followUp: string;        // ≤60
+  cta: string;             // ≤20
+  compliance: { ok: boolean; issues: string[] };
+  score: number;
+}
+
+function buildChatGptAdVariants(pName: string, sentiment: SentimentResult): ChatGptAdVariant[] {
+  const pos = sentiment.keywords.positive || [];
+  const neg = sentiment.keywords.negative || [];
+  const scenes = sentiment.usageScenes || [];
+  const total = sentiment.positive + sentiment.negative + sentiment.neutral;
+  const posPct = total ? Math.round((sentiment.positive / total) * 100) : 0;
+  const s1 = pos[0] || "quality";
+  const s2 = pos[1] || "performance";
+  const s3 = pos[2] || "design";
+  const pain = neg[0] || "";
+  const scene = scenes[0] || "everyday life";
+  const noun = deriveCategoryNoun(pName);
+  const adj1 = toAdjectiveBenefit(s1);
+
+  const A: ChatGptAdVariant = {
+    id: "A",
+    angle: "직접 답변형",
+    angleEn: "Direct Answer",
+    rationale: `"어떤 ${noun}이 좋아?" 류 탐색 질의에 결론부터 제시 — 대화형 AI 답변 인용 확률 극대화`,
+    userIntent: `Which ${noun} should I buy?`,
+    title: pickBestFit([`${adj1} ${noun}, Owner-Verified`, `${adj1} ${noun}`, adj1], 40),
+    answer: pickBestFit([
+      `Owners consistently point to ${s1} and ${s2} as the standout strengths of this ${noun}, with ${s3} noted as a bonus. Across ${total}+ reviews, ${posPct}% are positive.`,
+      `Real owners highlight ${s1} and ${s2} in this ${noun}. ${posPct}% of ${total}+ reviews are positive.`,
+    ], 200),
+    proofLine: `리뷰 ${total}건 · 긍정 ${posPct}% · Top 키워드: ${pos.slice(0, 3).join(", ") || s1}`,
+    followUp: pickBestFit([`Compare specs for my ${scene}?`, `Show owner reviews`], 60),
+    cta: pickBestFit(["Learn More", "See Details", "Explore"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const B: ChatGptAdVariant = {
+    id: "B",
+    angle: "비교 추천형",
+    angleEn: "Comparison",
+    rationale: `대체 옵션과의 비교 질의에 대응 — 경쟁사명 대신 카테고리 평균 대비 강점으로 우위 서술(법무 안전)`,
+    userIntent: `How does this ${noun} compare to other options?`,
+    title: pickBestFit([`${capitalize(s1)} That Owners Compare By`, `${capitalize(s1)} vs. the Rest`], 40),
+    answer: pickBestFit([
+      `Compared with other options in the same category, reviewers most often single out ${s1} and ${s2}. ${posPct}% of ${total}+ owner reviews are positive, with ${s3} frequently mentioned.`,
+      `Reviewers comparing options in this category single out ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`,
+    ], 200),
+    proofLine: `비교 기준 키워드: ${[s1, s2, s3].join(" / ")} — 리뷰 기반 추출`,
+    followUp: pickBestFit([`What do owners say about ${s2}?`, `Show a spec comparison`], 60),
+    cta: pickBestFit(["Compare Now", "See Comparison", "Learn More"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const C: ChatGptAdVariant = {
+    id: "C",
+    angle: "문제 해결형",
+    angleEn: "Problem-Solving",
+    rationale: pain
+      ? `"${pain}" 관련 우려 질의를 선점 — 부정 VOC를 정직하게 다루며 신뢰 기반 전환 유도`
+      : `사용 장면(${scene}) 기반 상황 질의 대응 — 구체 시나리오로 답변 적합도 상승`,
+    userIntent: pain ? `Is ${pain} an issue with this ${noun}?` : `Which ${noun} fits my ${scene}?`,
+    title: pickBestFit([
+      pain ? `What Owners Say About ${capitalize(pain)}` : `Built for Your ${capitalize(scene)}`,
+      pain ? `${capitalize(pain)}, Addressed` : `Made for ${capitalize(scene)}`,
+    ], 40),
+    answer: pickBestFit([
+      pain
+        ? `Some reviews mention ${pain}. Most owners, however, report strong ${s1} and ${s2} in daily use — ${posPct}% of ${total}+ reviews are positive, so weigh both sides before deciding.`
+        : `For a ${scene} setup, owners point to ${s1} and ${s2} as the deciding factors, with ${s3} often mentioned. ${posPct}% of ${total}+ reviews are positive.`,
+      pain
+        ? `A few reviews mention ${pain}, while most owners praise ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`
+        : `Owners in a ${scene} setup praise ${s1} and ${s2} — ${posPct}% positive across ${total}+ reviews.`,
+    ], 200),
+    proofLine: pain
+      ? `부정 키워드 "${pain}" 선제 대응 · 긍정 ${posPct}%로 균형 서술`
+      : `사용 장면 "${scene}" 기반 · 긍정 ${posPct}%`,
+    followUp: pickBestFit([
+      pain ? `How do owners handle ${pain}?` : `Show setups for my ${scene}`,
+      `Show owner reviews`,
+    ], 60),
+    cta: pickBestFit(["See Reviews", "Learn More", "Explore"], 20),
+    compliance: { ok: true, issues: [] },
+    score: 0,
+  };
+
+  const scoreVariant = (v: ChatGptAdVariant): ChatGptAdVariant => {
+    const allText = [v.title, v.answer, v.followUp, v.cta].join(" | ");
+    v.compliance = quickComply(allText);
+    const tFit = v.title.length <= 40 ? 1 : 0;
+    const aFit = v.answer.length <= 200 ? 1 : 0;
+    const fFit = v.followUp.length <= 60 ? 1 : 0;
+    const cFit = v.cta.length <= 20 ? 1 : 0;
+    const richness = Math.min(1, v.answer.length / 170);
+    const tokens = v.answer.toLowerCase().split(/\W+/).filter(Boolean);
+    const diversity = tokens.length ? Math.min(1, new Set(tokens).size / tokens.length) : 0;
+    const compliancePass = v.compliance.ok ? 1 : 0.7;
+    v.score = Math.round(
+      ((tFit * 0.15) + (aFit * 0.20) + (fFit * 0.10) + (cFit * 0.05) + (richness * 0.20) + (diversity * 0.20) + (compliancePass * 0.10)) * 100
+    );
+    return v;
+  };
+
+  return [A, B, C].map(scoreVariant);
+}
+
 /* ── Affiliate Reviewer Brief generator ──
  * 리뷰어/퍼블리셔에게 전달할 구조화된 브리프를 자동 생성
  */
@@ -939,7 +1060,7 @@ export function MarketingHub({
   const [selectedFunnel, setSelectedFunnel] = useState("awareness");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    pmax: true, meta: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
+    pmax: true, meta: true, chatgpt: true, affiliate: true, adcopy: true, faq: false, seogeo: false, image: false, aitools: false, crm: false,
   });
 
   const toggleSection = (key: string) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
@@ -983,6 +1104,13 @@ export function MarketingHub({
     return metaVariants.reduce((best, v) => (v.score > best.score ? v : best), metaVariants[0]);
   }, [metaVariants]);
   const [adoptedMeta, setAdoptedMeta] = useState<"A" | "B" | "C" | null>(null);
+
+  /* ChatGPT 광고문구 A/B/C variants */
+  const chatGptVariants = useMemo(() => buildChatGptAdVariants(pName, sentiment), [pName, sentiment]);
+  const chatGptWinner = useMemo(() => {
+    return chatGptVariants.reduce((best, v) => (v.score > best.score ? v : best), chatGptVariants[0]);
+  }, [chatGptVariants]);
+  const [adoptedChatGpt, setAdoptedChatGpt] = useState<"A" | "B" | "C" | null>(null);
 
   /* Affiliate brief */
   const affiliateBrief = useMemo(() => buildAffiliateBrief(pName, sentiment, reviews), [pName, sentiment, reviews]);
@@ -1441,7 +1569,169 @@ export function MarketingHub({
           </CollapsibleContent>
         </Collapsible>
 
-        {/* ═══ 1-e. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
+        {/* ═══ 1-e. 🤖 ChatGPT 광고문구 기획 A/B/C ═══ */}
+        <Collapsible open={openSections.chatgpt} onOpenChange={() => toggleSection("chatgpt")}>
+          <CollapsibleTrigger className="w-full">
+            <SectionHeader
+              title="🤖 ChatGPT 광고문구 기획 — A/B/C안"
+              subtitle="대화형 AI 광고 규격(Title ≤40자, Answer ≤200자, Follow-up ≤60자, CTA ≤20자) 기반 3개 기획안 + 점수 비교"
+              collapsible
+              isOpen={openSections.chatgpt}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {chatGptVariants.map((v) => {
+                const isWinner = v.id === chatGptWinner.id;
+                const isAdopted = adoptedChatGpt === v.id;
+                const blockText =
+                  `[ChatGPT Ad ${v.id}안 — ${v.angle}]\n` +
+                  `User Intent: ${v.userIntent}\n` +
+                  `Title (${v.title.length}/40): ${v.title}\n` +
+                  `Answer (${v.answer.length}/200): ${v.answer}\n` +
+                  `Proof: ${v.proofLine}\n` +
+                  `Follow-up (${v.followUp.length}/60): ${v.followUp}\n` +
+                  `CTA (${v.cta.length}/20): ${v.cta}`;
+                const key = `chatgpt-${v.id}`;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative rounded-xl border-2 p-3 space-y-2 transition-all ${
+                      isAdopted
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : isWinner
+                        ? "border-amber-400/60 bg-amber-50/30"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="text-[10px] bg-[#0D9488] text-white">{v.id}안</Badge>
+                        <span className="text-[10px] font-semibold text-foreground">{v.angle}</span>
+                        {isWinner && (
+                          <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/50 text-amber-700 bg-amber-50">
+                            <Trophy className="h-2.5 w-2.5" /> 추천
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
+                        <span className="text-[11px] font-bold text-primary">{v.score}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground italic leading-snug">{v.rationale}</p>
+
+                    <div className="flex items-center gap-1.5">
+                      {v.compliance.ok ? (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-[#15803D]/30 text-[#15803D]">
+                          <ShieldCheck className="h-3 w-3" /> 규정 OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] gap-0.5 border-amber-500/30 text-amber-600">
+                          <AlertTriangle className="h-3 w-3" /> {v.compliance.issues.length} fix
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* User Intent */}
+                    <div className="rounded-md bg-muted/40 px-2 py-1.5">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">가정 질의 (Prompt)</p>
+                      <p className="text-[10px] text-foreground/80 italic">“{v.userIntent}”</p>
+                    </div>
+
+                    {/* Title */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Title</p>
+                        <span className={`text-[9px] ${v.title.length > 40 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.title.length}/40
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-foreground/90">{v.title}</p>
+                    </div>
+
+                    {/* Answer */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Answer Body</p>
+                        <span className={`text-[9px] ${v.answer.length > 200 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.answer.length}/200
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-foreground/90 leading-snug">{v.answer}</p>
+                    </div>
+
+                    {/* Proof */}
+                    <div className="rounded-md border border-border/60 bg-secondary/20 px-2 py-1.5">
+                      <p className="text-[9px] text-muted-foreground">{v.proofLine}</p>
+                    </div>
+
+                    {/* Follow-up + CTA */}
+                    <div className="space-y-0.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Follow-up Prompt</p>
+                        <span className={`text-[9px] ${v.followUp.length > 60 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                          {v.followUp.length}/60
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-foreground/80">↳ {v.followUp}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground">CTA: </span>
+                        <Badge variant="secondary" className="text-[10px]">{v.cta}</Badge>
+                      </div>
+                      <span className={`text-[9px] ${v.cta.length > 20 ? "text-destructive font-bold" : "text-[#15803D]"}`}>
+                        {v.cta.length}/20
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-1.5 pt-2 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 text-[10px] gap-1"
+                        onClick={() => copyText(blockText, key)}
+                      >
+                        {copiedKey === key ? <Check className="h-3 w-3 text-[#15803D]" /> : <Copy className="h-3 w-3" />}
+                        {copiedKey === key ? "복사됨" : "복사"}
+                      </Button>
+                      <Button
+                        variant={isAdopted ? "default" : "secondary"}
+                        size="sm"
+                        className="flex-1 h-7 text-[10px]"
+                        onClick={() => setAdoptedChatGpt(isAdopted ? null : v.id)}
+                      >
+                        {isAdopted ? "✓ 채택됨" : "이 안 채택"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-bold text-foreground">📊 비교 요약 — </span>
+              {chatGptVariants.map((v, i) => (
+                <span key={v.id}>
+                  <strong className={v.id === chatGptWinner.id ? "text-amber-700" : ""}>
+                    {v.id}안({v.angle}) {v.score}점
+                  </strong>
+                  {i < chatGptVariants.length - 1 ? " · " : ""}
+                </span>
+              ))}
+              {" — "}
+              <span className="text-muted-foreground">
+                추천안: <strong className="text-amber-700">{chatGptWinner.id}안</strong>
+                {adoptedChatGpt && ` · 현재 채택: ${adoptedChatGpt}안`}
+              </span>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ 1-f. 📄 Affiliate 리뷰어 브리프 자동화 ═══ */}
         <Collapsible open={openSections.affiliate} onOpenChange={() => toggleSection("affiliate")}>
           <CollapsibleTrigger className="w-full">
             <SectionHeader
