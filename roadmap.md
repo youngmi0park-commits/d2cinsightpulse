@@ -5,7 +5,7 @@
 - [x] Test deployed hold responses and preserve existing reviews (8 live hold responses; 3 policy tests passed; no review data changed).
 
 # Bazaarvoice data removal
-- [ ] Delete Bazaarvoice-origin reviews and collection tracking while retaining crawled reviews.
-- [ ] Remove Bazaarvoice-only cached analytics without deleting unrelated data.
-- [ ] Restore the legacy collector as a crawl-only path; keep all API collectors held.
-- [ ] Verify deletion counts, retained data, and crawl-only behavior.
+- [x] Delete 325,519 Bazaarvoice reviews, 10,350 BV-only products, 9,681 progress rows, 59 runs, and 7,156 hybrid/BV logs; preserve 5,502 independently collected reviews.
+- [x] Clear LG.com cached analytics and mixed newsletter analysis; preserve unrelated sources and the separate Reddit overview.
+- [x] Restore the legacy collector as a crawl-only path; keep all API collectors held.
+- [x] Verify zero remaining BV reviews, 4 passing tests, a completed crawl collecting 4 reviews, and the dashboard showing retained US crawl data (17 region-tagged reviews).

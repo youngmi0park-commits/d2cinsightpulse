@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { bazaarvoiceHoldResponse } from "../_shared/bazaarvoice-hold.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -214,138 +213,15 @@ RULES:
 - Prioritize reviews with specific details over generic praise
 - Return ONLY valid JSON array, no markdown`;
 
-// ── Bazaarvoice Conversations API ──
-// ── BV CategoryId mapping (used to filter reviews by category) ──
-const BV_CATEGORY_IDS: Record<string, Record<string, string>> = {
-  us: {
-    TV: "CT10000007",
-    Refrigerator: "CT10000021",
-    Washer: "CT10000005",
-    Dryer: "CT20187",
-    Dishwasher: "CT20188",
-    "Air Purifier": "CT32001601",
-  },
-  uk: {
-    TV: "CT10000007",
-    Refrigerator: "CT10000021",
-    Washer: "CT10000005",
-    Dryer: "CT20187",
-    Dishwasher: "CT20188",
-    "Air Purifier": "CT32001601",
-  },
-};
-
-const BV_CONFIG: Record<string, { baseUrl: string; client: string }> = {
-  us: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
-  uk: { baseUrl: "https://api.bazaarvoice.com/data", client: "lg" },
-};
-
-async function fetchBazaarvoiceReviews(
-  apiKey: string,
-  region: "us" | "uk",
-  category: string,
-  offset = 0,
-  limit = 20,
-  dateFrom?: string,
-  dateTo?: string,
-  productFilter?: string
-): Promise<any[]> {
-  const config = BV_CONFIG[region];
-  const url = new URL(`${config.baseUrl}/reviews.json`);
-  url.searchParams.set("apiversion", "5.4");
-  url.searchParams.set("passkey", apiKey);
-  url.searchParams.set("Include", "Products");
-  url.searchParams.set("Sort", "SubmissionTime:desc");
-  url.searchParams.set("Limit", String(limit));
-  url.searchParams.set("Offset", String(offset));
-  
-  // Product-specific filter (BV ProductId or OriginalProductName)
-  if (productFilter) {
-    url.searchParams.append("Filter", `ProductId:eq:${productFilter}`);
-  } else if (region === "uk") {
-    // Category filter only for UK — US passkey doesn't support CategoryAncestorId
-    const bvCatId = BV_CATEGORY_IDS[region]?.[category];
-    if (bvCatId) {
-      url.searchParams.append("Filter", `CategoryAncestorId:eq:${bvCatId}`);
-    }
-  }
-  
-  // Date range filters
-  if (dateFrom) url.searchParams.append("Filter", `SubmissionTime:gte:${Math.floor(new Date(dateFrom).getTime() / 1000)}`);
-  if (dateTo) url.searchParams.append("Filter", `SubmissionTime:lt:${Math.floor(new Date(dateTo).getTime() / 1000)}`);
-
-  const fullUrl = url.toString();
-  console.log(`[BV-${region.toUpperCase()}] Request URL: ${fullUrl}`);
-  const res = await fetch(fullUrl);
-  const rawBody = await res.text();
-  console.log(`[BV-${region.toUpperCase()}] Status: ${res.status}, Body (first 500): ${rawBody.slice(0, 500)}`);
-  
-  if (!res.ok) {
-    throw new Error(`Bazaarvoice API error [${res.status}]: ${rawBody.slice(0, 500)}`);
-  }
-
-  const data = JSON.parse(rawBody);
-  console.log(`[BV-${region.toUpperCase()}] TotalResults=${data.TotalResults}, returned=${data.Results?.length || 0}, HasErrors=${data.HasErrors}, Errors=${JSON.stringify(data.Errors || [])}`);
-  return data.Results || [];
-}
-
-function mapBvReviewToInternal(bvReview: any, region: "us" | "uk"): any {
-  const rating = bvReview.Rating || null;
-  let sentiment = "neutral";
-  let sentimentScore = 0.5;
-  if (rating !== null) {
-    if (rating >= 4) { sentiment = "positive"; sentimentScore = 0.7 + (rating - 4) * 0.15; }
-    else if (rating <= 2) { sentiment = "negative"; sentimentScore = 0.1 + (rating - 1) * 0.15; }
-    else { sentiment = "neutral"; sentimentScore = 0.5; }
-  }
-
-  // ── Syndication detection ──
-  // review_type must be one of: organic, paid, syndication, mixed
-  let reviewType = "organic";
-  if (bvReview.IsSyndicated === true || bvReview.SyndicationSource) {
-    reviewType = "syndication";
-  }
-
-    // Prefer OriginalProductName (actual model number like OLED77C5PUA) over BV internal ProductId (MD...)
-    const originalName = bvReview.OriginalProductName || "";
-    const productName = bvReview.Products?.[bvReview.ProductId]?.Name || `LG Product (${region.toUpperCase()})`;
-    // Use OriginalProductName if it looks like a real model number, otherwise fall back to ProductId
-    const modelNum = originalName && !originalName.startsWith("MD") ? originalName : bvReview.ProductId || `LG-${region.toUpperCase()}-GENERIC`;
-    
-    return {
-    model_number: modelNum,
-    display_name: productName,
-    category: bvReview.Products?.[bvReview.ProductId]?.CategoryId || "General",
-    review_id: bvReview.Id,
-    author: null,
-    rating,
-    date: bvReview.SubmissionTime?.split("T")[0] || null,
-    content: bvReview.ReviewText || "",
-    title: bvReview.Title || null,
-    sentiment,
-    sentiment_score: sentimentScore,
-    emotion_category: sentiment === "positive" ? "satisfaction" : sentiment === "negative" ? "frustration" : "neutral",
-    emotion_intensity: rating ? Math.min(5, Math.max(1, rating)) : 3,
-    source_region: region,
-    issue_tags: [],
-    verified_purchase: bvReview.BadgesOrder?.includes("verifiedPurchaser") || false,
-    review_type: reviewType,
-  };
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-  const holdResponse = bazaarvoiceHoldResponse(corsHeaders);
-  if (holdResponse) return holdResponse;
 
   const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const BAZAARVOICE_UK_API_KEY = Deno.env.get("BAZAARVOICE_UK_API_KEY");
-  const BAZAARVOICE_US_API_KEY = Deno.env.get("BAZAARVOICE_US_API_KEY");
 
   if (!FIRECRAWL_API_KEY || !LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
@@ -365,29 +241,19 @@ Deno.serve(async (req) => {
   let categories = Array.from({ length: ROTATION_SIZE }, (_, i) => ALL_CATEGORIES[(startIdx + i) % ALL_CATEGORIES.length]);
   let regions: ("us" | "uk")[] = ["us", "uk"];
   let maxQueriesPerCategory = 1;
-  let bvPages = 2; // Reduced from 5 to avoid CPU Time exceeded
-  let bvOffset = 0;
-  let dateFrom: string | undefined;
-  let dateTo: string | undefined;
-  let productFilter: string | undefined; // BV ProductId for product-specific crawl
 
   try {
     const body = await req.json();
     if (body.categories?.length) categories = body.categories;
     if (body.regions?.length) regions = body.regions;
     if (body.maxQueries) maxQueriesPerCategory = body.maxQueries;
-    if (body.bvPages != null) bvPages = body.bvPages;
-    if (body.bvOffset != null) bvOffset = body.bvOffset;
-    if (body.dateFrom) dateFrom = body.dateFrom;
-    if (body.dateTo) dateTo = body.dateTo;
-    if (body.productFilter) productFilter = body.productFilter;
   } catch {
     // defaults
   }
 
   const { data: logEntry } = await supabase
     .from("collection_logs")
-    .insert({ source: "lge_reviews", status: "running" })
+    .insert({ source: "lge_com_direct", status: "running" })
     .select()
     .single();
   const logId = logEntry?.id;
@@ -403,100 +269,7 @@ Deno.serve(async (req) => {
       for (const region of regions) {
         console.log(`\n=== [${region.toUpperCase()}] ${category} ===`);
 
-        // ── Try Bazaarvoice API first for both regions ──
-        const bvApiKey = region === "uk" ? BAZAARVOICE_UK_API_KEY : BAZAARVOICE_US_API_KEY;
-        
-        if (bvApiKey) {
-          console.log(`[${region.toUpperCase()}] Using Bazaarvoice API — pages=${bvPages}, startOffset=${bvOffset}`);
-          try {
-            let pageOffset = bvOffset;
-            for (let page = 0; page < bvPages; page++) {
-              const bvReviews = await fetchBazaarvoiceReviews(bvApiKey, region, category, pageOffset, 100, dateFrom, dateTo, productFilter);
-              console.log(`[BV-${region.toUpperCase()}] Page ${page + 1}/${bvPages}: ${bvReviews.length} reviews for ${category} (offset=${pageOffset})`);
-              
-              if (bvReviews.length === 0) break;
-
-              // Batch process: map all reviews first
-              const reviewRows: any[] = [];
-              const productCache: Record<string, string> = {};
-
-              for (const bvReview of bvReviews) {
-                const review = mapBvReviewToInternal(bvReview, region);
-                if (!review.content || review.content.length < 20) continue;
-
-                const issueTags = detectIssueTags(review.content, category);
-                const allTags = [...new Set([...(review.issue_tags || []), ...issueTags])];
-                const modelNum = review.model_number || `LG-${category}-GENERIC`;
-                const bvClient = BV_CONFIG[region].client;
-                const externalId = `bv_${region}_${bvReview.Id}`;
-                // Strip PII from review content but keep the actual text for keyword extraction
-                const piiStrippedContent = review.content
-                  .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[email]")
-                  .replace(/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, "[phone]")
-                  .replace(/\b\d{1,5}\s+[A-Z][a-zA-Z]+\s+(?:St|Ave|Blvd|Dr|Rd|Ln|Way|Ct)\b\.?/g, "[address]")
-                  .replace(/(?:my name is|I'?m)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?/gi, "[name]");
-
-                // Cache product lookup
-                if (!productCache[modelNum]) {
-                  const { data: existing } = await supabase
-                    .from("products").select("id").eq("model_number", modelNum).maybeSingle();
-                  if (existing) {
-                    productCache[modelNum] = existing.id;
-                  } else {
-                    const { data: newProd } = await supabase
-                      .from("products")
-                      .insert({ model_number: modelNum, display_name: review.display_name || `LG ${category}`, category: review.category || category })
-                      .select("id").single();
-                    if (newProd) productCache[modelNum] = newProd.id;
-                  }
-                }
-                const productId = productCache[modelNum];
-                if (!productId) continue;
-
-                reviewRows.push({
-                  product_id: productId,
-                  source: `lge_com_${region}`,
-                  source_url: `bazaarvoice://${bvClient}/${bvReview.Id}`,
-                  external_id: externalId,
-                  title: review.title || review.marketing_point?.slice(0, 200) || review.highlight_keywords?.join(", ")?.slice(0, 200) || null,
-                  content: piiStrippedContent,
-                  author: "LG Review User",
-                  rating: review.rating || null,
-                  sentiment: review.sentiment || "neutral",
-                  sentiment_score: review.sentiment_score ?? 0.5,
-                  published_at: review.date || null,
-                  emotion_category: review.emotion_category || "neutral",
-                  emotion_intensity: review.emotion_intensity || 3,
-                  user_type: review.verified_purchase ? "actual_user" : "unknown",
-                  content_type: "review",
-                  platform_type: "retailer",
-                  review_type: review.review_type || "organic",
-                });
-              }
-
-              // Bulk upsert — update content on conflict to refresh PII-stripped text
-              if (reviewRows.length > 0) {
-                const { data: inserted, error: insertErr } = await supabase
-                  .from("reviews")
-                  .upsert(reviewRows, { onConflict: "external_id", ignoreDuplicates: false })
-                  .select("id");
-                const savedCount = inserted?.length || 0;
-                console.log(`[BV-${region.toUpperCase()}] Bulk saved ${savedCount}/${reviewRows.length} reviews (err: ${insertErr?.message || "none"})`);
-                totalCollected += savedCount;
-                regionStats[category][region] += savedCount;
-              }
-
-              pageOffset += 100;
-            }
-            continue; // Skip Firecrawl if BV succeeded
-          } catch (bvErr) {
-            console.error(`[BV-${region.toUpperCase()}] Error:`, bvErr);
-            errors.push(`Bazaarvoice ${region.toUpperCase()} error: ${bvErr}`);
-            console.log(`[${region.toUpperCase()}] Falling back to Firecrawl search`);
-          }
-        }
-
-        // ── Fallback: Firecrawl ──
+        // Crawl-only collection; no review API fallback.
         const collected = await collectViaFirecrawl(supabase, FIRECRAWL_API_KEY, LOVABLE_API_KEY, category, region, maxQueriesPerCategory, regionStats, errors);
         totalCollected += collected;
       }
@@ -522,8 +295,7 @@ Deno.serve(async (req) => {
         error_details: errors.slice(0, 5),
         region_stats: regionStats,
         region_comparison: regionComparison,
-        bazaarvoice_us: !!BAZAARVOICE_US_API_KEY,
-        bazaarvoice_uk: !!BAZAARVOICE_UK_API_KEY,
+        collection_method: "crawl",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -544,7 +316,7 @@ Deno.serve(async (req) => {
   }
 });
 
-// ── Firecrawl-based collection (US + fallback) ──
+// ── Firecrawl-based collection ──
 async function collectViaFirecrawl(
   supabase: any, firecrawlKey: string, lovableKey: string,
   category: string, region: string, maxQueries: number,
