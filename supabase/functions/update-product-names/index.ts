@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { bazaarvoiceHoldResponse } from "../_shared/bazaarvoice-hold.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,6 +134,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const holdResponse = bazaarvoiceHoldResponse(corsHeaders);
+  if (holdResponse) return holdResponse;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

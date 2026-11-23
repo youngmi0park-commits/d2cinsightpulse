@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { bazaarvoiceHoldResponse } from "../_shared/bazaarvoice-hold.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,8 @@ const PAGE_SIZE = 100;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const holdResponse = bazaarvoiceHoldResponse(corsHeaders);
+  if (holdResponse) return holdResponse;
 
   const { locale = "en_US" } = await req.json().catch(() => ({}));
   const LOCALE_KEY_MAP: Record<string, string> = {

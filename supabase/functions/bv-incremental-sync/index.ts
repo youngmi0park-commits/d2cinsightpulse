@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { bazaarvoiceHoldResponse } from "../_shared/bazaarvoice-hold.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,8 @@ function sanitizePII(text: string): string {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const holdResponse = bazaarvoiceHoldResponse(corsHeaders);
+  if (holdResponse) return holdResponse;
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,

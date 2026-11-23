@@ -5,6 +5,7 @@ import { Loader2, Download, Globe, MessageSquare, Youtube } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/contexts/LanguageContext";
+import { isBazaarvoiceCollectionHeld } from "@/lib/bazaarvoicePolicy";
 
 interface ChannelDef {
   id: string;
@@ -177,6 +178,10 @@ export function ReviewCollectButtons() {
   const [results, setResults] = useState<Record<string, { collected: number; errors: number } | null>>({});
 
   const handleCollect = async (channelId: string) => {
+    if (isBazaarvoiceCollectionHeld(channelId)) {
+      toast.info(t("Bazaarvoice disconnected; collection on hold", "바자보이스 연동 해제 · 수집 중지"));
+      return;
+    }
     setLoading((prev) => ({ ...prev, [channelId]: true }));
     setResults((prev) => ({ ...prev, [channelId]: null }));
 
@@ -285,6 +290,7 @@ export function ReviewCollectButtons() {
         const Icon = ch.icon;
         const isLoading = loading[ch.id];
         const result = results[ch.id];
+        const isHeld = isBazaarvoiceCollectionHeld(ch.id);
 
         return (
           <div key={ch.id} className="flex items-center gap-1.5">
@@ -293,7 +299,7 @@ export function ReviewCollectButtons() {
               size="sm"
               className="h-8 text-xs gap-1.5 border-primary/30 hover:bg-primary/10"
               onClick={() => handleCollect(ch.id)}
-              disabled={isLoading}
+              disabled={isLoading || isHeld}
             >
               {isLoading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -304,6 +310,7 @@ export function ReviewCollectButtons() {
                 </>
               )}
               {ch.label}
+              {isHeld && <span>{t("On hold", "중지")}</span>}
             </Button>
             {result && (
               <Badge
