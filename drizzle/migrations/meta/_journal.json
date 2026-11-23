@@ -8,6 +8,13 @@
       "when": 1795396725825,
       "tag": "0000_hold_bazaarvoice_schedules",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795400581101,
+      "tag": "0001_lock_bv_tracking_tables",
+      "breakpoints": true
     }
   ]
 }
